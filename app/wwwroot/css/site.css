@@ -1,31 +1,88 @@
-html {
-  font-size: 14px;
-}
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+:root {
+    
+    --bg-dark: #0f172a; 
+    --bg-card: rgba(30, 41, 59, 0.6); 
+    --accent-mint: #2dd4bf;
+    --accent-blue: #3b82f6;
+    --text-main: #f8fafc; 
+    --text-muted: #94a3b8; 
+    --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 body {
-  margin-bottom: 60px;
+    font-family: 'Nunito', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    background-image: radial-gradient(circle at 50% 0%, rgba(45, 212, 191, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
+    background-attachment: fixed;
+    min-height: 100vh;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+.brand-title {
+    font-weight: 800;
+    color: white;
+    letter-spacing: -1px;
+    background: linear-gradient(to right, #ffffff, #ccfbf1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+
+.glass-panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px); 
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); 
+    border-radius: 24px;
+    transition: all 0.3s ease;
+}
+
+    .glass-panel:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent-mint);
+        box-shadow: 0 15px 50px -10px rgba(45, 212, 191, 0.15); 
+    }
+
+
+.btn-mint {
+    background: var(--accent-mint);
+    color: #0f172a;
+    font-weight: 800;
+    border: none;
+    box-shadow: 0 4px 15px rgba(45, 212, 191, 0.3);
+    transition: all 0.2s;
+}
+
+    .btn-mint:hover {
+        background: #14b8a6;
+        color: white;
+        transform: scale(1.02);
+    }
+
+.icon-box {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.icon-study {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
+.icon-community {
+    background: rgba(236, 72, 153, 0.15);
+    color: #f472b6;
+}
+
+.text-muted-light {
+    color: var(--text-muted) !important;
 }

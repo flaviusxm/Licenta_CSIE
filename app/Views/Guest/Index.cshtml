@@ -1,0 +1,84 @@
+﻿@{
+    Layout = "~/Views/Shared/_GuestLayout.cshtml";
+    ViewData["Title"] = "Welcome Guest";
+}
+
+<link rel="stylesheet" href="~/css/guest-layout.css" asp-append-version="true" />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+   
+    :root {
+        --bg-card: rgba(30, 41, 59, 0.6);
+        --accent-mint: #2dd4bf;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --glass-border: rgba(255, 255, 255, 0.08);
+    }
+
+  
+    .glass-panel {
+        background: var(--bg-card);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        border-radius: 24px;
+        padding: 3rem;
+        width: 100%;
+        text-align: center;
+        margin: 2rem auto; 
+    }
+
+  
+    .brand-title {
+        font-weight: 800;
+        color: white;
+        letter-spacing: -1px;
+        font-size: 3rem;
+    }
+
+  
+    .btn-mint {
+        background: var(--accent-mint);
+        color: #0f172a;
+        font-weight: 800;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 12px;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 20px;
+    }
+
+        .btn-mint:hover {
+            background: #14b8a6;
+            color: white;
+            transform: scale(1.05);
+        }
+
+    .btn-outline-light {
+        border-radius: 12px;
+        padding: 12px 30px;
+        font-weight: 700;
+    }
+</style>
+
+
+<div class="d-flex justify-content-center align-items-center h-100">
+    <div class="glass-panel position-relative overflow-hidden">
+        <div style="position: absolute; top: -10px; right: -10px; opacity: 0.05; font-size: 100px; transform: rotate(15deg);">🚀</div>
+
+        <h1 class="brand-title mb-3">AskNLearn</h1>
+        <p class="lead text-muted mb-5" style="color: var(--text-muted);">
+            Bine ai venit pe pagina pentru vizitatori! <br>
+            Aceasta este o zonă publică, accesibilă fără cont.
+        </p>
+
+        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+            <a href="/Identity/Account/Login" class="btn btn-mint px-4">Log In</a>
+            <a href="/Home/Index" class="btn btn-outline-light px-4">Înapoi la Home</a>
+        </div>
+    </div>
+</div>

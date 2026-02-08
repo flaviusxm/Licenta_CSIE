@@ -1,0 +1,22 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+<header class="main-header">
+    <h1>Antet (10%)</h1>
+    @await Html.PartialAsync("_LoginPartial")
+</header>
+
+<div class="main-layout-container">
+    <aside class="sidebar-one">
+        <h2>Meniu Principal (15%)</h2>
+    </aside>
+
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
+
+    <aside class="sidebar-two">
+        <h2>Bare Laterală Dreapta (15%)</h2>
+    </aside>
+</div>

@@ -9,7 +9,7 @@ namespace AskNLearn.Models.Core
         public enum ModuleContextType
         {
             Community,
-            StudyGroup,
+            Group,
             Profile,
         }
 

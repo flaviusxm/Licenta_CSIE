@@ -8,8 +8,7 @@ namespace AskNLearn.Models.Core
     {
         Pending,
         Accepted,
-        Blocked,
-        Rejected
+        Blocked
     }
     [PrimaryKey(nameof(RequesterId), nameof(AddresseeId))]
     [Table("Friendships")]

@@ -10,12 +10,12 @@ namespace AskNLearn.Models.Core
         Moderator,
         Admin,
     }
-    public enum UserStatus {
-    Offline,
-    Idle,
-    Online
+    public enum UserStatus{
+        Online,
+        Offline,
+        Away,
+        DoNotDisturb
     }
-
     public class ApplicationUser : IdentityUser
     {
         [MaxLength(100)]
@@ -28,6 +28,7 @@ namespace AskNLearn.Models.Core
         public string? BannerUrl { get; set; }
 
         public int ReputationPoints { get; set; } = 0;
+        public int Level => ReputationPoints / 100; 
 
         public Guid? CurrentRankId { get; set; }
         [ForeignKey(nameof(CurrentRankId))]
@@ -35,9 +36,9 @@ namespace AskNLearn.Models.Core
 
         public bool IsVerified { get; set; } = false;
 
-        public Role Role { get; set; } = Role.Member;
+        public Role Role { get; set; } = Role.Member; 
 
-        public UserStatus Status { get; set; } = UserStatus.Offline;
+        public string Status { get; set; } = "Offline";
         public DateTime? LastActive { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

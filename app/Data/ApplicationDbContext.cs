@@ -20,7 +20,7 @@ namespace AskNLearn.Data
         public DbSet<MessageReaction> MessageReactions { get; set; }
         public DbSet<DirectConversation> DirectConversations { get; set; }
         public DbSet<DirectConversationParticipant> DirectConversationParticipants { get; set; }
-        
+        public DbSet<MessageAttachment> MessageAttachments { get; set; }
         public DbSet<UserRank> UserRanks { get; set; }
         
         public DbSet<Community> Communities { get; set; }
@@ -30,28 +30,24 @@ namespace AskNLearn.Data
         public DbSet<PostVote> PostVotes { get; set; }
         
         public DbSet<GroupMembership> GroupMemberships { get; set; }
-
+        public DbSet<CommunityMembership> CommunityMemberships { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
-        
+        public DbSet<Report> Reports { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<PostTag> PostTags { get; set; }
+        public DbSet<ChannelCategory> ChannelCategories { get; set; } 
+        public DbSet<GroupInvite> GroupInvites { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(builder);
+            base.OnModelCreating(builder); 
 
-            builder.Entity<GroupMembership>()
-                .HasKey(gm => new { gm.GroupId, gm.UserId });
+            builder.Entity<CommunityMembership>()
+                .HasKey(cm => new { cm.CommunityId, cm.UserId });
 
-            builder.Entity<GroupMembership>()
-                .HasOne(gm => gm.Group)
-                .WithMany(g => g.Members)
-                .HasForeignKey(gm => gm.GroupId)
-                .OnDelete(DeleteBehavior.Cascade); 
-
-            builder.Entity<StudyGroup>()
-                .HasMany(g => g.Channels)
-                .WithOne(c => c.Group)
-                .HasForeignKey(c => c.GroupId)
-                .OnDelete(DeleteBehavior.Cascade);
+ 
+            builder.Entity<PostTag>()
+                .HasKey(pt => new { pt.PostId, pt.TagId });
 
             builder.Entity<Community>()
                 .HasMany(c => c.Posts)
@@ -64,25 +60,54 @@ namespace AskNLearn.Data
                 .WithOne(m => m.Post)
                 .HasForeignKey(m => m.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             builder.Entity<Post>()
                 .HasMany(p => p.Attachments)
                 .WithOne(a => a.Post)
                 .HasForeignKey(a => a.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<PostVote>()
+                .HasKey(pv => new { pv.PostId, pv.UserId });
+
+            builder.Entity<PostVote>()
+                .HasOne(pv => pv.Post)
+                .WithMany(p => p.Votes)
+                .HasForeignKey(pv => pv.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<GroupMembership>()
+                .HasKey(gm => new { gm.GroupId, gm.UserId });
+
+            builder.Entity<GroupMembership>()
+                .HasOne(gm => gm.Group)
+                .WithMany(g => g.Members)
+                .HasForeignKey(gm => gm.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<StudyGroup>()
+                .HasMany(g => g.Channels)
+                .WithOne(c => c.Group)
+                .HasForeignKey(c => c.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+ 
             builder.Entity<Message>()
                 .HasOne(m => m.Author)
                 .WithMany()
                 .HasForeignKey(m => m.AuthorId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Message>()
                 .HasOne(m => m.ReplyToMessage)
                 .WithMany(m => m.Replies)
                 .HasForeignKey(m => m.ReplyToMessageId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<MessageReaction>()
+                .HasKey(mr => new { mr.MessageId, mr.UserId, mr.EmojiCode });
+
+ 
             builder.Entity<DirectConversationParticipant>()
                 .HasKey(dcp => new { dcp.ConversationId, dcp.UserId });
 
@@ -92,7 +117,6 @@ namespace AskNLearn.Data
                 .HasForeignKey(dcp => dcp.ConversationId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-          
             builder.Entity<Friendship>()
                 .HasKey(f => new { f.RequesterId, f.AddresseeId });
 
@@ -100,24 +124,26 @@ namespace AskNLearn.Data
                 .HasOne(f => f.Requester)
                 .WithMany()
                 .HasForeignKey(f => f.RequesterId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Friendship>()
                 .HasOne(f => f.Addressee)
                 .WithMany()
                 .HasForeignKey(f => f.AddresseeId)
                 .OnDelete(DeleteBehavior.Restrict);
- 
-    
-builder.Entity<PostVote>()
-    .HasKey(pv => new { pv.PostId, pv.UserId }); 
 
-builder.Entity<PostVote>()
-    .HasOne(pv => pv.Post)
-    .WithMany(p => p.Votes)     
-    .HasForeignKey(pv => pv.PostId)
-    .OnDelete(DeleteBehavior.Cascade); 
-    }
-}
+            builder.Entity<Report>()
+                .HasOne(r => r.Reporter)
+                .WithMany()
+                .HasForeignKey(r => r.ReporterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Report>()
+                .HasOne(r => r.ResolvedBy)
+                .WithMany()
+                .HasForeignKey(r => r.ResolvedById)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+        }
 
 }

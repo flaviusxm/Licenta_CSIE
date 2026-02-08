@@ -8,7 +8,7 @@ namespace AskNLearn.Models.Core
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
-        
+
         public string? ActorId { get; set; }
 
         [ForeignKey(nameof(ActorId))]

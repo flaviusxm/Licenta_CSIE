@@ -15,5 +15,6 @@ namespace AskNLearn.Models.Gamification
 
         public int MinPoints { get; set; }
 
+        public string? IconUrl { get; set; }
     }
 }

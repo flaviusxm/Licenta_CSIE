@@ -1,0 +1,41 @@
+﻿/* study-layout.css sau _StudyLayout.cshtml.css */
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.main-header {
+    height: 10vh; /* 10% înălțime */
+    width: 100%;
+    /* Culori și stiluri */
+    background-color: #242a38;
+    color: white;
+}
+
+.main-layout-container {
+    flex-grow: 1; /* Ocupă restul de 90% din înălțime */
+    display: grid;
+    /* Proporțiile LĂȚIMII: 15% | 70% | 15% */
+    grid-template-columns: 15% 70% 15%;
+    width: 100%;
+}
+
+.sidebar-one, .main-content, .sidebar-two {
+    padding: 20px;
+}
+
+.sidebar-one {
+    background-color: #242a38;
+}
+
+.main-content {
+    background-color: #1a1f26;
+}
+
+.sidebar-two {
+    background-color: #1a1f26;
+    border-left: 1px solid #333;
+}

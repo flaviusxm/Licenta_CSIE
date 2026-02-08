@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace AskNLearn.Models.Core
 
 {
-   public enum VerificationStatus{
+   public enum Status{
     Pending,
     Approved,
     Rejected
@@ -24,7 +24,10 @@ namespace AskNLearn.Models.Core
         [Required]
         public string StudentIdUrl { get; set; }
 
-        public VerificationStatus Status { get; set; } = VerificationStatus.Pending; 
+        [Required]
+        public string CarnetUrl { get; set; }
+
+        public Status Status { get; set; } = Status.Pending; 
 
         public string? AdminNotes { get; set; }
 
