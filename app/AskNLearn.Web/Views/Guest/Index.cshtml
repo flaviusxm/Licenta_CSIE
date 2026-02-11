@@ -383,15 +383,15 @@
                     <p id="auth-message" class="text-lg text-slate-500 dark:text-[#92c0c9] max-w-md mx-auto mb-8">
                         Connect with classmates, join live study sessions, and access exclusive resources. Create an account to get started.
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                        <a href="@Url.Action("SignUp", "Auth")" class="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-primary text-[#111f22] font-bold text-lg shadow-lg shadow-primary/20 hover:scale-[1.03] transition-all">
-                            Sign Up Free
-                        </a>
-                        <a href="@Url.Action("SignIn", "Auth")" class="inline-flex items-center justify-center px-8 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-surface-dark font-bold transition-all text-slate-700 dark:text-white">
-                            Log In
-                        </a>
-                    </div>
+                <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                    <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-primary text-[#111f22] font-bold text-lg shadow-lg shadow-primary/20 hover:scale-[1.03] transition-all">
+                        Sign Up Free
+                    </a>
+                    <a asp-controller="Auth" asp-action="SignIn" class="inline-flex items-center justify-center px-8 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-surface-dark font-bold transition-all text-slate-700 dark:text-white">
+                        Log In
+                    </a>
                 </div>
+            </div> <!-- End Auth Wall -->
 
                 <!-- Settings View -->
                 <div id="settings-view" class="hidden flex-grow flex flex-col gap-8 animate-fade-in p-2">
@@ -577,20 +577,10 @@
                             <p class="text-xs text-slate-500 dark:text-[#92c0c9]">External Tool</p>
                         </div>
                     </div>
-                </div>
+               
             </div>
-            <!-- Promo/Ad space placeholder -->
-            <div class="mt-auto rounded-xl bg-gradient-to-br from-indigo-600 to-purple-700 p-5 text-center text-white relative overflow-hidden">
-                <div class="relative z-10 flex flex-col items-center gap-3">
-                    <span class="material-symbols-outlined text-4xl mb-1">workspace_premium</span>
-                    <h4 class="font-bold text-lg leading-tight">Upgrade to Pro</h4>
-                    <p class="text-xs text-indigo-100">Get unlimited cloud storage for your notes and ad-free browsing.</p>
-                    <button class="mt-2 px-4 py-2 bg-white text-indigo-700 text-xs font-bold rounded-lg w-full hover:bg-indigo-50 transition-colors">Learn More</button>
-                </div>
-                <!-- Decor -->
-                <div class="absolute -top-10 -right-10 size-32 bg-white opacity-10 rounded-full blur-2xl"></div>
-                <div class="absolute -bottom-10 -left-10 size-32 bg-purple-400 opacity-20 rounded-full blur-2xl"></div>
             </div>
+            
         </aside>
     </div>
     <script>
@@ -634,7 +624,6 @@
             const el = document.getElementById(id);
             const allDropdowns = ['notif-dropdown', 'dm-dropdown', 'tasks-dropdown'];
             
-            // Close others
             allDropdowns.forEach(d => {
                 if(d !== id) document.getElementById(d)?.classList.add('hidden');
             });
@@ -643,8 +632,6 @@
                 el.classList.toggle('hidden');
             }
         }
-
-        // Close dropdowns on outside click
         window.addEventListener('click', function(e) {
             if (!e.target.closest('.relative')) {
                  const allDropdowns = ['notif-dropdown', 'dm-dropdown', 'tasks-dropdown'];

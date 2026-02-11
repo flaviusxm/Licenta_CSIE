@@ -1,6 +1,6 @@
 
 using AskNLearn.Infrastructure.Persistance;
-using AskNLearn.Domain.Entities;
+// using AskNLearn.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

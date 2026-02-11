@@ -1,4 +1,4 @@
-namespace app_licenta.Models
+namespace AskNLearn.Web.Models
 {
     public class ErrorViewModel
     {
