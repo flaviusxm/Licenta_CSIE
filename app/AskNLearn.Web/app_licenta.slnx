@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="../AskNLearn.Application/AskNLearn.Application.csproj" Id="ee7006fa-60c7-454f-9a53-05330eb99958" />
+  <Project Path="../AskNLearn.Infrastructure/AskNLearn.Infrastructure.csproj" Id="2c8b0622-bd3c-4111-bec7-f8467c1e8da1" />
+  <Project Path="../AskNLearn.Domain/AskNLearn.Domain.csproj" Id="9804af66-79ec-421e-9379-a4c3179465ec" />
+  <Project Path="AskNLearn.Web.csproj" />
+</Solution>

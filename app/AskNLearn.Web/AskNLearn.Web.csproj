@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-app_licenta-9ed00d37-137d-4d9f-a37a-76204fa37a10</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AskNLearn.Application\AskNLearn.Application.csproj" />
+    <ProjectReference Include="..\AskNLearn.Infrastructure\AskNLearn.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,137 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AskNLearn - Login</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <style type="text/tailwindcss">
+        :root {
+            --primary-neon: #00ffcc;
+            --primary-hover: #00e6b8;
+            --deep-navy: #0a0f1d;
+            --dark-green: #022c22;
+        }
+
+
+        .glass-card {
+            background: rgba(10, 15, 29, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 255, 204, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+        }
+
+            .neon-glow:hover {
+                box-shadow: 0 0 25px rgba(0, 255, 204, 0.6);
+            }
+
+        .input-glass {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+
+            .input-glass:focus {
+                background: rgba(0, 255, 204, 0.02);
+                border-color: var(--primary-neon);
+                box-shadow: 0 0 0 1px var(--primary-neon);
+            }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00ffcc",
+                        "primary-dark": "#00e6b8",
+                        "navy": "#0a0f1d",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[#0a0f1d] via-[#051512] to-[#022c22]">
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-900/20 rounded-full blur-[100px]"></div>
+    </div>
+    <main class="relative z-10 w-full max-w-[440px] px-6">
+        <div class="glass-card rounded-[2rem] p-8 md:p-12">
+            <div class="flex flex-col items-center mb-10">
+                <div class="mb-6 relative">
+                    <div class="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
+                    <div class="relative bg-navy border border-primary/30 p-4 rounded-2xl shadow-inner">
+                        <svg class="w-10 h-10 text-primary" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+                        </svg>
+                    </div>
+                </div>
+                <h1 class="text-3xl font-bold text-white tracking-tight mb-2">Welcome Back</h1>
+                <p class="text-slate-400 font-medium">Log into your student dashboard</p>
+            </div>
+            <form class="space-y-6" asp-controller="Auth" asp-action="SignIn" method="post">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-[0.1em] mb-2 ml-1" for="email">Email Address</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">mail</span>
+                        <input class="input-glass w-full py-3.5 pl-12 pr-4 rounded-xl text-white placeholder:text-slate-600 outline-none" id="email" name="email" placeholder="name@student.edu" required="" type="email" />
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-2 ml-1">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-[0.1em]" for="password">Password</label>
+                        <a class="text-xs font-semibold text-primary hover:text-white transition-colors" href="#">Forgot password?</a>
+                    </div>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">lock</span>
+                        <input class="input-glass w-full py-3.5 pl-12 pr-4 rounded-xl text-white placeholder:text-slate-600 outline-none" id="password" name="password" placeholder="••••••••" required="" type="password" />
+                    </div>
+                </div>
+                <div class="flex items-center ml-1">
+                    <label class="relative flex items-center cursor-pointer group">
+                        <input class="sr-only peer" id="remember-me" name="remember-me" type="checkbox" />
+                        <div class="w-5 h-5 border-2 border-slate-700 rounded-md bg-transparent peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
+                            <span class="material-symbols-outlined text-navy text-[14px] font-bold opacity-0 peer-checked:opacity-100">check</span>
+                        </div>
+                        <span class="ml-3 text-sm font-medium text-slate-400 group-hover:text-slate-200 transition-colors">Keep me signed in</span>
+                    </label>
+                </div>
+                <button class="w-full bg-primary hover:bg-primary-dark text-navy font-bold py-4 rounded-xl transition-all duration-300 transform hover:scale-[0.01] active:scale-95 neon-glow flex items-center justify-center gap-2 group mt-2" type="submit">
+                    Sign In
+                    <span class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">login</span>
+                </button>
+            </form>
+            <div class="mt-10 pt-8 border-t border-white/5 text-center">
+                <p class="text-slate-400 text-sm">
+                    Don't have an account?
+                    <a class="text-primary font-bold hover:underline underline-offset-4 ml-1" href="@Url.Action("SignUp", "Auth")">Register a new student account</a>
+                </p>
+            </div>
+        </div>
+        <div class="mt-8 text-center space-y-2">
+            <p class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-semibold">
+                Powered by AskNLearn Design System
+            </p>
+            <p class="text-xs text-slate-600">
+                © 2024 AskNLearn. All rights reserved.
+            </p>
+        </div>
+    </main>
+
+</body>
+</html>

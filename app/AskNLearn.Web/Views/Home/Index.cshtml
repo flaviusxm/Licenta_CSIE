@@ -1,0 +1,110 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="py-5">
+    <div class="container" style="max-width: 1100px;">
+
+        <div class="text-center mb-5 pt-4">
+            <div class="d-inline-flex align-items-center justify-content-center mb-3">
+                <svg class="me-3" xmlns="http://www.w3.org/2000/svg" width="48" height="48"
+                     viewBox="0 0 24 24" fill="none" stroke="#2dd4bf"
+                     stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                     style="filter: drop-shadow(0 0 10px rgba(45,212,191,0.5));">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                </svg>
+                <h1 class="display-3 brand-title mb-0">AskNLearn</h1>
+            </div>
+
+            <p class="lead text-muted-light mx-auto px-3"
+               style="max-width: 650px; font-weight: 600;">
+                Connect with students, join study groups, and access shared resources
+                in a modern collaborative environment.
+            </p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+
+            <!-- STUDY GROUPS -->
+            <div class="col-lg-6">
+                <div class="glass-panel h-100 p-5 position-relative overflow-hidden">
+                    <div style="position:absolute; top:-20px; right:-20px; opacity:.05;
+                    font-size:150px; transform:rotate(15deg); color:white;">
+                        🎓
+                    </div>
+
+                    <div class="d-flex flex-column h-100 align-items-start text-start position-relative" style="z-index:2;">
+
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="icon-box icon-study">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="h2 fw-bold text-white mb-0">Study Groups</h3>
+                            </div>
+
+                            <p class="text-muted-light mb-0" style="font-size:1.1rem; line-height:1.6;">
+                                Find your squad and study with people who share your goals.
+                                Collaborate on projects, exchange notes, and prepare for exams
+                                together using
+                                <span style="color:#3b82f6; font-weight:700;">shared resources</span>
+                                built by students.
+                            </p>
+                        </div>
+
+                        <a href="#" class="btn btn-mint w-100 py-3 rounded-4 mt-auto">
+                            Find a Group →
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-lg-6">
+                <div class="glass-panel h-100 p-5 position-relative overflow-hidden">
+                    <div style="position:absolute; bottom:-20px; right:-20px; opacity:.05;
+                    font-size:150px; transform:rotate(-10deg); color:white;">
+                        💬
+                    </div>
+
+                    <div class="d-flex flex-column h-100 align-items-start text-start position-relative" style="z-index:2;">
+
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="icon-box icon-community">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                                        <path d="M12 2a15.3 15.3 0 0 1 4 10
+                                             15.3 15.3 0 0 1-4 10
+                                             15.3 15.3 0 0 1-4-10
+                                             15.3 15.3 0 0 1 4-10z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="h2 fw-bold text-white mb-0">Communities</h3>
+                            </div>
+
+                            <p class="text-muted-light mb-0" style="font-size:1.1rem; line-height:1.6;">
+                                Join open discussions and connect with learners across topics.
+                                Ask questions, share insights, and explore
+                                <span style="color:#f472b6; font-weight:700;">community wikis</span>
+                                curated by members to help everyone learn faster.
+                            </p>
+                        </div>
+
+                        <a asp-controller="Guest" class="btn btn-mint w-100 py-3 rounded-4 mt-auto">
+                            Explore Communities
+                        </a>
+                    </div>
+                </div>
+            </div>
