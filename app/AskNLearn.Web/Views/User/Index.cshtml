@@ -1,0 +1,644 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AskNLearn - Student Community</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+            extend: {
+                colors: {
+                "primary": "#13c8ec",
+                "background-light": "#f6f8f8",
+                "background-dark": "#101f22",
+                "surface-dark": "#192f33",
+                "surface-light": "#ffffff",
+                "border-dark": "#234248",
+                "border-light": "#e2e8f0",
+                },
+                fontFamily: {
+                "display": ["Lexend", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+            },
+            },
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for better aesthetic */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #234248;
+            border-radius: 3px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #234248;
+        }
+
+        .light ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex flex-col transition-colors duration-200">
+    <!-- Top Navigation Bar -->
+    <header class="h-16 flex items-center justify-between px-6 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark z-50 shrink-0">
+        <!-- Logo Area -->
+        <div class="flex items-center gap-8 w-64">
+            <div class="flex items-center gap-3 text-slate-900 dark:text-white cursor-pointer">
+
+                <h1 class="text-xl font-bold tracking-tight">AskNLearn</h1>
+            </div>
+        </div>
+        <!-- Search Bar -->
+        <div class="flex-1 max-w-2xl px-4">
+            <label class="relative group">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                    <span class="material-symbols-outlined text-slate-400 dark:text-[#92c0c9]">search</span>
+                </div>
+                <input class="block w-full p-2.5 pl-12 text-sm text-slate-900 dark:text-white bg-slate-100 dark:bg-surface-dark border-transparent rounded-xl focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-[#1f3a40] transition-all placeholder:text-slate-400 dark:placeholder:text-[#5f8a93]" placeholder="Search for study groups, notes, or topics..." type="text" />
+            </label>
+        </div>
+        <!-- Right Actions -->
+        <div class="flex items-center justify-end gap-4 w-auto md:w-64">
+            <!-- Tasks -->
+            <div class="relative">
+                <button onclick="toggleDropdown('tasks-dropdown')" class="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-[#92c0c9] dark:hover:bg-surface-dark transition-colors">
+                    <span class="material-symbols-outlined">task_alt</span>
+                </button>
+                <!-- Tasks Dropdown -->
+                <div id="tasks-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xl z-50 overflow-hidden animate-fade-in">
+                    <div class="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
+                        <h4 class="font-bold text-slate-900 dark:text-white text-sm">My Tasks</h4>
+                        <button add task
+                        </button>
+                        <span class="text-xs text-primary font-medium cursor-pointer">View all</span>
+                    </div>
+                    <div class="max-h-[300px] overflow-y-auto p-2">
+                        <!-- Task Items -->
+                        <label class="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors group">
+                            <input type="checkbox" class="mt-1 rounded border-slate-300 text-primary focus:ring-primary bg-transparent" />
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">Review Calculus notes</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">Due today</span>
+                            </div>
+                        </label>
+                        <label class="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors group">
+                            <input type="checkbox" class="mt-1 rounded border-slate-300 text-primary focus:ring-primary bg-transparent" />
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">Finish Java assignment</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">Due tomorrow</span>
+                            </div>
+                        </label>
+                        <label class="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors group">
+                            <input type="checkbox" class="mt-1 rounded border-slate-300 text-primary focus:ring-primary bg-transparent" checked />
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-200 line-through opacity-60">Register for seminars</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">Done</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="relative">
+                <button onclick="toggleDropdown('notif-dropdown')" class="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-[#92c0c9] dark:hover:bg-surface-dark transition-colors">
+                    <span class="material-symbols-outlined">notifications</span>
+                </button>
+                <!-- Notification Dropdown -->
+                <div id="notif-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xl z-50 overflow-hidden animate-fade-in">
+                    <div class="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
+                        <h4 class="font-bold text-slate-900 dark:text-white text-sm">Notifications</h4>
+                        <span class="text-xs text-primary font-medium cursor-pointer">Mark all read</span>
+                    </div>
+                    <div class="max-h-[300px] overflow-y-auto">
+                        <div class="p-8 text-center flex flex-col items-center gap-3">
+                            <div class="size-12 rounded-full bg-slate-100 dark:bg-background-dark flex items-center justify-center text-slate-400 dark:text-slate-500">
+                                <span class="material-symbols-outlined text-2xl">notifications_off</span>
+                            </div>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">No new notifications</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DMs -->
+            <div class="relative">
+                <button onclick="toggleDropdown('dm-dropdown')" class="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-[#92c0c9] dark:hover:bg-surface-dark transition-colors">
+                    <span class="material-symbols-outlined">chat_bubble</span>
+                </button>
+                <!-- DM Dropdown -->
+                <div id="dm-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xl z-50 overflow-hidden animate-fade-in">
+                    <div class="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
+                        <h4 class="font-bold text-slate-900 dark:text-white text-sm">Messages</h4>
+                        <span class="material-symbols-outlined text-sm text-slate-500 cursor-pointer">edit_square</span>
+                    </div>
+                    <div class="max-h-[300px] overflow-y-auto">
+                        <div class="p-8 text-center flex flex-col items-center gap-3">
+                            <div class="size-12 rounded-full bg-slate-100 dark:bg-background-dark flex items-center justify-center text-slate-400 dark:text-slate-500">
+                                <span class="material-symbols-outlined text-2xl">chat_bubble_outline</span>
+                            </div>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">No new messages</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-8 w-[1px] bg-border-light dark:bg-border-dark mx-1"></div>
+            <button onclick="showSettings()" class="flex items-center gap-2 group">
+                <div class="size-9 rounded-full bg-cover bg-center border-2 border-transparent group-hover:border-primary transition-all" data-alt="User profile picture of a student smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAtQnOLJpZ-UsH6E0M-Pwa3j5tbQuEa2K5UcyoFSPDLaeLZOCaR6pd7QYA3_usiM6RQUgtVwdWN3Ct6PabOSxI4CSvafcU5D9omVyYVtPrlSI_HkrJmfXLFU-I8_kRKAqqOJ_z-zPx5902KftyNultb0BHoXi6_r8SjUsVT1SqWu2nRUoLmlDZOVhsPe1ZEIEZ77oeWzV-f9qK9kaaGo4t_2GeUbe4MxMLioTEe0l4IlUMw0XebZAbn6gdCiulgIp6pwCnpCJPF");'></div>
+            </button>
+        </div>
+    </header>
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Left Sidebar (Navigation) -->
+        <aside class="w-64 hidden lg:flex flex-col border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark overflow-y-auto p-4 gap-6 shrink-0">
+            <!-- Main Nav -->
+            <nav class="flex flex-col gap-1">
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary dark:text-primary font-medium transition-colors cursor-pointer" onclick="showFeed()" href="javascript:void(0)">
+                    <span class="material-symbols-outlined fill-1">home</span>
+                    <span>Home</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-dark font-medium transition-colors cursor-pointer" onclick="showAuthWall('Explore', 'Discover trending topics and communities.')" href="javascript:void(0)">
+                    <span class="material-symbols-outlined">explore</span>
+                    <span>Explore</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-dark font-medium transition-colors cursor-pointer" onclick="showAuthWall('Saved Items', 'Join to save and organize your study materials.')" href="javascript:void(0)">
+                    <span class="material-symbols-outlined">bookmarks</span>
+                    <span>Saved</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-dark font-medium transition-colors cursor-pointer" onclick="showAuthWall('Resources', 'Access shared notes, PDFs, and guides.')" href="javascript:void(0)">
+                    <span class="material-symbols-outlined">school</span>
+                    <span>Resources</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-dark font-medium transition-colors cursor-pointer" onclick="showAuthWall('Study Groups', 'Join live study sessions with verified students.')" href="javascript:void(0)">
+                    <span class="material-symbols-outlined">groups</span>
+                    <span>Study Groups</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-dark font-medium transition-colors cursor-pointer" onclick="showAuthWall('Leaderboard', 'See who is topping the charts this semester.')" href="javascript:void(0)">
+                    <span class="material-symbols-outlined">leaderboard</span>
+                    <span>Leaderboard</span>
+                </a>
+            </nav>
+            <div class="h-[1px] w-full bg-border-light dark:bg-border-dark"></div>
+            <!-- Communities -->
+            <div class="flex flex-col gap-3">
+                <div class="flex items-center justify-between px-2">
+                    <h3 class="text-xs font-bold text-slate-400 dark:text-[#92c0c9] uppercase tracking-wider">Trending Communities</h3>
+                    <button class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">add</span></button>
+                </div>
+                <a class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-dark group transition-colors" href="#">
+                    <div class="size-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">CS</div>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-primary">Comp Sci 101</span>
+                </a>
+                <a class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-dark group transition-colors" href="#">
+                    <div class="size-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white text-xs font-bold">MA</div>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-primary">Calculus II</span>
+                </a>
+                <a class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-dark group transition-colors" href="#">
+                    <div class="size-8 rounded-lg bg-orange-500 flex items-center justify-center text-white text-xs font-bold">PH</div>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-primary">Physics Lab</span>
+                </a>
+            </div>
+            <button class="mt-auto flex w-full cursor-pointer items-center justify-center rounded-xl h-12 bg-primary text-[#111f22] text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] transition-all">
+                <span class="material-symbols-outlined mr-2">edit_square</span>
+                Create Thread
+            </button>
+        </aside>
+        <!-- Center Feed -->
+        <main class="flex-1 overflow-y-auto relative bg-background-light dark:bg-background-dark">
+            <div class="max-w-[800px] mx-auto p-4 md:p-8 flex flex-col gap-6 min-h-full">
+                <div id="feed-content" class="flex flex-col gap-6 transition-opacity duration-300">
+                    <!-- Welcome Card -->
+                    <div class="relative overflow-hidden rounded-2xl bg-surface-light dark:bg-surface-dark shadow-sm border border-border-light dark:border-border-dark p-6">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                            <div class="flex flex-col gap-2 text-center md:text-left">
+                                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome back, Alex! 👋</h2>
+                                <p class="text-slate-500 dark:text-[#92c0c9]">You're on a <span class="text-primary font-bold">5-day study streak</span>. Keep up the momentum!</p>
+                                <div class="flex gap-2 mt-2 justify-center md:justify-start">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-bold border border-green-500/20">
+                                        <span class="material-symbols-outlined text-[16px]">check_circle</span> 3 Tasks Done
+                                    </span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-bold border border-orange-500/20">
+                                        <span class="material-symbols-outlined text-[16px]">schedule</span> Exam in 2 days
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="shrink-0 relative">
+                                <!-- Abstract decoration -->
+                                <div class="size-24 rounded-full bg-gradient-to-tr from-primary to-purple-500 opacity-20 blur-xl absolute -top-4 -right-4"></div>
+                                <button class="relative z-10 flex items-center justify-center rounded-lg h-10 px-6 bg-slate-900 dark:bg-[#234248] text-white text-sm font-bold hover:bg-slate-800 transition-colors">
+                                    View Stats
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Background decoration -->
+                        <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-primary/5 to-transparent pointer-events-none"></div>
+                    </div>
+                    <!-- Tabs -->
+                    <div class="sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm pt-2 -mx-4 px-4 md:-mx-8 md:px-8 border-b border-border-light dark:border-border-dark">
+                        <div class="flex gap-8">
+                            <a class="flex items-center gap-2 border-b-[3px] border-primary text-slate-900 dark:text-white pb-3 px-2 transition-colors" href="#">
+                                <span class="material-symbols-outlined text-[20px] text-primary">auto_awesome</span>
+                                <p class="text-sm font-bold">For You</p>
+                            </a>
+                            <a class="flex items-center gap-2 border-b-[3px] border-transparent text-slate-500 dark:text-[#92c0c9] hover:text-slate-700 dark:hover:text-white pb-3 px-2 transition-colors" href="#">
+                                <span class="material-symbols-outlined text-[20px]">trending_up</span>
+                                <p class="text-sm font-bold">Trending</p>
+                            </a>
+                            <a class="flex items-center gap-2 border-b-[3px] border-transparent text-slate-500 dark:text-[#92c0c9] hover:text-slate-700 dark:hover:text-white pb-3 px-2 transition-colors" href="#">
+                                <span class="material-symbols-outlined text-[20px]">new_releases</span>
+                                <p class="text-sm font-bold">New</p>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Feed Content -->
+                    <div class="flex flex-col gap-4 pb-10">
+                        <!-- Post Card 1 (Study Group) -->
+                        <article class="flex flex-col rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm hover:border-primary/50 transition-colors">
+                            <div class="p-4 flex gap-4">
+                                <!-- Vote Column -->
+                                <div class="flex flex-col items-center gap-1 pt-1">
+                                    <button class="text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_up</span></button>
+                                    <span class="text-sm font-bold text-slate-700 dark:text-white">42</span>
+                                    <button class="text-slate-400 hover:text-red-400 hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_down</span></button>
+                                </div>
+                                <!-- Content -->
+                                <div class="flex flex-col flex-1 gap-3">
+                                    <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-[#92c0c9]">
+                                        <div class="size-5 rounded bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold">CS</div>
+                                        <span class="font-medium text-slate-700 dark:text-slate-300">Comp Sci 101</span>
+                                        <span>•</span>
+                                        <span>Posted by u/SarahDev</span>
+                                        <span>•</span>
+                                        <span>2h ago</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Late Night Java Coding Session ☕️</h3>
+                                        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                                            Hey everyone! I'm struggling with the recursion assignment. Starting a study room in 10 mins if anyone wants to join and debug together. Beginners welcome!
+                                        </p>
+                                    </div>
+                                    <!-- Live Indicator -->
+                                    <div class="flex items-center gap-4 bg-background-light dark:bg-background-dark p-3 rounded-lg border border-border-light dark:border-border-dark">
+                                        <div class="flex -space-x-2">
+                                            <div class="size-8 rounded-full border-2 border-white dark:border-surface-dark bg-cover bg-center" data-alt="Student 1" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDB0iyc7qjoJhLXONNLiVLe3FHLgwvdg9hqBpzbKR63hBvawL3Qkqlzbv6LDAGHHB-GGHpV2tPAO6-1-r8ce8j2uetHNOOkMf9LBrqAuC-2i9s6M1a6OHVnIYo8vDSjL70dC80MSsXhu_yV7Htqy9O0ToJBhFGI030jxdPrtr3_QwWVIKR6xB5qF_iAlxM1XwFSypiMCk2GTCEIsJuLubuxKtSn4jVaHOPkFfhvJ-HC53DtW9uDe-YuKmiWHf3te7aq6zxQUERT");'></div>
+                                            <div class="size-8 rounded-full border-2 border-white dark:border-surface-dark bg-cover bg-center" data-alt="Student 2" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC3kF2gdoiSKgXZUIIY99xrxaR69VDBpCaAE2h8QRDYOyFob8pnCzPlv3Ywgs1UA_16UrVJCQt1_OGpsXDhWqvUqDEUGhxITrpqGePq3cV4BmjPbUwq7ozkOiQS9etov7eoNaaZD8gYDu12C2mlS6YQD0g3iXzIIG0_lrTUqLV0JUS-Ej0vUlQOrMuze5cPuE3A4jbV8DGW7NIJs2M9yR43V19jyQzV0xr8pMFZ-ERU9vQcjYPDynpAtgmsqizvArzAbK0LUEkO");'></div>
+                                            <div class="size-8 rounded-full border-2 border-white dark:border-surface-dark bg-slate-200 dark:bg-[#234248] flex items-center justify-center text-xs font-bold text-slate-600 dark:text-white">+5</div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-bold text-slate-900 dark:text-white">Live Session Active</p>
+                                            <p class="text-xs text-green-500 font-medium flex items-center gap-1"><span class="size-2 rounded-full bg-green-500 animate-pulse"></span> 7 people online</p>
+                                        </div>
+                                        <button class="bg-primary text-[#111f22] px-4 py-2 rounded-lg text-sm font-bold hover:bg-opacity-90 transition-all">Join Room</button>
+                                    </div>
+                                    <div class="flex items-center gap-4 mt-1">
+                                        <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
+                                            <span class="material-symbols-outlined text-[18px]">chat_bubble</span> 12 Comments
+                                        </button>
+                                        <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
+                                            <span class="material-symbols-outlined text-[18px]">share</span> Share
+                                        </button>
+                                        <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors ml-auto">
+                                            <span class="material-symbols-outlined text-[18px]">bookmark</span> Save
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                        <!-- Post Card 2 (Resource) -->
+                        <article class="flex flex-col rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm hover:border-primary/50 transition-colors">
+                            <div class="p-4 flex gap-4">
+                                <!-- Vote Column -->
+                                <div class="flex flex-col items-center gap-1 pt-1">
+                                    <button class="text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_up</span></button>
+                                    <span class="text-sm font-bold text-slate-700 dark:text-white">128</span>
+                                    <button class="text-slate-400 hover:text-red-400 hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_down</span></button>
+                                </div>
+                                <!-- Content -->
+                                <div class="flex flex-col flex-1 gap-3">
+                                    <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-[#92c0c9]">
+                                        <div class="size-5 rounded bg-emerald-500 flex items-center justify-center text-[10px] text-white font-bold">MA</div>
+                                        <span class="font-medium text-slate-700 dark:text-slate-300">Calculus II</span>
+                                        <span>•</span>
+                                        <span>Posted by u/MathWhiz</span>
+                                        <span>•</span>
+                                        <span>5h ago</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Integration Techniques Cheat Sheet (PDF) 📚</h3>
+                                        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
+                                            Compiled all the major integration formulas and techniques into a single page reference sheet. Hope it helps with the midterm!
+                                        </p>
+                                        <!-- Preview Image -->
+                                        <div class="w-full h-48 rounded-lg bg-cover bg-center border border-border-light dark:border-border-dark" data-alt="Preview of a math formula cheat sheet with calculus equations" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDHV_JMHrhHTMPfIyrsfEjkVY3zcmKs61QWVaSDG4q3WS83etoALUAiSqb6MYGc1PFGDAj8Lj5xRsD2sHQjLeFch_M9aivBhRHSSznif6EKxDMc2ttZXd7YzQL1kCl458yG0KBrVBCWlsx9gB9UthZpVHKGwojDV77vShaXmKrH3BFt3_52dpRn6DujeoMOn9Snmyy3_wheTejC21VhSjxcvSCkk-uUjTt-QqW0cIt7vJaJ-i8wWWH3Hc13kuQehrWBxqKiSxms");'></div>
+                                    </div>
+                                    <!-- Tags -->
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="px-2 py-1 rounded-md bg-slate-100 dark:bg-background-dark text-slate-600 dark:text-[#92c0c9] text-xs font-medium border border-border-light dark:border-border-dark">#Math</span>
+                                        <span class="px-2 py-1 rounded-md bg-slate-100 dark:bg-background-dark text-slate-600 dark:text-[#92c0c9] text-xs font-medium border border-border-light dark:border-border-dark">#MidtermPrep</span>
+                                        <span class="px-2 py-1 rounded-md bg-slate-100 dark:bg-background-dark text-slate-600 dark:text-[#92c0c9] text-xs font-medium border border-border-light dark:border-border-dark">#Resources</span>
+                                    </div>
+                                    <div class="flex items-center gap-4 mt-1">
+                                        <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
+                                            <span class="material-symbols-outlined text-[18px]">chat_bubble</span> 45 Comments
+                                        </button>
+                                        <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
+                                            <span class="material-symbols-outlined text-[18px]">share</span> Share
+                                        </button>
+                                        <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors ml-auto">
+                                            <span class="material-symbols-outlined text-[18px]">download</span> Download PDF
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div> <!-- End feed-content -->
+                <!-- Auth Wall Section -->
+                <div id="auth-wall" class="hidden flex-grow flex flex-col items-center justify-center py-12 text-center animate-fade-in">
+                    <div class="size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-6">
+                        <span class="material-symbols-outlined text-5xl">lock</span>
+                    </div>
+                    <h2 id="auth-title" class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Join the Community</h2>
+                    <p id="auth-message" class="text-lg text-slate-500 dark:text-[#92c0c9] max-w-md mx-auto mb-8">
+                        Connect with classmates, join live study sessions, and access exclusive resources. Create an account to get started.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                        <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-primary text-[#111f22] font-bold text-lg shadow-lg shadow-primary/20 hover:scale-[1.03] transition-all">
+                            Sign Up Free
+                        </a>
+                        <a asp-controller="Auth" asp-action="SignIn" class="inline-flex items-center justify-center px-8 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-surface-dark font-bold transition-all text-slate-700 dark:text-white">
+                            Log In
+                        </a>
+                    </div>
+                </div> <!-- End Auth Wall -->
+                <!-- Settings View -->
+                <div id="settings-view" class="hidden flex-grow flex flex-col gap-8 animate-fade-in p-2">
+                    <div class="flex items-center justify-between border-b border-border-light dark:border-border-dark pb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Settings</h2>
+                            <p class="text-slate-500 dark:text-[#92c0c9]">Manage your account preferences</p>
+                        </div>
+                        <button onclick="showFeed()" class="text-sm font-bold text-primary hover:underline">Done</button>
+                    </div>
+
+                    <div class="flex flex-col gap-6">
+                        <!-- Account Section -->
+                        <section class="flex flex-col gap-4">
+                            <h3 class="text-sm font-bold text-slate-400 dark:text-[#92c0c9] uppercase tracking-wider">Account</h3>
+                            <div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden">
+                                <div class="p-4 flex items-center justify-between border-b border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 rounded-lg bg-indigo-500/10 text-indigo-500">
+                                            <span class="material-symbols-outlined">person</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-slate-900 dark:text-white">Profile Information</span>
+                                            <span class="text-xs text-slate-500 dark:text-slate-400">Name, Bio, Avatar</span>
+                                        </div>
+                                    </div>
+                                    <span class="material-symbols-outlined text-slate-400">chevron_right</span>
+                                </div>
+                                <div class="p-4 flex items-center justify-between border-b border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
+                                            <span class="material-symbols-outlined">mail</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-slate-900 dark:text-white">Email Preferences</span>
+                                            <span class="text-xs text-slate-500 dark:text-slate-400">alex.j@university.edu</span>
+                                        </div>
+                                    </div>
+                                    <span class="material-symbols-outlined text-slate-400">chevron_right</span>
+                                </div>
+                                <div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 rounded-lg bg-orange-500/10 text-orange-500">
+                                            <span class="material-symbols-outlined">lock</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-slate-900 dark:text-white">Password & Security</span>
+                                            <span class="text-xs text-slate-500 dark:text-slate-400">Last changed 3 months ago</span>
+                                        </div>
+                                    </div>
+                                    <span class="material-symbols-outlined text-slate-400">chevron_right</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Appearance Section -->
+                        <section class="flex flex-col gap-4">
+                            <h3 class="text-sm font-bold text-slate-400 dark:text-[#92c0c9] uppercase tracking-wider">Appearance</h3>
+                            <div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden">
+                                <div class="p-4 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 rounded-lg bg-purple-500/10 text-purple-500">
+                                            <span class="material-symbols-outlined">dark_mode</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-slate-900 dark:text-white">Dark Mode</span>
+                                            <span class="text-xs text-slate-500 dark:text-slate-400">Adjust theme settings</span>
+                                        </div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Privacy Section -->
+                        <section class="flex flex-col gap-4">
+                            <h3 class="text-sm font-bold text-slate-400 dark:text-[#92c0c9] uppercase tracking-wider">Privacy</h3>
+                            <div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden">
+                                <div class="p-4 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 rounded-lg bg-blue-500/10 text-blue-500">
+                                            <span class="material-symbols-outlined">visibility</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-slate-900 dark:text-white">Profile Visibility</span>
+                                            <span class="text-xs text-slate-500 dark:text-slate-400">Visible to everyone</span>
+                                        </div>
+                                    </div>
+                                    <select class="bg-transparent text-sm font-bold text-primary border-none focus:ring-0 cursor-pointer text-right">
+                                        <option>Public</option>
+                                        <option>Students Only</option>
+                                        <option>Private</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </section>
+                        <button class="mt-4 p-4 rounded-xl border border-red-500/20 bg-red-500/5 text-red-500 font-bold hover:bg-red-500/10 transition-colors w-full text-left flex items-center justify-between">
+                            <span>Log Out</span>
+                            <span class="material-symbols-outlined">logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Right Sidebar (Activity & Resources) -->
+        <aside class="w-80 hidden xl:flex flex-col border-l border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark overflow-y-auto p-6 gap-8 shrink-0">
+            <!-- Live Study Rooms -->
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">Live Study Rooms 🔴</h3>
+                    <a class="text-xs text-primary font-medium hover:underline" href="#">View All</a>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <div class="group flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-surface-dark border border-border-light dark:border-transparent hover:border-primary/50 cursor-pointer transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <div class="size-10 rounded-lg bg-indigo-500/20 text-indigo-500 flex items-center justify-center">
+                                    <span class="material-symbols-outlined">mic</span>
+                                </div>
+                                <span class="absolute -bottom-1 -right-1 size-3 rounded-full bg-green-500 border-2 border-white dark:border-surface-dark"></span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Physics 101</p>
+                                <p class="text-xs text-slate-500 dark:text-[#92c0c9]">12 listening</p>
+                            </div>
+                        </div>
+                        <button class="opacity-0 group-hover:opacity-100 bg-primary/20 text-primary p-2 rounded-lg transition-all">
+                            <span class="material-symbols-outlined text-[18px]">login</span>
+                        </button>
+                    </div>
+                    <div class="group flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-surface-dark border border-border-light dark:border-transparent hover:border-primary/50 cursor-pointer transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <div class="size-10 rounded-lg bg-pink-500/20 text-pink-500 flex items-center justify-center">
+                                    <span class="material-symbols-outlined">videocam</span>
+                                </div>
+                                <span class="absolute -bottom-1 -right-1 size-3 rounded-full bg-green-500 border-2 border-white dark:border-surface-dark"></span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">History Finals</p>
+                                <p class="text-xs text-slate-500 dark:text-[#92c0c9]">5 watching</p>
+                            </div>
+                        </div>
+                        <button class="opacity-0 group-hover:opacity-100 bg-primary/20 text-primary p-2 rounded-lg transition-all">
+                            <span class="material-symbols-outlined text-[18px]">login</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Top Resources -->
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">Trending Resources 🔥</h3>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <div class="flex gap-3 items-start">
+                        <div class="mt-1 p-2 rounded bg-red-500/10 text-red-500 shrink-0">
+                            <span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <a class="text-sm font-bold text-slate-900 dark:text-white hover:text-primary leading-tight" href="#">Organic Chem Reaction Map</a>
+                            <p class="text-xs text-slate-500 dark:text-[#92c0c9]">PDF • 2.4 MB • 1.2k downloads</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 items-start">
+                        <div class="mt-1 p-2 rounded bg-blue-500/10 text-blue-500 shrink-0">
+                            <span class="material-symbols-outlined text-[20px]">description</span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <a class="text-sm font-bold text-slate-900 dark:text-white hover:text-primary leading-tight" href="#">Macroeconomics Key Terms</a>
+                            <p class="text-xs text-slate-500 dark:text-[#92c0c9]">DOCX • 540 KB • 850 downloads</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 items-start">
+                        <div class="mt-1 p-2 rounded bg-purple-500/10 text-purple-500 shrink-0">
+                            <span class="material-symbols-outlined text-[20px]">link</span>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <a class="text-sm font-bold text-slate-900 dark:text-white hover:text-primary leading-tight" href="#">Interactive Algebra Grapher</a>
+                            <p class="text-xs text-slate-500 dark:text-[#92c0c9]">External Tool</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </aside>
+    </div>
+    <script>
+        function showFeed() {
+            const feed = document.getElementById('feed-content');
+            const auth = document.getElementById('auth-wall');
+
+            if(feed) {
+                feed.classList.remove('hidden');
+                feed.style.opacity = '1';
+            }
+            if(auth) auth.classList.add('hidden');
+            document.getElementById('settings-view')?.classList.add('hidden');
+        }
+
+        function showAuthWall(title, message) {
+            const feed = document.getElementById('feed-content');
+            const auth = document.getElementById('auth-wall');
+            const titleEl = document.getElementById('auth-title');
+            const msgEl = document.getElementById('auth-message');
+
+            if(title && titleEl) titleEl.textContent = title;
+            if(message && msgEl) msgEl.textContent = message;
+
+            if(feed) feed.classList.add('hidden');
+            if(auth) auth.classList.remove('hidden');
+            document.getElementById('settings-view')?.classList.add('hidden');
+        }
+
+        function showSettings() {
+            const feed = document.getElementById('feed-content');
+            const auth = document.getElementById('auth-wall');
+            const settings = document.getElementById('settings-view');
+
+            if(feed) feed.classList.add('hidden');
+            if(auth) auth.classList.add('hidden');
+            if(settings) settings.classList.remove('hidden');
+        }
+
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+            const allDropdowns = ['notif-dropdown', 'dm-dropdown', 'tasks-dropdown'];
+
+            allDropdowns.forEach(d => {
+                if(d !== id) document.getElementById(d)?.classList.add('hidden');
+            });
+
+            if(el) {
+                el.classList.toggle('hidden');
+            }
+        }
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('.relative')) {
+                 const allDropdowns = ['notif-dropdown', 'dm-dropdown', 'tasks-dropdown'];
+                 allDropdowns.forEach(d => {
+                    const el = document.getElementById(d);
+                    if(el) el.classList.add('hidden');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+@model AskNLearn.Application.Features.Auth.Commands.SignUp.SignUpCommand
 @{
     Layout = null;
 }
@@ -5,134 +6,150 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AskNLearn - Sign Up</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
-    <script id="tailwind-config">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
         tailwind.config = {
             darkMode: "class",
             theme: {
-                extend: {
-                    colors: {
-                        "primary": "#34d399", // Neon Mint Green
-                        "primary-hover": "#10b981",
-                        "navy-bg": "#020617", // Deep Navy
-                        "surface-dark": "rgba(15, 23, 42, 0.6)",
-                    },
-                    fontFamily: {
-                        "display": ["Lexend", "sans-serif"]
-                    },
+            extend: {
+                colors: {
+                "primary": "#13c8ec",
+                "background-light": "#f6f8f8",
+                "background-dark": "#101f22",
+                "surface-dark": "#192f33",
+                "surface-light": "#ffffff",
+                "border-dark": "#234248",
+                "border-light": "#e2e8f0",
                 },
+                fontFamily: {
+                "display": ["Lexend", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+            },
             },
         }
     </script>
     <style type="text/tailwindcss">
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #34d399;
-            border-radius: 3px;
-        }
-
-        .glass {
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-        }
-
-        .bg-navy-gradient {
-            background: radial-gradient(circle at top left, #0f172a 0%, #020617 100%);
+        .glass-card {
+             @@apply bg-surface-dark border border-border-dark shadow-2xl;
         }
     </style>
 </head>
-<body class="bg-navy-gradient text-slate-100 font-display min-h-screen flex items-center justify-center relative overflow-hidden">
+
+<body class="min-h-screen flex items-center justify-center relative overflow-hidden bg-background-dark text-white font-display">
+
+    <!-- Background Glow -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-900/20 rounded-full blur-[100px]"></div>
+         <div class="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px]"></div>
     </div>
+
     <main class="relative z-10 w-full max-w-lg px-4 py-12">
-        <div class="glass bg-slate-900/60 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] rounded-3xl p-8 md:p-12 transition-all duration-300">
-            <div class="flex flex-col items-center gap-4 mb-10">
-                
-                <div class="text-center">
-                    <h1 class="text-3xl font-bold text-white tracking-tight">Create your account</h1>
-                    <p class="text-slate-400 mt-2">Join the AskNLearn student community</p>
-                </div>
+        <div class="glass-card rounded-2xl p-8 md:p-12">
+
+            <!-- Header -->
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-bold text-white tracking-tight">
+                    Create your account
+                </h1>
+                <p class="text-slate-400 mt-2">
+                    Join the AskNLearn student community
+                </p>
             </div>
-            <form class="flex flex-col gap-6" asp-controller="Auth" asp-action="SignUp" method="post">
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-slate-300 ml-1 uppercase tracking-wider" for="full-name">Full Name</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">person</span>
-                        </div>
-                        <input class="block w-full py-3.5 pl-11 pr-4 text-sm text-white bg-slate-800/40 border border-slate-700/50 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary placeholder:text-slate-500 transition-all hover:bg-slate-800/60" id="full-name" name="fullName" placeholder="John Doe" required="" type="text" />
-                    </div>
+
+            <!-- FORM -->
+            <form asp-controller="Auth"
+                  asp-action="SignUp"
+                  method="post"
+                  class="flex flex-col gap-6">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-red-500 text-sm"></div>
+
+                <!-- Full Name -->
+                <div>
+                    <label asp-for="FullName"
+                           class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"></label>
+
+                    <input asp-for="FullName"
+                           class="w-full py-3 px-4 text-sm text-white bg-background-dark border border-border-dark rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                           placeholder="John Doe" />
+
+                    <span asp-validation-for="FullName"
+                          class="text-red-500 text-sm mt-1 block"></span>
                 </div>
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-slate-300 ml-1 uppercase tracking-wider" for="email">University Email</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">school</span>
-                        </div>
-                        <input class="block w-full py-3.5 pl-11 pr-4 text-sm text-white bg-slate-800/40 border border-slate-700/50 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary placeholder:text-slate-500 transition-all hover:bg-slate-800/60" id="email" name="email" placeholder="student@university.edu" required="" type="email" />
-                    </div>
+
+                <!-- Email -->
+                <div>
+                    <label asp-for="Email"
+                           class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"></label>
+
+                    <input asp-for="Email"
+                           type="email"
+                           class="w-full py-3 px-4 text-sm text-white bg-background-dark border border-border-dark rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                           placeholder="student@university.edu" />
+
+                    <span asp-validation-for="Email"
+                          class="text-red-500 text-sm mt-1 block"></span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-1.5">
-                        <label class="block text-xs font-bold text-slate-300 ml-1 uppercase tracking-wider" for="password">Password</label>
-                        <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
-                                <span class="material-symbols-outlined text-[20px]">lock</span>
-                            </div>
-                            <input class="block w-full py-3.5 pl-11 pr-4 text-sm text-white bg-slate-800/40 border border-slate-700/50 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary placeholder:text-slate-500 transition-all hover:bg-slate-800/60" id="password" name="password" placeholder="••••••••" required="" type="password" />
-                        </div>
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="block text-xs font-bold text-slate-300 ml-1 uppercase tracking-wider" for="confirm-password">Confirm Password</label>
-                        <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
-                                <span class="material-symbols-outlined text-[20px]">verified_user</span>
-                            </div>
-                            <input class="block w-full py-3.5 pl-11 pr-4 text-sm text-white bg-slate-800/40 border border-slate-700/50 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary placeholder:text-slate-500 transition-all hover:bg-slate-800/60" id="confirm-password" name="confirmPassword" placeholder="••••••••" required="" type="password" />
-                        </div>
-                    </div>
+
+                <!-- Password -->
+                <div>
+                    <label asp-for="Password"
+                           class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"></label>
+
+                    <input asp-for="Password"
+                           type="password"
+                           class="w-full py-3 px-4 text-sm text-white bg-background-dark border border-border-dark rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                           placeholder="••••••••" />
+
+                    <span asp-validation-for="Password"
+                          class="text-red-500 text-sm mt-1 block"></span>
                 </div>
-                <div class="flex items-start mt-2">
-                    <input class="mt-1 size-4 text-primary bg-slate-800/50 border-slate-600 rounded focus:ring-primary focus:ring-offset-0 cursor-pointer" id="terms" name="terms" required="" type="checkbox" />
-                    <label class="ml-3 block text-sm text-slate-400 cursor-pointer select-none leading-relaxed" for="terms">
-                        I agree to the <a class="text-primary hover:underline" href="#">Terms of Service</a> and <a class="text-primary hover:underline" href="#">Privacy Policy</a>
-                    </label>
+
+                <!-- Confirm Password -->
+                <div>
+                    <label asp-for="ConfirmPassword"
+                           class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"></label>
+
+                    <input asp-for="ConfirmPassword"
+                           type="password"
+                           class="w-full py-3 px-4 text-sm text-white bg-background-dark border border-border-dark rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                           placeholder="••••••••" />
+
+                    <span asp-validation-for="ConfirmPassword"
+                          class="text-red-500 text-sm mt-1 block"></span>
                 </div>
-                <button class="mt-4 w-full flex items-center justify-center py-4 px-6 rounded-full text-navy-bg font-bold text-base bg-primary hover:bg-primary-hover shadow-[0_0_20px_rgba(52,211,153,0.3)] hover:shadow-[0_0_30px_rgba(52,211,153,0.5)] transform hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 border border-white/10" type="submit">
+
+                <!-- Submit -->
+                <button type="submit"
+                        class="mt-4 w-full py-4 rounded-xl font-bold text-background-dark bg-primary hover:bg-[#0fb0d1] transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg">
                     Create Account
-                    <span class="material-symbols-outlined ml-2 text-[20px]">person_add</span>
                 </button>
             </form>
-            <div class="relative mt-10">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-slate-700/50"></div>
-                </div>
-                <div class="relative flex justify-center text-xs">
-                    <span class="px-3 bg-slate-900/0 text-slate-500 font-medium">Already a member?</span>
-                </div>
-            </div>
-            <div class="text-center mt-6">
-                <a class="inline-flex items-center justify-center text-primary font-bold hover:text-primary-hover transition-colors group" href="@Url.Action("SignIn", "Auth")">
+
+            <!-- Footer -->
+            <div class="mt-8 pt-8 border-t border-border-dark text-center text-sm text-slate-400">
+                Already have an account?
+                <a href="@Url.Action("SignIn", "Auth")"
+                   class="text-primary hover:text-white font-semibold ml-1 transition-colors">
                     Sign In
-                    <span class="material-symbols-outlined ml-1 text-[18px] group-hover:translate-x-1 transition-transform">chevron_right</span>
                 </a>
             </div>
+
         </div>
-        
     </main>
+
+    <!-- Client Validation Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
 </body>
 </html>
