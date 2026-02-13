@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>@ViewData["Title"] - AskNLearn</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+            extend: {
+                colors: {
+                "primary": "#13c8ec",
+                "background-light": "#f6f8f8",
+                "background-dark": "#101f22",
+                "surface-dark": "#192f33",
+                "surface-light": "#ffffff",
+                "border-dark": "#234248",
+                "border-light": "#e2e8f0",
+                },
+                fontFamily: {
+                "display": ["Lexend", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+            },
+            },
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for better aesthetic */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #234248;
+            border-radius: 3px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #234248;
+        }
+
+        .light ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex flex-col transition-colors duration-200">
+    <!-- Top Navigation Bar -->
+    <header class="h-16 flex items-center justify-between px-6 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark z-50 shrink-0">
+        <!-- Logo Area -->
+        <div class="flex items-center gap-8 w-64">
+            <a asp-controller="Home" asp-action="Index" class="flex items-center gap-3 text-slate-900 dark:text-white cursor-pointer hover:opacity-80 transition-opacity">
+                <h1 class="text-xl font-bold tracking-tight">AskNLearn</h1>
+            </a>
+        </div>
+        <!-- Search Bar -->
+        <div class="flex-1 max-w-2xl px-4">
+            <label class="relative group">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                    <span class="material-symbols-outlined text-slate-400 dark:text-[#92c0c9]">search</span>
+                </div>
+                <input class="block w-full p-2.5 pl-12 text-sm text-slate-900 dark:text-white bg-slate-100 dark:bg-surface-dark border-transparent rounded-xl focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-[#1f3a40] transition-all placeholder:text-slate-400 dark:placeholder:text-[#5f8a93]" placeholder="Search for study groups, notes, or topics..." type="text" />
+            </label>
+        </div>
+        <!-- Right Actions -->
+        <div class="flex items-center justify-end gap-4 w-auto md:w-64">
+             @if (User.Identity.IsAuthenticated)
+            {
+                <!-- Tasks -->
+                <div class="relative">
+                    <button onclick="toggleDropdown('tasks-dropdown')" class="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-[#92c0c9] dark:hover:bg-surface-dark transition-colors">
+                        <span class="material-symbols-outlined">task_alt</span>
+                    </button>
+                    <!-- Tasks Dropdown (Placeholder content) -->
+                    <div id="tasks-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xl z-50 overflow-hidden animate-fade-in">
+                        <div class="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
+                            <h4 class="font-bold text-slate-900 dark:text-white text-sm">My Tasks</h4>
+                            <span class="text-xs text-primary font-medium cursor-pointer">View all</span>
+                        </div>
+                        <div class="p-4 text-center text-sm text-slate-500">No pending tasks</div>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="relative">
+                    <button onclick="toggleDropdown('notif-dropdown')" class="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-[#92c0c9] dark:hover:bg-surface-dark transition-colors">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                    <!-- Notification Dropdown -->
+                     <div id="notif-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xl z-50 overflow-hidden animate-fade-in">
+                        <div class="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
+                            <h4 class="font-bold text-slate-900 dark:text-white text-sm">Notifications</h4>
+                        </div>
+                         <div class="p-8 text-center flex flex-col items-center gap-3">
+                            <div class="size-12 rounded-full bg-slate-100 dark:bg-background-dark flex items-center justify-center text-slate-400 dark:text-slate-500">
+                                <span class="material-symbols-outlined text-2xl">notifications_off</span>
+                            </div>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">No new notifications</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DMs -->
+                <div class="relative">
+                    <button onclick="toggleDropdown('dm-dropdown')" class="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-[#92c0c9] dark:hover:bg-surface-dark transition-colors">
+                        <span class="material-symbols-outlined">chat_bubble</span>
+                    </button>
+                    <!-- DM Dropdown -->
+                     <div id="dm-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xl z-50 overflow-hidden animate-fade-in">
+                        <div class="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
+                            <h4 class="font-bold text-slate-900 dark:text-white text-sm">Messages</h4>
+                        </div>
+                        <div class="p-8 text-center flex flex-col items-center gap-3">
+                            <div class="size-12 rounded-full bg-slate-100 dark:bg-background-dark flex items-center justify-center text-slate-400 dark:text-slate-500">
+                                <span class="material-symbols-outlined text-2xl">chat_bubble_outline</span>
+                            </div>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">No new messages</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-8 w-[1px] bg-border-light dark:bg-border-dark mx-1"></div>
+                
+                <!-- Profile Link -->
+                <a asp-controller="Profile" asp-action="Index" class="flex items-center gap-2 group">
+                    <div class="size-9 rounded-full bg-cover bg-center border-2 border-transparent group-hover:border-primary transition-all bg-surface-dark flex items-center justify-center text-slate-400">
+                        <span class="material-symbols-outlined text-sm">person</span>
+                    </div>
+                </a>
+            }
+            else
+            {
+                 <div class="flex items-center gap-3">
+                    <a asp-controller="Auth" asp-action="SignIn" class="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">Log In</a>
+                    <a asp-controller="Auth" asp-action="SignUp" class="px-4 py-2 rounded-lg bg-primary text-[#111f22] text-sm font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20">Sign Up</a>
+                </div>
+            }
+        </div>
+    </header>
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Left Sidebar (Navigation) -->
+        <aside class="w-64 hidden lg:flex flex-col border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark overflow-y-auto p-4 gap-6 shrink-0">
+            <!-- Main Nav -->
+            <nav class="flex flex-col gap-1">
+                @if (User.Identity.IsAuthenticated)
+                {
+                     <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "Home" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="Home" asp-action="Index">
+                        <div class="size-8 rounded-lg bg-blue-500/10 text-blue-500 dark:text-blue-400 group-hover:bg-blue-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px] @(ViewData["ActivePage"] as string == "Home" ? "fill-1" : "")">home</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Home</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "Explore" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="Explore" asp-action="Index">
+                        <div class="size-8 rounded-lg bg-purple-500/10 text-purple-500 dark:text-purple-400 group-hover:bg-purple-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">explore</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Explore</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "Saved" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="Saved" asp-action="Index">
+                        <div class="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 group-hover:bg-emerald-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">bookmarks</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Saved</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "Resources" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="Resources" asp-action="Index">
+                         <div class="size-8 rounded-lg bg-amber-500/10 text-amber-500 dark:text-amber-400 group-hover:bg-amber-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">school</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Resources</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "StudyGroups" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="StudyGroups" asp-action="Index">
+                        <div class="size-8 rounded-lg bg-pink-500/10 text-pink-500 dark:text-pink-400 group-hover:bg-pink-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">groups</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Study Groups</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "Leaderboard" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="Leaderboard" asp-action="Index">
+                         <div class="size-8 rounded-lg bg-orange-500/10 text-orange-500 dark:text-orange-400 group-hover:bg-orange-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">leaderboard</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Leaderboard</span>
+                    </a>
+                }
+                else
+                {
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showFeed()" href="javascript:void(0)">
+                        <div class="size-8 rounded-lg bg-blue-500/10 text-blue-500 dark:text-blue-400 group-hover:bg-blue-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px] fill-1">home</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Home</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showAuthWall('Explore', 'Discover trending topics and communities.')" href="javascript:void(0)">
+                         <div class="size-8 rounded-lg bg-purple-500/10 text-purple-500 dark:text-purple-400 group-hover:bg-purple-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">explore</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Explore</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showAuthWall('Saved Items', 'Join to save and organize your study materials.')" href="javascript:void(0)">
+                         <div class="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 group-hover:bg-emerald-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">bookmarks</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Saved</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showAuthWall('Resources', 'Access shared notes, PDFs, and guides.')" href="javascript:void(0)">
+                         <div class="size-8 rounded-lg bg-amber-500/10 text-amber-500 dark:text-amber-400 group-hover:bg-amber-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">school</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Resources</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showAuthWall('Study Groups', 'Join live study sessions with verified students.')" href="javascript:void(0)">
+                         <div class="size-8 rounded-lg bg-pink-500/10 text-pink-500 dark:text-pink-400 group-hover:bg-pink-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">groups</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Study Groups</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showAuthWall('Leaderboard', 'See who is topping the charts this semester.')" href="javascript:void(0)">
+                         <div class="size-8 rounded-lg bg-orange-500/10 text-orange-500 dark:text-orange-400 group-hover:bg-orange-500/20 flex items-center justify-center transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">leaderboard</span>
+                        </div>
+                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Leaderboard</span>
+                    </a>
+                }
+            </nav>
+            <div class="h-[1px] w-full bg-border-light dark:bg-border-dark"></div>
+            <!-- Communities (Static for now) -->
+            <div class="flex flex-col gap-3">
+                <div class="flex items-center justify-between px-2">
+                    <h3 class="text-xs font-bold text-slate-400 dark:text-[#92c0c9] uppercase tracking-wider">Trending Communities</h3>
+                    <button class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">add</span></button>
+                </div>
+                <!-- Placeholder communities -->
+                 <a class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-dark group transition-colors" href="#">
+                    <div class="size-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">CS</div>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-primary">Comp Sci 101</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Center Feed -->
+        <main class="flex-1 overflow-y-auto relative bg-background-light dark:bg-background-dark">
+            @RenderBody()
+        </main>
+
+        <!-- Right Sidebar (Activity & Resources) -->
+        <aside class="w-80 hidden xl:flex flex-col border-l border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark overflow-y-auto p-6 gap-8 shrink-0">
+             <!-- Live Study Rooms -->
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">Live Study Rooms 🔴</h3>
+                    <a class="text-xs text-primary font-medium hover:underline" href="#">View All</a>
+                </div>
+                <!-- Placeholders -->
+                 <div class="group flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-surface-dark border border-border-light dark:border-transparent hover:border-primary/50 cursor-pointer transition-all">
+                    <div class="flex items-center gap-3">
+                        <div class="relative">
+                            <div class="size-10 rounded-lg bg-indigo-500/20 text-indigo-500 flex items-center justify-center">
+                                <span class="material-symbols-outlined">mic</span>
+                            </div>
+                            <span class="absolute -bottom-1 -right-1 size-3 rounded-full bg-green-500 border-2 border-white dark:border-surface-dark"></span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Physics 101</p>
+                            <p class="text-xs text-slate-500 dark:text-[#92c0c9]">12 listening</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+            const allDropdowns = ['notif-dropdown', 'dm-dropdown', 'tasks-dropdown'];
+            
+            allDropdowns.forEach(d => {
+                if(d !== id) document.getElementById(d)?.classList.add('hidden');
+            });
+
+            if(el) {
+                el.classList.toggle('hidden');
+            }
+        }
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('.relative')) {
+                 const allDropdowns = ['notif-dropdown', 'dm-dropdown', 'tasks-dropdown'];
+                 allDropdowns.forEach(d => {
+                    const el = document.getElementById(d);
+                    if(el) el.classList.add('hidden');
+                });
+            }
+        });
+        
+        // Only needed for Guest view interactions
+         function showFeed() {
+            const feed = document.getElementById('feed-content');
+            const auth = document.getElementById('auth-wall');
+            
+            if(feed) {
+                feed.classList.remove('hidden');
+                feed.style.opacity = '1';
+            }
+            if(auth) auth.classList.add('hidden');
+        }
+
+        function showAuthWall(title, message) {
+            const feed = document.getElementById('feed-content');
+            const auth = document.getElementById('auth-wall');
+            const titleEl = document.getElementById('auth-title');
+            const msgEl = document.getElementById('auth-message');
+
+            if(title && titleEl) titleEl.textContent = title;
+            if(message && msgEl) msgEl.textContent = message;
+
+            if(feed) feed.classList.add('hidden');
+            if(auth) auth.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

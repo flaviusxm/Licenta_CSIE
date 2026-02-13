@@ -1,114 +1,189 @@
 ﻿@{
+    Layout = "_DashboardLayout";
+    ViewData["ActivePage"] = "Home";
     ViewData["Title"] = "Home";
 }
 
-<div class="py-5">
-    <div class="container" style="max-width: 1100px;">
-
-        <div class="text-center mb-5 pt-4">
-            <div class="d-inline-flex align-items-center justify-content-center mb-3">
-                <svg class="me-3" xmlns="http://www.w3.org/2000/svg" width="48" height="48"
-                     viewBox="0 0 24 24" fill="none" stroke="#2dd4bf"
-                     stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
-                     style="filter: drop-shadow(0 0 10px rgba(45,212,191,0.5));">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                </svg>
-                <h1 class="display-3 brand-title mb-0">AskNLearn</h1>
+<div class="max-w-[800px] mx-auto p-4 md:p-8 flex flex-col gap-6 min-h-full">
+    <div id="feed-content" class="flex flex-col gap-6 transition-opacity duration-300">
+        @if (User.Identity.IsAuthenticated)
+        {
+            <!-- Welcome Card (Authenticated) -->
+            <div class="relative overflow-hidden rounded-2xl bg-surface-light dark:bg-surface-dark shadow-sm border border-border-light dark:border-border-dark p-6">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                    <div class="flex flex-col gap-2 text-center md:text-left">
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome back! 👋</h2>
+                        <p class="text-slate-500 dark:text-[#92c0c9]">You're on a <span class="text-primary font-bold">5-day study streak</span>. Keep up the momentum!</p>
+                        <div class="flex gap-2 mt-2 justify-center md:justify-start">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-bold border border-green-500/20">
+                                <span class="material-symbols-outlined text-[16px]">check_circle</span> 3 Tasks Done
+                            </span>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-bold border border-orange-500/20">
+                                <span class="material-symbols-outlined text-[16px]">schedule</span> Exam in 2 days
+                            </span>
+                        </div>
+                    </div>
+                    <div class="shrink-0 relative">
+                        <div class="size-24 rounded-full bg-gradient-to-tr from-primary to-purple-500 opacity-20 blur-xl absolute -top-4 -right-4"></div>
+                        <button class="relative z-10 flex items-center justify-center rounded-lg h-10 px-6 bg-slate-900 dark:bg-[#234248] text-white text-sm font-bold hover:bg-slate-800 transition-colors">
+                            View Stats
+                        </button>
+                    </div>
+                </div>
+                <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-primary/5 to-transparent pointer-events-none"></div>
             </div>
+        }
+        else
+        {
+            <!-- Hero Card (Guest) -->
+             <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-surface-light to-slate-100 dark:from-surface-dark dark:to-background-dark shadow-lg border border-border-light dark:border-border-dark p-8 md:p-10 text-center md:text-left">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                    <div class="flex flex-col gap-4 max-w-lg">
+                        <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight">
+                            Master your studies with <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-cyan-400">AskNLearn</span>
+                        </h1>
+                        <p class="text-lg text-slate-600 dark:text-slate-300">
+                            Join thousands of students collaborating in live study rooms, sharing resources, and helping each other succeed.
+                        </p>
+                        <div class="flex gap-4 justify-center md:justify-start mt-2">
+                             <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-primary text-[#111f22] font-bold shadow-lg shadow-primary/20 hover:scale-[1.03] transition-all">
+                                Get Started Free
+                            </a>
+                             <a asp-controller="Auth" asp-action="SignIn" class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-white dark:hover:bg-white/5 font-bold transition-all text-slate-700 dark:text-white">
+                                Log In
+                            </a>
+                        </div>
+                    </div>
+                     <!-- Decorative Icon -->
+                    <div class="hidden md:block shrink-0 relative">
+                         <div class="absolute inset-0 bg-primary/20 blur-3xl rounded-full"></div>
+                         <span class="material-symbols-outlined text-[120px] text-slate-900 dark:text-white relative z-10 drop-shadow-2xl">school</span>
+                    </div>
+                </div>
+            </div>
+        }
 
-            <p class="lead text-muted-light mx-auto px-3"
-               style="max-width: 650px; font-weight: 600;">
-                Connect with students, join study groups, and access shared resources
-                in a modern collaborative environment.
-            </p>
+        <!-- Feed Tabs -->
+        <div class="sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm pt-2 -mx-4 px-4 md:-mx-8 md:px-8 border-b border-border-light dark:border-border-dark">
+            <div class="flex gap-8">
+                <a class="flex items-center gap-2 border-b-[3px] border-primary text-slate-900 dark:text-white pb-3 px-2 transition-colors" href="#">
+                    <span class="material-symbols-outlined text-[20px] text-primary">auto_awesome</span>
+                    <p class="text-sm font-bold">For You</p>
+                </a>
+                <a class="flex items-center gap-2 border-b-[3px] border-transparent text-slate-500 dark:text-[#92c0c9] hover:text-slate-700 dark:hover:text-white pb-3 px-2 transition-colors" href="#">
+                    <span class="material-symbols-outlined text-[20px]">trending_up</span>
+                    <p class="text-sm font-bold">Trending</p>
+                </a>
+                <a class="flex items-center gap-2 border-b-[3px] border-transparent text-slate-500 dark:text-[#92c0c9] hover:text-slate-700 dark:hover:text-white pb-3 px-2 transition-colors" href="#">
+                    <span class="material-symbols-outlined text-[20px]">new_releases</span>
+                    <p class="text-sm font-bold">New</p>
+                </a>
+            </div>
         </div>
-
-        <div class="row g-4 justify-content-center">
-
-            <!-- STUDY GROUPS -->
-            <div class="col-lg-6">
-                <div class="glass-panel h-100 p-5 position-relative overflow-hidden">
-                    <div style="position:absolute; top:-20px; right:-20px; opacity:.05;
-                    font-size:150px; transform:rotate(15deg); color:white;">
-                        🎓
+        
+        <!-- Feed Content -->
+        <div class="flex flex-col gap-4 pb-10">
+            <!-- Example Post 1 -->
+            <article class="flex flex-col rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm hover:border-primary/50 transition-colors">
+                <div class="p-4 flex gap-4">
+                    <div class="flex flex-col items-center gap-1 pt-1">
+                        <button class="text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_up</span></button>
+                        <span class="text-sm font-bold text-slate-700 dark:text-white">42</span>
+                        <button class="text-slate-400 hover:text-red-400 hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_down</span></button>
                     </div>
-
-                    <div class="d-flex flex-column h-100 align-items-start text-start position-relative" style="z-index:2;">
-
-                        <div class="flex-grow-1">
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <div class="icon-box icon-study">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg>
-                                </div>
-                                <h3 class="h2 fw-bold text-white mb-0">Study Groups</h3>
-                            </div>
-
-                            <p class="text-muted-light mb-0" style="font-size:1.1rem; line-height:1.6;">
-                                Find your squad and study with people who share your goals.
-                                Collaborate on projects, exchange notes, and prepare for exams
-                                together using
-                                <span style="color:#3b82f6; font-weight:700;">shared resources</span>
-                                built by students.
+                    <div class="flex flex-col flex-1 gap-3">
+                        <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-[#92c0c9]">
+                            <div class="size-5 rounded bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold">CS</div>
+                            <span class="font-medium text-slate-700 dark:text-slate-300">Comp Sci 101</span>
+                            <span>•</span>
+                            <span>Posted by u/SarahDev</span>
+                            <span>•</span>
+                            <span>2h ago</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Late Night Java Coding Session ☕️</h3>
+                            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                                Hey everyone! I'm struggling with the recursion assignment. Starting a study room in 10 mins if anyone wants to join and debug together. Beginners welcome!
                             </p>
                         </div>
-
-                        <a href="#" class="btn btn-mint w-100 py-3 rounded-4 mt-auto">
-                            Find a Group →
-                        </a>
+                         @if (!User.Identity.IsAuthenticated)
+                        {
+                             <div class="flex items-center gap-4 bg-background-light dark:bg-background-dark p-3 rounded-lg border border-border-light dark:border-border-dark mt-2">
+                                <span class="material-symbols-outlined text-primary">lock</span>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-slate-900 dark:text-white">Join to enable live collaboration</p>
+                                </div>
+                            </div>
+                        }
+                        
+                        <div class="flex items-center gap-4 mt-1">
+                            <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">chat_bubble</span> 12 Comments
+                            </button>
+                            <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">share</span> Share
+                            </button>
+                            <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors ml-auto">
+                                <span class="material-symbols-outlined text-[18px]">bookmark</span> Save
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </article>
 
-
-            <div class="col-lg-6">
-                <div class="glass-panel h-100 p-5 position-relative overflow-hidden">
-                    <div style="position:absolute; bottom:-20px; right:-20px; opacity:.05;
-                    font-size:150px; transform:rotate(-10deg); color:white;">
-                        💬
+             <!-- Example Post 2 -->
+             <article class="flex flex-col rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm hover:border-primary/50 transition-colors">
+                <div class="p-4 flex gap-4">
+                     <div class="flex flex-col items-center gap-1 pt-1">
+                        <button class="text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_up</span></button>
+                        <span class="text-sm font-bold text-slate-700 dark:text-white">15</span>
+                        <button class="text-slate-400 hover:text-red-400 hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_down</span></button>
                     </div>
-
-                    <div class="d-flex flex-column h-100 align-items-start text-start position-relative" style="z-index:2;">
-
-                        <div class="flex-grow-1">
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <div class="icon-box icon-community">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                                        <path d="M12 2a15.3 15.3 0 0 1 4 10
-                                             15.3 15.3 0 0 1-4 10
-                                             15.3 15.3 0 0 1-4-10
-                                             15.3 15.3 0 0 1 4-10z"></path>
-                                    </svg>
-                                </div>
-                                <h3 class="h2 fw-bold text-white mb-0">Communities</h3>
-                            </div>
-
-                            <p class="text-muted-light mb-0" style="font-size:1.1rem; line-height:1.6;">
-                                Join open discussions and connect with learners across topics.
-                                Ask questions, share insights, and explore
-                                <span style="color:#f472b6; font-weight:700;">community wikis</span>
-                                curated by members to help everyone learn faster.
+                     <div class="flex flex-col flex-1 gap-3">
+                         <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-[#92c0c9]">
+                            <div class="size-5 rounded bg-emerald-500 flex items-center justify-center text-[10px] text-white font-bold">MA</div>
+                            <span class="font-medium text-slate-700 dark:text-slate-300">Calculus II</span>
+                            <span>•</span>
+                            <span>Posted by u/MathWhiz</span>
+                            <span>•</span>
+                            <span>5h ago</span>
+                        </div>
+                        <div>
+                             <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Integration Techniques Cheat Sheet (PDF) 📚</h3>
+                            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
+                                Compiled all the major integration formulas and techniques into a single page reference sheet.
                             </p>
                         </div>
-
-                        <a asp-controller="Guest" asp-action="Index" class="btn btn-mint w-100 py-3 rounded-4 mt-auto">
-                            Explore Communities
-                        </a>
-                    </div>
+                        <div class="flex items-center gap-4 mt-1">
+                            <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">chat_bubble</span> 8 Comments
+                            </button>
+                            <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">share</span> Share
+                            </button>
+                        </div>
+                     </div>
                 </div>
-            </div>
+             </article>
+        </div>
+    </div> 
 
-        </div> <!-- End Row -->
-    </div> <!-- End Container -->
-</div> <!-- End Py-5 -->
+    <!-- Auth Wall Section -->
+    <div id="auth-wall" class="hidden flex-grow flex flex-col items-center justify-center py-12 text-center animate-fade-in">
+        <div class="size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-6">
+            <span class="material-symbols-outlined text-5xl">lock</span>
+        </div>
+        <h2 id="auth-title" class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Join the Community</h2>
+        <p id="auth-message" class="text-lg text-slate-500 dark:text-[#92c0c9] max-w-md mx-auto mb-8">
+            Connect with classmates, join live study sessions, and access exclusive resources. Create an account to get started.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
+            <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-primary text-[#111f22] font-bold text-lg shadow-lg shadow-primary/20 hover:scale-[1.03] transition-all">
+                Sign Up Free
+            </a>
+            <a asp-controller="Auth" asp-action="SignIn" class="inline-flex items-center justify-center px-8 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-surface-dark font-bold transition-all text-slate-700 dark:text-white">
+                Log In
+            </a>
+        </div>
+    </div>
+</div>

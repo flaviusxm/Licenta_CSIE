@@ -1,0 +1,84 @@
+@model AskNLearn.Application.Features.Users.Queries.GetUserProfile.UserProfileDto
+
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="max-w-[800px] mx-auto p-4 md:p-8 flex flex-col gap-8 min-h-full animate-fade-in">
+    <!-- Header Section -->
+    <div class="flex items-center justify-between border-b border-border-light dark:border-border-dark pb-4">
+        <div>
+             <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Profile</h2>
+             <p class="text-slate-500 dark:text-[#92c0c9]">Manage your account and view your stats.</p>
+        </div>
+        
+    </div>
+
+    <div class="flex flex-col gap-6">
+        <!-- Profile Card -->
+        <section class="flex flex-col gap-4">
+            <h3 class="text-sm font-bold text-slate-400 dark:text-[#92c0c9] uppercase tracking-wider">Information</h3>
+            <div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden p-6 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
+                
+                <div class="size-24 rounded-full bg-cover bg-center border-4 border-slate-100 dark:border-border-dark shadow-xl" style="background-image: url('@Model.AvatarUrl');"></div>
+                
+                <div class="flex flex-col gap-2 flex-grow">
+                     <h1 class="text-3xl font-bold text-slate-900 dark:text-white">@Model.FullName</h1>
+                     <p class="text-slate-500 dark:text-slate-400">@Model.Email</p>
+                     
+                     @if(!string.IsNullOrEmpty(Model.Bio))
+                     {
+                        <p class="text-slate-600 dark:text-slate-300 mt-2 italic">"@Model.Bio"</p>
+                     }
+                     else
+                     {
+                         <p class="text-slate-400 dark:text-slate-500 mt-2 italic">No bio set.</p>
+                     }
+
+                    <div class="flex gap-4 mt-4 justify-center md:justify-start">
+                         <div class="flex items-center gap-2 px-3 py-1 rounded bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20">
+                            <span class="material-symbols-outlined text-sm">star</span>
+                            <span class="font-bold text-sm">@Model.ReputationPoints Reputation</span>
+                        </div>
+                        <div class="flex items-center gap-2 px-3 py-1 rounded bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20">
+                            <span class="material-symbols-outlined text-sm">calendar_month</span>
+                            <span class="font-bold text-sm">Joined @Model.CreatedAt.ToString("MMM yyyy")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="#" class="px-6 py-2 rounded-lg bg-slate-100 dark:bg-border-dark text-slate-700 dark:text-white font-bold hover:bg-slate-200 dark:hover:bg-[#234248] transition-colors">
+                    Edit Profile
+                </a>
+            </div>
+        </section>
+
+        <!-- Stats Grid (Placeholder) -->
+         <section class="flex flex-col gap-4">
+            <h3 class="text-sm font-bold text-slate-400 dark:text-[#92c0c9] uppercase tracking-wider">Activity Stats</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col items-center gap-2">
+                    <span class="text-4xl font-bold text-primary">0</span>
+                    <span class="text-sm font-bold text-slate-500 dark:text-slate-400">Study Hours</span>
+                </div>
+                 <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col items-center gap-2">
+                    <span class="text-4xl font-bold text-green-500">0</span>
+                    <span class="text-sm font-bold text-slate-500 dark:text-slate-400">Questions Answered</span>
+                </div>
+                 <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark flex flex-col items-center gap-2">
+                    <span class="text-4xl font-bold text-orange-500">0</span>
+                    <span class="text-sm font-bold text-slate-500 dark:text-slate-400">Communities Joined</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Log Out Button -->
+         <form asp-controller="Auth" asp-action="SignOut" method="post" class="mt-8">
+            <button type="submit" class="w-full p-4 rounded-xl border border-red-500/20 bg-red-500/5 text-red-500 font-bold hover:bg-red-500/10 transition-colors flex items-center justify-between group">
+                <span>Log Out</span>
+                <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">logout</span>
+            </button>
+        </form>
+    </div>
+</div>
