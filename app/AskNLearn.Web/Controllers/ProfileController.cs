@@ -33,5 +33,36 @@ namespace AskNLearn.Web.Controllers
 
             return View(profile);
         }
+        [HttpPost]
+        public async Task<IActionResult> Update(AskNLearn.Application.Features.Users.Commands.UpdateUserProfile.UpdateUserProfileCommand command)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("SignIn", "Auth");
+            }
+
+            command.Id = userId;
+
+            if (!ModelState.IsValid)
+            {
+               
+                return RedirectToAction("Index"); 
+            }
+
+            var errors = await _mediator.Send(command);
+
+            if (errors.Count > 0)
+            {
+                foreach (var error in errors)
+                {
+                    ModelState.AddModelError(string.Empty, error);
+                }
+                var profile = await _mediator.Send(new GetUserProfileQuery { UserId = userId });
+                return View("Index", profile);
+            }
+
+            return RedirectToAction("Index");
+        }
     }
 }
