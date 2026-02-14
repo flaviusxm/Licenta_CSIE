@@ -1,6 +1,153 @@
-﻿namespace AskNLearn.Web.Views.Explore
-{
-    public class Index
-    {
-    }
+﻿
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Explore Communities";
 }
+
+<div class="p-8 flex flex-col gap-8 pb-20">
+    
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Explore Communities</h2>
+            <p class="text-slate-500 dark:text-slate-400">Discover study groups and forums tailored to your curriculum.</p>
+        </div>
+        <div class="flex gap-3">
+             <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-background-dark font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20">
+                <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                Create New Forum
+            </button>
+        </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1 relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <input class="w-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl py-3 pl-12 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white placeholder:text-slate-400" placeholder="Search for a specific forum..." type="text"/>
+        </div>
+        <div class="flex gap-2">
+            <select class="bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-slate-700 dark:text-slate-300 cursor-pointer">
+                <option>All Categories</option>
+                <option>Engineering</option>
+                <option>Medicine</option>
+                <option>Humanities</option>
+                <option>Arts</option>
+            </select>
+             <button class="bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl px-4 flex items-center justify-center hover:border-primary text-slate-500 dark:text-slate-400 transition-colors">
+                <span class="material-symbols-outlined">filter_list</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Forum List -->
+    <div class="flex flex-col gap-6">
+        
+        <!-- Forum Card 1 -->
+        <div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-6 border border-border-light dark:border-border-dark hover:border-primary/50 transition-all group flex flex-col md:flex-row gap-6 items-start md:items-center shadow-sm">
+            <div class="flex justify-between items-start md:items-center w-full md:w-auto gap-4">
+                <div class="size-16 rounded-2xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-3xl">code</span>
+                </div>
+                <div class="flex flex-col md:hidden">
+                    <span class="px-2 py-1 rounded-md bg-green-500/10 text-green-500 text-[10px] font-bold uppercase tracking-wider border border-green-500/20 w-fit">Trending</span>
+                    <span class="text-xs text-slate-500 mt-1">12.5k members</span>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-3 mb-1">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate">
+                        <a asp-controller="Forum" asp-action="Details" asp-route-id="cs-101">Computer Science</a>
+                    </h3>
+                    <span class="hidden md:inline-block px-2 py-1 rounded-md bg-green-500/10 text-green-500 text-[10px] font-bold uppercase tracking-wider border border-green-500/20">Trending</span>
+                </div>
+                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">Algorithms, data structures, and the latest in software engineering. Join our daily coding challenges.</p>
+                <div class="flex items-center gap-4 mt-3">
+                    <div class="flex -space-x-2">
+                         <div class="size-6 rounded-full border border-surface-light dark:border-surface-dark bg-slate-200 dark:bg-slate-700"></div>
+                         <div class="size-6 rounded-full border border-surface-light dark:border-surface-dark bg-slate-200 dark:bg-slate-700"></div>
+                        <div class="size-6 rounded-full border border-surface-light dark:border-surface-dark bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-500">+40</div>
+                    </div>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 italic">250 online now</span>
+                    <span class="hidden md:inline-block text-xs text-slate-500 dark:text-slate-400">• 12.5k members</span>
+                </div>
+            </div>
+            <div class="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
+                <a asp-controller="Forum" asp-action="Details" asp-route-id="cs-101" class="flex-1 md:flex-none bg-primary text-background-dark px-6 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 transition-all text-center shadow-lg shadow-primary/20">Join</a>
+                <button class="px-3 py-2.5 rounded-xl border border-border-light dark:border-border-dark text-slate-400 hover:text-primary hover:border-primary transition-all">
+                    <span class="material-symbols-outlined text-[20px]">settings</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Forum Card 2 -->
+        <div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-6 border border-border-light dark:border-border-dark hover:border-primary/50 transition-all group flex flex-col md:flex-row gap-6 items-start md:items-center shadow-sm">
+            <div class="flex justify-between items-start md:items-center w-full md:w-auto gap-4">
+                 <div class="size-16 rounded-2xl bg-orange-500/10 text-orange-500 border border-orange-500/20 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-3xl">menu_book</span>
+                </div>
+                <div class="flex flex-col md:hidden">
+                    <span class="text-xs text-slate-500">8.2k members</span>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-3 mb-1">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate">
+                        <a asp-controller="Forum" asp-action="Details" asp-route-id="lit-arts">Literature & Arts</a>
+                    </h3>
+                </div>
+                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">Discuss classical works, modern poetry, and visual arts. Weekly book club meetings every Friday.</p>
+                 <div class="flex items-center gap-4 mt-3">
+                    <div class="flex -space-x-2">
+                        <div class="size-6 rounded-full border border-surface-light dark:border-surface-dark bg-slate-200 dark:bg-slate-700"></div>
+                         <div class="size-6 rounded-full border border-surface-light dark:border-surface-dark bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-500">+12</div>
+                    </div>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 italic">45 online now</span>
+                    <span class="hidden md:inline-block text-xs text-slate-500 dark:text-slate-400">• 8.2k members</span>
+                </div>
+            </div>
+            <div class="mt-auto pt-4 flex gap-2 w-full md:w-auto mt-4 md:mt-0">
+                <a asp-controller="Forum" asp-action="Details" asp-route-id="lit-arts" class="flex-1 md:flex-none border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-50 dark:hover:bg-surface-dark transition-all text-center">Manage</a>
+                <button class="px-3 py-2.5 rounded-xl border border-border-light dark:border-border-dark text-slate-400 hover:text-primary hover:border-primary transition-all">
+                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                </button>
+            </div>
+        </div>
+
+         <!-- Forum Card 3 -->
+        <div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-6 border border-border-light dark:border-border-dark hover:border-primary/50 transition-all group flex flex-col md:flex-row gap-6 items-start md:items-center shadow-sm">
+            <div class="flex justify-between items-start md:items-center w-full md:w-auto gap-4">
+                 <div class="size-16 rounded-2xl bg-blue-500/10 text-blue-500 border border-blue-500/20 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-3xl">functions</span>
+                </div>
+                <div class="flex flex-col md:hidden">
+                    <span class="text-xs text-slate-500">15k members</span>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-3 mb-1">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate">
+                        <a asp-controller="Forum" asp-action="Details" asp-route-id="math-pure">Pure Mathematics</a>
+                    </h3>
+                </div>
+                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">From Calculus II to abstract algebra. Share your proofs and find help with complex problems.</p>
+                 <div class="flex items-center gap-4 mt-3">
+                    <div class="flex -space-x-2">
+                        <div class="size-6 rounded-full border border-surface-light dark:border-surface-dark bg-slate-200 dark:bg-slate-700"></div>
+                         <div class="size-6 rounded-full border border-surface-light dark:border-surface-dark bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-500">+88</div>
+                    </div>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 italic">512 online now</span>
+                    <span class="hidden md:inline-block text-xs text-slate-500 dark:text-slate-400">• 15k members</span>
+                </div>
+            </div>
+            <div class="mt-auto pt-4 flex gap-2 w-full md:w-auto mt-4 md:mt-0">
+                <a asp-controller="Forum" asp-action="Details" asp-route-id="math-pure" class="flex-1 md:flex-none bg-primary text-background-dark px-6 py-2.5 rounded-xl font-bold text-sm hover:opacity-90 transition-all text-center shadow-lg shadow-primary/20">Join</a>
+                <button class="px-3 py-2.5 rounded-xl border border-border-light dark:border-border-dark text-slate-400 hover:text-primary hover:border-primary transition-all">
+                    <span class="material-symbols-outlined text-[20px]">share</span>
+                </button>
+            </div>
+        </div>
+      
+    </div>
+
+</div>

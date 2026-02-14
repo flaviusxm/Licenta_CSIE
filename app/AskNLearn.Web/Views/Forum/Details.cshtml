@@ -1,0 +1,11 @@
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Forum Details";
+    var forumId = ViewData["ForumId"] as string;
+}
+
+<div class="p-8 text-center">
+    <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Forum Details: @forumId</h1>
+    <p class="text-slate-500 dark:text-slate-400">This is a placeholder for the forum discussion view.</p>
+    <a asp-controller="Explore" asp-action="Index" class="mt-8 inline-block px-6 py-2 bg-primary text-background-dark font-bold rounded-xl hover:opacity-90 transition-all">Back to Explore</a>
+</div>
