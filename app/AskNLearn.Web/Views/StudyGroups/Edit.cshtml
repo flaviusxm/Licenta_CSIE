@@ -1,0 +1,54 @@
+@using AskNLearn.Application.Features.StudyGroups.Commands.UpdateStudyGroup
+@model UpdateStudyGroupCommand
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Edit Study Group";
+}
+
+<div class="p-8 max-w-2xl mx-auto pb-20">
+    <div class="mb-8">
+        <a asp-action="Index" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-primary transition-colors mb-4">
+            <span class="material-symbols-outlined text-sm mr-1">arrow_back</span>
+            Back to Groups
+        </a>
+        <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Edit Study Group</h2>
+        <p class="text-slate-500 dark:text-slate-400">Update your group settings.</p>
+    </div>
+
+    <form asp-action="Edit" method="post" class="space-y-6 bg-surface-light dark:bg-surface-dark p-8 rounded-2xl border border-border-light dark:border-border-dark shadow-sm">
+        <input type="hidden" asp-for="Id" />
+        
+        <div class="space-y-2">
+            <label asp-for="Name" class="text-sm font-bold text-slate-700 dark:text-slate-300">Group Name</label>
+            <input asp-for="Name" class="w-full bg-white dark:bg-background-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" />
+            <span asp-validation-for="Name" class="text-xs text-red-500"></span>
+        </div>
+
+        <div class="space-y-2">
+            <label asp-for="SubjectArea" class="text-sm font-bold text-slate-700 dark:text-slate-300">Subject Area</label>
+            <input asp-for="SubjectArea" class="w-full bg-white dark:bg-background-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" />
+            <span asp-validation-for="SubjectArea" class="text-xs text-red-500"></span>
+        </div>
+
+        <div class="space-y-2">
+            <label asp-for="Description" class="text-sm font-bold text-slate-700 dark:text-slate-300">Description</label>
+            <textarea asp-for="Description" rows="4" class="w-full bg-white dark:bg-background-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white"></textarea>
+            <span asp-validation-for="Description" class="text-xs text-red-500"></span>
+        </div>
+
+        <div class="flex items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-background-dark border border-border-light dark:border-border-dark">
+            <input asp-for="IsPublic" type="checkbox" class="size-5 rounded border-border-light dark:border-border-dark text-primary focus:ring-primary bg-white dark:bg-surface-dark" />
+            <div>
+                <label asp-for="IsPublic" class="text-sm font-bold text-slate-700 dark:text-slate-300">Public Group</label>
+                <p class="text-xs text-slate-500">Note: Changing to private will hide it from the explore page.</p>
+            </div>
+        </div>
+
+        <div class="pt-4">
+            <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">save</span>
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>
