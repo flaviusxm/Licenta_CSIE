@@ -140,8 +140,8 @@
             else
             {
                  <div class="flex items-center gap-3">
-                    <a asp-controller="Auth" asp-action="SignIn" class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-surface-dark font-bold transition-all text-slate-700 dark:text-white">Log In</a>
-                    <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-surface-dark font-bold transition-all text-slate-700 dark:text-white">Sign Up</a>
+                    <a asp-controller="Auth" asp-action="SignIn" class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">Log In</a>
+                    <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">Sign Up</a>
                 </div>
             }
         </div>
@@ -166,12 +166,7 @@
                         </div>
                         <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Explore</span>
                     </a>
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "Saved" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="Saved" asp-action="Index">
-                        <div class="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 group-hover:bg-emerald-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">bookmarks</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Saved</span>
-                    </a>
+                   
                     <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "Resources" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="Resources" asp-action="Index">
                          <div class="size-8 rounded-lg bg-amber-500/10 text-amber-500 dark:text-amber-400 group-hover:bg-amber-500/20 flex items-center justify-center transition-colors">
                             <span class="material-symbols-outlined text-[20px]">school</span>
@@ -205,12 +200,7 @@
                         </div>
                         <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Explore</span>
                     </a>
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showAuthWall('Saved Items', 'Join to save and organize your study materials.')" href="javascript:void(0)">
-                         <div class="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 group-hover:bg-emerald-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">bookmarks</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Saved</span>
-                    </a>
+                   
                     <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showAuthWall('Resources', 'Access shared notes, PDFs, and guides.')" href="javascript:void(0)">
                          <div class="size-8 rounded-lg bg-amber-500/10 text-amber-500 dark:text-amber-400 group-hover:bg-amber-500/20 flex items-center justify-center transition-colors">
                             <span class="material-symbols-outlined text-[20px]">school</span>
@@ -232,18 +222,7 @@
                 }
             </nav>
             <div class="h-[1px] w-full bg-border-light dark:bg-border-dark"></div>
-            <!-- Communities (Static for now) -->
-            <div class="flex flex-col gap-3">
-                <div class="flex items-center justify-between px-2">
-                    <h3 class="text-xs font-bold text-slate-400 dark:text-[#92c0c9] uppercase tracking-wider">Trending Communities</h3>
-                    <button class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">add</span></button>
-                </div>
-                <!-- Placeholder communities -->
-                 <a class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-dark group transition-colors" href="#">
-                    <div class="size-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">CS</div>
-                    <span class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-primary">Comp Sci 101</span>
-                </a>
-            </div>
+            
         </aside>
         <button id="toggleLeftSidebar"
                 class="hidden lg:flex items-center justify-center
@@ -257,7 +236,11 @@
         </button>
 
         <!-- Center Feed -->
-        <main class="flex-1 overflow-y-auto relative bg-background-light dark:bg-background-dark">
+        <main class="flex-1 overflow-y-auto relative bg-background-light dark:bg-background-dark p-6">
+            @if (User.Identity.IsAuthenticated)
+            {
+                @await Component.InvokeAsync("ProfileCompletion")
+            }
             @RenderBody()
         </main>
 

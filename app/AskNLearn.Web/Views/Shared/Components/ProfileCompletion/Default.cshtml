@@ -1,0 +1,25 @@
+@model AskNLearn.Application.Features.Users.Queries.GetUserProfile.UserProfileDto
+
+<div class="mb-8 animate-fade-in">
+    <div class="bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6">
+        <div class="size-16 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined text-3xl">account_circle</span>
+        </div>
+        <div class="flex-1 text-center md:text-left">
+            <h3 class="font-bold text-slate-900 dark:text-white mb-1">Boost Your Experience!</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Complete your profile to unlock all features and connect better with peers.</p>
+        </div>
+        <div class="flex flex-col items-center md:items-end gap-2 shrink-0">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-400 uppercase">Completion</span>
+                <span class="text-lg font-black text-primary">@Model.ProfileCompletionPercentage%</span>
+            </div>
+            <div class="h-2 w-40 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div class="h-full bg-primary" style="width: @Model.ProfileCompletionPercentage%"></div>
+            </div>
+            <a asp-controller="Profile" asp-action="Index" class="mt-2 text-xs font-bold text-primary hover:underline flex items-center gap-1">
+                Complete now <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
+        </div>
+    </div>
+</div>
