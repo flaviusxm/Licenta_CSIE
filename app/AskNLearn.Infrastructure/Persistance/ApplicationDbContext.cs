@@ -6,9 +6,11 @@ using AskNLearn.Domain.Entities.Messaging;
 using AskNLearn.Domain.Entities.SocialFeed;
 using AskNLearn.Domain.Entities.StudyGroup;
 
+using AskNLearn.Application.Common.Interfaces;
+
 namespace AskNLearn.Infrastructure.Persistance
 {
-    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options), IApplicationDbContext
     {
         // Core
         public DbSet<AuditLog> AuditLogs { get; set; }

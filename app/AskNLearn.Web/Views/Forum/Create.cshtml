@@ -1,0 +1,41 @@
+@using AskNLearn.Application.Features.Communities.Commands.CreateCommunity
+@model CreateCommunityCommand
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Create New Forum";
+}
+
+<div class="p-8 max-w-2xl mx-auto">
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Create New Forum</h2>
+        <p class="text-slate-500 dark:text-slate-400">Start a new community for students to collaborate and learn together.</p>
+    </div>
+
+    <form asp-action="Create" method="post" class="bg-surface-light dark:bg-surface-dark rounded-2xl p-8 border border-border-light dark:border-border-dark shadow-sm flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+            <label asp-for="Name" class="text-sm font-bold text-slate-700 dark:text-slate-300">Forum Name</label>
+            <input asp-for="Name" class="w-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" placeholder="e.g., Advanced Mathematics"/>
+            <span asp-validation-for="Name" class="text-red-500 text-xs"></span>
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label asp-for="Description" class="text-sm font-bold text-slate-700 dark:text-slate-300">Description</label>
+            <textarea asp-for="Description" rows="4" class="w-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" placeholder="What is this forum about?"></textarea>
+            <span asp-validation-for="Description" class="text-red-500 text-xs"></span>
+        </div>
+
+        <div class="flex items-center gap-3 py-2">
+            <input asp-for="IsPublic" type="checkbox" class="size-5 rounded border-border-light dark:border-border-dark text-primary focus:ring-primary cursor-pointer"/>
+            <label asp-for="IsPublic" class="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">Make this forum public</label>
+        </div>
+
+        <div class="flex gap-4 mt-4">
+            <button type="submit" class="flex-1 bg-primary text-background-dark py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-lg shadow-primary/20">
+                Create Forum
+            </button>
+            <a asp-controller="Explore" asp-action="Index" class="flex-1 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-surface-dark transition-all text-center">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>

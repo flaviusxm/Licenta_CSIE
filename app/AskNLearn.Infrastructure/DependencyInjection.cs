@@ -1,3 +1,4 @@
+using AskNLearn.Application.Common.Interfaces;
 using AskNLearn.Infrastructure.Persistance;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,9 @@ namespace AskNLearn.Infrastructure
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection") 
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            services.AddDbContext<ApplicationDbContext>(options =>options.UseNpgsql(connectionString,b => b.MigrationsAssembly("AskNLearn.Infrastructure")));return services;
+            services.AddDbContext<ApplicationDbContext>(options =>options.UseNpgsql(connectionString,b => b.MigrationsAssembly("AskNLearn.Infrastructure")));
+            services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+            return services;
         }
     }
 }

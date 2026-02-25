@@ -1,0 +1,43 @@
+@using AskNLearn.Application.Features.Posts.Commands.UpdatePost
+@model UpdatePostCommand
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Edit Post";
+}
+
+<div class="p-8 max-w-3xl mx-auto">
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Edit Post</h2>
+        <p class="text-slate-500 dark:text-slate-400">Update your post's content or title.</p>
+    </div>
+
+    <form asp-action="EditPost" method="post" class="bg-surface-light dark:bg-surface-dark rounded-2xl p-8 border border-border-light dark:border-border-dark shadow-sm flex flex-col gap-6">
+        <input type="hidden" asp-for="Id" />
+        
+        <div class="flex flex-col gap-2">
+            <label asp-for="Title" class="text-sm font-bold text-slate-700 dark:text-slate-300">Title</label>
+            <input asp-for="Title" class="w-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" placeholder="What's on your mind?"/>
+            <span asp-validation-for="Title" class="text-red-500 text-xs"></span>
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label asp-for="Content" class="text-sm font-bold text-slate-700 dark:text-slate-300">Content</label>
+            <textarea asp-for="Content" rows="8" class="w-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" placeholder="Provide more details..."></textarea>
+            <span asp-validation-for="Content" class="text-red-500 text-xs"></span>
+        </div>
+
+        <div class="flex items-center gap-3 py-2">
+            <input asp-for="IsSolved" type="checkbox" class="size-5 rounded border-border-light dark:border-border-dark text-primary focus:ring-primary cursor-pointer"/>
+            <label asp-for="IsSolved" class="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">Mark as solved</label>
+        </div>
+
+        <div class="flex gap-4 mt-4">
+            <button type="submit" class="flex-1 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-surface-dark transition-all text-center">
+                Save Changes
+            </button>
+            <button type="button" onclick="window.history.back()" class="flex-1 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-surface-dark transition-all text-center">
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>

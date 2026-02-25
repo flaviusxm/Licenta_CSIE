@@ -76,7 +76,7 @@ namespace AskNLearn.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SignOut()
+        public new async Task<IActionResult> SignOut()
         {
             await mediator.Send(new SignOutCommand());
             return RedirectToAction("Index", "Home");

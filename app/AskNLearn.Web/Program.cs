@@ -62,6 +62,27 @@ app.MapRazorPages()
 try
 {
     Log.Information("Starting AskNLearn Web API...");
+    
+    // Apply migrations and create database if it doesn't exist
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        try
+        {
+            var context = services.GetRequiredService<ApplicationDbContext>();
+            if (context.Database.GetPendingMigrations().Any())
+            {
+                Log.Information("Applying pending migrations...");
+                context.Database.Migrate();
+                Log.Information("Migrations applied successfully.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the database.");
+        }
+    }
+
     app.Run();
 }
 catch (Exception ex)
