@@ -45,5 +45,9 @@ namespace AskNLearn.Infrastructure.Persistance
         public DbSet<GroupMembership> GroupMemberships { get; set; }
         public DbSet<GroupRole> GroupRoles { get; set; }
         public DbSet<StudyGroup> StudyGroups { get; set; }
+
+        // Explicit interface implementations if needed, but here we just need public DbSets
+        // that match the interface property names.
+        DbSet<ApplicationUser> IApplicationDbContext.Users => Users;
     }
 }

@@ -16,5 +16,12 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
         public string? AvatarUrl { get; set; }
         public int ReputationPoints { get; set; }
         public DateTime CreatedAt { get; set; }
+        
+        public int Level { get; set; }
+        public string? RankName { get; set; }
+        public string? RankIconUrl { get; set; }
+        public int PostsCount { get; set; }
+        public int AnswersCount { get; set; }
+        public int GroupsCount { get; set; }
     }
 }

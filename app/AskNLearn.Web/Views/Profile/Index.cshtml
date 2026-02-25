@@ -25,8 +25,18 @@
                     Joined @Model.CreatedAt.ToString("MMM yyyy")
                 </span>
                 <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider border border-primary/20">
-                    Student
+                    Level @Model.Level
                 </span>
+                @if (!string.IsNullOrEmpty(Model.RankName))
+                {
+                    <span class="px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 text-xs font-bold uppercase tracking-wider border border-yellow-500/20 flex items-center gap-1">
+                        @if (!string.IsNullOrEmpty(Model.RankIconUrl))
+                        {
+                            <img src="@Model.RankIconUrl" class="size-4 object-contain" alt="" />
+                        }
+                        @Model.RankName
+                    </span>
+                }
             </div>
         </div>
     </div>
@@ -39,18 +49,18 @@
             <span class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Reputation</span>
         </div>
         <div class="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-border-light dark:border-border-dark flex flex-col items-center justify-center gap-1 group hover:border-primary/30 transition-all">
-            <span class="material-symbols-outlined text-3xl text-blue-500 group-hover:scale-110 transition-transform">forum</span>
-            <span class="text-2xl font-bold text-slate-900 dark:text-white">12</span>
+             <span class="material-symbols-outlined text-3xl text-blue-500 group-hover:scale-110 transition-transform">forum</span>
+            <span class="text-2xl font-bold text-slate-900 dark:text-white">@Model.PostsCount</span>
             <span class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Posts</span>
         </div>
         <div class="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-border-light dark:border-border-dark flex flex-col items-center justify-center gap-1 group hover:border-primary/30 transition-all">
             <span class="material-symbols-outlined text-3xl text-green-500 group-hover:scale-110 transition-transform">check_circle</span>
-            <span class="text-2xl font-bold text-slate-900 dark:text-white">45</span>
+            <span class="text-2xl font-bold text-slate-900 dark:text-white">@Model.AnswersCount</span>
             <span class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Answers</span>
         </div>
          <div class="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-border-light dark:border-border-dark flex flex-col items-center justify-center gap-1 group hover:border-primary/30 transition-all">
             <span class="material-symbols-outlined text-3xl text-pink-500 group-hover:scale-110 transition-transform">groups</span>
-            <span class="text-2xl font-bold text-slate-900 dark:text-white">3</span>
+            <span class="text-2xl font-bold text-slate-900 dark:text-white">@Model.GroupsCount</span>
             <span class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Groups</span>
         </div>
     </div>
@@ -66,19 +76,6 @@
         
         <div class="bg-surface-light dark:bg-surface-dark rounded-2xl border border-border-light dark:border-border-dark overflow-hidden divide-y divide-border-light dark:divide-border-dark">
             
-            <!-- Dark Mode Toggle -->
-            <div class="p-6 flex items-center justify-between">
-                <div>
-                     <h4 class="font-bold text-slate-900 dark:text-white">Appearance</h4>
-                     <p class="text-sm text-slate-500">Switch between light and dark themes.</p>
-                </div>
-                 <button id="themeToggle" onclick="toggleTheme()" class="relative w-14 h-8 rounded-full bg-slate-200 dark:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-background-dark">
-                    <span id="themeToggleKnob" class="absolute left-1 top-1 w-6 h-6 rounded-full bg-white shadow-md transform transition-transform duration-200 flex items-center justify-center">
-                        <span id="themeIcon" class="material-symbols-outlined text-[16px] text-yellow-500">light_mode</span>
-                    </span>
-                </button>
-            </div>
-
              <!-- Security -->
             <div class="p-6 flex items-center justify-between">
                 <div>
