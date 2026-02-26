@@ -27,6 +27,12 @@ namespace AskNLearn.Domain.Entities.Core
         public string? AvatarUrl { get; set; }
         public string? BannerUrl { get; set; }
 
+        public string? Occupation { get; set; } 
+        public string? Institution { get; set; }
+        public string? Interests { get; set; }
+
+        public string? SocialLinks { get; set; } 
+
         public int ReputationPoints { get; set; } = 0;
         public int Level => ReputationPoints / 100; 
 

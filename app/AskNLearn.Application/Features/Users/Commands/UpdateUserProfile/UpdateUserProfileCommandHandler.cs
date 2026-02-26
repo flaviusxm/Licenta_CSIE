@@ -30,7 +30,12 @@ namespace AskNLearn.Application.Features.Users.Commands.UpdateUserProfile
             user.FullName = request.FullName;
             user.Bio = request.Bio;
             user.AvatarUrl = request.AvatarUrl;
-
+            user.Occupation = request.Occupation;
+            user.Institution = request.Institution;
+            user.Interests = request.Interests;
+            user.BannerUrl = request.BannerUrl;
+            user.SocialLinks = request.SocialLinks;
+            
             var result = await _userManager.UpdateAsync(user);
 
             if (!result.Succeeded)

@@ -10,17 +10,30 @@
     <form asp-action="Update" method="post" id="profileForm">
         <input type="hidden" name="FullName" value="@Model.FullName" />
         <input type="hidden" name="AvatarUrl" value="@Model.AvatarUrl" />
+        <input type="hidden" name="SocialLinks" id="socialLinksHidden" value="@Model.SocialLinks" />
 
-        <!-- Merged Header Layout -->
-        <div class="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 relative">
-            <!-- Avatar -->
-            <div class="group relative shrink-0">
-                <div class="size-32 md:size-40 rounded-full bg-cover bg-center border-4 border-surface-light dark:border-surface-dark shadow-2xl transition-transform group-hover:scale-[1.02]" 
+        <!-- Custom Banner (Discord Style) -->
+        <div class="relative w-full h-40 md:h-56 overflow-hidden rounded-[2.5rem] shadow-xl group">
+            <div id="profileBanner" class="w-full h-full bg-slate-200 dark:bg-slate-800 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" 
+                 style="background-image: url('@(Model.BannerUrl ?? "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop")');">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+            </div>
+            <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <input type="text" name="BannerUrl" value="@Model.BannerUrl" placeholder="Paste Banner URL..." 
+                       class="px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black placeholder:text-white/60 focus:ring-2 focus:ring-white/30 outline-none w-48 shadow-2xl transition-all" />
+            </div>
+        </div>
+
+        <!-- LinkedIn Style Header: Overlapping Avatar and Left Aligned -->
+        <div class="flex flex-col md:flex-row items-end md:items-start gap-6 md:gap-10 relative px-4 md:px-8">
+            <!-- Overlapping Avatar -->
+            <div class="group relative shrink-0 mt-[-48px] md:mt-[-64px]">
+                <div class="size-32 md:size-44 rounded-full bg-cover bg-center border-[6px] border-background-light dark:border-background-dark shadow-2xl transition-transform group-hover:scale-[1.02]" 
                      style="background-image: url('@(Model.AvatarUrl ?? "https://api.dicebear.com/7.x/avataaars/svg?seed=" + Model.FullName)');"></div>
             </div>
 
-            <!-- Identity & In-place Inputs -->
-            <div class="text-center md:text-left flex flex-col gap-4 flex-1 w-full">
+            <!-- Identity & Actions - Strictly Left Aligned -->
+            <div class="text-left flex flex-col gap-4 flex-1 w-full pt-4 md:pt-6">
                 <div class="flex flex-col md:flex-row justify-between items-start gap-4">
                     <div>
                         <h1 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">@Model.FullName</h1>
@@ -31,107 +44,132 @@
                     </button>
                 </div>
 
-                <!-- Status Row -->
-                <div class="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                <!-- Status Badges & Social Icons -->
+                <div class="flex flex-wrap items-center justify-start gap-3">
+                    @if (Model.Role == "Admin")
+                    {
+                        <span class="px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 text-[10px] font-black uppercase tracking-widest border border-red-500/20 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm">shield_person</span> Administrator
+                        </span>
+                    }
+                    else if (Model.Role == "Moderator")
+                    {
+                        <span class="px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 text-[10px] font-black uppercase tracking-widest border border-purple-500/20 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm">verified_user</span> Moderator
+                        </span>
+                    }
+                    else if (Model.IsVerified)
+                    {
+                        <span class="px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 text-[10px] font-black uppercase tracking-widest border border-blue-500/20 flex items-center gap-1.5 shadow-sm">
+                            <span class="material-symbols-outlined text-sm fill-current">verified</span> Verified Student
+                        </span>
+                    }
+                    else
+                    {
+                         <span class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest border border-border-light dark:border-border-dark flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm">how_to_reg</span> Unverified Member
+                        </span>
+                    }
+
                     <span class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-widest border border-border-light dark:border-border-dark flex items-center gap-1.5">
                         <span class="material-symbols-outlined text-sm">calendar_today</span> Joined @Model.CreatedAt.ToString("MMM yyyy")
                     </span>
                     <span class="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20 flex items-center gap-1.5">
                         <span class="material-symbols-outlined text-sm">military_tech</span> Level @Model.Level
                     </span>
-                    @if (!string.IsNullOrEmpty(Model.RankName))
-                    {
-                        <span class="px-3 py-1.5 rounded-full bg-yellow-500/10 text-yellow-500 text-[10px] font-black uppercase tracking-widest border border-yellow-500/20 flex items-center gap-1.5">
-                            @if (!string.IsNullOrEmpty(Model.RankIconUrl))
-                            {
-                                <img src="@Model.RankIconUrl" class="size-3 object-contain" alt="" />
-                            }
-                            @Model.RankName
-                        </span>
-                    }
-                </div>
 
-                <!-- Bio: Right under Joined/Level -->
-                <div class="flex flex-col gap-2 pt-2">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">About Me</label>
-                    <textarea name="Bio" rows="3" placeholder="Tell us about yourself..." 
-                              class="w-full px-5 py-4 rounded-2xl border border-border-light dark:border-border-dark bg-slate-50/50 dark:bg-surface-dark/30 text-slate-700 dark:text-slate-200 font-medium italic leading-relaxed placeholder:text-slate-400 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none shadow-inner">@Model.Bio</textarea>
-                </div>
-
-                <!-- Occupation & Institution Row -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">Occupation</label>
-                        <select name="Occupation" class="w-full px-4 py-3 rounded-2xl border border-border-light dark:border-border-dark bg-slate-50/50 dark:bg-surface-dark/30 text-slate-900 dark:text-white font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all cursor-pointer shadow-inner">
-                            <option value="">Choose Occupation</option>
-                            <option value="Pupil" selected='@(Model.Occupation == "Pupil")'>Pupil</option>
-                            <option value="Student" selected='@(Model.Occupation == "Student")'>Student</option>
-                            <option value="Teacher" selected='@(Model.Occupation == "Teacher")'>Teacher</option>
-                            <option value="Researcher" selected='@(Model.Occupation == "Researcher")'>Researcher</option>
-                            <option value="Professional" selected='@(Model.Occupation == "Professional")'>Professional</option>
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">Institution</label>
-                        <input type="text" name="Institution" value="@Model.Institution" placeholder="School/University..." 
-                               class="w-full px-5 py-3 rounded-2xl border border-border-light dark:border-border-dark bg-slate-50/50 dark:bg-surface-dark/30 text-slate-900 dark:text-white font-bold placeholder:text-slate-400 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-inner" />
+                    <div id="socialDisplay" class="flex items-center gap-2">
+                        <!-- Links injected by JS -->
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Academic Interests Section -->
-        <div class="mt-8">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                    <span class="material-symbols-outlined">psychology</span>
-                </div>
-                <h3 class="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Academic Interests</h3>
+        <div class="px-4 md:px-8 mt-4 flex flex-col gap-8">
+            <!-- Bio Section -->
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">About Me</label>
+                <textarea name="Bio" rows="3" placeholder="Tell us about yourself..." 
+                          class="w-full px-5 py-4 rounded-2xl border border-border-light dark:border-border-dark bg-slate-50/50 dark:bg-surface-dark/30 text-slate-700 dark:text-slate-200 font-medium italic leading-relaxed placeholder:text-slate-400 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none shadow-inner">@Model.Bio</textarea>
             </div>
 
-            <div class="flex flex-col gap-6 p-8 bg-surface-light/50 dark:bg-surface-dark/20 rounded-[2.5rem] border border-border-light dark:border-border-dark border-dashed">
-                <!-- Tag Wrapper -->
-                <div id="interestsContainer" class="flex flex-wrap gap-2 min-h-[56px] p-2">
-                    <!-- Initial Tags -->
-                    @if (!string.IsNullOrEmpty(Model.Interests))
-                    {
-                        @foreach (var interest in Model.Interests.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                        {
-                            <div class="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm animate-scale-in">
-                                <span class="text-sm font-bold text-slate-700 dark:text-slate-200">#@interest.Trim()</span>
-                                <button type="button" onclick="removeTag(this, '@interest.Trim()')" class="text-slate-400 hover:text-red-500 transition-colors">
-                                    <span class="material-symbols-outlined text-lg">close</span>
-                                </button>
-                            </div>
-                        }
-                    }
-                    <input type="text" id="interestInput" placeholder="+ Add custom interest and press Enter..." 
-                           class="flex-1 min-w-[200px] bg-transparent border-none focus:ring-0 text-sm font-bold text-slate-600 dark:text-slate-400 placeholder:text-slate-400" />
+            <!-- Occupation & Institution Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">Occupation</label>
+                    <select name="Occupation" class="w-full px-4 py-3 rounded-2xl border border-border-light dark:border-border-dark bg-slate-50/50 dark:bg-surface-dark/30 text-slate-900 dark:text-white font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all cursor-pointer shadow-inner">
+                        <option value="">Choose Occupation</option>
+                        <option value="Pupil" selected='@(Model.Occupation == "Pupil")'>Pupil</option>
+                        <option value="Student" selected='@(Model.Occupation == "Student")'>Student</option>
+                        <option value="Teacher" selected='@(Model.Occupation == "Teacher")'>Teacher</option>
+                        <option value="Researcher" selected='@(Model.Occupation == "Researcher")'>Researcher</option>
+                    </select>
                 </div>
-                
-                <input type="hidden" name="Interests" id="interestsHidden" value="@Model.Interests" />
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">Institution</label>
+                    <input type="text" name="Institution" value="@Model.Institution" placeholder="School/University..." 
+                           class="w-full px-5 py-3 rounded-2xl border border-border-light dark:border-border-dark bg-slate-50/50 dark:bg-surface-dark/30 text-slate-900 dark:text-white font-bold placeholder:text-slate-400 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-inner" />
+                </div>
+            </div>
 
-                <!-- Predefined Suggestions -->
-                <div class="flex flex-col gap-3">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Quick Add Recommendations</label>
-                    <div class="flex flex-wrap gap-2">
-                        @{
-                            var suggestions = new[] { "Computer Science", "Mathematics", "Physics", "Chemistry", "Biology", "Economics", "Literature", "History", "Engineering", "Design" };
-                        }
-                        @foreach (var suggestion in suggestions)
-                        {
-                            <button type="button" onclick="addTagValue('@suggestion')" class="px-4 py-2 rounded-xl border border-border-light dark:border-border-dark text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-surface-dark hover:border-primary/50 hover:text-primary transition-all shadow-sm">
-                                + @suggestion
+            <!-- Academic Interests & External Links Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Interests -->
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined text-sm">psychology</span>
+                        </div>
+                        <h3 class="text-xs font-black text-slate-900 dark:text-white tracking-widest uppercase">Academic Interests</h3>
+                    </div>
+                    <div class="p-6 bg-surface-light dark:bg-surface-dark/30 rounded-[2.5rem] border border-border-light dark:border-border-dark border-dashed flex flex-col gap-4 h-full min-h-[160px]">
+                        <div id="interestsContainer" class="flex flex-wrap gap-2">
+                            @if (!string.IsNullOrEmpty(Model.Interests))
+                            {
+                                @foreach (var interest in Model.Interests.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <div class="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm">
+                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200">#@interest.Trim()</span>
+                                        <button type="button" onclick="removeTag(this, '@interest.Trim()')" class="text-slate-400 hover:text-red-500">
+                                            <span class="material-symbols-outlined text-lg">close</span>
+                                        </button>
+                                    </div>
+                                }
+                            }
+                            <input type="text" id="interestInput" placeholder="+ Add interest..." 
+                                   class="flex-1 min-w-[120px] bg-transparent border-none focus:ring-0 text-xs font-bold placeholder:text-slate-400" />
+                        </div>
+                        <input type="hidden" name="Interests" id="interestsHidden" value="@Model.Interests" />
+                    </div>
+                </div>
+
+                <!-- External Links Manager -->
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
+                            <span class="material-symbols-outlined text-sm">link</span>
+                        </div>
+                        <h3 class="text-xs font-black text-slate-900 dark:text-white tracking-widest uppercase">External Links</h3>
+                    </div>
+                    <div class="p-6 bg-surface-light dark:bg-surface-dark/30 rounded-[2.5rem] border border-border-light dark:border-border-dark border-dashed flex flex-col gap-4 h-full min-h-[160px]">
+                        <div id="socialLinksContainer" class="flex flex-col gap-2">
+                            <!-- Links injected by JS -->
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="socialInput" placeholder="Add URL (GitHub, LinkedIn...)" 
+                                   class="flex-1 px-4 py-2 text-xs rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-surface-dark font-bold focus:ring-2 focus:ring-primary/20 outline-none" />
+                            <button type="button" onclick="addSocialLink()" class="px-3 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-600 hover:bg-primary hover:text-white transition-all">
+                                <span class="material-symbols-outlined text-sm">add</span>
                             </button>
-                        }
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </form>
 
-    <!-- Stats Hub (Boxed layout from "Old Layout") -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+    <!-- Stats Hub -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 px-4 md:px-8">
         <div class="bg-surface-light dark:bg-surface-dark/50 p-6 rounded-3xl border border-border-light dark:border-border-dark flex flex-col items-center gap-2 group hover:border-primary/30 transition-all">
              <span class="material-symbols-outlined text-3xl text-yellow-500 group-hover:scale-110 transition-transform">star</span>
             <span class="text-3xl font-black text-slate-900 dark:text-white">@Model.ReputationPoints</span>
@@ -154,8 +192,8 @@
         </div>
     </div>
 
-    <!-- Settings (Merged Design) -->
-    <div class="bg-surface-light dark:bg-surface-dark/30 rounded-[2.5rem] border border-border-light dark:border-border-dark overflow-hidden divide-y divide-border-light dark:divide-border-dark mt-4">
+    <!-- Security & Danger Zone -->
+    <div class="bg-surface-light dark:bg-surface-dark/30 rounded-[2.5rem] border border-border-light dark:border-border-dark overflow-hidden divide-y divide-border-light dark:divide-border-dark mx-4 md:mx-8">
         <div class="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
                  <h4 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Account Security</h4>
@@ -170,7 +208,7 @@
                  <h4 class="text-lg font-black text-red-600 dark:text-red-400 uppercase tracking-tight">Danger Zone</h4>
                  <p class="text-sm text-red-400/80">Permanently delete your profile and all contributions.</p>
             </div>
-             <button onclick="return confirm('Are you sure? This cannot be undone!')" class="w-full md:w-auto px-6 py-3 rounded-xl border border-red-500/50 text-red-500 font-bold text-sm hover:bg-red-500 hover:text-white transition shadow-lg shadow-red-500/10">
+             <button onclick="return confirm('Are you sure?')" class="w-full md:w-auto px-6 py-3 rounded-xl border border-red-500/50 text-red-500 font-bold text-sm hover:bg-red-500 hover:text-white transition shadow-lg shadow-red-500/10">
                 Delete Account
             </button>
         </div>
@@ -187,55 +225,83 @@
 </div>
 
 <script>
+    // --- Interests Logic ---
     const interestsHidden = document.getElementById('interestsHidden');
     const interestsContainer = document.getElementById('interestsContainer');
     const interestInput = document.getElementById('interestInput');
-
     let interests = interestsHidden.value ? interestsHidden.value.split(',').filter(x => x.trim() !== '') : [];
 
-    function updateHiddenInput() {
-        interestsHidden.value = interests.join(',');
-    }
+    function updateInterests() { interestsHidden.value = interests.join(','); }
 
-    function addTagValue(value) {
+    function addInterest(value) {
         value = value.trim();
-        if (value === '' || interests.includes(value)) return;
-        
+        if (!value || interests.includes(value)) return;
         interests.push(value);
-        updateHiddenInput();
-
+        updateInterests();
         const tag = document.createElement('div');
         tag.className = 'group flex items-center gap-2 px-4 py-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-sm animate-scale-in';
-        tag.innerHTML = `
-            <span class="text-sm font-bold text-slate-700 dark:text-slate-200">#${value}</span>
-            <button type="button" onclick="removeTag(this, '${value}')" class="text-slate-400 hover:text-red-500 transition-colors">
-                <span class="material-symbols-outlined text-lg">close</span>
-            </button>
-        `;
+        tag.innerHTML = `<span class="text-xs font-bold text-slate-700 dark:text-slate-200">#${value}</span>
+                         <button type="button" onclick="removeTag(this, '${value}')" class="text-slate-400 hover:text-red-500"><span class="material-symbols-outlined text-lg">close</span></button>`;
         interestsContainer.insertBefore(tag, interestInput);
         interestInput.value = '';
     }
 
     function removeTag(button, value) {
         interests = interests.filter(i => i !== value);
-        updateHiddenInput();
+        updateInterests();
         button.parentElement.remove();
     }
 
-    interestInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addTagValue(interestInput.value);
-        }
-    });
+    interestInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addInterest(interestInput.value); } });
 
-    interestInput.addEventListener('blur', () => {
-        if (interestInput.value) {
-            addTagValue(interestInput.value);
-        }
-    });
+    // --- Social Links Logic ---
+    const socialLinksHidden = document.getElementById('socialLinksHidden');
+    const socialLinksContainer = document.getElementById('socialLinksContainer');
+    const socialDisplay = document.getElementById('socialDisplay');
+    const socialInput = document.getElementById('socialInput');
+    let links = socialLinksHidden.value ? socialLinksHidden.value.split(';').filter(x => x.trim() !== '') : [];
 
-    // Handle clicks on "+ Add" prompts from dashboard or completion bar
+    function updateLinks() {
+        socialLinksHidden.value = links.join(';');
+        renderSocialUI();
+    }
+
+    function getIconForUrl(url) {
+        if (url.includes('github.com')) return 'code';
+        if (url.includes('linkedin.com')) return 'link';
+        if (url.includes('discord')) return 'chat';
+        return 'language';
+    }
+
+    function renderSocialUI() {
+        socialLinksContainer.innerHTML = '';
+        socialDisplay.innerHTML = '';
+        links.forEach(url => {
+            const item = document.createElement('div');
+            item.className = 'flex items-center justify-between p-2 pl-3 bg-white dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark text-[10px] font-bold';
+            item.innerHTML = `<span class="truncate max-w-[150px] text-slate-500 text-[9px]">${url}</span>
+                            <button type="button" onclick="removeLink('${url}')" class="text-red-400 px-2 hover:text-red-600 transition-colors">Remove</button>`;
+            socialLinksContainer.appendChild(item);
+
+            const badge = document.createElement('a');
+            badge.href = url.startsWith('http') ? url : 'https://' + url;
+            badge.target = '_blank';
+            badge.className = 'p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-primary transition-all flex items-center justify-center';
+            badge.innerHTML = `<span class="material-symbols-outlined text-sm">${getIconForUrl(url)}</span>`;
+            socialDisplay.appendChild(badge);
+        });
+    }
+
+    function addSocialLink() {
+        const url = socialInput.value.trim();
+        if (url && !links.includes(url)) { links.push(url); updateLinks(); socialInput.value = ''; }
+    }
+
+    function removeLink(url) { links = links.filter(l => l !== url); updateLinks(); }
+
+    renderSocialUI();
+
+    // Auto-focus helper
     document.addEventListener('click', function(e) {
         if (e.target && e.target.innerText && e.target.innerText.includes('+ Add')) {
             const text = e.target.innerText;

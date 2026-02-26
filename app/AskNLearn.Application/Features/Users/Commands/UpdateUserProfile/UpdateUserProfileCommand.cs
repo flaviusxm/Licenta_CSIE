@@ -9,5 +9,10 @@ namespace AskNLearn.Application.Features.Users.Commands.UpdateUserProfile
         public string FullName { get; set; } = string.Empty;
         public string? Bio { get; set; }
         public string? AvatarUrl { get; set; }
+        public string? Occupation { get; set; }
+        public string? Institution { get; set; }
+        public string? Interests { get; set; }
+        public string? BannerUrl { get; set; }
+        public string? SocialLinks { get; set; }
     }
 }

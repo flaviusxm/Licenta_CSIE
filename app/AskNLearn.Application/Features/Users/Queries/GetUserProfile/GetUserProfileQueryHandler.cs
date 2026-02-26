@@ -46,6 +46,13 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
                 }
             }
 
+            var completion = 0;
+            if (!string.IsNullOrEmpty(user.FullName)) completion += 20;
+            if (!string.IsNullOrEmpty(user.Bio)) completion += 20;
+            if (!string.IsNullOrEmpty(user.AvatarUrl) && !user.AvatarUrl.Contains("dicebear")) completion += 20;
+            if (!string.IsNullOrEmpty(user.Occupation)) completion += 20;
+            if (!string.IsNullOrEmpty(user.Institution) || !string.IsNullOrEmpty(user.Interests)) completion += 20; // Shared slot for 100%
+
             return new UserProfileDto
             {
                 Id = user.Id,
@@ -53,14 +60,22 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
                 Email = user.Email ?? string.Empty,
                 Bio = user.Bio,
                 AvatarUrl = user.AvatarUrl ?? "https://lh3.googleusercontent.com/aida-public/AB6AXuAtQnOLJpZ-UsH6E0M-Pwa3j5tbQuEa2K5UcyoFSPDLaeLZOCaR6pd7QYA3_usiM6RQUgtVwdWN3Ct6PabOSxI4CSvafcU5D9omVyYVtPrlSI_HkrJmfXLFU-I8_kRKAqqOJ_z-zPx5902KftyNultb0BHoXi6_r8SjUsVT1SqWu2nRUoLmlDZOVhsPe1ZEIEZ77oeWzV-f9qK9kaaGo4t_2GeUbe4MxMLioTEe0l4IlUMw0XebZAbn6gdCiulgIp6pwCnpCJPF",
+                Occupation = user.Occupation,
+                Institution = user.Institution,
+                Interests = user.Interests,
                 ReputationPoints = user.ReputationPoints,
+                ProfileCompletionPercentage = Math.Min(completion, 100),
                 CreatedAt = user.CreatedAt,
                 Level = user.Level,
                 RankName = rankName,
                 RankIconUrl = rankIconUrl,
                 PostsCount = postsCount,
                 AnswersCount = answersCount,
-                GroupsCount = groupsCount
+                GroupsCount = groupsCount,
+                IsVerified = user.IsVerified,
+                Role = user.Role.ToString(),
+                BannerUrl = user.BannerUrl,
+                SocialLinks = user.SocialLinks
             };
         }
     }
