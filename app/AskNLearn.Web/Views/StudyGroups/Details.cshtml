@@ -34,11 +34,11 @@
             <div class="flex gap-3">
                  @if (User.Identity.IsAuthenticated && Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
                  {
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="px-6 py-3 rounded-xl border border-border-light dark:border-border-dark font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-background-dark transition-all">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="px-6 py-3 rounded-xl border border-border-light dark:border-border-dark font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
                         Edit Group
                     </a>
                  }
-                <button class="px-6 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold transition-all shadow-lg shadow-primary/20">
+                <button class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-border-light dark:border-border-dark font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
                     Join Conversation
                 </button>
             </div>

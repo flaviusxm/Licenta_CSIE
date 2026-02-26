@@ -35,16 +35,16 @@
             </div>
         </div>
         <div class="flex flex-col gap-3 w-full md:w-auto">
-            <a asp-action="CreatePost" asp-route-communityId="@Model.Id" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-surface-dark transition-all">
+            <a asp-action="CreatePost" asp-route-communityId="@Model.Id" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
                 <span class="material-symbols-outlined text-[20px]">add_circle</span>
                 Create Post
             </a>
             <div class="flex gap-2">
-                <a asp-controller="Explore" asp-action="Index" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-surface-dark transition-all">
+                <a asp-controller="Explore" asp-action="Index" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
                     <span class="material-symbols-outlined text-[20px]">arrow_back</span>
                     Explore
                 </a>
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="px-4 py-2.5 rounded-xl border border-border-light dark:border-border-dark text-slate-400 hover:text-primary hover:border-primary transition-all flex items-center justify-center">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-primary transition-colors flex items-center justify-center">
                     <span class="material-symbols-outlined text-[20px]">settings</span>
                 </a>
             </div>
@@ -67,7 +67,7 @@
                 <span class="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-700 mb-4">post_add</span>
                 <p class="text-slate-500 dark:text-slate-400 font-medium text-lg">No posts yet in this community.</p>
                 <p class="text-slate-400 dark:text-slate-500 text-sm mt-1">Be the first to share something!</p>
-                <a asp-action="CreatePost" asp-route-communityId="@Model.Id" class="mt-6 inline-flex items-center gap-2 px-6 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl font-bold hover:bg-primary/20 transition-all">
+                <a asp-action="CreatePost" asp-route-communityId="@Model.Id" class="mt-6 inline-flex items-center gap-2 px-6 py-2.5 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-surface-dark transition-all">
                     Start a Discussion
                 </a>
             </div>
@@ -107,11 +107,11 @@
                                     </div>
                                     
                                     <div class="flex gap-2">
-                                        <a asp-action="EditPost" asp-route-id="@post.Id" asp-route-communityId="@Model.Id" class="text-slate-300 hover:text-primary transition-colors">
+                                        <a asp-action="EditPost" asp-route-id="@post.Id" asp-route-communityId="@Model.Id" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-primary transition-colors">
                                             <span class="material-symbols-outlined text-[20px]">edit</span>
                                         </a>
                                         <form asp-action="DeletePost" asp-route-id="@post.Id" asp-route-communityId="@Model.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this post?')">
-                                            <button type="submit" class="text-slate-300 hover:text-red-500 transition-colors">
+                                            <button type="submit" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-red-500 transition-colors">
                                                 <span class="material-symbols-outlined text-[20px]">delete</span>
                                             </button>
                                         </form>
