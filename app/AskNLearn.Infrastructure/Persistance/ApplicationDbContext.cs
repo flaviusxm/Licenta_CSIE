@@ -36,6 +36,7 @@ namespace AskNLearn.Infrastructure.Persistance
         public DbSet<Post> Posts { get; set; }
         public DbSet<PostAttachment> PostAttachments { get; set; }
         public DbSet<PostVote> PostVotes { get; set; }
+        public DbSet<PostView> PostViews { get; set; }
         public DbSet<Tag> Tags { get; set; }
 
         // StudyGroup

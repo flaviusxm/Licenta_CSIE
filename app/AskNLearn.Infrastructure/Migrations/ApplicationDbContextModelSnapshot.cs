@@ -61,6 +61,12 @@ namespace AskNLearn.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("Institution")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Interests")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsVerified")
                         .HasColumnType("boolean");
 
@@ -81,6 +87,9 @@ namespace AskNLearn.Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<string>("Occupation")
+                        .HasColumnType("text");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
@@ -97,6 +106,9 @@ namespace AskNLearn.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SocialLinks")
                         .HasColumnType("text");
 
                     b.Property<string>("Status")
@@ -603,6 +615,31 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.HasIndex("PostId");
 
                     b.ToTable("PostAttachments");
+                });
+
+            modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.PostView", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ViewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PostViews");
                 });
 
             modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.PostVote", b =>
@@ -1207,6 +1244,25 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.Navigation("Post");
                 });
 
+            modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.PostView", b =>
+                {
+                    b.HasOne("AskNLearn.Domain.Entities.SocialFeed.Post", "Post")
+                        .WithMany("UniqueViews")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AskNLearn.Domain.Entities.Core.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.PostVote", b =>
                 {
                     b.HasOne("AskNLearn.Domain.Entities.SocialFeed.Post", "Post")
@@ -1365,6 +1421,8 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.Navigation("Attachments");
 
                     b.Navigation("Comments");
+
+                    b.Navigation("UniqueViews");
 
                     b.Navigation("Votes");
                 });

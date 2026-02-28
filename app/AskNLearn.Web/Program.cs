@@ -1,4 +1,3 @@
-
 using AskNLearn.Application;
 using AskNLearn.Domain.Entities.Core;
 using AskNLearn.Infrastructure;
@@ -33,6 +32,14 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+if (args.Contains("migratedb"))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
+    Console.WriteLine("Database migration complete!");
+    return;
+}
 app.UseSerilogRequestLogging();
 if (app.Environment.IsDevelopment())
 {
@@ -61,28 +68,7 @@ app.MapRazorPages()
 
 try
 {
-    Log.Information("Starting AskNLearn Web API...");
-    
-    // Apply migrations and create database if it doesn't exist
-    using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
-        try
-        {
-            var context = services.GetRequiredService<ApplicationDbContext>();
-            if (context.Database.GetPendingMigrations().Any())
-            {
-                Log.Information("Applying pending migrations...");
-                context.Database.Migrate();
-                Log.Information("Migrations applied successfully.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the database.");
-        }
-    }
-
+    Log.Information("Starting app...");
     app.Run();
 }
 catch (Exception ex)
