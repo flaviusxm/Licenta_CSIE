@@ -16,6 +16,5 @@ namespace AskNLearn.Application.Features.Communities.Commands.CreateCommunity
 
         public string? CreatorId { get; set; }
 
-        public bool IsPublic { get; set; } = true;
     }
 }

@@ -43,5 +43,7 @@ namespace AskNLearn.Domain.Entities.SocialFeed
         public ICollection<PostAttachment> Attachments { get; set; } = [];
         
         public ICollection<PostVote> Votes { get; set; } = [];
+
+        public ICollection<PostView> UniqueViews { get; set; } = [];
     }
 }

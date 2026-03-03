@@ -27,7 +27,6 @@ namespace AskNLearn.Application.Features.Communities.Commands.CreateCommunity
                 Slug = slug,
                 Description = request.Description,
                 CreatorId = request.CreatorId,
-                IsPublic = request.IsPublic,
                 CreatedAt = DateTime.UtcNow
             };
 

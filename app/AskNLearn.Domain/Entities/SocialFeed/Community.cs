@@ -11,7 +11,6 @@ namespace AskNLearn.Domain.Entities.SocialFeed
         [Required][MaxLength(100)] public string Slug { get; set; } 
         public string? Description { get; set; }
         public string? CreatorId { get; set; } 
-        public bool IsPublic { get; set; } = true;
         public DateTime CreatedAt { get; set; }
         public ICollection<Post> Posts { get; set; }
     }

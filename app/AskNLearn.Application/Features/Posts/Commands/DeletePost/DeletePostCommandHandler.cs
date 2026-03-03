@@ -9,17 +9,45 @@ namespace AskNLearn.Application.Features.Posts.Commands.DeletePost
     public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand, bool>
     {
         private readonly IApplicationDbContext _context;
+        private readonly IFileService _fileService;
 
-        public DeletePostCommandHandler(IApplicationDbContext context)
+        public DeletePostCommandHandler(IApplicationDbContext context, IFileService fileService)
         {
             _context = context;
+            _fileService = fileService;
         }
 
         public async Task<bool> Handle(DeletePostCommand request, CancellationToken cancellationToken)
         {
-            var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
+            var post = await _context.Posts
+                .Include(p => p.Attachments)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.Attachments)
+                        .ThenInclude(a => a.File)
+                .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
             
             if (post == null) return false;
+
+            foreach (var attachment in post.Attachments)
+            {
+                if (!string.IsNullOrEmpty(attachment.Url))
+                {
+                    _fileService.DeleteFile(attachment.Url);
+                }
+            }
+
+            foreach (var comment in post.Comments)
+            {
+                foreach (var attachment in comment.Attachments)
+                {
+                    if (attachment.File != null)
+                    {
+                        _fileService.DeleteFile(attachment.File.FilePath);
+                        _context.StoredFiles.Remove(attachment.File);
+                    }
+                }
+                _context.Messages.Remove(comment);
+            }
 
             _context.Posts.Remove(post);
             await _context.SaveChangesAsync(cancellationToken);

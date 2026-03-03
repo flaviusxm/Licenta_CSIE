@@ -14,6 +14,5 @@ namespace AskNLearn.Application.Features.Communities.Commands.UpdateCommunity
 
         public string? Description { get; set; }
 
-        public bool IsPublic { get; set; }
     }
 }

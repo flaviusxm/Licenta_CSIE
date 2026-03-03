@@ -36,7 +36,6 @@ namespace AskNLearn.Application.Features.Communities.Queries.GetCommunities
                     Slug = c.Slug,
                     Description = c.Description,
                     CreatorId = c.CreatorId,
-                    IsPublic = c.IsPublic,
                     CreatedAt = c.CreatedAt,
                     PostCount = c.Posts.Count
                     // MemberCount can be added later when CommunityMembership is fully connected

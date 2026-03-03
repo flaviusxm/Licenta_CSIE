@@ -23,7 +23,6 @@ namespace AskNLearn.Application.Features.Communities.Commands.UpdateCommunity
 
             community.Name = request.Name;
             community.Description = request.Description;
-            community.IsPublic = request.IsPublic;
 
             await _context.SaveChangesAsync(cancellationToken);
             return true;
