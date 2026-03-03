@@ -11,7 +11,7 @@
         <p class="text-slate-500 dark:text-slate-400">Update your community's settings and information.</p>
     </div>
 
-    <form asp-action="Edit" method="post" class="bg-surface-light dark:bg-surface-dark rounded-2xl p-8 border border-border-light dark:border-border-dark shadow-sm flex flex-col gap-6">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="bg-surface-light dark:bg-surface-dark rounded-2xl p-8 border border-border-light dark:border-border-dark shadow-sm flex flex-col gap-6">
         <input type="hidden" asp-for="Id" />
         
         <div class="flex flex-col gap-2">
@@ -26,10 +26,21 @@
             <span asp-validation-for="Description" class="text-red-500 text-xs"></span>
         </div>
 
-        <div class="flex items-center gap-3 py-2">
-            <input asp-for="IsPublic" type="checkbox" class="size-5 rounded border-border-light dark:border-border-dark text-primary focus:ring-primary cursor-pointer"/>
-            <label asp-for="IsPublic" class="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer">Make this forum public</label>
+        <div class="flex flex-col gap-2">
+            <label class="text-sm font-bold text-slate-700 dark:text-slate-300">Forum Banner / Image</label>
+            <div class="relative group">
+                <input type="file" asp-for="Image" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName(this)" accept="image/*" />
+                <div class="w-full bg-white dark:bg-surface-dark border-2 border-dashed border-border-light dark:border-border-dark rounded-xl py-8 px-4 flex flex-col items-center justify-center gap-2 group-hover:border-primary transition-all">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+                        <span class="material-symbols-outlined">image</span>
+                    </div>
+                    <p class="text-sm text-slate-700 dark:text-slate-300 font-medium">Click to change forum image</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">JPG, PNG, WEBP (Landscape recommended)</p>
+                </div>
+            </div>
+            <div id="file-name-display" class="text-xs font-medium text-primary mt-1 hidden"></div>
         </div>
+
 
         <div class="flex gap-4 mt-4">
             <button type="submit" class="flex-1 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
@@ -41,3 +52,15 @@
         </div>
     </form>
 </div>
+
+<script>
+    function updateFileName(input) {
+        const display = document.getElementById('file-name-display');
+        if (input.files && input.files[0]) {
+            display.textContent = 'Selected: ' + input.files[0].name;
+            display.classList.remove('hidden');
+        } else {
+            display.classList.add('hidden');
+        }
+    }
+</script>

@@ -59,6 +59,12 @@ app.UseAuthorization();
 app.MapStaticAssets();
 
 app.MapControllerRoute(
+    name: "admin",
+    pattern: "adminRoute/{action=Index}/{id?}",
+    defaults: new { controller = "Admin" })
+    .WithStaticAssets();
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
@@ -69,6 +75,11 @@ app.MapRazorPages()
 try
 {
     Log.Information("Starting app...");
+    using (var scope = app.Services.CreateScope())
+    {
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        await DatabaseInitializer.SeedAdminUserAsync(userManager);
+    }
     app.Run();
 }
 catch (Exception ex)

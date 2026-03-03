@@ -218,8 +218,8 @@
                     <span class="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-primary">Physics Lab</span>
                 </a>
             </div>
-            <button class="mt-auto flex w-full cursor-pointer items-center justify-center rounded-xl h-12 bg-primary text-[#111f22] text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] transition-all">
-                <span class="material-symbols-outlined mr-2">edit_square</span>
+            <button class="mt-auto flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-6 py-3 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
+                <span class="material-symbols-outlined">edit_square</span>
                 Create Thread
             </button>
         </aside>
@@ -245,7 +245,7 @@
                             <div class="shrink-0 relative">
                                 <!-- Abstract decoration -->
                                 <div class="size-24 rounded-full bg-gradient-to-tr from-primary to-purple-500 opacity-20 blur-xl absolute -top-4 -right-4"></div>
-                                <button class="relative z-10 flex items-center justify-center rounded-lg h-10 px-6 bg-slate-900 dark:bg-[#234248] text-white text-sm font-bold hover:bg-slate-800 transition-colors">
+                                <button class="relative z-10 flex items-center justify-center rounded-xl h-10 px-6 border border-border-light dark:border-border-dark text-slate-700 dark:text-white text-sm font-bold hover:bg-slate-50 dark:hover:bg-white/10 transition-colors">
                                     View Stats
                                 </button>
                             </div>
@@ -308,7 +308,7 @@
                                             <p class="text-sm font-bold text-slate-900 dark:text-white">Live Session Active</p>
                                             <p class="text-xs text-green-500 font-medium flex items-center gap-1"><span class="size-2 rounded-full bg-green-500 animate-pulse"></span> 7 people online</p>
                                         </div>
-                                        <button class="bg-primary text-[#111f22] px-4 py-2 rounded-lg text-sm font-bold hover:bg-opacity-90 transition-all">Join Room</button>
+                                        <button class="px-4 py-2 rounded-xl border border-border-light dark:border-border-dark text-slate-700 dark:text-white text-sm font-bold hover:bg-slate-50 dark:hover:bg-white/10 transition-all">Join Room</button>
                                     </div>
                                     <div class="flex items-center gap-4 mt-1">
                                         <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
@@ -383,10 +383,10 @@
                         Connect with classmates, join live study sessions, and access exclusive resources. Create an account to get started.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                        <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-primary text-[#111f22] font-bold text-lg shadow-lg shadow-primary/20 hover:scale-[1.03] transition-all">
+                        <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-8 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold text-lg transition-all text-slate-700 dark:text-white">
                             Sign Up Free
                         </a>
-                        <a asp-controller="Auth" asp-action="SignIn" class="inline-flex items-center justify-center px-8 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-surface-dark font-bold transition-all text-slate-700 dark:text-white">
+                        <a asp-controller="Auth" asp-action="SignIn" class="inline-flex items-center justify-center px-8 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">
                             Log In
                         </a>
                     </div>

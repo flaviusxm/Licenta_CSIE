@@ -57,20 +57,12 @@
     <!-- Top Navigation Bar -->
     <header class="h-16 flex items-center justify-between px-6 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark z-50 shrink-0">
         <!-- Logo Area -->
-        <div class="flex items-center gap-8 w-64">
+        <div class="flex items-center gap-8 w-64 justify-center">
             <a asp-controller="Home" asp-action="Index" class="flex items-center gap-3 text-slate-900 dark:text-white cursor-pointer hover:opacity-80 transition-opacity">
                 <h1 class="text-xl font-bold tracking-tight">AskNLearn</h1>
             </a>
         </div>
-        <!-- Search Bar -->
-        <div class="flex-1 max-w-2xl px-4">
-            <label class="relative group">
-                <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                    <span class="material-symbols-outlined text-slate-400 dark:text-[#92c0c9]">search</span>
-                </div>
-                <input class="block w-full p-2.5 pl-12 text-sm text-slate-900 dark:text-white bg-slate-100 dark:bg-surface-dark border-transparent rounded-xl focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-[#1f3a40] transition-all placeholder:text-slate-400 dark:placeholder:text-[#5f8a93]" placeholder="Search for study groups, notes, or topics..." type="text" />
-            </label>
-        </div>
+        
         <!-- Right Actions -->
         <div class="flex items-center justify-end gap-4 w-auto md:w-64">
              @if (User.Identity.IsAuthenticated)
