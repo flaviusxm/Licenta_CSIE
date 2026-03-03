@@ -22,6 +22,9 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostById
             return await _context.Posts
                 .Where(p => p.Id == request.Id)
                 .Include(p => p.Author)
+                .Include(p => p.Attachments)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.Author)
                 .Select(p => new PostDto
                 {
                     Id = p.Id,
@@ -34,7 +37,27 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostById
                     IsLocked = p.IsLocked,
                     ViewCount = p.ViewCount,
                     CommentCount = p.Comments.Count,
-                    CreatedAt = p.CreatedAt
+                    CreatedAt = p.CreatedAt,
+                    Comments = p.Comments.OrderBy(c => c.CreatedAt).Select(c => new CommentDto
+                    {
+                        Id = c.Id,
+                        AuthorName = c.Author != null ? c.Author.FullName : "Unknown",
+                        Content = c.Content ?? "",
+                        CreatedAt = c.CreatedAt,
+                        ReplyToMessageId = c.ReplyToMessageId,
+                        Attachments = c.Attachments != null ? c.Attachments.Select(a => new AttachmentDto
+                        {
+                            Id = a.FileId,
+                            Url = a.File != null ? a.File.FilePath : "",
+                            FileType = a.File != null ? a.File.FileType : ""
+                        }).ToList() : new List<AttachmentDto>()
+                    }).ToList(),
+                    Attachments = p.Attachments.Select(a => new AttachmentDto
+                    {
+                        Id = a.Id,
+                        Url = a.Url,
+                        FileType = a.FileType
+                    }).ToList()
                 })
                 .FirstOrDefaultAsync(cancellationToken);
         }

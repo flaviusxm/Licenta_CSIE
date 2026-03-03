@@ -11,7 +11,11 @@ using AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+
+using AskNLearn.Application.Features.Posts.Commands.AddComment;
+using AskNLearn.Application.Features.Posts.Commands.RecordPostView;
 
 namespace AskNLearn.Web.Controllers
 {
@@ -19,10 +23,12 @@ namespace AskNLearn.Web.Controllers
     public class ForumController : Controller
     {
         private readonly IMediator _mediator;
+        private readonly ILogger<ForumController> _logger;
 
-        public ForumController(IMediator mediator)
+        public ForumController(IMediator mediator, ILogger<ForumController> logger)
         {
             _mediator = mediator;
+            _logger = logger;
         }
 
         [AllowAnonymous]
@@ -35,6 +41,31 @@ namespace AskNLearn.Web.Controllers
             ViewBag.Posts = posts;
 
             return View(community);
+        }
+
+// PostDetails removed to consolidate view into Details
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddComment([FromForm] AddCommentCommand command)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                _logger.LogWarning("Invalid model state for AddComment: {Errors}. PostId: {PostId}", errors, command?.PostId);
+                return RedirectToAction(nameof(Details), new { id = command?.CommunityId });
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            command.AuthorId = userId;
+            await _mediator.Send(command);
+
+            return RedirectToAction(nameof(Details), new { id = command.CommunityId });
         }
 
         public IActionResult Create()

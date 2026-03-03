@@ -1,5 +1,7 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace AskNLearn.Application.Features.Posts.Commands.CreatePost
@@ -16,5 +18,7 @@ namespace AskNLearn.Application.Features.Posts.Commands.CreatePost
 
         [Required]
         public string Content { get; set; } = null!;
+
+        public List<IFormFile>? Attachments { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Generic;
 
 namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
 {
@@ -15,5 +15,24 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
         public int ViewCount { get; set; }
         public int CommentCount { get; set; }
         public DateTime CreatedAt { get; set; }
+        public List<CommentDto> Comments { get; set; } = [];
+        public List<AttachmentDto> Attachments { get; set; } = [];
+    }
+
+    public class CommentDto
+    {
+        public Guid Id { get; set; }
+        public Guid? ReplyToMessageId { get; set; }
+        public string AuthorName { get; set; } = null!;
+        public string Content { get; set; } = null!;
+        public DateTime CreatedAt { get; set; }
+        public List<AttachmentDto> Attachments { get; set; } = new();
+    }
+
+    public class AttachmentDto
+    {
+        public Guid Id { get; set; }
+        public string Url { get; set; } = null!;
+        public string? FileType { get; set; }
     }
 }

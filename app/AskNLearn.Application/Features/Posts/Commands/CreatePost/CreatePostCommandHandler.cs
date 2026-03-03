@@ -10,10 +10,12 @@ namespace AskNLearn.Application.Features.Posts.Commands.CreatePost
     public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Guid>
     {
         private readonly IApplicationDbContext _context;
+        private readonly IFileService _fileService;
 
-        public CreatePostCommandHandler(IApplicationDbContext context)
+        public CreatePostCommandHandler(IApplicationDbContext context, IFileService fileService)
         {
             _context = context;
+            _fileService = fileService;
         }
 
         public async Task<Guid> Handle(CreatePostCommand request, CancellationToken cancellationToken)
@@ -27,6 +29,22 @@ namespace AskNLearn.Application.Features.Posts.Commands.CreatePost
                 Content = request.Content,
                 CreatedAt = DateTime.UtcNow
             };
+
+            if (request.Attachments != null && request.Attachments.Count > 0)
+            {
+                foreach (var file in request.Attachments)
+                {
+                    using var stream = file.OpenReadStream();
+                    var url = await _fileService.UploadFileAsync(stream, file.FileName, "posts");
+                    
+                    post.Attachments.Add(new PostAttachment
+                    {
+                        PostId = post.Id,
+                        Url = url,
+                        FileType = file.ContentType
+                    });
+                }
+            }
 
             await _context.Posts.AddAsync(post, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
