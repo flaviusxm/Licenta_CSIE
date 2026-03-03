@@ -43,29 +43,42 @@ namespace AskNLearn.Web.Controllers
             return View(community);
         }
 
-// PostDetails removed to consolidate view into Details
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddComment([FromForm] AddCommentCommand command)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                _logger.LogWarning("Invalid model state for AddComment: {Errors}. PostId: {PostId}", errors, command?.PostId);
-                return RedirectToAction(nameof(Details), new { id = command?.CommunityId });
-            }
+                if (!ModelState.IsValid)
+                {
+                    var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                    _logger.LogWarning("Invalid model state for AddComment: {Errors}. PostId: {PostId}", errors, command?.PostId);
+                    return RedirectToAction(nameof(Details), new { id = command?.CommunityId });
+                }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized();
+                }
+
+                if (command.Attachment != null)
+                {
+                    _logger.LogInformation("AddComment received attachment: {FileName}, Size: {Size}, Type: {Type}", 
+                        command.Attachment.FileName, command.Attachment.Length, command.Attachment.ContentType);
+                }
+
+                command.AuthorId = userId;
+                await _mediator.Send(command);
+
+                return RedirectToAction(nameof(Details), new { id = command.CommunityId });
+            }
+            catch (Exception ex)
             {
-                return Unauthorized();
+                _logger.LogCritical(ex, "FATAL ERROR in ForumController.AddComment for Post {PostId}", command?.PostId);
+                throw;
             }
-
-            command.AuthorId = userId;
-            await _mediator.Send(command);
-
-            return RedirectToAction(nameof(Details), new { id = command.CommunityId });
         }
 
         public IActionResult Create()

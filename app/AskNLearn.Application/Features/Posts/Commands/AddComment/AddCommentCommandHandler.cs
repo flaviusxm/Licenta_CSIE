@@ -39,6 +39,7 @@ namespace AskNLearn.Application.Features.Posts.Commands.AddComment
 
                 if (request.Attachment != null)
                 {
+                    _logger.LogInformation("Uploading attachment for comment on post {PostId}. FileName: {FileName}", request.PostId, request.Attachment.FileName);
                     var fileUrl = await _fileService.UploadFileAsync(
                         request.Attachment.OpenReadStream(),
                         request.Attachment.FileName,
@@ -55,8 +56,8 @@ namespace AskNLearn.Application.Features.Posts.Commands.AddComment
                         UploaderId = request.AuthorId
                     };
 
-                    // We don't need to add storedFile explicitly if it's attached to the message attachment
-                    // as EF will handle the graph insertion.
+                    // Add storedFile to context explicitly to be safe
+                    _context.StoredFiles.Add(storedFile);
 
                     comment.Attachments.Add(new MessageAttachment
                     {
@@ -67,6 +68,7 @@ namespace AskNLearn.Application.Features.Posts.Commands.AddComment
                 }
 
                 await _context.Messages.AddAsync(comment, cancellationToken);
+                _logger.LogInformation("Saving comment to database for post {PostId}", request.PostId);
                 await _context.SaveChangesAsync(cancellationToken);
 
                 return comment.Id;
