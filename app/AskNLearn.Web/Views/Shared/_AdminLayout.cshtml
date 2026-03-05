@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>@ViewData["Title"] - Admin Portal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+            extend: {
+                colors: {
+                "primary": "#13c8ec",
+                "background-admin": "#0a191c",
+                "surface-admin": "#0d2529",
+                "border-admin": "#1e3a40",
+                "accent-admin": "#13c8ec",
+                },
+                fontFamily: {
+                "display": ["Lexend", "sans-serif"]
+                },
+            },
+            },
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e3a40; border-radius: 3px; }
+        body { background-color: #0a191c; }
+    </style>
+</head>
+<body class="bg-background-admin text-slate-200 font-display overflow-hidden h-screen flex flex-col transition-colors duration-200">
+    <!-- Admin Top Bar -->
+    <header class="h-16 flex items-center justify-between px-6 border-b border-border-admin bg-background-admin z-50 shrink-0">
+        <div class="flex items-center gap-8 w-64">
+            <a asp-controller="Home" asp-action="Index" class="flex items-center gap-3 text-white">
+                <div class="size-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-xl">admin_panel_settings</span>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
+                    AskNLearn <span class="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded border border-primary/30 font-bold uppercase tracking-wider">Admin</span>
+                </h1>
+            </a>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="flex-1 max-w-2xl px-4">
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                    <span class="material-symbols-outlined text-slate-500">search</span>
+                </div>
+                <input class="block w-full p-2.5 pl-12 text-sm text-white bg-surface-admin border border-border-admin rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-slate-500" placeholder="Search student records..." type="text" />
+            </div>
+        </div>
+
+        <!-- Admin Info -->
+        <div class="flex items-center gap-4 w-64 justify-end">
+             <div class="flex items-center gap-3">
+                <div class="text-right hidden sm:block">
+                    <p class="text-xs font-bold text-white">Admin Portal</p>
+                    <p class="text-[10px] text-slate-500 uppercase font-medium">Verification Dept.</p>
+                </div>
+                <div class="size-10 rounded-xl bg-surface-admin border border-border-admin flex items-center justify-center text-primary font-bold">
+                    ANL
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Admin Sidebar -->
+        <aside class="w-64 hidden lg:flex flex-col border-r border-border-admin bg-background-admin p-4 gap-8 shrink-0">
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[2px] mb-4 px-4">Management</p>
+                <nav class="flex flex-col gap-1">
+                    <a asp-action="Index" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-admin transition-colors group">
+                        <span class="material-symbols-outlined text-slate-500 group-hover:text-primary">dashboard</span>
+                        <span class="font-bold text-sm">Dashboard Overview</span>
+                    </a>
+                    <a asp-action="Verifications" class="flex items-center justify-between px-4 py-3 rounded-xl bg-primary/10 text-primary border border-primary/20 transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined">verified_user</span>
+                            <span class="font-bold text-sm">Verification Requests</span>
+                        </div>
+                        <span class="size-5 rounded bg-primary text-[10px] flex items-center justify-center text-background-admin font-bold">12</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-admin transition-colors group opacity-50 cursor-not-allowed">
+                        <span class="material-symbols-outlined text-slate-500">person_search</span>
+                        <span class="font-bold text-sm">Student Directory</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-admin transition-colors group opacity-50 cursor-not-allowed">
+                        <span class="material-symbols-outlined text-slate-500">forum</span>
+                        <span class="font-bold text-sm">Study Communities</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-admin transition-colors group opacity-50 cursor-not-allowed">
+                        <span class="material-symbols-outlined text-slate-500">flag</span>
+                        <span class="font-bold text-sm">Reported Content</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- System Status -->
+            <div class="mt-auto p-4 rounded-2xl bg-surface-admin border border-border-admin">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">System Status</p>
+                <div class="flex items-center gap-2">
+                    <div class="size-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span class="text-xs text-white">Cloud Nodes Active</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-8">
+            @RenderBody()
+        </main>
+    </div>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

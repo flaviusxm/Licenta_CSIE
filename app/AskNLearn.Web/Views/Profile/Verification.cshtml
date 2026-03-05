@@ -1,0 +1,146 @@
+@model AskNLearn.Application.Features.Users.Queries.GetUserProfile.UserProfileDto
+
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Verification Path";
+    ViewData["IsVerificationPage"] = true;
+}
+
+<div class="max-w-4xl mx-auto p-6 md:p-10 flex flex-col gap-12 animate-fade-in pb-20">
+    
+    <!-- Profile Header Section -->
+    <div class="flex flex-col gap-8">
+        <partial name="_ProfileHeader" model="Model" />
+    </div>
+
+    <!-- Verification Path Section -->
+    <div class="px-4 md:px-8 flex flex-col gap-12">
+        <div class="flex flex-col gap-2">
+            <h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Verification Path</h2>
+            <p class="text-slate-500 dark:text-slate-400 font-medium italic">Complete the milestones below to unlock the "Verified Student" status and exclusive community features.</p>
+        </div>
+
+        <!-- The Journey Stepper -->
+        <div class="relative flex flex-col gap-16">
+            <!-- Central Line -->
+            <div class="absolute left-6 md:left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-primary via-slate-200 to-slate-100 dark:from-primary dark:via-slate-800 dark:to-slate-900 rounded-full"></div>
+
+            <!-- Milestone 1: Initiation -->
+            <div class="relative flex items-start gap-8 group">
+                <div class="z-10 size-12 md:size-16 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-2xl md:text-3xl">rocket_launch</span>
+                </div>
+                <div class="flex-1 pt-2">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Step 1: Initiation</h3>
+                        <span class="px-2 py-0.5 rounded-md bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-widest border border-green-500/20">Completed</span>
+                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl">
+                        Your journey began on @Model.CreatedAt.ToString("MMMM dd, yyyy"). You took the first step by joining the AskNLearn community.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Milestone 2: Profile Maturity -->
+            <div class="relative flex items-start gap-8 group">
+                <div class="z-10 size-12 md:size-16 rounded-2xl @(Model.ProfileCompletionPercentage >= 100 ? "bg-primary" : "bg-slate-100 dark:bg-surface-dark") @(Model.ProfileCompletionPercentage >= 100 ? "text-white" : "text-slate-400") flex items-center justify-center border-2 border-border-light dark:border-border-dark transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-2xl md:text-3xl">person_edit</span>
+                </div>
+                <div class="flex-1 pt-2">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Step 2: Profile Maturity</h3>
+                        @if (Model.ProfileCompletionPercentage >= 100)
+                        {
+                            <span class="px-2 py-0.5 rounded-md bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-widest border border-green-500/20">Completed</span>
+                        }
+                        else
+                        {
+                            <span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">In Progress</span>
+                        }
+                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mb-4">
+                        A complete profile helps us verify your identity. Add your bio, occupation, institution, and interests.
+                    </p>
+                    <div class="max-w-xs p-1 bg-slate-100 dark:bg-slate-800 rounded-full border border-border-light dark:border-border-dark overflow-hidden">
+                        <div class="h-2 bg-primary rounded-full transition-all duration-1000" style="width: @Model.ProfileCompletionPercentage%"></div>
+                    </div>
+                    <p class="text-[10px] font-black text-primary uppercase tracking-widest mt-2">@Model.ProfileCompletionPercentage% Completion</p>
+                </div>
+            </div>
+
+            <!-- Milestone 3: Verification Request -->
+            <div class="relative flex items-start gap-8 group">
+                <div class="z-10 size-12 md:size-16 rounded-2xl @(Model.IsVerified ? "bg-primary text-white" : "bg-slate-100 dark:bg-surface-dark text-slate-400") flex items-center justify-center border-2 border-border-light dark:border-border-dark transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-2xl md:text-3xl">upload_file</span>
+                </div>
+                <div class="flex-1 pt-2">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Step 3: Identity Verification</h3>
+                         @if (Model.IsVerified)
+                        {
+                            <span class="px-2 py-0.5 rounded-md bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-widest border border-green-500/20">Approved</span>
+                        }
+                        else
+                        {
+                            <span class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] font-black uppercase tracking-widest border border-border-light dark:border-border-dark">Action Required</span>
+                        }
+                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mb-6">
+                        Upload your Student ID or any official enrollment document to confirm you are a real student.
+                    </p>
+                    @if (!Model.IsVerified)
+                    {
+                        <a href="#" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all">
+                            Submit Documents <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <!-- Milestone 4: Community Influence -->
+            <div class="relative flex items-start gap-8 group">
+                <div class="z-10 size-12 md:size-16 rounded-2xl @(Model.Level >= 5 ? "bg-primary text-white" : "bg-slate-100 dark:bg-surface-dark text-slate-400") flex items-center justify-center border-2 border-border-light dark:border-border-dark transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-2xl md:text-3xl">military_tech</span>
+                </div>
+                <div class="flex-1 pt-2">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Step 4: Community Level</h3>
+                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Target: Level 5</span>
+                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl">
+                        Interact with others and share knowledge to reach level 5. You are currently at **Level @Model.Level**.
+                    </p>
+                    <div class="flex items-center gap-4 mt-4">
+                        <div class="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-xs">@Model.Level</div>
+                        <div class="flex-1 max-w-xs h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full">
+                            <div class="h-full bg-primary rounded-full" style="width: @(Math.Min(Model.Level * 20, 100))%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Goal -->
+            <div class="relative flex items-start gap-8 group">
+                <div class="z-10 size-12 md:size-16 rounded-2xl @(Model.IsVerified ? "bg-blue-600 text-white shadow-blue-500/40" : "bg-slate-50 dark:bg-slate-900/50 text-slate-300 dark:text-slate-700 shadow-none") border-2 border-border-light dark:border-border-dark flex items-center justify-center transition-all duration-700 shadow-2xl">
+                    <span class="material-symbols-outlined text-2xl md:text-3xl @(Model.IsVerified ? "fill-1" : "")">verified</span>
+                </div>
+                <div class="flex-1 pt-2">
+                    <h3 class="text-xl font-black @(Model.IsVerified ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-600") uppercase tracking-tight">Verified Student Status</h3>
+                    <p class="text-sm @(Model.IsVerified ? "text-slate-600 dark:text-white" : "text-slate-400") leading-relaxed max-w-xl">
+                        Unlock the full potential: Verified Badge, priority in discussions, and exclusive Study Groups access.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@keyframes fade-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .milestone-animate {
+        animation: fade-up 0.6s ease-out forwards;
+    }
+</style>

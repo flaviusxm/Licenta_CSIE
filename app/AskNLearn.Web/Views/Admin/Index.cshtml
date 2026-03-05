@@ -1,0 +1,82 @@
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="flex flex-col gap-8">
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-3xl font-bold text-white mb-2">Dashboard Overview</h2>
+            <div class="flex items-center gap-2 text-sm text-slate-500">
+                <div class="size-2 rounded-full bg-emerald-500"></div>
+                Platform performance and student verification pulse.
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button class="px-6 py-2.5 rounded-xl border border-border-admin text-white text-sm font-bold flex items-center gap-2 hover:bg-surface-admin transition-all">
+                <span class="material-symbols-outlined text-sm">filter_list</span>
+                Filter View
+            </button>
+            <button onclick="window.location.reload()" class="px-6 py-2.5 rounded-xl bg-primary/20 text-primary border border-primary/30 text-sm font-bold flex items-center gap-2 hover:bg-primary transition-all group overflow-hidden relative">
+                <span class="material-symbols-outlined text-sm relative z-10">refresh</span>
+                <span class="relative z-10">Refresh Queue</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-6 rounded-2xl bg-surface-admin border border-border-admin relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4">
+                <div class="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined">pending_actions</span>
+                </div>
+            </div>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Queue Size</p>
+            <div class="flex items-baseline gap-3">
+                <h3 class="text-4xl font-bold text-white">@ViewBag.PendingVerifications</h3>
+                <span class="text-xs text-emerald-500 font-bold">+5 new today</span>
+            </div>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-surface-admin border border-border-admin relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4">
+                <div class="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                    <span class="material-symbols-outlined">check_circle</span>
+                </div>
+            </div>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Success Rate</p>
+            <div class="flex items-baseline gap-3">
+                <h3 class="text-4xl font-bold text-white">92%</h3>
+                <span class="text-xs text-slate-500 font-medium italic">Industry average</span>
+            </div>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-surface-admin border border-border-admin relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4">
+                <div class="size-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
+                    <span class="material-symbols-outlined">dangerous</span>
+                </div>
+            </div>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Blocked</p>
+            <div class="flex items-baseline gap-3">
+                <h3 class="text-4xl font-bold text-white">12</h3>
+                <span class="text-xs text-red-500 font-bold">Suspicious IDs</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Placeholder -->
+    <div class="rounded-2xl bg-surface-admin border border-border-admin overflow-hidden">
+        <div class="p-6 border-b border-border-admin flex justify-between items-center">
+            <h4 class="font-bold text-white">Pending Activity</h4>
+            <a asp-action="Verifications" class="text-xs text-primary font-bold hover:underline">Go to Verifications</a>
+        </div>
+        <div class="p-12 text-center flex flex-col items-center gap-4">
+             <div class="size-16 rounded-full bg-background-admin flex items-center justify-center text-slate-600">
+                <span class="material-symbols-outlined text-3xl">inbox</span>
+            </div>
+            <p class="text-slate-400 max-w-xs">Check the verification queue to process new student applications.</p>
+        </div>
+    </div>
+</div>

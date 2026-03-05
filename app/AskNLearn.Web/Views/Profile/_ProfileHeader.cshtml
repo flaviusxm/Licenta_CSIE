@@ -1,0 +1,85 @@
+@model AskNLearn.Application.Features.Users.Queries.GetUserProfile.UserProfileDto
+
+<!-- Custom Banner (Discord Style) -->
+<div class="relative w-full h-40 md:h-56 overflow-hidden rounded-[2.5rem] shadow-xl group">
+    <div id="profileBanner" class="w-full h-full bg-slate-200 dark:bg-slate-800 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" 
+         style="background-image: url('@(Model.BannerUrl ?? "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop")');">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+    </div>
+    <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+        <input type="text" name="BannerUrl" value="@Model.BannerUrl" placeholder="Paste Banner URL..." 
+               class="px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black placeholder:text-white/60 focus:ring-2 focus:ring-white/30 outline-none w-48 shadow-2xl transition-all" />
+    </div>
+</div>
+
+<!-- LinkedIn Style Header: Overlapping Avatar and Left Aligned -->
+<div class="flex flex-col md:flex-row items-end md:items-start gap-6 md:gap-10 relative px-4 md:px-8">
+    <!-- Overlapping Avatar -->
+    <div class="group relative shrink-0 mt-[-48px] md:mt-[-64px]">
+        <div class="size-32 md:size-44 rounded-full bg-cover bg-center border-[6px] border-background-light dark:border-background-dark shadow-2xl transition-transform group-hover:scale-[1.02]" 
+             style="background-image: url('@(Model.AvatarUrl ?? "https://api.dicebear.com/7.x/avataaars/svg?seed=" + Model.FullName)');"></div>
+    </div>
+
+    <!-- Identity & Actions - Strictly Left Aligned -->
+    <div class="text-left flex flex-col gap-4 flex-1 w-full pt-4 md:pt-6">
+        <div class="flex flex-col md:flex-row justify-between items-start gap-4">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">@Model.FullName</h1>
+                <p class="text-primary font-bold text-sm tracking-wide">@Model.Email</p>
+            </div>
+            <div class="flex items-center gap-3">
+                @if (ViewData["IsVerificationPage"] as bool? != true)
+                {
+                    <button type="submit" form="profileForm" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">
+                        <span class="material-symbols-outlined text-xl">save</span> Save Changes
+                    </button>
+                }
+                else
+                {
+                    <a asp-action="Index" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">
+                        <span class="material-symbols-outlined text-xl">person</span> Back to Profile
+                    </a>
+                }
+            </div>
+        </div>
+
+        <!-- Status Badges & Social Icons -->
+        <div class="flex flex-wrap items-center justify-start gap-3">
+            @if (Model.Role == "Admin")
+            {
+                <span class="px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 text-[10px] font-black uppercase tracking-widest border border-red-500/20 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">shield_person</span> Administrator
+                </span>
+            }
+            else if (Model.Role == "Moderator")
+            { 
+                <span class="px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 text-[10px] font-black uppercase tracking-widest border border-purple-500/20 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">verified_user</span> Moderator
+                </span>
+            }
+            else if (Model.IsVerified)
+            {
+                <span class="px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 text-[10px] font-black uppercase tracking-widest border border-blue-500/20 flex items-center gap-1.5 shadow-sm">
+                    <span class="material-symbols-outlined text-sm fill-current">verified</span> Verified Student
+                </span>
+            }
+            else
+            {
+                 <a asp-action="Verification" class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest border border-border-light dark:border-border-dark flex items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer">
+                    <span class="material-symbols-outlined text-sm">how_to_reg</span> Unverified Member
+                </a>
+            }
+
+            <span class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-surface-dark text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-widest border border-border-light dark:border-border-dark flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">calendar_today</span> Joined @Model.CreatedAt.ToString("MMM yyyy")
+            </span>
+            <span class="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">military_tech</span> Level @Model.Level
+            </span>
+
+            <div id="socialDisplay" class="flex items-center gap-2">
+                <!-- Links injected by JS -->
+            </div>
+        </div>
+    </div>
+</div>

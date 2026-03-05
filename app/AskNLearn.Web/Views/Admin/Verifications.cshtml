@@ -1,0 +1,180 @@
+@using AskNLearn.Domain.Entities.Core
+@model IEnumerable<VerificationRequest>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Verification Requests";
+}
+
+<div class="flex flex-col gap-8">
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-3xl font-bold text-white mb-2">Pending Student Verifications</h2>
+            <div class="flex items-center gap-2 text-sm text-slate-500">
+                <div class="size-2 rounded-full bg-primary animate-pulse"></div>
+                Validate student credentials for full platform community access.
+            </div>
+        </div>
+        <div class="flex gap-3">
+             <button class="px-6 py-2.5 rounded-xl border border-border-admin text-white text-sm font-bold flex items-center gap-2 hover:bg-surface-admin transition-all">
+                <span class="material-symbols-outlined text-sm">filter_alt</span>
+                Filter View
+            </button>
+            <button onclick="window.location.reload()" class="px-6 py-2.5 rounded-xl bg-primary text-background-admin text-sm font-bold flex items-center gap-2 hover:bg-primary/80 transition-all shadow-lg shadow-primary/20">
+                <span class="material-symbols-outlined text-sm">sync</span>
+                Refresh Queue
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Mini Grid -->
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-6 rounded-2xl bg-surface-admin border border-border-admin relative group">
+            <div class="absolute top-4 right-4 text-primary bg-primary/10 p-2 rounded-lg">
+                 <span class="material-symbols-outlined">analytics</span>
+            </div>
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Queue Size</p>
+            <div class="flex items-baseline gap-2">
+                <h3 class="text-3xl font-bold text-white">@Model.Count(r => r.Status == Status.Pending)</h3>
+                <span class="text-xs text-emerald-500">+5 new today</span>
+            </div>
+        </div>
+        <!-- Add more stats if needed -->
+    </div>
+
+    <!-- Table -->
+    <div class="rounded-2xl bg-surface-admin border border-border-admin overflow-hidden">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-background-admin/50 border-b border-border-admin">
+                <tr>
+                    <th class="px-6 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Student / Username</th>
+                    <th class="px-6 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider text-center">ID Evidence</th>
+                    <th class="px-6 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Submission Date</th>
+                    <th class="px-6 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Status</th>
+                    <th class="px-6 py-4 font-bold text-slate-500 uppercase text-[10px] tracking-wider text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-border-admin">
+                @foreach (var request in Model)
+                {
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="size-10 rounded-full bg-surface-admin border border-border-admin overflow-hidden">
+                                     @if (!string.IsNullOrEmpty(request.User.AvatarUrl))
+                                    {
+                                        <img src="@request.User.AvatarUrl" class="w-full h-full object-cover" />
+                                    }
+                                    else
+                                    {
+                                        <div class="w-full h-full flex items-center justify-center text-primary font-bold">
+                                            @request.User.FullName?.Substring(0, 1)
+                                        </div>
+                                    }
+                                </div>
+                                <div>
+                                    <p class="font-bold text-white">@request.User.FullName</p>
+                                    <p class="text-xs text-slate-500">@@@request.User.UserName • @request.User.Institution</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex justify-center gap-2">
+                                <a href="@request.StudentIdUrl" target="_blank" class="size-12 rounded-xl border border-border-admin bg-background-admin overflow-hidden group hover:border-primary transition-all">
+                                    <img src="@request.StudentIdUrl" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                </a>
+                                <a href="@request.CarnetUrl" target="_blank" class="size-12 rounded-xl border border-border-admin bg-background-admin overflow-hidden group hover:border-primary transition-all">
+                                    <img src="@request.CarnetUrl" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                </a>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-slate-400">
+                             <p class="font-medium text-white">@request.SubmittedAt.ToString("MMM dd, yyyy")</p>
+                             <p class="text-[10px]">@request.SubmittedAt.ToString("hh:mm tt")</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            @switch (request.Status)
+                            {
+                                case Status.Pending:
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold uppercase tracking-wider">
+                                        <div class="size-1.5 rounded-full bg-primary animate-pulse"></div>
+                                        Pending
+                                    </span>
+                                    break;
+                                case Status.Approved:
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[10px] font-bold uppercase tracking-wider">
+                                        <div class="size-1.5 rounded-full bg-emerald-500"></div>
+                                        Approved
+                                    </span>
+                                    break;
+                                case Status.Rejected:
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] font-bold uppercase tracking-wider">
+                                        <div class="size-1.5 rounded-full bg-red-500"></div>
+                                        Rejected
+                                    </span>
+                                    break;
+                            }
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex justify-end gap-2">
+                                @if (request.Status == Status.Pending)
+                                {
+                                    <form asp-action="Approve" method="post">
+                                        <input type="hidden" name="id" value="@request.Id" />
+                                        <button class="size-8 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all">
+                                            <span class="material-symbols-outlined text-sm">check</span>
+                                        </button>
+                                    </form>
+                                    <button onclick="openRejectModal('@request.Id')" class="size-8 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                                        <span class="material-symbols-outlined text-sm">close</span>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        
+        <!-- Pagination Placeholder -->
+        <div class="p-6 border-t border-border-admin flex justify-between items-center text-xs text-slate-500">
+            <p>Showing 1-10 of @Model.Count() records</p>
+            <div class="flex gap-2">
+                <button class="size-8 rounded bg-background-admin flex items-center justify-center border border-border-admin">❮</button>
+                <button class="size-8 rounded bg-primary text-background-admin font-bold">1</button>
+                <button class="size-8 rounded bg-background-admin flex items-center justify-center border border-border-admin">2</button>
+                <button class="size-8 rounded bg-background-admin flex items-center justify-center border border-border-admin">3</button>
+                <button class="size-8 rounded bg-background-admin flex items-center justify-center border border-border-admin">❯</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div id="rejectModal" class="hidden fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
+    <div class="bg-surface-admin border border-border-admin w-full max-w-md rounded-2xl p-6 shadow-2xl animate-fade-in">
+        <h3 class="text-xl font-bold text-white mb-4">Reject Verification</h3>
+        <form asp-action="Reject" method="post">
+            <input type="hidden" name="id" id="rejectId" />
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-bold text-slate-400">Reason for rejection</label>
+                    <textarea name="notes" rows="4" class="bg-background-admin border border-border-admin rounded-xl p-3 text-sm text-white focus:ring-2 focus:ring-primary outline-none transition-all" placeholder="e.g., Student ID is not clear enough..."></textarea>
+                </div>
+                <div class="flex gap-4">
+                    <button type="button" onclick="closeRejectModal()" class="flex-1 py-3 rounded-xl border border-border-admin text-white font-bold hover:bg-white/5 transition-all">Cancel</button>
+                    <button type="submit" class="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 transition-all shadow-lg shadow-red-500/20">Confirm Reject</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openRejectModal(id) {
+        document.getElementById('rejectId').value = id;
+        document.getElementById('rejectModal').classList.remove('hidden');
+    }
+    function closeRejectModal() {
+        document.getElementById('rejectModal').classList.add('hidden');
+    }
+</script>
