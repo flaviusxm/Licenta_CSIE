@@ -15,6 +15,7 @@ namespace AskNLearn.Application.Features.Communities.Commands.CreateCommunity
         public string? Description { get; set; }
 
         public string? CreatorId { get; set; }
+        public Microsoft.AspNetCore.Http.IFormFile? Image { get; set; }
 
     }
 }

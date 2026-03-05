@@ -27,6 +27,7 @@ namespace AskNLearn.Application.Features.Communities.Queries.GetCommunityById
                     Name = c.Name,
                     Slug = c.Slug,
                     Description = c.Description,
+                    ImageUrl = c.ImageUrl,
                     CreatorId = c.CreatorId,
                     CreatedAt = c.CreatedAt,
                     PostCount = c.Posts.Count

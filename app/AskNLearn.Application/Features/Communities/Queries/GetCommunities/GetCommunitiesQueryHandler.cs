@@ -35,10 +35,11 @@ namespace AskNLearn.Application.Features.Communities.Queries.GetCommunities
                     Name = c.Name,
                     Slug = c.Slug,
                     Description = c.Description,
+                    ImageUrl = c.ImageUrl,
                     CreatorId = c.CreatorId,
                     CreatedAt = c.CreatedAt,
                     PostCount = c.Posts.Count
-                    // MemberCount can be added later when CommunityMembership is fully connected
+                  
                 })
                 .ToListAsync(cancellationToken);
         }

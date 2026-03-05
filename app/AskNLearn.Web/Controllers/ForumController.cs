@@ -106,8 +106,7 @@ namespace AskNLearn.Web.Controllers
             {
                 Id = community.Id,
                 Name = community.Name,
-                Description = community.Description,
-                IsPublic = community.IsPublic
+                Description = community.Description
             };
 
             return View(command);

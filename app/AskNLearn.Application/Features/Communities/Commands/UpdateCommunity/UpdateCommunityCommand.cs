@@ -13,6 +13,7 @@ namespace AskNLearn.Application.Features.Communities.Commands.UpdateCommunity
         public string Name { get; set; } = null!;
 
         public string? Description { get; set; }
+        public Microsoft.AspNetCore.Http.IFormFile? Image { get; set; }
 
     }
 }
