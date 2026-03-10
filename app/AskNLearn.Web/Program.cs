@@ -77,8 +77,25 @@ try
     Log.Information("Starting app...");
     using (var scope = app.Services.CreateScope())
     {
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        await DatabaseInitializer.SeedAdminUserAsync(userManager);
+        var services = scope.ServiceProvider;
+        try
+        {
+            var dbContext = services.GetRequiredService<ApplicationDbContext>();
+            if (dbContext.Database.GetPendingMigrations().Any())
+            {
+                Log.Information("Applying pending migrations...");
+                await dbContext.Database.MigrateAsync();
+                Log.Information("Migrations applied successfully.");
+            }
+
+            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+            await DatabaseInitializer.SeedAdminUserAsync(userManager);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred during database initialization (migration or seeding).");
+            throw; // Re-throw to be caught by the outer catch
+        }
     }
     app.Run();
 }
