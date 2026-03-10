@@ -31,7 +31,15 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries.GetStudyGroupById
                     OwnerId = x.OwnerId,
                     OwnerUserName = x.Owner != null ? x.Owner.UserName : null,
                     CreatedAt = x.CreatedAt,
-                    MemberCount = x.Members.Count
+                    MemberCount = x.Members.Count,
+                    Channels = x.Channels.OrderBy(c => c.Position).Select(c => new ChannelDto
+                    {
+                        Id = c.Id,
+                        Name = c.Name,
+                        Type = (ChannelType)c.Type,
+                        Topic = c.Topic,
+                        Position = c.Position
+                    }).ToList()
                 })
                 .FirstOrDefaultAsync(cancellationToken);
         }

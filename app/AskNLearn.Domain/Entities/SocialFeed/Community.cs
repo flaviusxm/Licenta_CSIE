@@ -10,6 +10,7 @@ namespace AskNLearn.Domain.Entities.SocialFeed
         [Required][MaxLength(100)] public string Name { get; set; }
         [Required][MaxLength(100)] public string Slug { get; set; } 
         public string? Description { get; set; }
+        public string? ImageUrl { get; set; }
         public string? CreatorId { get; set; } 
         public DateTime CreatedAt { get; set; }
         public ICollection<Post> Posts { get; set; }

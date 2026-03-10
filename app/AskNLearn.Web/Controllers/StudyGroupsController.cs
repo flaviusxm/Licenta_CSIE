@@ -1,3 +1,4 @@
+using AskNLearn.Application.Features.StudyGroups.Commands.CreateChannel;
 using AskNLearn.Application.Features.StudyGroups.Commands.CreateStudyGroup;
 using AskNLearn.Application.Features.StudyGroups.Commands.DeleteStudyGroup;
 using AskNLearn.Application.Features.StudyGroups.Commands.UpdateStudyGroup;
@@ -88,12 +89,19 @@ namespace AskNLearn.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(Guid id)
         {
-            // Optional: Re-verify ownership before deletion if needed, 
-            // but the command handler should ideally handle this or be trusted.
             var result = await _mediator.Send(new DeleteStudyGroupCommand { Id = id });
             if (!result) return NotFound();
-
+            
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateChannel(CreateChannelCommand command)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var channelId = await _mediator.Send(command);
+            return RedirectToAction(nameof(Details), new { id = command.GroupId });
         }
     }
 }

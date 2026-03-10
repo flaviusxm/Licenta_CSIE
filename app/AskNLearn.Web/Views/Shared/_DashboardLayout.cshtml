@@ -55,16 +55,35 @@
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex flex-col transition-colors duration-200">
     <!-- Top Navigation Bar -->
-    <header class="h-16 flex items-center justify-between px-6 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark z-50 shrink-0">
+    <header class="h-16 flex items-center justify-between px-6 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark z-50 shrink-0 shadow-sm">
         <!-- Logo Area -->
-        <div class="flex items-center gap-8 w-64 justify-center">
+        <div class="flex items-center w-48">
             <a asp-controller="Home" asp-action="Index" class="flex items-center gap-3 text-slate-900 dark:text-white cursor-pointer hover:opacity-80 transition-opacity">
-                <h1 class="text-xl font-bold tracking-tight">AskNLearn</h1>
+                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">AskNLearn</h1>
             </a>
         </div>
+
+        <!-- Center Global Navigation -->
+        <nav class="hidden md:flex items-center gap-1 bg-slate-100/50 dark:bg-white/5 p-1 rounded-2xl border border-border-light dark:border-white/5">
+            <a asp-controller="Home" asp-action="Index" class="px-4 py-2 rounded-xl text-sm font-bold transition-all @(ViewData["ActivePage"] as string == "Home" ? "bg-white dark:bg-surface-dark text-primary shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white")">
+                Home
+            </a>
+            <a asp-controller="Explore" asp-action="Index" class="px-4 py-2 rounded-xl text-sm font-bold transition-all @(ViewData["ActivePage"] as string == "Explore" ? "bg-white dark:bg-surface-dark text-primary shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white")">
+                Explore
+            </a>
+            <a asp-controller="Resources" asp-action="Index" class="px-4 py-2 rounded-xl text-sm font-bold transition-all @(ViewData["ActivePage"] as string == "Resources" ? "bg-white dark:bg-surface-dark text-primary shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white")">
+                Resources
+            </a>
+            <a asp-controller="StudyGroups" asp-action="Index" class="px-4 py-2 rounded-xl text-sm font-bold transition-all @(ViewData["ActivePage"] as string == "StudyGroups" ? "bg-white dark:bg-surface-dark text-primary shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white")">
+                Groups
+            </a>
+            <a asp-controller="Leaderboard" asp-action="Index" class="px-4 py-2 rounded-xl text-sm font-bold transition-all @(ViewData["ActivePage"] as string == "Leaderboard" ? "bg-white dark:bg-surface-dark text-primary shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white")">
+                Leaderboard
+            </a>
+        </nav>
         
         <!-- Right Actions -->
-        <div class="flex items-center justify-end gap-4 w-auto md:w-64">
+        <div class="flex items-center justify-end gap-3 w-48">
              @if (User.Identity.IsAuthenticated)
             {
                 <!-- Tasks -->
@@ -140,98 +159,34 @@
     </header>
     <!-- Main Content Area -->
     <div class="flex flex-1 overflow-hidden">
-        <!-- Left Sidebar (Navigation) -->
-        <aside id="leftSidebar" class="relative w-64 hidden lg:flex flex-col border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark overflow-y-auto p-4 gap-6 shrink-0">
-            <!-- Main Nav -->
-            <nav class="flex flex-col gap-1">
-                @if (User.Identity.IsAuthenticated)
-                {
-                     <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "Home" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="Home" asp-action="Index">
-                        <div class="size-8 rounded-lg bg-blue-500/10 text-blue-500 dark:text-blue-400 group-hover:bg-blue-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px] @(ViewData["ActivePage"] as string == "Home" ? "fill-1" : "")">home</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Home</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "Explore" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="Explore" asp-action="Index">
-                        <div class="size-8 rounded-lg bg-purple-500/10 text-purple-500 dark:text-purple-400 group-hover:bg-purple-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">explore</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Explore</span>
-                    </a>
-                   
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "Resources" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="Resources" asp-action="Index">
-                         <div class="size-8 rounded-lg bg-amber-500/10 text-amber-500 dark:text-amber-400 group-hover:bg-amber-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">school</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Resources</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "StudyGroups" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 border:bg-primary dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="StudyGroups" asp-action="Index">
-                        <div class="size-8 rounded-lg bg-pink-500/10 text-pink-500 dark:text-pink-400 group-hover:bg-pink-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">groups</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Groups</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl @(ViewData["ActivePage"] as string == "Leaderboard" ? "bg-slate-100 dark:bg-surface-dark" : "hover:bg-slate-50 dark:hover:bg-surface-dark/50") transition-colors group cursor-pointer" asp-controller="Leaderboard" asp-action="Index">
-                         <div class="size-8 rounded-lg bg-orange-500/10 text-orange-500 dark:text-orange-400 group-hover:bg-orange-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">leaderboard</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Leaderboard</span>
-                    </a>
-                }
-                else
-                {
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showFeed()" href="javascript:void(0)">
-                        <div class="size-8 rounded-lg bg-blue-500/10 text-blue-500 dark:text-blue-400 group-hover:bg-blue-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px] fill-1">home</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Home</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showAuthWall('Explore', 'Discover trending topics and communities.')" href="javascript:void(0)">
-                         <div class="size-8 rounded-lg bg-purple-500/10 text-purple-500 dark:text-purple-400 group-hover:bg-purple-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">explore</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Explore</span>
-                    </a>
-                   
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showAuthWall('Resources', 'Access shared notes, PDFs, and guides.')" href="javascript:void(0)">
-                         <div class="size-8 rounded-lg bg-amber-500/10 text-amber-500 dark:text-amber-400 group-hover:bg-amber-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">school</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Resources</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showAuthWall('Study Groups', 'Join live study sessions with verified students.')" href="javascript:void(0)">
-                         <div class="size-8 rounded-lg bg-pink-500/10 text-pink-500 dark:text-pink-400 group-hover:bg-pink-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">groups</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Study Groups</span>
-                    </a>
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-dark/50 transition-colors group cursor-pointer" onclick="showAuthWall('Leaderboard', 'See who is topping the charts this semester.')" href="javascript:void(0)">
-                         <div class="size-8 rounded-lg bg-orange-500/10 text-orange-500 dark:text-orange-400 group-hover:bg-orange-500/20 flex items-center justify-center transition-colors">
-                            <span class="material-symbols-outlined text-[20px]">leaderboard</span>
-                        </div>
-                        <span class="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Leaderboard</span>
-                    </a>
-                }
-            </nav>
-            <div class="h-[1px] w-full bg-border-light dark:bg-border-dark"></div>
-            
-        </aside>
-        <button id="toggleLeftSidebar"
-                class="hidden lg:flex items-center justify-center
-         absolute top-1/2 -translate-y-1/2
-         left-64
-         bg-primary text-white
-         z-50
-         w-8 h-12 rounded-r-lg shadow-md
-         hover:bg-primary/80 transition-all">
-            ❮
-        </button>
+        @if (IsSectionDefined("Sidebar"))
+        {
+            <!-- Left Sidebar (Conditional Navigation) -->
+            <aside id="leftSidebar" class="relative w-72 hidden lg:flex flex-col border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark overflow-y-auto shrink-0 transition-all duration-300">
+                <!-- Sidebar content will be rendered by the View -->
+                <div class="flex-1 flex flex-col min-h-0">
+                    @RenderSection("Sidebar")
+                </div>
+            </aside>
+            <button id="toggleLeftSidebar"
+                    class="hidden lg:flex items-center justify-center
+             absolute top-1/2 -translate-y-1/2
+             left-72
+             bg-primary text-white
+             z-50
+             w-8 h-12 rounded-r-lg shadow-md
+             hover:bg-primary/80 transition-all">
+                ❮
+            </button>
+        }
 
         <!-- Center Feed -->
-        <main class="flex-1 overflow-y-auto relative bg-background-light dark:bg-background-dark p-6">
+        <main class="flex-1 overflow-y-auto relative bg-background-light dark:bg-background-dark">
             @if (User.Identity.IsAuthenticated)
             {
-                @await Component.InvokeAsync("ProfileCompletion")
+                <div class="px-6 py-4">
+                    @await Component.InvokeAsync("ProfileCompletion")
+                </div>
             }
             @RenderBody()
         </main>
@@ -247,19 +202,21 @@
         const leftSidebar = document.getElementById("leftSidebar");
         const leftButton = document.getElementById("toggleLeftSidebar");
 
-        leftButton.addEventListener("click", () => {
-            leftSidebar.classList.toggle("lg:flex");
+        if (leftSidebar && leftButton) {
+            leftButton.addEventListener("click", () => {
+                leftSidebar.classList.toggle("lg:flex");
 
-            if (!leftSidebar.classList.contains("lg:flex")) {
-                leftButton.innerHTML = "❯";
-                leftButton.classList.remove("left-64");
-                leftButton.classList.add("left-0");
-            } else {
-                leftButton.innerHTML = "❮";
-                leftButton.classList.remove("left-0");
-                leftButton.classList.add("left-64");
-            }
-        }); 
+                if (!leftSidebar.classList.contains("lg:flex")) {
+                    leftButton.innerHTML = "❯";
+                    leftButton.classList.remove("left-72");
+                    leftButton.classList.add("left-0");
+                } else {
+                    leftButton.innerHTML = "❮";
+                    leftButton.classList.remove("left-0");
+                    leftButton.classList.add("left-72");
+                }
+            });
+        }
 
     
         function toggleDropdown(id) {

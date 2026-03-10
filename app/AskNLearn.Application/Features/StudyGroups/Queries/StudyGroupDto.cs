@@ -13,5 +13,6 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries
         public string? OwnerUserName { get; set; }
         public DateTime CreatedAt { get; set; }
         public int MemberCount { get; set; }
+        public List<ChannelDto> Channels { get; set; } = new ();
     }
 }
