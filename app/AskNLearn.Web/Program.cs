@@ -29,9 +29,32 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Auth/SignIn";
+    options.AccessDeniedPath = "/Auth/AccessDenied";
+});
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+if (args.Contains("seeddb"))
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    
+    Console.WriteLine("Applying migrations...");
+    await dbContext.Database.MigrateAsync();
+    
+    Console.WriteLine("Seeding database...");
+    await DatabaseInitializer.SeedAsync(dbContext, userManager);
+    
+    Console.WriteLine("Database initialization complete!");
+    return;
+}
+
 if (args.Contains("migratedb"))
 {
     using var scope = app.Services.CreateScope();
@@ -54,6 +77,7 @@ else
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
@@ -75,28 +99,6 @@ app.MapRazorPages()
 try
 {
     Log.Information("Starting app...");
-    using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
-        try
-        {
-            var dbContext = services.GetRequiredService<ApplicationDbContext>();
-            if (dbContext.Database.GetPendingMigrations().Any())
-            {
-                Log.Information("Applying pending migrations...");
-                await dbContext.Database.MigrateAsync();
-                Log.Information("Migrations applied successfully.");
-            }
-
-            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-            await DatabaseInitializer.SeedAdminUserAsync(userManager);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred during database initialization (migration or seeding).");
-            throw; // Re-throw to be caught by the outer catch
-        }
-    }
     app.Run();
 }
 catch (Exception ex)

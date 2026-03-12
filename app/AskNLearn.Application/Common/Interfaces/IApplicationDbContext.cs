@@ -20,7 +20,14 @@ namespace AskNLearn.Application.Common.Interfaces
         DbSet<UserRank> UserRanks { get; }
         DbSet<GroupMembership> GroupMemberships { get; }
         DbSet<StudyGroup> StudyGroups { get; }
+        DbSet<Channel> Channels { get; }
         DbSet<PostVote> PostVotes { get; }
+        DbSet<PostAttachment> PostAttachments { get; }
+        DbSet<PostView> PostViews { get; }
+        DbSet<StoredFile> StoredFiles { get; }
+        DbSet<MessageAttachment> MessageAttachments { get; }
+        DbSet<MessageReaction> MessageReactions { get; }
+        DbSet<VerificationRequest> VerificationRequests { get; }
         
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
