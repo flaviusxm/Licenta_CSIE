@@ -29,6 +29,11 @@ namespace AskNLearn.Application.Common.Interfaces
         DbSet<MessageReaction> MessageReactions { get; }
         DbSet<VerificationRequest> VerificationRequests { get; }
         
+        DbSet<PostTag> PostTags { get; }
+        DbSet<LearningResource> LearningResources { get; }
+        DbSet<Event> Events { get; }
+        DbSet<Report> Reports { get; }
+        
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

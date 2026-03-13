@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using AskNLearn.Domain.Entities.Core;
 using AskNLearn.Domain.Entities.Gamification;
@@ -38,6 +38,7 @@ namespace AskNLearn.Infrastructure.Persistance
         public DbSet<PostVote> PostVotes { get; set; }
         public DbSet<PostView> PostViews { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<PostTag> PostTags { get; set; }
 
         // StudyGroup
         public DbSet<Channel> Channels { get; set; }
@@ -46,6 +47,8 @@ namespace AskNLearn.Infrastructure.Persistance
         public DbSet<GroupMembership> GroupMemberships { get; set; }
         public DbSet<GroupRole> GroupRoles { get; set; }
         public DbSet<StudyGroup> StudyGroups { get; set; }
+        public DbSet<LearningResource> LearningResources { get; set; }
+        public DbSet<Event> Events { get; set; }
 
         // Explicit interface implementations if needed, but here we just need public DbSets
         // that match the interface property names.
