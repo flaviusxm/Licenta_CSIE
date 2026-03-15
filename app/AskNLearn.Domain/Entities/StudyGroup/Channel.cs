@@ -4,10 +4,11 @@ using AskNLearn.Domain.Entities.Messaging;
 
 namespace AskNLearn.Domain.Entities.StudyGroup
 {
-    public enum Type
+    public enum ChannelType
     {
         Text,
-        Voice
+        Voice,
+        Video
     }
     [Table("Channels")]
     public class Channel
@@ -28,7 +29,7 @@ namespace AskNLearn.Domain.Entities.StudyGroup
 
         [Required]
         [MaxLength(20)]
-        public Type Type { get; set; } = Type.Text;
+        public ChannelType Type { get; set; } = ChannelType.Text;
 
         public bool IsPrivate { get; set; } = false;
 

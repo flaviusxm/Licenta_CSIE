@@ -15,20 +15,20 @@
                     <h3 class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px]">Text Channels</h3>
                     @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
                     {
-                        <button onclick="openCreateChannelModal('@AskNLearn.Domain.Entities.StudyGroup.Type.Text')" class="size-6 flex items-center justify-center rounded-lg hover:bg-primary/10 text-slate-400 hover:text-primary transition-all">
+                        <button onclick="openCreateChannelModal('Text')" class="size-6 flex items-center justify-center rounded-lg hover:bg-primary/10 text-slate-400 hover:text-primary transition-all">
                             <span class="material-symbols-outlined text-lg">add</span>
                         </button>
                     }
                 </div>
                 <div class="space-y-1">
-                    @foreach (var channel in Model.Channels.Where(c => c.Type == ChannelType.Text))
+                    @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text))
                     {
-                        <a href="#" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary transition-all font-bold text-sm">
+                        <a href="javascript:void(0)" onclick="joinTextChannel('@channel.Id', '@channel.Name')" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary transition-all font-bold text-sm">
                             <span class="text-xl font-bold text-slate-300 dark:text-slate-600 group-hover:text-primary/60 transition-colors">#</span>
                             <span class="truncate">@channel.Name</span>
                         </a>
                     }
-                    @if (!Model.Channels.Any(c => c.Type == ChannelType.Text))
+                    @if (!Model.Channels.Any(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text))
                     {
                         <div class="px-4 py-8 text-center rounded-2xl border-2 border-dashed border-border-light dark:border-border-dark/30">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No text channels</p>
@@ -43,38 +43,26 @@
                     <h3 class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px]">Voice Channels</h3>
                     @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
                     {
-                        <button onclick="openCreateChannelModal('@AskNLearn.Domain.Entities.StudyGroup.Type.Voice')" class="size-6 flex items-center justify-center rounded-lg hover:bg-primary/10 text-slate-400 hover:text-primary transition-all">
+                        <button onclick="openCreateChannelModal('Voice')" class="size-6 flex items-center justify-center rounded-lg hover:bg-primary/10 text-slate-400 hover:text-primary transition-all">
                             <span class="material-symbols-outlined text-lg">add</span>
                         </button>
                     }
                 </div>
                 <div class="space-y-1" id="voiceChannelList">
-                    @foreach (var channel in Model.Channels.Where(c => c.Type == ChannelType.Voice))
+                    @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Voice || c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video))
                     {
                         <div class="group/voice">
                             <button onclick="joinVoice('@channel.Id', '@channel.Name')" 
                                     class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary transition-all font-bold text-sm">
-                                <span class="material-symbols-outlined text-lg opacity-40 group-hover/voice:opacity-100 transition-opacity">volume_up</span>
+                                <span class="material-symbols-outlined text-lg opacity-40 group-hover/voice:opacity-100 transition-opacity">@(channel.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video ? "videocam" : "volume_up")</span>
                                 <span class="truncate">@channel.Name</span>
                             </button>
                             <!-- Connected Users List for this channel -->
                             <div id="users-@channel.Id" class="hidden pl-9 pr-2 py-1 flex flex-col gap-1 animating-pulse">
-                                <div class="flex items-center gap-2 group/user cursor-pointer">
-                                    <div class="relative">
-                                        <div id="voiceAvatar" class="size-5 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-[8px] text-primary font-black transition-all">
-                                            @User.Identity.Name?[0]
-                                        </div>
-                                        <div class="absolute -bottom-0.5 -right-0.5 size-2 bg-emerald-500 rounded-full border border-white dark:border-[#1a1c1e]"></div>
-                                    </div>
-                                    <span class="text-[11px] font-bold text-slate-500 dark:text-slate-300 group-hover/user:text-primary transition-colors">@User.Identity.Name</span>
-                                    <div class="ml-auto flex items-center gap-1">
-                                        <span id="micOffIcon" class="material-symbols-outlined text-[10px] text-red-500 hidden">mic_off</span>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     }
-                    @if (!Model.Channels.Any(c => c.Type == ChannelType.Voice))
+                    @if (!Model.Channels.Any(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Voice || c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video))
                     {
                         <div class="px-4 py-8 text-center rounded-2xl border-2 border-dashed border-border-light dark:border-border-dark/30">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No voice channels</p>
@@ -82,6 +70,7 @@
                     }
                 </div>
             </div>
+
         </div>
 
         <!-- Sidebar Footer & Voice Status -->
@@ -91,10 +80,10 @@
                 <div class="p-4 flex items-center justify-between border-b border-border-light/50 dark:border-white/5">
                     <div class="flex flex-col gap-0.5">
                         <div class="flex items-center gap-1.5">
-                             <span class="material-symbols-outlined text-emerald-500 text-sm font-black animate-pulse">wifi</span>
-                            <span class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Voice Connected</span>
+                             <span class="material-symbols-outlined text-emerald-500 text-sm font-bold">wifi</span>
+                            <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Voice Connected</span>
                         </div>
-                        <p id="connectedChannelName" class="text-xs font-black text-slate-900 dark:text-white truncate max-w-[120px]">Channel Name</p>
+                        <p id="connectedChannelName" class="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[120px]">Channel Name</p>
                     </div>
                     <div class="flex items-center gap-1">
                         <button onclick="leaveVoice()" class="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all group" title="Disconnect">
@@ -108,17 +97,20 @@
             <div class="p-3 flex items-center justify-between">
                 <div class="flex items-center gap-2 px-2 py-1 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer group flex-1">
                     <div class="relative">
-                        <div class="size-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-black text-[10px]">
-                             @User.Identity.Name?[0]
+                        <div id="voiceAvatar" class="size-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-black text-[10px]">
+                             @(User.Identity?.Name?[0] ?? '?')
                         </div>
                         <div class="absolute -bottom-0.5 -right-0.5 size-3 bg-emerald-500 border-2 border-white dark:border-[#1a1c1e] rounded-full"></div>
                     </div>
                     <div class="flex-1 min-w-0">
-                         <p class="text-[11px] font-black text-slate-900 dark:text-white truncate">@User.Identity.Name</p>
-                         <p class="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Online</p>
+                         <p class="text-[11px] font-bold text-slate-900 dark:text-white truncate">@(User.Identity?.Name ?? "User")</p>
+                         <p class="text-[9px] font-semibold text-slate-500 uppercase tracking-normal">Online</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-1">
+                    <button onclick="toggleCamera()" id="videoButton" class="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-primary/10 hover:text-primary transition-all" title="Toggle Camera">
+                        <span id="videoIcon" class="material-symbols-outlined text-lg">videocam_off</span>
+                    </button>
                      <button onclick="toggleMic()" id="micButton" class="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-primary/10 hover:text-primary transition-all" title="Toggle Microphone">
                         <span id="micIcon" class="material-symbols-outlined text-lg">mic</span>
                     </button>
@@ -144,6 +136,25 @@
     }
 </style>
 
+<div id="drop-zone" class="fixed inset-0 z-[60] bg-primary/20 backdrop-blur-sm hidden flex items-center justify-center pointer-events-none">
+    <div class="bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-2xl border-2 border-dashed border-primary flex flex-col items-center gap-4 animate-in zoom-in duration-300">
+        <div class="size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-5xl">upload_file</span>
+        </div>
+        <p class="text-xl font-bold text-slate-900 dark:text-white">Release to upload files</p>
+    </div>
+</div>
+
+<!-- Unified Video Grid Overlay -->
+<div id="videoGrid" class="hidden fixed top-24 bottom-32 left-[300px] right-[300px] z-40 grid gap-4 p-6 pointer-events-none transition-all duration-500">
+    <div id="localVideoContainer" class="hidden relative aspect-video bg-black/40 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl backdrop-blur-3xl animate-in zoom-in-95 pointer-events-auto group">
+        <video id="localVideo" autoplay muted playsinline class="w-full h-full object-cover"></video>
+        <div class="absolute bottom-6 left-6 flex items-center gap-2 px-3 py-1.5 glass rounded-xl">
+            <span class="text-[10px] font-black text-white uppercase tracking-widest">You</span>
+        </div>
+    </div>
+</div>
+
 <div class="flex flex-col h-full bg-background-light dark:bg-background-dark overflow-hidden">
     <!-- Main Content Area -->
     <div class="flex-1 flex overflow-hidden w-full">
@@ -155,12 +166,12 @@
                     <section class="py-16 text-center">
                         <div class="size-28 flex items-center justify-center mx-auto mb-8 relative">
                            <div class="absolute inset-0 bg-primary/10 blur-3xl rounded-full"></div>
-                           <div class="size-24 rounded-[2rem] bg-gradient-to-br from-primary to-blue-500 text-white flex items-center justify-center rotate-6 hover:rotate-0 transition-all duration-500 shadow-2xl relative">
+                           <div class="size-24 rounded-[2rem] bg-gradient-to-br from-primary to-emerald-600 text-white flex items-center justify-center rotate-6 hover:rotate-0 transition-all duration-500 shadow-2xl relative">
                                 <span class="material-symbols-outlined text-5xl font-bold">auto_awesome</span>
                            </div>
                         </div>
                         <h2 class="text-5xl font-black text-slate-900 dark:text-white mb-6 tracking-tighter leading-tight italic">
-                            Welcome to <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500 uppercase not-italic">@Model.Name</span>
+                            Welcome to <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-600 uppercase not-italic">@Model.Name</span>
                         </h2>
                         <p class="text-xl text-slate-500 dark:text-slate-400 leading-relaxed font-medium max-w-xl mx-auto">
                             @(string.IsNullOrEmpty(Model.Description) ? "This is the start of your learning journey. Collaborate, study, and grow together!" : Model.Description)
@@ -174,16 +185,34 @@
             <!-- Quick Input Bar -->
             <div class="p-8 bg-gradient-to-t from-background-light dark:from-background-dark to-transparent absolute bottom-0 left-0 right-0 pointer-events-none">
                 <div class="max-w-4xl mx-auto w-full pointer-events-auto">
-                    <div class="bg-white/80 dark:bg-surface-dark/80 backdrop-blur-xl border border-white dark:border-white/10 rounded-3xl p-3 px-6 shadow-2xl flex items-center gap-5 transition-all focus-within:ring-2 focus-within:ring-primary/20">
-                        <button class="text-slate-400 hover:text-primary transition-colors">
+                    <div id="input-container" class="bg-white/80 dark:bg-surface-dark/80 backdrop-blur-xl border border-white dark:border-white/10 rounded-3xl p-3 px-6 shadow-2xl flex items-center gap-5 transition-all focus-within:ring-2 focus-within:ring-primary/20 relative">
+                        <!-- Emoji/GIF Picker Popup -->
+                        <div id="picker-popup" class="hidden absolute bottom-full left-0 mb-4 w-80 h-96 bg-white dark:bg-surface-dark rounded-3xl shadow-2xl border border-white dark:border-white/10 overflow-hidden flex flex-col animate-in slide-in-from-bottom-2 duration-300 z-50">
+                            <div class="flex border-b border-border-light dark:border-white/5">
+                                <button onclick="switchPickerTab('emoji')" id="tab-emoji" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-primary border-b-2 border-primary transition-all">Emojis</button>
+                                <button onclick="switchPickerTab('gif')" id="tab-gif" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all">GIFs</button>
+                            </div>
+                            <div id="emoji-picker-container" class="flex-1 overflow-hidden"></div>
+                            <div id="gif-picker-container" class="hidden flex-1 flex flex-col p-4 overflow-hidden">
+                                <div class="relative mb-3">
+                                    <input type="text" id="gif-search" placeholder="Search Giphy..." class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-background-dark border-none rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-1 focus:ring-primary/40 outline-none">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">search</span>
+                                </div>
+                                <div id="gif-results" class="flex-1 overflow-y-auto grid grid-cols-2 gap-2 scrollbar-hide">
+                                    <!-- GIFs via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="attachment-btn" class="text-slate-400 hover:text-primary transition-colors">
                             <span class="material-symbols-outlined text-2xl">add_circle</span>
                         </button>
-                        <input type="text" placeholder="Message to @Model.Name..." class="flex-1 bg-transparent border-none outline-none text-base font-medium text-slate-700 dark:text-slate-200 placeholder:text-slate-400">
+                        <input type="text" id="message-input" placeholder="Message to @Model.Name..." class="flex-1 bg-transparent border-none outline-none text-base font-medium text-slate-700 dark:text-slate-200 placeholder:text-slate-400">
                         <div class="flex items-center gap-4">
-                            <button class="text-slate-400 hover:text-primary transition-colors">
+                            <button id="emoji-btn" class="text-slate-400 hover:text-primary transition-colors">
                                 <span class="material-symbols-outlined text-2xl">mood</span>
                             </button>
-                            <button class="px-7 py-2.5 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary-dark shadow-xl shadow-primary/20 transition-all active:scale-95">Send</button>
+                            <button id="send-btn" class="px-7 py-2.5 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary-dark shadow-xl shadow-primary/20 transition-all active:scale-95">Send</button>
                         </div>
                     </div>
                 </div>
@@ -204,7 +233,7 @@
                         <div class="size-11 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-sm shadow-sm transition-transform group-hover:scale-110">
                             <span class="material-symbols-outlined text-2xl">account_circle</span>
                         </div>
-                        <div class="absolute -top-1 -right-1 size-5 bg-amber-400 border-[3px] border-surface-light dark:border-[#101f22] rounded-full flex items-center justify-center shadow-sm">
+                        <div class="absolute -top-1 -right-1 size-5 bg-amber-400 border-[3px] border-surface-light dark:border-background-dark rounded-full flex items-center justify-center shadow-sm">
                             <span class="material-symbols-outlined text-[9px] text-white font-black">star</span>
                         </div>
                     </div>
@@ -261,88 +290,493 @@
     </div>
 </div>
 
-<script>
-    let currentVoiceChannelId = null;
-
-    function joinVoice(id, name) {
-        // If already in this channel, do nothing
-        if (currentVoiceChannelId === id) return;
-
-        // Leave previous channel UI
-        if (currentVoiceChannelId) {
-            document.getElementById(`users-${currentVoiceChannelId}`).classList.add('hidden');
-        }
-
-        // Update state
-        currentVoiceChannelId = id;
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        let currentVoiceChannelId = null;
+        let currentTextChannelId = null;
+        let connection = null;
         
-        // Update UI
-        document.getElementById(`users-${id}`).classList.remove('hidden');
-        document.getElementById('voiceStatusPanel').classList.remove('hidden');
-        document.getElementById('connectedChannelName').innerText = name;
-        
-        if (!isMuted) {
-            document.getElementById('voiceAvatar').classList.add('voice-talking');
-        }
-        
-        console.log(`Joined voice channel: ${name}`);
-    }
+        // WebRTC State
+        let localStream = null;
+        const peers = {}; // connectionId -> { pc, stream, type }
+        const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-    function leaveVoice() {
-        if (!currentVoiceChannelId) return;
+        // Initialize SignalR
+        async function startSignalR() {
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("/communicationHub")
+                .withAutomaticReconnect()
+                .build();
 
-        // Update UI
-        document.getElementById(`users-${currentVoiceChannelId}`).classList.add('hidden');
-        document.getElementById('voiceStatusPanel').classList.add('hidden');
-        
-        // Reset state
-        currentVoiceChannelId = null;
-        console.log("Left voice channel");
-    }
+            connection.on("ReceiveMessage", (message) => {
+                if (currentTextChannelId === message.channelId) {
+                    appendMessage(message);
+                }
+            });
 
-    let isMuted = false;
-    function toggleMic() {
-        isMuted = !isMuted;
-        const micIcon = document.getElementById('micIcon');
-        const micButton = document.getElementById('micButton');
-        const micOffIcon = document.getElementById('micOffIcon');
-        const avatar = document.getElementById('voiceAvatar');
+            // WebRTC Presence & Signaling
+            connection.on("UserJoinedVoice", async (data) => {
+                console.log("Peer joined:", data.connectionId);
+                
+                // Update Sidebar UI
+                const container = document.getElementById(`users-${data.channelId}`);
+                if (container && !document.getElementById(`user-indicator-${data.connectionId}`)) {
+                    container.classList.remove('hidden');
+                    const userHtml = `
+                        <div id="user-indicator-${data.connectionId}" class="flex items-center gap-2 py-1 group/user animate-in fade-in slide-in-from-left-2 duration-300">
+                            <div class="relative">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${data.userName}" class="size-5 rounded-lg" />
+                                <div id="micOffIcon" class="hidden absolute -bottom-1 -right-1 size-2.5 bg-red-500 rounded-full flex items-center justify-center border border-white dark:border-slate-800">
+                                    <span class="material-symbols-outlined text-[7px] text-white font-black">mic_off</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-slate-500 group-hover/user:text-primary transition-colors">${data.userName}</span>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', userHtml);
+                }
 
-        if (isMuted) {
-            micIcon.innerText = 'mic_off';
-            micButton.classList.add('text-red-500', 'bg-red-500/10');
-            micOffIcon.classList.remove('hidden');
-            avatar.classList.remove('voice-talking');
-        } else {
-            micIcon.innerText = 'mic';
-            micButton.classList.remove('text-red-500', 'bg-red-500/10');
-            micOffIcon.classList.add('hidden');
-            if (currentVoiceChannelId) {
-                avatar.classList.add('voice-talking');
+                if (currentVoiceChannelId) {
+                    await createPeerConnection(data.connectionId, true);
+                }
+            });
+
+            connection.on("UserLeftVoice", (connectionId) => {
+                console.log("Peer left:", connectionId);
+                if (peers[connectionId]) {
+                    peers[connectionId].pc.close();
+                    delete peers[connectionId];
+                    const el = document.getElementById(`peer-audio-${connectionId}`);
+                    if (el) el.remove();
+                    const uiEl = document.getElementById(`user-indicator-${connectionId}`);
+                    if (uiEl) uiEl.remove();
+                }
+            });
+
+            connection.on("ReceiveSignal", async (signal, fromConnectionId) => {
+                const data = JSON.parse(signal);
+                let peer = peers[fromConnectionId];
+
+                if (data.sdp) {
+                    if (!peer) peer = await createPeerConnection(fromConnectionId, false);
+                    await peer.pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                    if (data.sdp.type === "offer") {
+                        const answer = await peer.pc.createAnswer();
+                        await peer.pc.setLocalDescription(answer);
+                        connection.invoke("SendSignal", JSON.stringify({ sdp: answer }), fromConnectionId);
+                    }
+                } else if (data.candidate) {
+                    if (peer) await peer.pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                }
+            });
+
+            connection.on("UserMuteChanged", (connectionId, isMuted) => {
+                const icon = document.querySelector(`#user-indicator-${connectionId} #micOffIcon`);
+                if (icon) icon.classList.toggle('hidden', !isMuted);
+            });
+
+            connection.on("UserVideoChanged", (connectionId, isVideoOn) => {
+                // Potential UI update for video status in sidebar or grid
+                console.log("Peer video changed:", connectionId, isVideoOn);
+            });
+
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+                
+                // Join initial text channel
+                const initialChannelId = "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Id";
+                if (initialChannelId) {
+                    joinTextChannel(initialChannelId, "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Name");
+                }
+            } catch (err) {
+                console.error("SignalR Connection Error:", err);
             }
         }
-    }
 
-    function openCreateChannelModal(type) {
-        const modal = document.getElementById('createChannelModal');
-        const label = document.getElementById('modalChannelTypeLabel');
-        const input = document.getElementById('modalChannelTypeInput');
-        
-        label.innerText = type === 'Text' ? 'Text Channel' : 'Voice Channel';
-        input.value = type === 'Text' ? '0' : '1'; // 0 = Text, 1 = Voice based on Enum
-        
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
+        async function createPeerConnection(connectionId, isOffer) {
+            const pc = new RTCPeerConnection(iceServers);
+            peers[connectionId] = { pc };
 
-    function closeCreateChannelModal() {
-        const modal = document.getElementById('createChannelModal');
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    connection.invoke("SendSignal", JSON.stringify({ candidate: event.candidate }), connectionId);
+                }
+            };
 
-    // Close on escape
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeCreateChannelModal();
-    });
-</script>
+            pc.ontrack = (event) => {
+                console.log("Received remote track:", event.track.kind, "from", connectionId);
+                if (event.track.kind === 'audio') {
+                    let audio = document.getElementById(`peer-audio-${connectionId}`);
+                    if (!audio) {
+                        audio = document.createElement('audio');
+                        audio.id = `peer-audio-${connectionId}`;
+                        audio.autoplay = true;
+                        document.body.appendChild(audio);
+                    }
+                    audio.srcObject = event.streams[0];
+                } else if (event.track.kind === 'video') {
+                    let container = document.getElementById(`peer-video-container-${connectionId}`);
+                    if (!container) {
+                        container = document.createElement('div');
+                        container.id = `peer-video-container-${connectionId}`;
+                        container.className = 'relative aspect-video bg-black/40 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl pointer-events-auto animate-in zoom-in-95';
+                        container.innerHTML = `
+                            <video id="peer-video-${connectionId}" autoplay playsinline class="w-full h-full object-cover"></video>
+                            <div class="absolute bottom-6 left-6 flex items-center gap-2 px-3 py-1.5 glass rounded-xl">
+                                <span id="peer-name-${connectionId}" class="text-[10px] font-black text-white uppercase tracking-widest">Peer</span>
+                            </div>
+                        `;
+                        document.getElementById('videoGrid').appendChild(container);
+                        document.getElementById('videoGrid').classList.remove('hidden');
+                    }
+                    const video = document.getElementById(`peer-video-${connectionId}`);
+                    video.srcObject = event.streams[0];
+                    updateVideoGrid();
+                }
+            };
+
+            // Add local tracks
+            if (localStream) {
+                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            }
+
+            if (isOffer) {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                connection.invoke("SendSignal", JSON.stringify({ sdp: offer }), connectionId);
+            }
+
+            return peers[connectionId];
+        }
+
+        async function joinTextChannel(id, name) {
+            if (currentTextChannelId === id) return;
+            if (currentTextChannelId) await connection.invoke("LeaveChannel", currentTextChannelId);
+            
+            console.log("Attempting to join text channel:", id);
+            currentTextChannelId = id;
+            await connection.invoke("JoinChannel", id);
+            
+            document.getElementById('message-input').placeholder = `Message to #${name}...`;
+            
+            // Cleanup and Setup Feed
+            const welcome = document.querySelector('section.py-16');
+            if (welcome) welcome.classList.add('hidden');
+            
+            let list = document.getElementById('message-list');
+            if (!list) {
+                const container = document.querySelector('main .max-w-3xl.mx-auto');
+                list = document.createElement('div');
+                list.id = 'message-list';
+                list.className = 'space-y-8 pb-40 min-h-[50vh]';
+                container.appendChild(list);
+            }
+            
+            list.innerHTML = `
+                <div class="py-24 text-center opacity-40 animate-in fade-in duration-700">
+                    <div class="size-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                        <span class="material-symbols-outlined text-primary text-3xl">chat_bubble</span>
+                    </div>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-primary">Connected to #${name}</p>
+                    <p class="text-[9px] font-medium text-slate-500 mt-2">Start a conversation with your group members.</p>
+                </div>
+            `;
+            
+            console.log("Successfully switched to text channel:", name);
+        }
+
+        async function joinVoice(id, name) {
+            if (currentVoiceChannelId === id) return;
+            if (currentVoiceChannelId) await leaveVoice();
+
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                currentVoiceChannelId = id;
+                await connection.invoke("JoinVoice", id);
+
+                document.getElementById('voiceStatusPanel').classList.remove('hidden');
+                document.getElementById('connectedChannelName').innerText = name;
+                document.getElementById('voiceAvatar').classList.toggle('voice-talking', !isMuted);
+                
+                const container = document.getElementById(`users-${id}`);
+                if (container) {
+                    container.classList.remove('hidden');
+                    const myUserName = "@(User.Identity?.Name ?? "User")";
+                    const userHtml = `
+                        <div id="user-indicator-local" class="flex items-center gap-2 py-1 group/user animate-in fade-in slide-in-from-left-2 duration-300">
+                            <div class="relative">
+                                <div id="localVoiceAvatar" class="size-5 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-[8px] text-primary font-bold transition-all ${isMuted ? '' : 'voice-talking'}">
+                                    ${myUserName.charAt(0).toUpperCase()}
+                                </div>
+                                <div id="localMicOffIcon" class="${isMuted ? '' : 'hidden'} absolute -bottom-1 -right-1 size-2.5 bg-red-500 rounded-full flex items-center justify-center border border-white dark:border-slate-800">
+                                    <span class="material-symbols-outlined text-[7px] text-white font-bold">mic_off</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-semibold text-primary group-hover/user:text-primary transition-colors">${myUserName} (You)</span>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', userHtml);
+                }
+                
+                console.log(`Joined voice channel: ${name}`);
+            } catch (err) {
+                alert("Microphone access denied or unavailable.");
+                console.error(err);
+            }
+        }
+
+        let isVideoOn = false;
+        async function toggleCamera() {
+            if (!currentVoiceChannelId) return;
+            isVideoOn = !isVideoOn;
+            
+            try {
+                if (isVideoOn) {
+                    const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    const videoTrack = videoStream.getVideoTracks()[0];
+                    localStream.addTrack(videoTrack);
+                    Object.entries(peers).forEach(async ([connId, p]) => {
+                        p.pc.addTrack(videoTrack, localStream);
+                        const offer = await p.pc.createOffer();
+                        await p.pc.setLocalDescription(offer);
+                        connection.invoke("SendSignal", JSON.stringify({ sdp: offer }), connId);
+                    });
+                } else {
+                    const videoTrack = localStream.getVideoTracks()[0];
+                    if (videoTrack) {
+                        videoTrack.stop();
+                        localStream.removeTrack(videoTrack);
+                    }
+                }
+                
+                connection.invoke("ToggleVideo", currentVoiceChannelId, isVideoOn);
+                document.getElementById('videoIcon').innerText = isVideoOn ? 'videocam' : 'videocam_off';
+                document.getElementById('videoButton').classList.toggle('text-primary', isVideoOn);
+                document.getElementById('videoButton').classList.toggle('bg-primary/10', isVideoOn);
+                updateVideoGrid();
+            } catch (err) {
+                console.error("Camera error:", err);
+                isVideoOn = false;
+            }
+        }
+
+        async function joinVideo(id, name) {
+            await joinVoice(id, name);
+            if (!isVideoOn) toggleCamera();
+        }
+
+        async function leaveVoice() {
+            if (!currentVoiceChannelId) return;
+            
+            await connection.invoke("LeaveVoice", currentVoiceChannelId);
+            
+            // Clean up WebRTC
+            Object.keys(peers).forEach(id => {
+                peers[id].pc.close();
+                const el = document.getElementById(`peer-audio-${id}`);
+                if (el) el.remove();
+            });
+            
+            if (localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+                localStream = null;
+            }
+
+            const myIndicator = document.getElementById('user-indicator-local');
+            if (myIndicator) myIndicator.remove();
+            
+            const container = document.getElementById(`users-${currentVoiceChannelId}`);
+            if (container && container.children.length === 0) {
+                container.classList.add('hidden');
+            }
+
+            document.getElementById('voiceStatusPanel').classList.add('hidden');
+            currentVoiceChannelId = null;
+        }
+
+        function updateVideoGrid() {
+            const grid = document.getElementById('videoGrid');
+            const containers = grid.querySelectorAll('div[id$="-container"]');
+            const count = containers.length + (isVideoOn ? 1 : 0);
+            
+            if (count === 0) {
+                grid.classList.add('hidden');
+                return;
+            }
+            
+            grid.classList.remove('hidden');
+            document.getElementById('localVideoContainer').classList.toggle('hidden', !isVideoOn);
+            
+            const localVideo = document.getElementById('localVideo');
+            if (isVideoOn && localStream && localStream.getVideoTracks().length > 0) {
+                localVideo.srcObject = new MediaStream([localStream.getVideoTracks()[0]]);
+            } else {
+                localVideo.srcObject = null;
+            }
+            
+            const cols = count > 4 ? 3 : count > 1 ? 2 : 1;
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        }
+
+        function appendMessage(msg) {
+            let list = document.getElementById('message-list');
+            if (!list) {
+                const container = document.querySelector('main .max-w-3xl.mx-auto') || document.querySelector('main article') || document.querySelector('main');
+                list = document.createElement('div');
+                list.id = 'message-list';
+                list.className = 'space-y-8 pb-40 min-h-[50vh]';
+                container.appendChild(list);
+                const welcome = document.querySelector('section.py-16');
+                if (welcome) welcome.classList.add('hidden');
+            }
+            
+            const isMine = msg.authorId === "@User.FindFirst(ClaimTypes.NameIdentifier)?.Value";
+            
+            const msgHtml = `
+                <div class="flex ${isMine ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div class="flex items-start gap-4 max-w-[85%]">
+                        ${!isMine ? `<img src="${msg.authorAvatar}" class="size-9 rounded-2xl border border-white/10 mt-1 shadow-lg" />` : ''}
+                        <div class="space-y-1.5 ${isMine ? 'items-end' : 'items-start'}">
+                            <div class="flex items-center gap-3 px-2">
+                                <span class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic">${msg.authorName}</span>
+                                <span class="text-[9px] font-bold text-slate-300 dark:text-slate-600">${msg.createdAt}</span>
+                            </div>
+                            <div class="px-6 py-4 rounded-3xl ${isMine ? 'bg-gradient-to-br from-primary to-indigo-600 text-white rounded-tr-none shadow-xl shadow-primary/20 italic font-medium' : 'glass bg-white dark:bg-white/5 border border-border-light dark:border-white/10 dark:text-slate-100 rounded-tl-none font-medium'}">
+                                ${msg.content.startsWith('http') && msg.content.includes('giphy.com') ? `<img src="${msg.content}" class="max-w-xs rounded-xl" />` : `<p class="text-sm leading-relaxed">${msg.content}</p>`}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            list.insertAdjacentHTML('beforeend', msgHtml);
+            list.scrollTop = list.scrollHeight;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+            if (!content || !currentTextChannelId) return;
+            try {
+                await connection.invoke("SendMessage", currentTextChannelId, content);
+                input.value = '';
+                input.focus();
+            } catch (err) { console.error("Send error:", err); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            startSignalR();
+            
+            // Re-bind send button
+            const input = document.getElementById('message-input');
+            const sendBtn = document.getElementById('send-btn');
+            if (sendBtn) sendBtn.onclick = sendMessage;
+            if (input) input.onkeydown = (e) => { if (e.key === 'Enter') sendMessage(); };
+        });
+
+        let isMuted = false;
+        function toggleMic() {
+            isMuted = !isMuted;
+            if (currentVoiceChannelId) connection.invoke("ToggleMute", currentVoiceChannelId, isMuted);
+            
+            if (localStream) {
+                localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+            }
+            
+            const micIcon = document.getElementById('micIcon');
+            const micButton = document.getElementById('micButton');
+            micIcon.innerText = isMuted ? 'mic_off' : 'mic';
+            micButton.classList.toggle('text-red-500', isMuted);
+            micButton.classList.toggle('bg-red-500/10', isMuted);
+            
+            const avatar = document.getElementById('voiceAvatar');
+            if (avatar) avatar.classList.toggle('voice-talking', !isMuted && currentVoiceChannelId);
+            
+            const localAvatarList = document.getElementById('localVoiceAvatar');
+            if (localAvatarList) localAvatarList.classList.toggle('voice-talking', !isMuted);
+            
+            const localMicIcon = document.getElementById('localMicOffIcon');
+            if (localMicIcon) localMicIcon.classList.toggle('hidden', !isMuted);
+        }
+
+        function openCreateChannelModal(type) {
+            const modal = document.getElementById('createChannelModal');
+            const label = document.getElementById('modalChannelTypeLabel');
+            const input = document.getElementById('modalChannelTypeInput');
+            label.innerText = (type === 'Text' ? 'Text' : type === 'Voice' ? 'Voice' : 'Video') + ' Channel';
+            input.value = type === 'Text' ? '0' : type === 'Voice' ? '1' : '2';
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCreateChannelModal() {
+            document.getElementById('createChannelModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        const emojiBtn = document.getElementById('emoji-btn');
+        const pickerPopup = document.getElementById('picker-popup');
+        const messageInput = document.getElementById('message-input');
+        const emojiContainer = document.getElementById('emoji-picker-container');
+        let picker = null;
+
+        async function initEmojiPicker() {
+            if (picker) return;
+            try {
+                if (!window.createPicker) {
+                    const picmoModule = await import('https://unpkg.com/picmo@latest/dist/index.js');
+                    window.createPicker = picmoModule.createPicker;
+                }
+                picker = window.createPicker({ rootElement: emojiContainer, theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' });
+                picker.addEventListener('emoji:select', (selection) => { messageInput.value += selection.emoji; });
+            } catch (err) { console.error(err); }
+        }
+
+        emojiBtn.onclick = (e) => {
+            e.stopPropagation();
+            pickerPopup.classList.toggle('hidden');
+            if (!pickerPopup.classList.contains('hidden')) { initEmojiPicker(); switchPickerTab('emoji'); }
+        };
+
+        const GIPHY_API_KEY = 'dc6zaTOxFJmzC';
+        const gifResults = document.getElementById('gif-results');
+        async function searchGifs(query = 'trending') {
+            const url = `https://api.giphy.com/v1/gifs/${query === 'trending' ? 'trending' : 'search'}?api_key=${GIPHY_API_KEY}&limit=20${query !== 'trending' ? '&q=' + encodeURIComponent(query) : ''}`;
+            try {
+                const resp = await fetch(url);
+                const data = await resp.json();
+                renderGifs(data.data);
+            } catch (err) { console.error(err); }
+        }
+
+        function renderGifs(gifs) {
+            gifResults.innerHTML = '';
+            gifs.forEach(gif => {
+                const img = document.createElement('img');
+                img.src = gif.images.fixed_height_small.url;
+                img.className = 'w-full h-24 object-cover rounded-xl cursor-pointer hover:border-2 hover:border-primary transition-all';
+                img.onclick = () => { if (currentTextChannelId) connection.invoke("SendMessage", currentTextChannelId, gif.images.original.url); pickerPopup.classList.add('hidden'); };
+                gifResults.appendChild(img);
+            });
+        }
+
+        document.getElementById('gif-search').oninput = (e) => {
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(() => searchGifs(e.target.value.trim() || 'trending'), 500);
+        };
+
+        window.switchPickerTab = (tab) => {
+            const isEmoji = tab === 'emoji';
+            document.getElementById('emoji-picker-container').classList.toggle('hidden', !isEmoji);
+            document.getElementById('gif-picker-container').classList.toggle('hidden', isEmoji);
+            if (!isEmoji) searchGifs();
+        };
+
+        const dropZone = document.getElementById('drop-zone');
+        window.ondragenter = (e) => { e.preventDefault(); dropZone.classList.remove('hidden'); };
+        dropZone.ondragleave = (e) => { if (e.relatedTarget === null || !dropZone.contains(e.relatedTarget)) dropZone.classList.add('hidden'); };
+        dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.add('hidden'); alert('Files detected.'); };
+    </script>
+}
