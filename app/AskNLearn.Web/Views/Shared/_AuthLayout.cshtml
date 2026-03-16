@@ -1,0 +1,132 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - AskNLearn</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#10b981",
+                        "background-dark": "#0f172a",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+</head>
+
+<body class="min-h-screen flex items-center justify-center bg-background-dark text-white font-display">
+
+    <!-- Background -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-[-20%] left-[-10%] w-[700px] h-[700px] bg-primary/10 rounded-full blur-[140px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px]"></div>
+    </div>
+
+    <main class="relative z-10 w-full max-w-md px-6">
+
+        <!-- Logo -->
+        <div class="flex flex-col items-center mb-10">
+            <h1 class="text-3xl font-bold tracking-tight">
+                Ask<span class="text-primary">N</span>Learn
+            </h1>
+        </div>
+
+        <!-- Container care înlocuiește clasa .glass -->
+        <div class="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+            @RenderBody()
+        </div>
+
+    </main>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        function setupPasswordToggle(passwordId, toggleId) {
+            const input = document.querySelector(`#${passwordId}`);
+            const toggle = document.querySelector(`#${toggleId}`);
+            if (!input || !toggle) return;
+            toggle.addEventListener("click", () => {
+                const type = input.type === "password" ? "text" : "password";
+                input.type = type;
+                toggle.innerHTML = type === "password"
+                    ? '<span class="material-symbols-outlined">visibility</span>'
+                    : '<span class="material-symbols-outlined">visibility_off</span>';
+            });
+        }
+
+        // SignUp toggles
+        setupPasswordToggle("PasswordSignUp", "togglePasswordSignUp");
+        setupPasswordToggle("ConfirmPasswordSignUp", "toggleConfirmSignUp");
+
+        // SignIn toggle
+        setupPasswordToggle("PasswordSignIn", "togglePasswordSignIn");
+
+        // SignUp Password Strength + Confirm Match
+        const passwordInput = document.querySelector("#PasswordSignUp");
+        const confirmInput = document.querySelector("#ConfirmPasswordSignUp");
+        const strengthBar = document.querySelector("#passwordStrengthBar");
+        const strengthText = document.querySelector("#passwordStrengthText");
+        const confirmText = document.querySelector("#confirmMatchText");
+
+        if (passwordInput) {
+            passwordInput.addEventListener("input", () => {
+                let value = passwordInput.value;
+                let strength = 0;
+                if (value.length >= 8) strength++;
+                if (/[A-Z]/.test(value)) strength++;
+                if (/[a-z]/.test(value)) strength++;
+                if (/[0-9]/.test(value)) strength++;
+                if (/[^A-Za-z0-9]/.test(value)) strength++;
+
+                switch(strength) {
+                    case 0:
+                    case 1:
+                        strengthBar.style.width = "20%";
+                        strengthBar.className = "h-1 bg-red-500";
+                        strengthText.textContent = "Weak password";
+                        break;
+                    case 2:
+                    case 3:
+                        strengthBar.style.width = "60%";
+                        strengthBar.className = "h-1 bg-yellow-500";
+                        strengthText.textContent = "Medium password";
+                        break;
+                    case 4:
+                    case 5:
+                        strengthBar.style.width = "100%";
+                        strengthBar.className = "h-1 bg-emerald-500";
+                        strengthText.textContent = "Strong password";
+                        break;
+                }
+
+                if (confirmInput) {
+                    confirmText.textContent = passwordInput.value === confirmInput.value ? "Passwords match ✅" : "Passwords do not match ❌";
+                }
+            });
+
+            if (confirmInput) {
+                confirmInput.addEventListener("input", () => {
+                    confirmText.textContent = passwordInput.value === confirmInput.value ? "Passwords match ✅" : "Passwords do not match ❌";
+                });
+            }
+        }
+    </script>
+
+</body>
+</html>
