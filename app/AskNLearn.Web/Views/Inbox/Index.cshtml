@@ -1,0 +1,257 @@
+@using AskNLearn.Web.Models
+@model InboxViewModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Inbox";
+}
+
+<div class="relative min-h-[calc(100vh-64px)] pb-12 overflow-hidden">
+    <!-- Premium Mesh Background -->
+    <div class="absolute top-0 right-0 size-[800px] bg-primary/5 rounded-full blur-[120px] -z-10 animate-pulse-slow"></div>
+    <div class="absolute bottom-0 left-0 size-[500px] bg-indigo-500/5 rounded-full blur-[100px] -z-10"></div>
+
+    <div class="p-10 max-w-7xl mx-auto flex flex-col gap-10 relative z-10">
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 animate-slide-up">
+            <div>
+                <h2 class="text-5xl font-bold text-slate-900 dark:text-white tracking-tighter mb-4 leading-none">
+                    Inbox
+                </h2>
+                <div class="flex items-center gap-3">
+                    <div class="h-1 w-12 bg-primary rounded-full"></div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Live Updates</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="markAllInboxRead()" class="px-8 py-3.5 rounded-2xl glass border border-white/10 text-xs font-bold text-slate-400 hover:text-primary transition-all uppercase tracking-widest">
+                    Mark All Read
+                </button>
+                <button class="px-8 py-3.5 rounded-2xl bg-primary text-background-dark text-xs font-bold shadow-2xl shadow-primary/30 hover:bg-white hover:text-primary transition-all uppercase tracking-widest">
+                    Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- High-End Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 animate-slide-up [animation-delay:100ms]">
+            <!-- Unread Messages -->
+            <div class="group relative">
+                <div class="absolute inset-0 bg-primary/20 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="p-8 rounded-[2.5rem] glass border border-white/10 relative z-10 overflow-hidden">
+                    <div class="absolute -right-6 -top-6 size-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
+                    <div class="flex items-center gap-6">
+                        <div class="size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary glass border border-primary/20">
+                            <span class="material-symbols-outlined text-3xl font-bold">mail</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Messages</p>
+                            <h4 class="text-4xl font-bold text-slate-900 dark:text-white leading-none">@Model.RecentMessages.Count(c => c.IsUnread)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            <div class="group relative">
+                <div class="absolute inset-0 bg-amber-500/20 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="p-8 rounded-[2.5rem] glass border border-white/10 relative z-10 overflow-hidden">
+                    <div class="absolute -right-6 -top-6 size-32 bg-amber-500/5 rounded-full blur-3xl group-hover:bg-amber-500/10 transition-colors"></div>
+                    <div class="flex items-center gap-6">
+                        <div class="size-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 glass border border-amber-500/20">
+                            <span class="material-symbols-outlined text-3xl font-bold">notifications</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Notifications</p>
+                            <h4 class="text-4xl font-bold text-slate-900 dark:text-white leading-none">@Model.RecentNotifications.Count(n => !n.IsRead)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks -->
+            <div class="group relative">
+                <div class="absolute inset-0 bg-indigo-500/20 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="p-8 rounded-[2.5rem] glass border border-white/10 relative z-10 overflow-hidden">
+                    <div class="absolute -right-6 -top-6 size-32 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors"></div>
+                    <div class="flex items-center gap-6">
+                        <div class="size-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 glass border border-indigo-500/20">
+                            <span class="material-symbols-outlined text-3xl font-bold">task_alt</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Tasks</p>
+                            <h4 class="text-4xl font-bold text-slate-900 dark:text-white leading-none">0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Workspace Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+            <!-- Central Feed: Communications -->
+            <section class="lg:col-span-8 flex flex-col gap-6 animate-slide-up [animation-delay:200ms]">
+                <div class="flex items-center justify-between px-2">
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tighter flex items-center gap-4">
+                        <span class="size-2 rounded-full bg-primary h-2 w-2"></span>
+                        Recent Messages
+                    </h3>
+                    <a asp-controller="Direct" asp-action="Index" class="text-[10px] font-bold text-primary uppercase tracking-widest hover:tracking-widest transition-all flex items-center gap-2">
+                        Open Chat <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                    </a>
+                </div>
+                
+                <div class="glass rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl bg-white/5 backdrop-blur-3xl">
+                    @if (Model.RecentMessages.Any())
+                    {
+                        <div class="divide-y divide-white/5">
+                            @foreach (var conv in Model.RecentMessages)
+                            {
+                                <a asp-controller="Direct" asp-action="Index" asp-route-id="@conv.ConversationId" class="flex items-center gap-6 p-8 hover:bg-white/[0.03] transition-all group/item @(conv.IsUnread ? "bg-primary/[0.04]" : "")">
+                                    <div class="relative shrink-0">
+                                        <div class="absolute inset-0 bg-primary/20 rounded-2xl blur-xl opacity-0 group-hover/item:opacity-100 transition-opacity"></div>
+                                        <div class="size-20 rounded-2xl bg-cover bg-center border border-white/10 shadow-2xl relative z-10 glass p-1" style="background-image: url('@conv.OtherUserAvatar')"></div>
+                                        @if(conv.IsUnread) {
+                                            <div class="absolute -top-1 -right-1 size-4 bg-primary rounded-full border-2 border-background-dark z-20 animate-pulse"></div>
+                                        }
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between items-baseline mb-2">
+                                            <h5 class="font-black text-slate-900 dark:text-white text-xl italic tracking-tight">@conv.OtherUserName</h5>
+                                            <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest opacity-60">@conv.LastMessageAt.ToString("HH:mm") [UPLINK]</span>
+                                        </div>
+                                        <p class="text-sm text-slate-500 dark:text-slate-400 truncate leading-relaxed @(conv.IsUnread ? "font-black text-slate-900 dark:text-white italic" : "font-medium")">
+                                            @conv.LastMessageContent
+                                        </p>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-4">
+                                        <button class="material-symbols-outlined text-slate-600 hover:text-white transition-all transform hover:rotate-90">settings</button>
+                                        <span class="material-symbols-outlined text-primary text-xl opacity-0 group-hover/item:opacity-100 transition-opacity translate-x-4 group-hover/item:translate-x-0">chevron_right</span>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-24 text-center">
+                            <div class="relative size-32 mx-auto mb-8">
+                                <div class="absolute inset-0 bg-primary/20 rounded-full blur-[60px] animate-pulse"></div>
+                                <div class="size-32 rounded-3xl glass border border-white/10 flex items-center justify-center text-slate-700 relative z-10">
+                                    <span class="material-symbols-outlined text-6xl font-bold">mail_lock</span>
+                                </div>
+                            </div>
+                            <h4 class="text-2xl font-bold text-slate-900 dark:text-white mb-3 tracking-tighter">No messages found</h4>
+                            <p class="text-slate-500 text-sm font-medium">Send a direct message to bridge the gap.</p>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <!-- Peripheral Hub: Alerts & Tasks -->
+            <aside class="lg:col-span-4 flex flex-col gap-8 animate-slide-up [animation-delay:300ms]">
+                <!-- Notifications -->
+                <div class="flex flex-col gap-6">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white tracking-tighter flex items-center gap-3">
+                        <span class="size-1.5 rounded-full bg-amber-500"></span>
+                        Recent Notifications
+                    </h3>
+                    <div class="glass rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl max-h-[600px] overflow-y-auto custom-scrollbar">
+                        @if (Model.RecentNotifications.Any())
+                        {
+                            <div class="divide-y divide-white/5">
+                                @foreach (var notif in Model.RecentNotifications)
+                                {
+                                    <div class="p-6 hover:bg-white/[0.03] transition-all group @(notif.IsRead ? "opacity-40" : "bg-amber-500/[0.03]")">
+                                        <div class="flex gap-4">
+                                            <div class="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0 border border-amber-500/20 glass">
+                                                <span class="material-symbols-outlined text-lg font-black italic">@(notif.IsRead ? "notifications" : "notifications_active")</span>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex justify-between items-start gap-2 mb-1">
+                                                    <p class="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider italic">@notif.Title</p>
+                                                    <button onclick="markRead('@notif.Id', this)" class="opacity-0 group-hover:opacity-100 transition-opacity text-[8px] font-black text-primary uppercase tracking-widest italic">RESOLVE</button>
+                                                </div>
+                                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">@notif.Message</p>
+                                                <span class="text-[8px] text-slate-600 mt-2 block font-black uppercase tracking-widest italic">@notif.CreatedAt.ToString("MMM dd // HH:mm")</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="p-16 text-center">
+                                <p class="text-[9px] font-black text-slate-600 uppercase tracking-widest italic">Threat level: Minimal</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Mission Parameters: Tasks -->
+                <div class="flex flex-col gap-6">
+                    <h3 class="text-lg font-black text-slate-900 dark:text-white italic tracking-tighter flex items-center gap-3">
+                        <span class="size-1.5 rounded-full bg-indigo-500"></span>
+                        Mission Parameters
+                    </h3>
+                    <div class="glass rounded-[2rem] border border-white/10 p-10 text-center shadow-2xl relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-indigo-500/[0.02] -z-10"></div>
+                        <div class="size-16 rounded-2xl glass border border-white/5 flex items-center justify-center text-slate-700 mx-auto mb-6 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined font-black italic">checklist</span>
+                        </div>
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest italic leading-relaxed">System scan complete.<br>All primary objectives met.</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function markRead(id, btn) {
+            try {
+                const response = await fetch(`/Inbox/MarkAsRead/${id}`, { method: 'POST' });
+                if(response.ok) {
+                    btn.closest('.p-6').classList.add('opacity-40');
+                    btn.remove();
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function markAllInboxRead() {
+            try {
+                const response = await fetch('/Inbox/MarkAllAsRead', { method: 'POST' });
+                if(response.ok) location.reload();
+            } catch (e) { console.error(e); }
+        }
+    </script>
+}
+
+<style>
+    @@keyframes slide-up {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up {
+        animation: slide-up 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(var(--primary-rgb), 0.1);
+        border-radius: 20px;
+    }
+    .animate-pulse-slow {
+        animation: pulse 12s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @@keyframes pulse {
+        0%, 100% { opacity: 0.05; transform: scale(1); }
+        50% { opacity: 0.1; transform: scale(1.1); }
+    }
+</style>

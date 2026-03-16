@@ -1,0 +1,222 @@
+@using AskNLearn.Domain.Entities.Messaging
+@using AskNLearn.Web.Models
+@model DirectConversation
+@inject Microsoft.AspNetCore.Identity.UserManager<AskNLearn.Domain.Entities.Core.ApplicationUser> UserManager
+
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Direct Messages";
+    var conversations = ViewBag.Conversations as List<ConversationPreviewViewModel> ?? new List<ConversationPreviewViewModel>();
+    var currentUserId = (await UserManager.GetUserAsync(User))?.Id;
+}
+
+<div class="flex h-[calc(100vh-64px)] overflow-hidden relative">
+    <!-- Abstract Background Pulse -->
+    <div class="absolute top-0 right-0 size-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 animate-pulse-slow"></div>
+    <div class="absolute bottom-0 left-0 size-[400px] bg-indigo-500/5 rounded-full blur-[100px] -z-10"></div>
+
+    <!-- Conversations Sidebar -->
+    <aside class="w-[380px] border-r border-border-light dark:border-border-dark/30 flex flex-col glass bg-white/30 dark:bg-black/20 relative z-20">
+        <div class="p-8 border-b border-border-light dark:border-border-dark/30">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tighter">Direct <span class="text-primary">Messages</span></h2>
+                <div class="size-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+            </div>
+            <div class="relative group">
+                <div class="absolute inset-0 bg-primary/5 rounded-2xl blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl font-bold">search</span>
+                <input type="text" placeholder="Search conversations..." class="w-full glass bg-white/50 dark:bg-white/5 border border-border-light dark:border-border-dark/30 rounded-2xl py-3.5 pl-12 pr-6 text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 dark:text-white placeholder:text-slate-500 font-bold uppercase tracking-widest" />
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar divide-y divide-border-light/10 dark:divide-border-dark/10">
+            @if (conversations.Any())
+            {
+                @foreach (var conv in conversations)
+                {
+                    bool isActive = Model?.Id == conv.ConversationId;
+                    <a asp-action="Index" asp-route-id="@conv.ConversationId" class="flex items-center gap-5 p-6 hover:bg-primary/[0.03] dark:hover:bg-primary/[0.08] transition-all relative group @(isActive ? "bg-primary/[0.05] dark:bg-primary/[0.12] before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-12 before:bg-primary before:rounded-r-full" : "")">
+                        <div class="relative shrink-0">
+                            <div class="absolute inset-0 bg-primary/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="size-16 rounded-[1.25rem] bg-cover bg-center border border-border-light dark:border-border-dark/30 shadow-xl relative z-10 p-1 glass" style="background-image: url('@conv.OtherUserAvatar')"></div>
+                            @if (conv.IsUnread)
+                            {
+                                <div class="absolute -top-1 -right-1 size-4 bg-primary rounded-full border-2 border-background-dark z-20 shadow-lg animate-pulse"></div>
+                            }
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-baseline mb-1">
+                                <span class="font-bold text-slate-900 dark:text-white text-base truncate tracking-tight">@conv.OtherUserName</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest opacity-60">@conv.LastMessageAt.ToString("HH:mm")</span>
+                            </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 truncate font-medium @(conv.IsUnread ? "font-black text-slate-900 dark:text-white italic" : "")">
+                                @conv.LastMessageContent
+                            </p>
+                        </div>
+                    </a>
+                }
+            }
+            else
+            {
+                <div class="p-12 text-center">
+                    <span class="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-700 mb-4 font-bold">chat_bubble_outline</span>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">No conversations found</p>
+                </div>
+            }
+        </div>
+    </aside>
+
+    <!-- Chat Area -->
+    <main class="flex-1 flex flex-col relative z-10 bg-transparent">
+        @if (Model != null)
+        {
+            var otherParticipant = Model.Participants.FirstOrDefault(p => p.UserId != currentUserId);
+
+            <!-- Chat Header -->
+            <header class="h-24 px-10 border-b border-border-light dark:border-border-dark/30 flex items-center justify-between glass bg-white/30 dark:bg-black/10 z-30 shrink-0 shadow-2xl">
+                <div class="flex items-center gap-5">
+                    <div class="relative group/avatar">
+                        <div class="absolute inset-0 bg-primary/20 rounded-2xl blur-xl opacity-0 hover:opacity-100 transition-opacity"></div>
+                        <div class="size-14 rounded-2xl bg-cover bg-center border-2 border-primary/30 shadow-xl relative z-10 p-1 glass" style="background-image: url('@(otherParticipant?.User?.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={otherParticipant?.User?.UserName}")')"></div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 dark:text-white text-xl tracking-tighter">@(otherParticipant?.User?.FullName ?? otherParticipant?.User?.UserName)</h4>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                            <span class="text-[9px] text-emerald-500 font-bold uppercase tracking-widest">Online</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="size-12 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-400 hover:text-primary transition-all active:scale-90">
+                        <span class="material-symbols-outlined font-black">call</span>
+                    </button>
+                    <button class="size-12 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-400 hover:text-primary transition-all active:scale-90">
+                        <span class="material-symbols-outlined font-black">videocam</span>
+                    </button>
+                    <button class="size-12 rounded-2xl glass border border-white/10 flex items-center justify-center text-slate-400 hover:text-primary transition-all active:scale-95">
+                        <span class="material-symbols-outlined font-black">more_vert</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Messages List -->
+            <div id="messages-container" class="flex-1 overflow-y-auto p-10 flex flex-col gap-6 custom-scrollbar scroll-smooth">
+                @foreach (var message in Model.Messages.OrderBy(m => m.CreatedAt))
+                {
+                    bool isMine = message.AuthorId == currentUserId;
+                    <div class="flex @(isMine ? "justify-end" : "justify-start") animate-slide-up">
+                        <div class="flex flex-col @(isMine ? "items-end" : "items-start") max-w-[75%] group/msg">
+                            <div class="px-6 py-4 rounded-[1.75rem] text-sm shadow-2xl relative transition-transform hover:scale-[1.02] @(isMine ? "bg-gradient-to-br from-primary to-indigo-600 text-background-dark rounded-tr-none font-bold italic" : "glass bg-white/50 dark:bg-white/10 text-slate-900 dark:text-slate-100 rounded-tl-none border border-border-light dark:border-border-dark/30 font-medium")">
+                                @message.Content
+                                @if (isMine)
+                                {
+                                    <div class="absolute -right-1 -top-1 opacity-0 group-hover/msg:opacity-100 transition-opacity">
+                                        <span class="material-symbols-outlined text-[10px] text-primary bg-background-dark rounded-full p-0.5 shadow-lg">done_all</span>
+                                    </div>
+                                }
+                            </div>
+                            <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-2 mx-2 opacity-60">@message.CreatedAt.ToString("HH:mm")</span>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Chat Input -->
+            <footer class="p-8 glass bg-white/30 dark:bg-black/20 border-t border-border-light dark:border-border-dark/30 backdrop-blur-3xl">
+                <div class="max-w-4xl mx-auto flex items-center gap-4 bg-white/50 dark:bg-white/5 rounded-[2rem] p-3 pl-6 border border-border-light dark:border-border-dark/30 focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-2xl group/input">
+                    <button class="p-3 rounded-xl text-slate-400 hover:text-primary transition-all hover:bg-primary/10 active:scale-90">
+                        <span class="material-symbols-outlined font-black">add_circle</span>
+                    </button>
+                    <input type="text" placeholder="Write a message..." class="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2 px-2 text-slate-900 dark:text-white placeholder:text-slate-500 font-medium" />
+                    <button class="p-3 rounded-xl text-slate-400 hover:text-primary transition-all hover:bg-primary/10 active:scale-90">
+                        <span class="material-symbols-outlined font-black">sentiment_satisfied</span>
+                    </button>
+                    <button class="size-14 rounded-2xl bg-primary text-background-dark flex items-center justify-center shadow-2xl shadow-primary/30 hover:bg-white transition-all active:scale-95 group/sh">
+                        <span class="material-symbols-outlined font-black group-hover/sh:translate-x-1 group-hover/sh:-translate-y-1 transition-transform">send</span>
+                    </button>
+                </div>
+            </footer>
+        }
+        else
+        {
+            <div class="flex-1 flex flex-col items-center justify-center text-center p-12">
+                <div class="relative mb-10">
+                    <div class="absolute inset-0 bg-primary/20 rounded-full blur-[60px] animate-pulse"></div>
+                    <div class="size-32 rounded-[2.5rem] bg-primary/10 text-primary flex items-center justify-center shadow-2xl relative z-10 glass border border-primary/20">
+                        <span class="material-symbols-outlined text-6xl font-black italic">terminal</span>
+                    </div>
+                </div>
+                <h3 class="text-4xl font-bold text-slate-900 dark:text-white mb-4 tracking-tighter">Direct <span class="text-primary">Messages</span></h3>
+                <p class="text-slate-500 dark:text-slate-400 text-lg max-w-sm font-medium">Select a conversation from the sidebar to start chatting.</p>
+                <div class="mt-12 flex gap-4">
+                    <div class="px-6 py-3 glass rounded-2xl border border-white/10 flex items-center gap-3">
+                        <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Encrypt Active</span>
+                    </div>
+                    <div class="px-6 py-3 glass rounded-2xl border border-white/10 flex items-center gap-3">
+                        <span class="size-1.5 rounded-full bg-blue-500"></span>
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Protocol V2.4</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </main>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-scroll to bottom of messages
+        const msgList = document.getElementById('messages-container');
+        if (msgList) msgList.scrollTop = msgList.scrollHeight;
+    </script>
+}
+
+<style>
+    @@keyframes slide-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-slide-up {
+        animation: slide-up 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(var(--primary-rgb), 0.1);
+        border-radius: 20px;
+    }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(var(--primary-rgb), 0.3);
+        }
+
+    .animate-pulse-slow {
+        animation: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            opacity: 0.1;
+        }
+
+        50% {
+            opacity: 0.2;
+        }
+    }
+</style>

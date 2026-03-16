@@ -1,0 +1,59 @@
+@using AskNLearn.Web.Models
+@model DirectMessagesDropdownViewModel
+
+<div class="relative">
+    <button onclick="toggleDropdown('dm-dropdown')" class="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-[#92c0c9] dark:hover:bg-surface-dark transition-colors relative">
+        <span class="material-symbols-outlined">chat_bubble</span>
+        @if (Model.UnreadCount > 0)
+        {
+            <span class="absolute top-1.5 right-1.5 size-2 bg-primary rounded-full ring-2 ring-surface-light dark:ring-background-dark"></span>
+        }
+    </button>
+    <!-- DM Dropdown -->
+    <div id="dm-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xl z-50 overflow-hidden animate-fade-in">
+        <div class="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
+            <h4 class="font-bold text-slate-900 dark:text-white text-sm">Messages</h4>
+            <a asp-controller="Direct" asp-action="Index" class="text-xs text-primary font-bold hover:underline">See all</a>
+        </div>
+        
+        <div class="max-h-[400px] overflow-y-auto">
+            @if (Model.RecentConversations.Any())
+            {
+                <div class="divide-y divide-border-light dark:divide-border-dark">
+                    @foreach (var conv in Model.RecentConversations)
+                    {
+                        <a asp-controller="Direct" asp-action="Index" asp-route-id="@conv.ConversationId" class="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors @(conv.IsUnread ? "bg-primary/5 dark:bg-primary/10" : "")">
+                            <div class="size-10 rounded-full bg-cover bg-center shrink-0 border border-border-light dark:border-border-dark" style="background-image: url('@conv.OtherUserAvatar')"></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-baseline mb-0.5">
+                                    <span class="font-bold text-slate-900 dark:text-white text-xs truncate">@conv.OtherUserName</span>
+                                    <span class="text-[10px] text-slate-400">@conv.LastMessageAt.ToString("HH:mm")</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate @(conv.IsUnread ? "font-bold text-slate-900 dark:text-white" : "")">
+                                    @conv.LastMessageContent
+                                </p>
+                            </div>
+                            @if (conv.IsUnread)
+                            {
+                                <div class="size-2 bg-primary rounded-full"></div>
+                            }
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="p-8 text-center flex flex-col items-center gap-3">
+                    <div class="size-12 rounded-full bg-slate-100 dark:bg-background-dark flex items-center justify-center text-slate-400 dark:text-slate-500">
+                        <span class="material-symbols-outlined text-2xl">chat_bubble_outline</span>
+                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">No new messages</p>
+                </div>
+            }
+        </div>
+        
+        <a asp-controller="Direct" asp-action="Index" class="block p-3 text-center text-xs font-bold text-slate-500 hover:text-primary transition-colors border-t border-border-light dark:border-border-dark bg-slate-50/30 dark:bg-white/5">
+            View full messenger
+        </a>
+    </div>
+</div>

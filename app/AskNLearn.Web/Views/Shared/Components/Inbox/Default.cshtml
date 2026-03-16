@@ -1,0 +1,202 @@
+@using AskNLearn.Web.Models
+@model InboxViewModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<div class="relative inbox-wrapper group/wrapper">
+    <!-- Pulse Effect for Unread -->
+    @if (Model.TotalUnreadCount > 0) {
+        <div class="absolute inset-0 bg-primary/20 rounded-2xl blur-xl animate-pulse -z-10 group-hover/wrapper:bg-primary/30 transition-all"></div>
+    }
+
+    <button onclick="toggleDropdown('inbox-dropdown')" class="flex items-center justify-center size-12 rounded-2xl glass border border-white/10 text-slate-500 hover:text-primary transition-all relative group shadow-2xl active:scale-95">
+        <span class="material-symbols-outlined text-[24px] group-hover:scale-110 transition-transform">notifications</span>
+        @if (Model.TotalUnreadCount > 0)
+        {
+            <span class="absolute -top-1.5 -right-1.5 size-5 bg-primary text-[10px] font-bold text-background-dark rounded-full flex items-center justify-center border-2 border-[#0a1618] shadow-lg">
+                @(Model.TotalUnreadCount > 9 ? "9+" : Model.TotalUnreadCount.ToString())
+            </span>
+        }
+    </button>
+
+    <!-- Unified Inbox Dropdown -->
+    <div id="inbox-dropdown" class="hidden absolute top-full right-0 mt-5 w-[420px] rounded-[2.5rem] glass border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] z-50 overflow-hidden animate-slide-up origin-top-right backdrop-blur-3xl bg-black/40">
+        <!-- Abstract Background -->
+        <div class="absolute -right-20 -top-20 size-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+        <!-- Header with Tabs -->
+        <div class="p-8 border-b border-white/5 relative z-10">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h4 class="font-bold text-white text-2xl tracking-tighter leading-none">Notifications</h4>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">Updates & Announcements</p>
+                </div>
+                <a asp-controller="Inbox" asp-action="Index" class="size-10 rounded-xl glass border border-white/10 flex items-center justify-center text-primary hover:bg-white hover:text-background-dark transition-all group/dash">
+                    <span class="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">dashboard</span>
+                </a>
+            </div>
+            
+            <div class="flex gap-2 glass bg-white/5 p-1.5 rounded-2xl border border-white/5">
+                <button onclick="switchInboxTab('messages')" class="inbox-tab-btn flex-1 py-2.5 rounded-xl text-[11px] font-bold transition-all uppercase tracking-wider bg-primary text-background-dark shadow-xl" data-tab="messages">
+                    Messages
+                </button>
+                <button onclick="switchInboxTab('notifications')" class="inbox-tab-btn flex-1 py-2.5 rounded-xl text-[11px] font-bold transition-all uppercase tracking-wider text-slate-500 hover:text-white" data-tab="notifications">
+                    Alerts
+                </button>
+                <button onclick="switchInboxTab('tasks')" class="inbox-tab-btn flex-1 py-2.5 rounded-xl text-[11px] font-bold transition-all uppercase tracking-wider text-slate-500 hover:text-white" data-tab="tasks">
+                    Tasks
+                </button>
+            </div>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="max-h-[480px] overflow-y-auto custom-scrollbar-inbox relative z-10">
+            <!-- Messages Tab -->
+            <div id="inbox-tab-messages" class="inbox-tab-content">
+                @if (Model.RecentMessages.Any())
+                {
+                    <div class="divide-y divide-white/5">
+                        @foreach (var conv in Model.RecentMessages)
+                        {
+                            <a asp-controller="Direct" asp-action="Index" asp-route-id="@conv.ConversationId" class="flex items-center gap-5 p-6 hover:bg-white/[0.03] transition-all group/link @(conv.IsUnread ? "bg-primary/[0.04]" : "")">
+                                <div class="relative shrink-0">
+                                    <div class="absolute inset-0 bg-primary/20 rounded-xl blur-lg opacity-0 group-hover/link:opacity-100 transition-opacity"></div>
+                                    <div class="size-14 rounded-xl bg-cover bg-center shrink-0 border border-white/10 relative z-10 glass p-0.5" style="background-image: url('@conv.OtherUserAvatar')"></div>
+                                    @if(conv.IsUnread) {
+                                        <div class="absolute -top-1 -right-1 size-3 bg-primary rounded-full border-2 border-background-dark z-20 animate-pulse shadow-lg"></div>
+                                    }
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex justify-between items-baseline mb-1">
+                                        <span class="font-bold text-white text-sm tracking-tight truncate">@conv.OtherUserName</span>
+                                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">@conv.LastMessageAt.ToString("HH:mm")</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 truncate leading-snug @(conv.IsUnread ? "font-bold text-white" : "font-medium")">
+                                        @conv.LastMessageContent
+                                    </p>
+                                </div>
+                                <span class="material-symbols-outlined text-primary text-xl opacity-0 group-hover/link:opacity-100 transition-all translate-x-2 group-hover/link:translate-x-0">chevron_right</span>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="p-20 text-center flex flex-col items-center gap-4">
+                        <div class="size-20 rounded-[2rem] glass border border-white/5 flex items-center justify-center text-slate-700">
+                            <span class="material-symbols-outlined text-4xl">chat_bubble_outline</span>
+                        </div>
+                        <p class="text-[11px] font-bold text-slate-600 uppercase tracking-widest">No recent messages</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Notifications Tab -->
+            <div id="inbox-tab-notifications" class="inbox-tab-content hidden">
+                @if (Model.RecentNotifications.Any())
+                {
+                    <div class="divide-y divide-white/5">
+                        @foreach (var notif in Model.RecentNotifications)
+                        {
+                            <a asp-controller="Inbox" asp-action="Index" class="block p-6 hover:bg-white/[0.03] transition-all group/notif @(notif.IsRead ? "opacity-40" : "bg-primary/[0.03]")">
+                                <div class="flex gap-4">
+                                    <div class="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/20 glass">
+                                        <span class="material-symbols-outlined text-lg font-bold">@(notif.IsRead ? "notifications" : "notifications_active")</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between items-start gap-2 mb-1">
+                                            <p class="text-[11px] font-bold text-white uppercase tracking-wider truncate">@notif.Title</p>
+                                            <span class="text-[9px] text-slate-600 font-bold uppercase tracking-widest shrink-0">@notif.CreatedAt.ToString("HH:mm")</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-400 font-medium leading-relaxed line-clamp-2">@notif.Message</p>
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="p-20 text-center flex flex-col items-center gap-4">
+                        <div class="size-20 rounded-[2rem] glass border border-white/5 flex items-center justify-center text-slate-700">
+                            <span class="material-symbols-outlined text-4xl">notifications_off</span>
+                        </div>
+                        <p class="text-[11px] font-bold text-slate-600 uppercase tracking-widest">No new alerts</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Tasks Tab -->
+            <div id="inbox-tab-tasks" class="inbox-tab-content hidden">
+                <div class="p-20 text-center flex flex-col items-center gap-4">
+                    <div class="size-20 rounded-[2rem] glass border border-white/5 flex items-center justify-center text-slate-700">
+                        <span class="material-symbols-outlined text-4xl">checklist</span>
+                    </div>
+                    <p class="text-[11px] font-bold text-slate-600 uppercase tracking-widest leading-relaxed">No pending tasks.<br>Everything up to date.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Actions -->
+        <div class="p-6 border-t border-white/5 bg-white/[0.02] flex gap-4 relative z-10">
+            <button class="flex-1 py-3.5 rounded-2xl text-[11px] font-bold text-slate-500 hover:text-white hover:bg-white/5 transition-all text-center border border-white/10 uppercase tracking-widest active:scale-95">
+                Clear All
+            </button>
+            <a asp-controller="Inbox" asp-action="Index" class="flex-1 py-3.5 rounded-2xl text-[11px] font-bold text-background-dark bg-primary hover:bg-white transition-all text-center shadow-2xl shadow-primary/20 uppercase tracking-widest active:scale-95">
+                View Full Inbox
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchInboxTab(tabName) {
+        // Toggle Buttons
+        document.querySelectorAll('.inbox-tab-btn').forEach(btn => {
+            if(btn.dataset.tab === tabName) {
+                btn.classList.add('bg-primary', 'text-background-dark', 'shadow-xl');
+                btn.classList.remove('text-slate-500', 'hover:text-white');
+            } else {
+                btn.classList.remove('bg-primary', 'text-background-dark', 'shadow-xl');
+                btn.classList.add('text-slate-500', 'hover:text-white');
+            }
+        });
+
+        // Toggle Content
+        document.querySelectorAll('.inbox-tab-content').forEach(content => {
+            if(content.id === 'inbox-tab-' + tabName) {
+                content.classList.remove('hidden');
+                content.classList.add('animate-fade-in');
+            } else {
+                content.classList.add('hidden');
+                content.classList.remove('animate-fade-in');
+            }
+        });
+    }
+</script>
+
+<style>
+    .custom-scrollbar-inbox::-webkit-scrollbar {
+        width: 3px;
+    }
+    .custom-scrollbar-inbox::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+    .custom-scrollbar-inbox::-webkit-scrollbar-thumb:hover {
+        background: rgba(var(--primary-rgb), 0.2);
+    }
+    @@keyframes slide-up {
+        from { opacity: 0; transform: translateY(20px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-slide-up {
+        animation: slide-up 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+    @@keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .animate-fade-in {
+        animation: fade-in 0.3s ease-out forwards;
+    }
+</style>
