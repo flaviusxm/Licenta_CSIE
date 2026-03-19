@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,11 +24,11 @@ namespace AskNLearn.Domain.Entities.SocialFeed
         public Guid PostId { get; set; }
 
         [ForeignKey(nameof(PostId))]
-        public Post Post { get; set; } = null!;
+        public required Post Post { get; set; }
 
         public Guid TagId { get; set; }
 
         [ForeignKey(nameof(TagId))]
-        public Tag Tag { get; set; } = null!;
+        public required Tag Tag { get; set; }
     }
 }

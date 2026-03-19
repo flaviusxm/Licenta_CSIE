@@ -28,7 +28,7 @@ namespace AskNLearn.Application.Features.Communities.Queries.GetCommunities
                 query = query.Where(c => c.Name.Contains(request.SearchTerm) || (c.Description != null && c.Description.Contains(request.SearchTerm)));
             }
 
-            return await query
+            var communities = await query
                 .Select(c => new CommunityDto
                 {
                     Id = c.Id,
@@ -38,10 +38,21 @@ namespace AskNLearn.Application.Features.Communities.Queries.GetCommunities
                     ImageUrl = c.ImageUrl,
                     CreatorId = c.CreatorId,
                     CreatedAt = c.CreatedAt,
-                    PostCount = c.Posts.Count
-                  
+                    PostCount = c.Posts.Count,
+                    MemberCount = _context.CommunityMemberships.Count(m => m.CommunityId == c.Id)
                 })
                 .ToListAsync(cancellationToken);
+
+            if (!string.IsNullOrEmpty(request.CurrentUserId))
+            {
+                foreach (var community in communities)
+                {
+                    community.IsMember = await _context.CommunityMemberships
+                        .AnyAsync(m => m.CommunityId == community.Id && m.UserId == request.CurrentUserId, cancellationToken);
+                }
+            }
+
+            return communities;
         }
     }
 }

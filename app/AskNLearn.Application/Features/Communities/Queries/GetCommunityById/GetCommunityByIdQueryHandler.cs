@@ -18,7 +18,7 @@ namespace AskNLearn.Application.Features.Communities.Queries.GetCommunityById
 
         public async Task<CommunityDto?> Handle(GetCommunityByIdQuery request, CancellationToken cancellationToken)
         {
-            return await _context.Communities
+            var community = await _context.Communities
                 .Include(c => c.Posts)
                 .Where(c => c.Id == request.Id)
                 .Select(c => new CommunityDto
@@ -30,9 +30,18 @@ namespace AskNLearn.Application.Features.Communities.Queries.GetCommunityById
                     ImageUrl = c.ImageUrl,
                     CreatorId = c.CreatorId,
                     CreatedAt = c.CreatedAt,
-                    PostCount = c.Posts.Count
+                    PostCount = c.Posts.Count,
+                    MemberCount = _context.CommunityMemberships.Count(m => m.CommunityId == c.Id)
                 })
                 .FirstOrDefaultAsync(cancellationToken);
+
+            if (community != null && !string.IsNullOrEmpty(request.CurrentUserId))
+            {
+                community.IsMember = await _context.CommunityMemberships
+                    .AnyAsync(m => m.CommunityId == community.Id && m.UserId == request.CurrentUserId, cancellationToken);
+            }
+
+            return community;
         }
     }
 }

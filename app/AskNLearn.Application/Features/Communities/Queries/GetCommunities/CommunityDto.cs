@@ -13,5 +13,6 @@ namespace AskNLearn.Application.Features.Communities.Queries.GetCommunities
         public DateTime CreatedAt { get; set; }
         public int MemberCount { get; set; }
         public int PostCount { get; set; }
+        public bool IsMember { get; set; }
     }
 }
