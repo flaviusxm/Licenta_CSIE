@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using AskNLearn.Domain.Entities.Core;
 using AskNLearn.Domain.Entities.Messaging;
@@ -33,6 +33,7 @@ namespace AskNLearn.Domain.Entities.SocialFeed
 
         public bool IsSolved { get; set; } = false;
         public bool IsLocked { get; set; } = false;
+        public bool IsPinned { get; set; } = false;
 
         public int ViewCount { get; set; } = 0;
 
