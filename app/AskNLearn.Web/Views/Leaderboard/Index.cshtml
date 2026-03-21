@@ -5,6 +5,18 @@
     ViewData["Title"] = "Student Leaderboard";
 }
 
+<style>
+    .table, .table th, .table td, .table tr { 
+        --bs-table-bg: transparent !important;
+        --bs-table-color: #e5e7eb !important;
+        --bs-table-hover-bg: rgba(255,255,255,0.05) !important;
+        background-color: transparent !important;
+        color: #e5e7eb !important;
+    }
+    .table-responsive { background-color: transparent !important; }
+</style>
+
+
 <div class="container py-5 max-w-7xl">
     <!-- Header -->
     <div class="row align-items-center mb-5 g-4">
@@ -84,7 +96,7 @@
     <!-- Ranking Table -->
     <div class="glass-card overflow-hidden shadow-lg border-glass-strong" style="border-radius: 2.5rem;">
         <div class="table-responsive">
-            <table class="table table-borderless table-hover mb-0 align-middle text-white">
+            <table class="table table-borderless table-hover mb-0 align-middle text-white bg-transparent">
                 <thead style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-glass);">
                     <tr>
                         <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0" style="border-top-left-radius: 2.5rem;">Rank</th>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -31,19 +31,19 @@
 
         <!-- Center Global Navigation -->
         <nav class="d-none d-lg-flex align-items-center gap-2">
-            <a asp-controller="Home" asp-action="Index" class="nav-link-premium justify-content-center @(ViewData["ActivePage"] as string == "Home" ? "active" : "") animate-entrance delay-100">
+            <a asp-controller="Home" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")">
                 Home
             </a>
-            <a asp-controller="Explore" asp-action="Index" class="nav-link-premium justify-content-center @(ViewData["ActivePage"] as string == "Explore" ? "active" : "") animate-entrance delay-200">
+            <a asp-controller="Explore" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Explore" ? "active" : "")">
                 Explore
             </a>
-            <a asp-controller="Resources" asp-action="Index" class="nav-link-premium justify-content-center @(ViewData["ActivePage"] as string == "Resources" ? "active" : "") animate-entrance delay-300">
+            <a asp-controller="Resources" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Resources" ? "active" : "")">
                 Resources
             </a>
-            <a asp-controller="StudyGroups" asp-action="Index" class="nav-link-premium justify-content-center @(ViewData["ActivePage"] as string == "StudyGroups" ? "active" : "") animate-entrance delay-400">
+            <a asp-controller="StudyGroups" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "StudyGroups" ? "active" : "")">
                 Groups
             </a>
-            <a asp-controller="Leaderboard" asp-action="Index" class="nav-link-premium justify-content-center @(ViewData["ActivePage"] as string == "Leaderboard" ? "active" : "") animate-entrance delay-500">
+            <a asp-controller="Leaderboard" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Leaderboard" ? "active" : "")">
                 Leaderboard
             </a>
         </nav>

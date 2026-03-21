@@ -159,14 +159,12 @@ html, body {
 
 .nav-link-premium.active {
     color: #020806 !important;
-    background: var(--gradient-aurora);
     box-shadow: 0 8px 25px rgba(52, 211, 153, 0.4);
 }
 
 .nav-link-premium.active::before {
     opacity: 1;
     transform: scale(1);
-    background: none; /* Already has gradient on link itself for active state */
 }
 
 .nav-link-premium.active:hover {
@@ -196,6 +194,30 @@ html, body {
 
 h1, h2, h3, h4, h5, h6 {
     letter-spacing: -0.02em;
+}
+
+/* --- Standardized Page Headers --- */
+.page-header-title {
+    font-size: 2.5rem; /* Bootstrap display-6 equivalent roughly */
+    font-weight: 800;
+    color: var(--text-pure);
+    letter-spacing: -0.025em;
+    margin-bottom: 0.5rem;
+}
+
+.page-header-description {
+    font-size: 1.25rem; /* fs-5 */
+    color: var(--text-muted);
+    margin-bottom: 0;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.section-header-title {
+    font-size: 1.5rem; /* fs-4 */
+    font-weight: 700;
+    color: var(--text-pure);
+    letter-spacing: -0.01em;
 }
 
 .text-muted {
