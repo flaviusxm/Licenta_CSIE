@@ -16,25 +16,27 @@
     <div id="feed-content" class="d-flex flex-column gap-4 transition-all" style="animation: slide-up-fade 0.5s ease-out;">
         @if (User.Identity.IsAuthenticated)
         {
-            <!-- Welcome Card (Authenticated) -->
-            <div class="glass-card p-4 p-md-5 position-relative overflow-hidden mb-2">
-                <div class="row align-items-center position-relative z-1">
-                    <div class="col-md-8 text-center text-md-start mb-4 mb-md-0">
-                        <h2 class="fs-3 fw-bold text-white mb-2">Welcome back! 👋</h2>
-                        <p class="text-muted mb-4">You're on a <span class="text-aurora fw-bold">5-day study streak</span>. Keep up the momentum!</p>
-                        <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-start">
-                            <span class="badge rounded-pill d-flex align-items-center gap-1 px-3 py-2 text-success fw-bold" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); font-size: 0.85rem;">
-                                <span class="material-symbols-outlined fs-6">check_circle</span> 3 Tasks Done
-                            </span>
-                            <span class="badge rounded-pill d-flex align-items-center gap-1 px-3 py-2 text-warning fw-bold" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); font-size: 0.85rem;">
-                                <span class="material-symbols-outlined fs-6">schedule</span> Exam in 2 days
-                            </span>
+            <!-- Performance Dashboard Header -->
+            <div class="glass-card mb-4 overflow-hidden border-0 shadow-lg" style="background: linear-gradient(135deg, rgba(6, 18, 14, 0.8) 0%, rgba(2, 8, 6, 0.9) 100%);">
+                <div class="p-4 p-md-5 d-flex flex-column flex-md-row align-items-center justify-content-between gap-4 position-relative">
+                    <div class="position-absolute translate-middle-y" style="top: 0; right: 10%; width: 300px; height: 300px; background: var(--gradient-aurora); filter: blur(100px); opacity: 0.1;"></div>
+                    <div class="z-1">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="badge bg-aurora-glass text-aurora px-3 py-1 fw-black text-uppercase tracking-widest" style="font-size: 0.6rem;">Academic Performance</span>
+                            <span class="text-muted small fw-bold">Active Streak: 5 Days</span>
                         </div>
+                        <h2 class="display-6 fw-black text-white mb-2 tracking-tight">Focus & <span class="text-aurora">Flow.</span></h2>
+                        <p class="text-muted fw-medium mb-0" style="max-width: 450px;">Your academic journey is accelerating. You have <span class="text-white fw-bold">2 upcoming exams</span> and <span class="text-white fw-bold">3 pending project milestones</span> this week.</p>
                     </div>
-                    <div class="col-md-4 text-center text-md-end">
-                        <button class="btn btn-glass w-100 w-md-auto fw-bold px-4 py-2">
-                            View Stats
-                        </button>
+                    <div class="d-flex flex-column gap-2 z-1" style="min-width: 200px;">
+                        <div class="glass-panel p-3 d-flex align-items-center justify-content-between mb-2" style="background: rgba(255,255,255,0.03);">
+                            <div>
+                                <p class="text-muted fw-bold m-0" style="font-size: 0.6rem; letter-spacing: 1px;">STUDY SCORE</p>
+                                <p class="text-white fw-black m-0 fs-4">840</p>
+                            </div>
+                            <span class="material-symbols-outlined text-aurora fs-2">trending_up</span>
+                        </div>
+                        <button class="btn btn-premium w-100 py-2.5 fw-black text-uppercase tracking-widest" style="font-size: 0.7rem;">Analytics Dashboard</button>
                     </div>
                 </div>
             </div>
@@ -59,117 +61,155 @@
             </div>
         }
 
-        <!-- Feed Tabs -->
-        <div class="sticky-top bg-transparent z-3 pb-2" style="top: 0; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-glass-strong); margin: 0 -1rem 1rem -1rem; padding: 1rem 1rem 0 1rem;">
-            <ul class="nav nav-pills gap-4 border-bottom border-secondary border-opacity-25 pb-0 mb-0 flex-nowrap overflow-auto hide-scrollbar" style="border-bottom: 1px solid var(--border-glass);">
-                <li class="nav-item">
-                    <a href="#" class="nav-link active bg-transparent text-white fw-bold d-flex align-items-center gap-2 p-0 pb-3 h-100 rounded-0" style="border-bottom: 2px solid var(--color-mint-bright);">
-                        <span class="material-symbols-outlined text-aurora">auto_awesome</span>
-                        For You
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link bg-transparent text-muted hover-text-white fw-bold d-flex align-items-center gap-2 p-0 pb-3 h-100 rounded-0 border-bottom border-transparent hover-border-white transition-colors">
-                        <span class="material-symbols-outlined">trending_up</span>
-                        Trending
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link bg-transparent text-muted hover-text-white fw-bold d-flex align-items-center gap-2 p-0 pb-3 h-100 rounded-0 border-bottom border-transparent hover-border-white transition-colors">
-                        <span class="material-symbols-outlined">new_releases</span>
-                        New
-                    </a>
-                </li>
-            </ul>
+        <!-- Personalized Filter Indicator -->
+        <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom border-glass" style="border-width: 0.5px !important;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="badge rounded-pill px-3 py-1 d-flex align-items-center gap-2" style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.2);">
+                    <span class="material-symbols-outlined text-aurora fs-6">psychology</span>
+                    <span class="text-aurora small fw-black tracking-tight text-uppercase" style="font-size: 0.65rem;">TAILORED FOR YOUR FOCUS</span>
+                </div>
+                <!-- Sort Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-link p-0 text-muted text-decoration-none d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <span class="material-symbols-outlined fs-5">sort</span>
+                        <span class="small fw-bold">Relevance</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark glass-card border-glass overflow-hidden shadow-lg">
+                        <li><a class="dropdown-item py-2 fw-bold active" href="#" style="font-size: 0.75rem;">Relevance</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold" href="#" style="font-size: 0.75rem;">Latest Activity</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold" href="#" style="font-size: 0.75rem;">Top Rated</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <a asp-controller="Profile" asp-action="Index" class="btn btn-glass-sm py-1 px-3 d-flex align-items-center gap-2 border-0" style="background: rgba(255,255,255,0.03);">
+                <span class="material-symbols-outlined fs-6 opacity-50">tune</span>
+                <span class="text-muted small fw-bold">Adjust Interests</span>
+            </a>
         </div>
         
         <!-- Feed Content -->
         <div class="d-flex flex-column gap-4 pb-5">
-            <!-- Example Post 1 -->
-            <article class="glass-panel p-4 position-relative hover-glow transition-all" style="border-radius: 1.5rem;">
-                <div class="d-flex gap-3">
-                    <!-- Voting Column -->
-                    <div class="d-flex flex-column align-items-center" style="width: 40px; flex-shrink: 0;">
-                        <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none transition-colors"><span class="material-symbols-outlined fs-4">keyboard_arrow_up</span></button>
-                        <span class="fw-bold text-white small my-1">42</span>
-                        <button class="btn btn-link p-0 text-muted text-hover-danger text-decoration-none transition-colors"><span class="material-symbols-outlined fs-4">keyboard_arrow_down</span></button>
+            <!-- Activity Insight 1 -->
+            <article class="glass-card p-4 transition-all hover-glow border-0" style="background: rgba(15, 23, 42, 0.4); border-radius: 1.5rem;">
+                <div class="d-flex align-items-start gap-4">
+                    <!-- Community Badge / Vertical ID -->
+                    <div class="d-flex flex-column align-items-center gap-2" style="width: 50px;">
+                        <div class="avatar-md rounded-lg d-flex flex-center text-primary fw-black shadow-lg" style="background: rgba(0,245,160,0.1); color: var(--color-mint-bright) !important; border: 1px solid rgba(0,245,160,0.2);">CS</div>
+                        <div class="d-flex flex-column align-items-center py-2 px-1 rounded-pill" style="background: rgba(255,255,255,0.03);">
+                             <button class="btn btn-link p-0 text-muted hover-text-white transition-colors"><span class="material-symbols-outlined" style="font-size: 1.25rem;">keyboard_arrow_up</span></button>
+                             <span class="text-white fw-black small my-1">42</span>
+                             <button class="btn btn-link p-0 text-muted hover-text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 1.25rem;">keyboard_arrow_down</span></button>
+                        </div>
                     </div>
                     
-                    <!-- Content Column -->
-                    <div class="flex-grow-1 min-vw-0">
-                        <div class="d-flex flex-wrap align-items-center gap-2 small text-muted mb-2 fw-semibold">
-                            <span class="badge bg-primary text-white rounded-2 px-2 py-1">CS</span>
-                            <span class="text-light">Comp Sci 101</span>
-                            <span class="opacity-50">•</span>
-                            <span>Posted by u/SarahDev</span>
-                            <span class="opacity-50">•</span>
-                            <span>2h ago</span>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-aurora fw-bold" style="font-size: 0.75rem;">CS Student Community</span>
+                                <span class="text-muted opacity-50 small">•</span>
+                                <span class="text-muted small">Posted by SarahDev</span>
+                            </div>
+                            <span class="text-muted small fw-bold opacity-75">2h ago</span>
                         </div>
                         
-                        <h3 class="fs-5 fw-bold text-white mb-2 text-decoration-none cursor-pointer hover-glow">
-                            Late Night Java Coding Session ☕️
-                        </h3>
-                        <p class="text-muted small mb-3 lh-base">
-                            Hey everyone! I'm struggling with the recursion assignment. Starting a study room in 10 mins if anyone wants to join and debug together. Beginners welcome!
+                        <h3 class="fs-4 fw-bold text-white mb-3 tracking-tight">Recursive Algorithms: Deep-Dive Collaboration Session</h3>
+                        <p class="text-muted mb-4 lh-relaxed" style="font-size: 0.9rem;">
+                            Exploring advanced memoization techniques in Java. We're hosting a live peer-review session in 15 minutes to analyze performance bottlenecks in the current assignment modules. All senior contributors welcome.
                         </p>
                         
-                        @if (!User.Identity.IsAuthenticated)
-                        {
-                            <div class="d-flex align-items-center gap-2 p-3 rounded-4 mb-3" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass-strong);">
-                                <span class="material-symbols-outlined text-aurora fs-5">lock</span>
-                                <span class="fw-bold text-light small">Join to enable live collaboration</span>
+                        <div class="d-flex align-items-center gap-4">
+                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
+                                <span class="material-symbols-outlined fs-5">chat_bubble</span>
+                                12 Contributions
                             </div>
-                        }
-                        
-                        <div class="d-flex align-items-center gap-4 mt-3 pt-2">
-                            <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none d-flex align-items-center gap-1 small fw-bold transition-colors">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">chat_bubble</span> 12 Comments
-                            </button>
-                            <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none d-flex align-items-center gap-1 small fw-bold transition-colors">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">share</span> Share
-                            </button>
-                            <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none d-flex align-items-center gap-1 small fw-bold ms-auto transition-colors">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">bookmark</span> Save
-                            </button>
+                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
+                                <span class="material-symbols-outlined fs-5">visibility</span>
+                                2.4k Views
+                            </div>
+                            <div class="ms-auto d-flex gap-2">
+                                <button class="btn btn-glass-sm p-2 d-flex align-items-center justify-content-center bookmark-toggle" title="Bookmark Post">
+                                    <span class="material-symbols-outlined fs-5 transition-all">star</span>
+                                </button>
+                                <button class="btn btn-premium-sm px-4 py-1">Join Session</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </article>
 
-             <!-- Example Post 2 -->
-             <article class="glass-panel p-4 position-relative hover-glow transition-all" style="border-radius: 1.5rem;">
-                <div class="d-flex gap-3">
-                     <div class="d-flex flex-column align-items-center" style="width: 40px; flex-shrink: 0;">
-                        <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none transition-colors"><span class="material-symbols-outlined fs-4">keyboard_arrow_up</span></button>
-                        <span class="fw-bold text-white small my-1">15</span>
-                        <button class="btn btn-link p-0 text-muted text-hover-danger text-decoration-none transition-colors"><span class="material-symbols-outlined fs-4">keyboard_arrow_down</span></button>
+            <!-- Activity Insight 2 -->
+            <article class="glass-card p-4 transition-all hover-glow border-0" style="background: rgba(15, 23, 42, 0.4); border-radius: 1.5rem;">
+                <div class="d-flex align-items-start gap-4">
+                    <div class="d-flex flex-column align-items-center gap-2" style="width: 50px;">
+                        <div class="avatar-md rounded-lg d-flex flex-center text-success fw-black shadow-lg" style="background: rgba(52, 211, 153, 0.1); color: var(--color-mint-bright) !important; border: 1px solid rgba(52, 211, 153, 0.2);">MA</div>
+                        <div class="d-flex flex-column align-items-center py-2 px-1 rounded-pill" style="background: rgba(255,255,255,0.03);">
+                             <button class="btn btn-link p-0 text-muted hover-text-white transition-colors"><span class="material-symbols-outlined" style="font-size: 1.25rem;">keyboard_arrow_up</span></button>
+                             <span class="text-white fw-black small my-1">15</span>
+                             <button class="btn btn-link p-0 text-muted hover-text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 1.25rem;">keyboard_arrow_down</span></button>
+                        </div>
                     </div>
-                     <div class="flex-grow-1 min-vw-0">
-                         <div class="d-flex flex-wrap align-items-center gap-2 small text-muted mb-2 fw-semibold">
-                            <span class="badge bg-success text-white rounded-2 px-2 py-1" style="background: var(--color-mint-deep) !important;">MA</span>
-                            <span class="text-light">Calculus II</span>
-                            <span class="opacity-50">•</span>
-                            <span>Posted by u/MathWhiz</span>
-                            <span class="opacity-50">•</span>
-                            <span>5h ago</span>
+                    
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-aurora fw-bold" style="font-size: 0.75rem;">Mathematics & Logic Group</span>
+                                <span class="text-muted opacity-50 small">•</span>
+                                <span class="text-muted small">Posted by MathWhiz</span>
+                            </div>
+                            <span class="text-muted small fw-bold opacity-75">5h ago</span>
                         </div>
-                        <h3 class="fs-5 fw-bold text-white mb-2 text-decoration-none cursor-pointer hover-glow">
-                            Integration Techniques Cheat Sheet (PDF) 📚
-                        </h3>
-                        <p class="text-muted small mb-3 lh-base">
-                            Compiled all the major integration formulas and techniques into a single page reference sheet.
+                        
+                        <h3 class="fs-4 fw-bold text-white mb-3 tracking-tight">Advanced Calculus: Integration Techniques Reference</h3>
+                        <p class="text-muted mb-4 lh-relaxed" style="font-size: 0.9rem;">
+                            The comprehensive PDF resource for integration by parts and trigonometric substitution is now available in the community archives. Categorized under "Exam Prep".
                         </p>
-                        <div class="d-flex align-items-center gap-4 mt-3 pt-2">
-                            <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none d-flex align-items-center gap-1 small fw-bold transition-colors">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">chat_bubble</span> 8 Comments
-                            </button>
-                            <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none d-flex align-items-center gap-1 small fw-bold transition-colors">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">share</span> Share
-                            </button>
+                        
+                        <div class="d-flex align-items-center gap-4">
+                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
+                                <span class="material-symbols-outlined fs-5">description</span>
+                                Resource Attached (PDF)
+                            </div>
+                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
+                                <span class="material-symbols-outlined fs-5">chat_bubble</span>
+                                8 Contributions
+                            </div>
+                            <div class="ms-auto d-flex gap-2">
+                                <button class="btn btn-glass-sm p-2 d-flex align-items-center justify-content-center bookmark-toggle" title="Bookmark Resource">
+                                    <span class="material-symbols-outlined fs-5 transition-all">star</span>
+                                </button>
+                                <button class="btn btn-premium-sm px-4 py-1">Download Resource</button>
+                            </div>
                         </div>
-                     </div>
+                    </div>
                 </div>
-             </article>
+            </article>
         </div>
     </div> 
 </div>
+
+<script>
+    // --- Post Bookmarking Logic ---
+    document.querySelectorAll('.bookmark-toggle').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const icon = this.querySelector('.material-symbols-outlined');
+            const isActive = icon.classList.contains('fill-icon');
+            
+            if (isActive) {
+                icon.classList.remove('fill-icon');
+                icon.style.fontVariationSettings = "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24";
+                icon.style.color = '';
+                this.style.background = '';
+                this.style.borderColor = '';
+            } else {
+                icon.classList.add('fill-icon');
+                icon.style.fontVariationSettings = "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24";
+                icon.style.color = '#fbbf24';
+                this.style.background = 'rgba(251, 191, 36, 0.1)';
+                this.style.borderColor = 'rgba(251, 191, 36, 0.3)';
+                this.style.transform = 'scale(1.2)';
+                setTimeout(() => this.style.transform = '', 200);
+            }
+        });
+    });
+</script>

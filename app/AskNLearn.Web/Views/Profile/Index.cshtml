@@ -69,25 +69,32 @@
                         <div class="rounded-3 d-flex align-items-center justify-content-center text-aurora shadow-sm" style="width: 40px; height: 40px; background: rgba(52, 211, 153, 0.1);">
                             <span class="material-symbols-outlined fs-5">psychology</span>
                         </div>
-                        <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Academic Interests</h3>
+                        <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Academic Focus</h3>
                     </div>
-                    <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-4" style="border-radius: 2rem; border: 2px dashed rgba(255,255,255,0.1); min-height: 220px;">
-                        <div id="interestsContainer" class="d-flex flex-wrap gap-2">
-                            @if (!string.IsNullOrEmpty(Model.Interests))
-                            {
-                                @foreach (var interest in Model.Interests.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                                {
-                                    <div class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill transition-colors shadow-sm hover-border-aurora" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
-                                        <span class="text-white text-uppercase tracking-widest fw-bold" style="font-size: 0.65rem;">#@interest.Trim()</span>
-                                        <button type="button" onclick="removeTag(this, '@interest.Trim()')" class="btn btn-link p-0 text-muted hover-text-white d-flex align-items-center justify-content-center text-decoration-none">
-                                            <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
-                                        </button>
-                                    </div>
-                                }
+                    <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-3" style="border-radius: 2rem; border: 1px solid var(--border-glass);">
+                        <p class="text-muted small mb-2 px-1">Select the domains you want to prioritize in your home feed:</p>
+                        
+                        <div id="interestsContainer" class="d-flex flex-wrap gap-2 mb-3">
+                            @{
+                                var categories = new[] { "Computer Science", "Economics", "Mathematics", "Law", "Medicine", "Engineering", "Arts", "Social Sciences", "Physics", "Chemistry" };
+                                var userInterests = (Model.Interests ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()).ToList();
                             }
-                            <input type="text" id="interestInput" placeholder="+ Add Interest..." 
-                                   class="form-control bg-transparent border-0 text-white text-uppercase tracking-widest fw-bold shadow-none p-1 flex-grow-1" style="font-size: 0.75rem; min-width: 140px; box-shadow: none !important; width: auto;" />
+                            @foreach (var cat in categories)
+                            {
+                                bool isActive = userInterests.Contains(cat);
+                                <button type="button" onclick="toggleInterest(this, '@cat')" 
+                                        class="interest-pill btn btn-glass-sm px-3 py-1 rounded-pill transition-all @(isActive ? "active" : "")"
+                                        style="font-size: 0.75rem; @(isActive ? "background: rgba(52, 211, 153, 0.15); border-color: rgba(52, 211, 153, 0.5); color: var(--color-mint-bright) !important;" : "")">
+                                    <span class="text-uppercase tracking-widest fw-bold">#@cat</span>
+                                </button>
+                            }
                         </div>
+
+                        <div class="d-flex align-items-center gap-2 mt-auto pt-3 border-top border-glass opacity-75">
+                            <span class="material-symbols-outlined fs-6 text-muted">info</span>
+                            <span class="text-muted" style="font-size: 0.65rem;">Your feed will prioritize discussions from the selected domains.</span>
+                        </div>
+                        
                         <input type="hidden" name="Interests" id="interestsHidden" value="@Model.Interests" />
                     </div>
                 </div>
@@ -199,40 +206,32 @@
 </div>
 
 <script>
-    // --- Interests Logic ---
+    // --- Interests Logic (Pill Toggle) ---
     const interestsHidden = document.getElementById('interestsHidden');
-    const interestsContainer = document.getElementById('interestsContainer');
-    const interestInput = document.getElementById('interestInput');
     let interests = interestsHidden.value ? interestsHidden.value.split(',').filter(x => x.trim() !== '') : [];
 
-    function updateInterests() { interestsHidden.value = interests.join(','); }
+    function updateInterests() { 
+        interestsHidden.value = interests.join(',');
+        // Trigger auto-save if the helper exists
+        if (typeof performSave === 'function') performSave();
+    }
 
-    function addInterest(value) {
-        value = value.trim();
-        if (!value || interests.includes(value)) return;
-        if (interests.length >= 15) {
-            alert('Maximum 15 interests allowed.');
-            return;
+    function toggleInterest(btn, value) {
+        if (interests.includes(value)) {
+            interests = interests.filter(i => i !== value);
+            btn.classList.remove('active');
+            btn.style.background = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+        } else {
+            interests.push(value);
+            btn.classList.add('active');
+            btn.style.background = 'rgba(52, 211, 153, 0.15)';
+            btn.style.borderColor = 'rgba(52, 211, 153, 0.5)';
+            btn.style.color = 'var(--color-mint-bright)';
         }
-        interests.push(value);
         updateInterests();
-        const tag = document.createElement('div');
-        tag.className = 'd-flex align-items-center gap-2 px-3 py-1 rounded-pill transition-colors shadow-sm hover-border-aurora';
-        tag.style.background = 'rgba(255,255,255,0.05)';
-        tag.style.border = '1px solid var(--border-glass)';
-        tag.innerHTML = `<span class="text-white text-uppercase tracking-widest fw-bold" style="font-size: 0.65rem;">#${value}</span>
-                         <button type="button" onclick="removeTag(this, '${value}')" class="btn btn-link p-0 text-muted hover-text-white d-flex align-items-center justify-content-center text-decoration-none"><span class="material-symbols-outlined" style="font-size: 14px;">close</span></button>`;
-        interestsContainer.insertBefore(tag, interestInput);
-        interestInput.value = '';
     }
-
-    function removeTag(button, value) {
-        interests = interests.filter(i => i !== value);
-        updateInterests();
-        button.parentElement.remove();
-    }
-
-    interestInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addInterest(interestInput.value); } });
 
     // --- Social Links Logic ---
     const socialLinksHidden = document.getElementById('socialLinksHidden');

@@ -86,5 +86,10 @@ namespace AskNLearn.Web.Hubs
         {
             await Clients.Group($"voice-{channelId}").SendAsync("UserVideoChanged", Context.ConnectionId, isVideoOn);
         }
+
+        public async Task ToggleSpeaking(Guid channelId, bool isSpeaking)
+        {
+            await Clients.Group($"voice-{channelId}").SendAsync("UserSpeakingChanged", Context.ConnectionId, isSpeaking);
+        }
     }
 }

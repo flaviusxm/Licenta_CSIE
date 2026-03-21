@@ -10,65 +10,87 @@
 
 @section Sidebar {
     <div class="d-flex flex-column h-100 bg-transparent animate-entrance w-100">
+        <!-- Tabs for Channels / Members -->
+        <div class="d-flex px-4 pt-4 pb-2 border-bottom" style="border-color: var(--border-glass) !important;">
+            <button onclick="switchSidebarView('channels')" id="btn-view-channels" class="btn btn-link flex-grow-1 py-2 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-aurora" style="font-size: 0.6rem; border-bottom: 2px solid var(--color-mint-bright) !important;">Channels</button>
+            <button onclick="switchSidebarView('members')" id="btn-view-members" class="btn btn-link flex-grow-1 py-2 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-muted hover-glow" style="font-size: 0.6rem; border-bottom: 2px solid transparent !important;">Members</button>
+        </div>
+
         <div class="p-4 flex-grow-1 overflow-y-auto custom-scrollbar d-flex flex-column gap-4">
-            <!-- Text Channels -->
-            <div>
-                <div class="d-flex align-items-center justify-content-between px-2 mb-3">
-                    <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Text Channels</h3>
-                    @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
-                    {
-                        <button onclick="openCreateChannelModal('Text')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
-                            <span class="material-symbols-outlined fs-6">add</span>
-                        </button>
-                    }
+            <!-- Channels View -->
+            <div id="sidebar-view-channels" class="d-flex flex-column gap-4">
+                <!-- Text Channels -->
+                <div>
+                    <div class="d-flex align-items-center justify-content-between px-2 mb-3">
+                        <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Text Channels</h3>
+                        @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                        {
+                            <button onclick="openCreateChannelModal('Text')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
+                                <span class="material-symbols-outlined fs-6">add</span>
+                            </button>
+                        }
+                    </div>
+                    <div class="d-flex flex-column gap-1">
+                        @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text))
+                        {
+                            <a href="javascript:void(0)" onclick="joinTextChannel('@channel.Id', '@channel.Name')" class="text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold transition-all hover-glow" style="font-size: 0.85rem;">
+                                <span class="fs-5 fw-bold text-aurora opacity-75">#</span>
+                                <span class="text-truncate">@channel.Name</span>
+                            </a>
+                        }
+                    </div>
                 </div>
-                <div class="d-flex flex-column gap-1">
-                    @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text))
-                    {
-                        <a href="javascript:void(0)" onclick="joinTextChannel('@channel.Id', '@channel.Name')" class="text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold transition-all hover-glow" style="font-size: 0.85rem;">
-                            <span class="fs-5 fw-bold text-aurora opacity-75">#</span>
-                            <span class="text-truncate">@channel.Name</span>
-                        </a>
-                    }
-                    @if (!Model.Channels.Any(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text))
-                    {
-                        <div class="px-3 py-4 text-center rounded-lg border border-dashed" style="border-color: var(--border-glass) !important;">
-                            <p class="text-muted fw-bold text-uppercase m-0" style="font-size: 0.6rem; letter-spacing: 1px;">No text channels</p>
-                        </div>
-                    }
+
+                <!-- Voice Channels -->
+                <div>
+                    <div class="d-flex align-items-center justify-content-between px-2 mb-3">
+                        <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Voice Channels</h3>
+                        @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                        {
+                            <button onclick="openCreateChannelModal('Voice')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
+                                <span class="material-symbols-outlined fs-6">add</span>
+                            </button>
+                        }
+                    </div>
+                    <div class="d-flex flex-column gap-1" id="voiceChannelList">
+                        @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Voice || c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video))
+                        {
+                            <div>
+                                <button onclick="joinVoice('@channel.Id', '@channel.Name')" 
+                                        class="w-100 btn btn-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold transition-all hover-glow" style="font-size: 0.85rem;">
+                                    <span class="material-symbols-outlined fs-6 opacity-75">@(channel.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video ? "videocam" : "volume_up")</span>
+                                    <span class="text-truncate">@channel.Name</span>
+                                </button>
+                                <div id="users-@channel.Id" class="d-none d-flex flex-column gap-1 ps-5 pe-2 py-1"></div>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
 
-            <!-- Voice Channels -->
-            <div>
-                <div class="d-flex align-items-center justify-content-between px-2 mb-3">
-                    <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Voice Channels</h3>
-                    @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
-                    {
-                        <button onclick="openCreateChannelModal('Voice')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
-                            <span class="material-symbols-outlined fs-6">add</span>
-                        </button>
-                    }
+            <!-- Members View (Initially Hidden) -->
+            <div id="sidebar-view-members" class="d-none flex-column gap-3">
+                <div class="d-flex align-items-center justify-content-between px-2 mb-1">
+                    <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Members — @Model.MemberCount</h3>
+                    <button class="btn btn-link p-1 text-muted hover-glow text-decoration-none">
+                        <span class="material-symbols-outlined fs-6">person_add</span>
+                    </button>
                 </div>
-                <div class="d-flex flex-column gap-1" id="voiceChannelList">
-                    @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Voice || c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video))
-                    {
-                        <div>
-                            <button onclick="joinVoice('@channel.Id', '@channel.Name')" 
-                                    class="w-100 btn btn-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold transition-all hover-glow" style="font-size: 0.85rem;">
-                                <span class="material-symbols-outlined fs-6 opacity-75">@(channel.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video ? "videocam" : "volume_up")</span>
-                                <span class="text-truncate">@channel.Name</span>
-                            </button>
-                            <!-- Connected Users List -->
-                            <div id="users-@channel.Id" class="d-none d-flex flex-column gap-1 ps-5 pe-2 py-1"></div>
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex align-items-center gap-3 p-2 rounded-lg hover-glow transition-all" style="cursor: pointer; background: rgba(255,255,255,0.02);">
+                        <div class="position-relative">
+                            <div class="avatar-xs rounded-lg d-flex flex-center text-aurora shadow-sm" style="background: rgba(0,245,160,0.1); border: 1px solid rgba(0,245,160,0.2);">
+                                <span class="material-symbols-outlined fs-6">account_circle</span>
+                            </div>
+                            <div class="position-absolute d-flex flex-center shadow-sm" style="top: -4px; right: -4px; width: 14px; height: 14px; background: #fbbf24; border: 2px solid var(--bg-universe); border-radius: 50%;">
+                                <span class="material-symbols-outlined text-white fw-black" style="font-size: 8px;">star</span>
+                            </div>
                         </div>
-                    }
-                    @if (!Model.Channels.Any(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Voice || c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video))
-                    {
-                        <div class="px-3 py-4 text-center rounded-lg border border-dashed" style="border-color: var(--border-glass) !important;">
-                            <p class="text-muted fw-bold text-uppercase m-0" style="font-size: 0.6rem; letter-spacing: 1px;">No voice channels</p>
+                        <div class="flex-grow-1 min-w-0">
+                            <p class="fw-bold text-white text-truncate mb-0" style="font-size: 0.75rem;">@(Model.OwnerUserName ?? "Owner")</p>
+                            <span class="fw-black text-aurora text-uppercase px-1 rounded d-inline-block" style="font-size: 0.5rem; letter-spacing: -0.5px; background: rgba(0,245,160,0.1);">Group Creator</span>
                         </div>
-                    }
+                    </div>
                 </div>
             </div>
         </div>
@@ -143,20 +165,22 @@
     </div>
 </div>
 
-<!-- Unified Video Grid Overlay -->
-<div id="videoGrid" class="d-none position-fixed z-3 d-grid gap-3 p-4 p-md-5 pointer-events-none transition-all" style="top: 80px; bottom: 100px; left: 300px; right: 300px;">
-    <div id="localVideoContainer" class="d-none position-relative bg-black rounded-lg overflow-hidden border shadow-lg pointer-events-auto group animate-entrance" style="border-color: var(--border-glass) !important;">
-        <video id="localVideo" autoplay muted playsinline class="w-100 h-100 object-cover"></video>
-        <div class="position-absolute bottom-0 start-0 m-3 px-3 py-1 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
-            <span class="fw-black text-white text-uppercase" style="font-size: 0.65rem; letter-spacing: 1px;">You</span>
-        </div>
-    </div>
-</div>
+<!-- Unified Video Grid (Moved inside main) -->
 
 <!-- Main Content Area -->
 <div class="d-flex flex-column flex-md-row h-100 flex-grow-1 overflow-hidden w-100 position-relative bg-transparent">
     <!-- Center Feed -->
     <main class="d-flex flex-column flex-grow-1 min-w-0 position-relative">
+        <!-- Video Strip -->
+        <div id="videoGrid" class="d-none flex-row gap-3 p-3 overflow-x-auto custom-scrollbar transition-all" style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-glass); min-height: 180px; max-height: 180px;">
+            <div id="localVideoContainer" class="d-none position-relative bg-black rounded-lg overflow-hidden border shadow-lg flex-shrink-0 animate-entrance" style="width: 240px; height: 148px; border-color: var(--border-glass) !important;">
+                <video id="localVideo" autoplay muted playsinline class="w-100 h-100 object-cover"></video>
+                <div class="position-absolute bottom-0 start-0 m-2 px-2 py-0.5 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
+                    <span class="fw-black text-white text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">You</span>
+                </div>
+            </div>
+        </div>
+
         <div class="flex-grow-1 overflow-y-auto p-4 p-md-5 custom-scrollbar">
             <div class="mx-auto" style="max-width: 800px;">
                 <!-- Welcome Section -->
@@ -214,32 +238,6 @@
             </div>
         </div>
     </main>
-
-    <!-- Right Sidebar: Members -->
-    <aside class="d-none d-xl-flex flex-column p-4 flex-shrink-0 animate-entrance" style="background: rgba(15,23,42,0.1); width: 280px; border-left: 1px solid var(--border-glass); backdrop-filter: blur(10px);">
-        <div class="d-flex align-items-center justify-content-between mb-4 px-2">
-            <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Members — @Model.MemberCount</h3>
-            <button class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center rounded-lg lh-1 p-0">
-                <span class="material-symbols-outlined fs-6">person_add</span>
-            </button>
-        </div>
-        <div class="d-flex flex-column gap-3 flex-grow-1 overflow-y-auto custom-scrollbar">
-            <div class="d-flex align-items-center gap-3 p-2 rounded-lg hover-glow transition-all" style="cursor: pointer; border: 1px solid transparent;">
-                <div class="position-relative">
-                    <div class="avatar-sm rounded-lg d-flex flex-center text-aurora shadow-sm" style="background: rgba(0,245,160,0.1); border: 1px solid rgba(0,245,160,0.2);">
-                        <span class="material-symbols-outlined fs-6">account_circle</span>
-                    </div>
-                    <div class="position-absolute d-flex flex-center shadow-sm" style="top: -4px; right: -4px; width: 14px; height: 14px; background: #fbbf24; border: 2px solid var(--bg-universe); border-radius: 50%;">
-                        <span class="material-symbols-outlined text-white fw-black" style="font-size: 8px;">star</span>
-                    </div>
-                </div>
-                <div class="flex-grow-1 min-w-0">
-                    <p class="fw-bold text-white text-truncate mb-0" style="font-size: 0.8rem;">@(Model.OwnerUserName ?? "Owner")</p>
-                    <span class="fw-black text-aurora text-uppercase px-1 rounded d-inline-block" style="font-size: 0.55rem; letter-spacing: -0.5px; background: rgba(0,245,160,0.1);">Group Creator</span>
-                </div>
-            </div>
-        </div>
-    </aside>
 </div>
 
 <!-- Modal: Create Channel -->
@@ -293,6 +291,80 @@
         let localStream = null;
         const peers = {}; 
         const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+        // Voice Activity Detection
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
+        let javascriptNode = null;
+        let isSpeaking = false;
+
+        function startVoiceActivityDetection(stream) {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+                javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+
+                analyser.smoothingTimeConstant = 0.8;
+                analyser.fftSize = 1024;
+
+                microphone.connect(analyser);
+                analyser.connect(javascriptNode);
+                javascriptNode.connect(audioContext.destination);
+
+                javascriptNode.onaudioprocess = () => {
+                    const array = new Uint8Array(analyser.frequencyBinCount);
+                    analyser.getByteFrequencyData(array);
+                    let values = 0;
+                    const length = array.length;
+                    for (let i = 0; i < length; i++) {
+                        values += (array[i]);
+                    }
+                    const average = values / length;
+                    
+                    const threshold = 20; // Adjust sensitivity
+                    const speaking = average > threshold && !isMuted;
+                    
+                    if (speaking !== isSpeaking) {
+                        isSpeaking = speaking;
+                        updateVoiceUI(isSpeaking);
+                        // Optional: Broadcast to others via SignalR
+                        if (currentVoiceChannelId) {
+                            connection.invoke("ToggleSpeaking", currentVoiceChannelId, isSpeaking);
+                        }
+                    }
+                };
+            } catch (e) {
+                console.error("Voice detection error:", e);
+            }
+        }
+
+        function stopVoiceActivityDetection() {
+            if (javascriptNode) {
+                javascriptNode.onaudioprocess = null;
+                javascriptNode.disconnect();
+            }
+            if (analyser) analyser.disconnect();
+            if (microphone) microphone.disconnect();
+            if (audioContext) audioContext.close();
+            
+            isSpeaking = false;
+            updateVoiceUI(false);
+        }
+
+        function updateVoiceUI(speaking) {
+            const avatar = document.getElementById('voiceAvatar');
+            const localAvatarList = document.getElementById('localVoiceAvatar');
+            
+            if (speaking) {
+                if (avatar) avatar.classList.add('voice-talking');
+                if (localAvatarList) localAvatarList.classList.add('voice-talking');
+            } else {
+                if (avatar) avatar.classList.remove('voice-talking');
+                if (localAvatarList) localAvatarList.classList.remove('voice-talking');
+            }
+        }
 
         async function startSignalR() {
             connection = new signalR.HubConnectionBuilder()
@@ -361,6 +433,14 @@
                 }
             });
 
+            connection.on("UserSpeakingChanged", (connectionId, speaking) => {
+                const avatar = document.querySelector(`#user-indicator-${connectionId} img`);
+                if (avatar) {
+                    if (speaking) avatar.classList.add('voice-talking');
+                    else avatar.classList.remove('voice-talking');
+                }
+            });
+
             try {
                 await connection.start();
                 const initialChannelId = "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Id";
@@ -389,16 +469,17 @@
                     if (!container) {
                         container = document.createElement('div');
                         container.id = `peer-video-container-${connectionId}`;
-                        container.className = 'position-relative bg-black rounded-lg overflow-hidden border shadow-lg pointer-events-auto animate-entrance';
+                        container.className = 'position-relative bg-black rounded-lg overflow-hidden border shadow-lg flex-shrink-0 animate-entrance';
+                        container.style.width = '240px';
+                        container.style.height = '148px';
                         container.style.borderColor = 'var(--border-glass)';
                         container.innerHTML = `
                             <video id="peer-video-${connectionId}" autoplay playsinline class="w-100 h-100 object-cover"></video>
-                            <div class="position-absolute bottom-0 start-0 m-3 px-3 py-1 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
-                                <span id="peer-name-${connectionId}" class="fw-black text-white text-uppercase" style="font-size: 0.65rem; letter-spacing: 1px;">Peer</span>
+                            <div class="position-absolute bottom-0 start-0 m-2 px-2 py-0.5 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
+                                <span id="peer-name-${connectionId}" class="fw-black text-white text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">Peer</span>
                             </div>
                         `;
                         document.getElementById('videoGrid').appendChild(container);
-                        document.getElementById('videoGrid').classList.replace('d-none', 'd-grid');
                     }
                     const video = document.getElementById(`peer-video-${connectionId}`);
                     video.srcObject = event.streams[0];
@@ -463,7 +544,7 @@
                     const userHtml = `
                         <div id="user-indicator-local" class="d-flex align-items-center gap-2 py-1 animate-entrance">
                             <div class="position-relative">
-                                <div id="localVoiceAvatar" class="avatar-xs rounded-circle d-flex flex-center text-primary fw-bold text-uppercase transition-all ${isMuted ? '' : 'voice-talking'}" style="background: rgba(0,245,160,0.2); font-size: 10px; border: 1px solid var(--color-emerald);">
+                                <div id="localVoiceAvatar" class="avatar-xs rounded-circle d-flex flex-center text-primary fw-bold text-uppercase transition-all" style="background: rgba(0,245,160,0.2); font-size: 10px; border: 1px solid var(--color-emerald);">
                                     ${myUserName.charAt(0)}
                                 </div>
                                 <div id="localMicOffIcon" class="${isMuted ? '' : 'd-none'} position-absolute d-flex flex-center bg-danger rounded-circle border border-dark shadow-sm" style="bottom: -4px; right: -4px; width: 14px; height: 14px;">
@@ -475,6 +556,7 @@
                     `;
                     container.insertAdjacentHTML('beforeend', userHtml);
                 }
+                startVoiceActivityDetection(localStream);
             } catch (err) { alert("Microphone access denied."); }
         }
 
@@ -520,6 +602,7 @@
                 localStream.getTracks().forEach(t => t.stop());
                 localStream = null;
             }
+            stopVoiceActivityDetection();
             const myIndicator = document.getElementById('user-indicator-local');
             if (myIndicator) myIndicator.remove();
             const container = document.getElementById(`users-${currentVoiceChannelId}`);
@@ -532,13 +615,16 @@
             const grid = document.getElementById('videoGrid');
             const containers = grid.querySelectorAll('div[id$="-container"]');
             const count = containers.length + (isVideoOn ? 1 : 0);
+            
             if (count === 0) {
                 grid.classList.add('d-none');
-                grid.classList.remove('d-grid');
+                grid.classList.remove('d-flex');
                 return;
             }
+            
             grid.classList.remove('d-none');
-            grid.classList.add('d-grid');
+            grid.classList.add('d-flex');
+            
             if (isVideoOn) document.getElementById('localVideoContainer').classList.remove('d-none');
             else document.getElementById('localVideoContainer').classList.add('d-none');
             
@@ -548,8 +634,6 @@
             } else {
                 localVideo.srcObject = null;
             }
-            const cols = count > 4 ? 3 : count > 1 ? 2 : 1;
-            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
         }
 
         function appendMessage(msg) {
@@ -608,20 +692,13 @@
             
             if(isMuted) {
                 micButton.classList.add('text-danger');
+                if (isSpeaking) {
+                    isSpeaking = false;
+                    updateVoiceUI(false);
+                    if (currentVoiceChannelId) connection.invoke("ToggleSpeaking", currentVoiceChannelId, false);
+                }
             } else {
                 micButton.classList.remove('text-danger');
-            }
-            
-            const avatar = document.getElementById('voiceAvatar');
-            if (avatar) {
-                if(!isMuted && currentVoiceChannelId) avatar.classList.add('voice-talking');
-                else avatar.classList.remove('voice-talking');
-            }
-            
-            const localAvatarList = document.getElementById('localVoiceAvatar');
-            if (localAvatarList) {
-                if(!isMuted) localAvatarList.classList.add('voice-talking');
-                else localAvatarList.classList.remove('voice-talking');
             }
             
             const localMicIcon = document.getElementById('localMicOffIcon');
@@ -720,5 +797,26 @@
         window.ondragenter = (e) => { e.preventDefault(); dropZone.classList.remove('d-none'); dropZone.classList.add('d-flex'); };
         dropZone.ondragleave = (e) => { if (e.relatedTarget === null || !dropZone.contains(e.relatedTarget)) { dropZone.classList.add('d-none'); dropZone.classList.remove('d-flex'); } };
         dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.add('d-none'); dropZone.classList.remove('d-flex'); alert('Files detected.'); };
+
+        window.switchSidebarView = (view) => {
+            const isChannels = view === 'channels';
+            document.getElementById('sidebar-view-channels').classList.toggle('d-none', !isChannels);
+            document.getElementById('sidebar-view-members').classList.toggle('d-none', isChannels);
+
+            const btnChannels = document.getElementById('btn-view-channels');
+            const btnMembers = document.getElementById('btn-view-members');
+
+            if (isChannels) {
+                btnChannels.classList.replace('text-muted', 'text-aurora');
+                btnChannels.style.borderBottomColor = 'var(--color-mint-bright)';
+                btnMembers.classList.replace('text-aurora', 'text-muted');
+                btnMembers.style.borderBottomColor = 'transparent';
+            } else {
+                btnMembers.classList.replace('text-muted', 'text-aurora');
+                btnMembers.style.borderBottomColor = 'var(--color-mint-bright)';
+                btnChannels.classList.replace('text-aurora', 'text-muted');
+                btnChannels.style.borderBottomColor = 'transparent';
+            }
+        };
     </script>
 }

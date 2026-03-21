@@ -277,6 +277,82 @@ h1, h2, h3, h4, h5, h6 {
    5. ANIMATIONS & EFFECTS
    ========================================================================= */
 
+/* --- Premium Pills --- */
+.btn-pill-premium {
+    background: var(--gradient-aurora);
+    border: none;
+    color: var(--bg-universe);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.65rem;
+    padding: 0.6rem 1.75rem;
+    border-radius: 2rem;
+    box-shadow: var(--shadow-glow);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-pill-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(52, 211, 153, 0.2);
+    color: var(--bg-universe);
+}
+
+.btn-pill-glass {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-glass-strong);
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.65rem;
+    padding: 0.6rem 1.75rem;
+    border-radius: 2rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-pill-glass:hover, .btn-pill-glass.active {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-pure);
+    border-color: var(--color-mint-bright);
+}
+
+.btn-premium-sm {
+    background: var(--gradient-aurora);
+    border: none;
+    color: var(--bg-universe);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 0.55rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.btn-premium-sm:hover {
+    transform: scale(1.05);
+    color: var(--bg-universe);
+}
+
+.btn-glass-sm {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-glass);
+    color: var(--text-muted);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 0.55rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.btn-glass-sm:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-pure);
+}
+
 @keyframes aurora-pulse {
     0%, 100% { opacity: 0.3; transform: scale(1) translate(0, 0); }
     50% { opacity: 0.6; transform: scale(1.1) translate(2%, 2%); }
@@ -304,6 +380,16 @@ h1, h2, h3, h4, h5, h6 {
     bottom: -10%; left: -10%;
     animation-delay: -7s;
     opacity: 0.05;
+}
+
+.aurora-orb-blue {
+    background: radial-gradient(circle, #1e3a8a, transparent 70%);
+    width: 90vw; height: 90vw;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.12;
+    z-index: -2;
+    animation: aurora-pulse 20s infinite alternate ease-in-out;
 }
 
 @keyframes slide-up-fade {
@@ -375,4 +461,27 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0;
     pointer-events: none;
     transform: translateX(-20px);
+}
+
+/* Voice Activity Effects */
+@keyframes voice-pulse {
+    0% { box-shadow: 0 0 0 0px rgba(52, 211, 153, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); }
+    100% { box-shadow: 0 0 0 0px rgba(52, 211, 153, 0); }
+}
+
+.voice-talking {
+    border-color: var(--color-mint-bright) !important;
+    box-shadow: 0 0 0 2px var(--bg-universe), 0 0 0 4px var(--color-mint-bright) !important;
+    animation: voice-pulse 1.5s infinite;
+}
+
+.voice-indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-mint-bright);
+    box-shadow: 0 0 10px var(--color-mint-bright);
+    display: inline-block;
+    vertical-align: middle;
 }
