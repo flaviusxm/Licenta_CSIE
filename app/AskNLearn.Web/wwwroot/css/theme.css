@@ -341,6 +341,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
+/* --- Interactive States --- */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spinning {
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
 /* Avatar System */
 .avatar-xs { width: 24px; height: 24px; flex-shrink: 0; }
 .avatar-sm { width: 32px; height: 32px; flex-shrink: 0; }
@@ -351,3 +362,17 @@ h1, h2, h3, h4, h5, h6 {
 
 .object-cover { object-fit: cover; }
 .aspect-square { aspect-ratio: 1 / 1; }
+
+/* Sidebar Animation Classes */
+.sidebar-transition {
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.sidebar-collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    border-right-width: 0 !important;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-20px);
+}

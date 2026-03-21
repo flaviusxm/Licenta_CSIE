@@ -298,6 +298,27 @@
     }
 
     function votePost(postId, communityId, value) {
+        const upBtn = document.querySelector(`.vote-btn-up-${postId}`);
+        const downBtn = document.querySelector(`.vote-btn-down-${postId}`);
+        const upIcon = upBtn ? upBtn.querySelector('.material-symbols-outlined') : null;
+        const downIcon = downBtn ? downBtn.querySelector('.material-symbols-outlined') : null;
+        
+        // Save original icons
+        const originalUpIcon = upIcon ? upIcon.textContent : 'keyboard_arrow_up';
+        const originalDownIcon = downIcon ? downIcon.textContent : 'keyboard_arrow_down';
+
+        // Set Loading State
+        if (upBtn) upBtn.style.pointerEvents = 'none';
+        if (downBtn) downBtn.style.pointerEvents = 'none';
+        
+        if (value === 1 && upIcon) {
+            upIcon.textContent = 'sync';
+            upIcon.classList.add('spinning');
+        } else if (value === -1 && downIcon) {
+            downIcon.textContent = 'sync';
+            downIcon.classList.add('spinning');
+        }
+
         fetch(`/Forum/VotePost?postId=${postId}&communityId=${communityId}&value=${value}`, {
             method: 'POST',
             headers: {
@@ -324,6 +345,11 @@
                 const upBtns = document.querySelectorAll(`.vote-btn-up-${postId}`);
                 upBtns.forEach(el => {
                     el.classList.remove('text-mint', 'text-muted', 'font-weight-bold');
+                    const icon = el.querySelector('.material-symbols-outlined');
+                    if (icon) {
+                        icon.textContent = 'keyboard_arrow_up';
+                        icon.classList.remove('spinning');
+                    }
                     if (data.userVote === 1) {
                         el.classList.add('text-mint', 'font-weight-bold');
                     } else {
@@ -335,6 +361,11 @@
                 const downBtns = document.querySelectorAll(`.vote-btn-down-${postId}`);
                 downBtns.forEach(el => {
                     el.classList.remove('text-danger', 'text-muted', 'font-weight-bold');
+                    const icon = el.querySelector('.material-symbols-outlined');
+                    if (icon) {
+                        icon.textContent = 'keyboard_arrow_down';
+                        icon.classList.remove('spinning');
+                    }
                     if (data.userVote === -1) {
                         el.classList.add('text-danger', 'font-weight-bold');
                     } else {
@@ -342,6 +373,28 @@
                     }
                 });
             }
+        })
+        .finally(() => {
+            if (upBtn) upBtn.style.pointerEvents = 'auto';
+            if (downBtn) downBtn.style.pointerEvents = 'auto';
+            
+            // Ensure icons are restored if they were spinning (on error or no-op)
+            const upBtnsAll = document.querySelectorAll(`.vote-btn-up-${postId}`);
+            upBtnsAll.forEach(btn => {
+                const icon = btn.querySelector('.material-symbols-outlined');
+                if (icon && icon.classList.contains('spinning')) {
+                    icon.textContent = 'keyboard_arrow_up';
+                    icon.classList.remove('spinning');
+                }
+            });
+            const downBtnsAll = document.querySelectorAll(`.vote-btn-down-${postId}`);
+            downBtnsAll.forEach(btn => {
+                const icon = btn.querySelector('.material-symbols-outlined');
+                if (icon && icon.classList.contains('spinning')) {
+                    icon.textContent = 'keyboard_arrow_down';
+                    icon.classList.remove('spinning');
+                }
+            });
         });
     }
 </script>

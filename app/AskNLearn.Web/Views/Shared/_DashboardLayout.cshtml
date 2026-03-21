@@ -11,7 +11,7 @@
     <link href="~/css/theme.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="dark-mesh-bg d-flex flex-column min-vh-100 overflow-hidden">
+<body class="dark-mesh-bg d-flex flex-column vh-100 overflow-hidden">
 
     <!-- Ambient Aurora Orbs -->
     <div class="aurora-orb aurora-orb-cyan position-fixed"></div>
@@ -80,21 +80,21 @@
         @if (IsSectionDefined("Sidebar"))
         {
             <!-- Left Sidebar -->
-            <aside id="leftSidebar" class="d-none d-lg-flex flex-column h-100 flex-shrink-0 transition-all" style="width: 300px; border-right: 1px solid var(--border-glass); background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px);">
-                <div class="flex-grow-1 d-flex flex-column min-vh-0 overflow-y-auto custom-scrollbar">
+            <aside id="leftSidebar" class="d-flex sidebar-transition flex-column h-100 flex-shrink-0 position-relative" style="width: 300px; border-right: 1px solid var(--border-glass); background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px); z-index: 2;">
+                <div class="flex-grow-1 d-flex flex-column min-vh-0 overflow-hidden">
                     @RenderSection("Sidebar")
                 </div>
             </aside>
             <button id="toggleLeftSidebar"
-                    class="d-none d-lg-flex align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 transition-all p-0 shadow-lg"
+                    class="d-flex sidebar-transition align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 p-0 shadow-lg"
                     style="left: 300px; width: 28px; height: 64px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(10px);">
                 <span class="material-symbols-outlined text-muted m-0 p-0" style="margin-left: -2px !important;">chevron_left</span>
             </button>
         }
 
         <!-- Center Feed -->
-        <main class="flex-grow-1 h-100 overflow-y-auto position-relative custom-scrollbar w-100">
-            @if (User.Identity.IsAuthenticated)
+        <main class="flex-grow-1 h-100 position-relative w-100 @(ViewData["AppLayout"] as bool? == true ? "d-flex flex-column overflow-hidden" : "overflow-y-auto custom-scrollbar")">
+            @if (User.Identity.IsAuthenticated && ViewData["HideProfileCompletion"] as bool? != true)
             {
                 <div class="p-4 p-md-5 pb-0">
                     @await Component.InvokeAsync("ProfileCompletion")
@@ -114,15 +114,9 @@
 
         if (leftSidebar && leftButton) {
             leftButton.addEventListener("click", () => {
-                leftSidebar.classList.toggle("d-lg-flex");
-
-                if (!leftSidebar.classList.contains("d-lg-flex")) {
-                    chevron.innerText = "chevron_right";
-                    leftButton.style.left = "0px";
-                } else {
-                    chevron.innerText = "chevron_left";
-                    leftButton.style.left = "300px";
-                }
+                const isCollapsed = leftSidebar.classList.toggle("sidebar-collapsed");
+                chevron.innerText = isCollapsed ? "chevron_right" : "chevron_left";
+                leftButton.style.left = isCollapsed ? "0px" : "300px";
             });
         }
     </script>

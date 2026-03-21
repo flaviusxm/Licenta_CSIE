@@ -9,7 +9,7 @@
 }
 
 @section Sidebar {
-    <div class="d-flex flex-column h-100" style="background: var(--bg-universe); width: 260px; flex-shrink: 0; border-right: 1px solid var(--border-glass);">
+    <div class="d-flex flex-column h-100 bg-transparent animate-entrance w-100">
         <div class="p-4 flex-grow-1 overflow-y-auto custom-scrollbar d-flex flex-column gap-4">
             <!-- Text Channels -->
             <div>
@@ -74,7 +74,7 @@
         </div>
 
         <!-- Sidebar Footer & Voice Status -->
-        <div class="mt-auto border-top p-0" style="background: rgba(0,0,0,0.2); border-color: var(--border-glass) !important;">
+        <div class="mt-auto border-top p-0 bg-transparent" style="border-color: var(--border-glass) !important;">
             <!-- Voice Status Panel -->
             <div id="voiceStatusPanel" class="d-none animate-entrance">
                 <div class="p-3 d-flex align-items-center justify-content-between border-bottom" style="border-color: var(--border-glass) !important;">
@@ -154,7 +154,7 @@
 </div>
 
 <!-- Main Content Area -->
-<div class="d-flex flex-grow-1 overflow-hidden w-100 position-relative bg-transparent">
+<div class="d-flex flex-column flex-md-row h-100 flex-grow-1 overflow-hidden w-100 position-relative bg-transparent">
     <!-- Center Feed -->
     <main class="d-flex flex-column flex-grow-1 min-w-0 position-relative">
         <div class="flex-grow-1 overflow-y-auto p-4 p-md-5 custom-scrollbar">
@@ -216,7 +216,7 @@
     </main>
 
     <!-- Right Sidebar: Members -->
-    <aside class="d-none d-xl-flex flex-column p-4 flex-shrink-0" style="background: rgba(15,23,42,0.3); width: 260px; border-left: 1px solid var(--border-glass);">
+    <aside class="d-none d-xl-flex flex-column p-4 flex-shrink-0 animate-entrance" style="background: rgba(15,23,42,0.1); width: 280px; border-left: 1px solid var(--border-glass); backdrop-filter: blur(10px);">
         <div class="d-flex align-items-center justify-content-between mb-4 px-2">
             <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Members — @Model.MemberCount</h3>
             <button class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center rounded-lg lh-1 p-0">

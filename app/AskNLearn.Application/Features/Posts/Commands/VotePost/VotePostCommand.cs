@@ -51,7 +51,16 @@ namespace AskNLearn.Application.Features.Posts.Commands.VotePost
                 }
                 else
                 {
-                    vote.VoteValue = request.Value;
+                    // Toggle off if same value, otherwise update to new value
+                    if (vote.VoteValue == request.Value)
+                    {
+                        context.PostVotes.Remove(vote);
+                        request.Value = 0; // Set to 0 for the result
+                    }
+                    else
+                    {
+                        vote.VoteValue = request.Value;
+                    }
                 }
             }
 
