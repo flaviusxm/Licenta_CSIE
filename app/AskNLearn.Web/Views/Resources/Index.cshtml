@@ -3,149 +3,138 @@
     ViewData["Title"] = "Resources Hub";
 }
 
-<div class="p-8 flex flex-col gap-8 pb-20">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Resources Hub</h2>
-            <p class="text-slate-500 dark:text-slate-400">Access and share study materials with your peers.</p>
-        </div>
-        <div class="flex gap-3">
-            <button class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">
-                <span class="material-symbols-outlined">upload</span>
-                Upload
-            </button>
-        </div>
-    </div>
-
-    <!-- Search & Categories -->
-    <div class="flex flex-col md:flex-row gap-4">
-
-        <!-- Search -->
-        <div class="flex-1 relative">
-            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                search
-            </span>
-            <input class="w-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl py-3 pl-12 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white placeholder:text-slate-400"
-                   placeholder="Search for notes, PDFs, or exam papers..."
-                   type="text" />
-        </div>
-
-        <!-- Filter Button -->
-        <div class="relative">
-            <button onclick="toggleFilter()"
-                    class="flex items-center gap-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl px-4 py-3 text-sm text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition">
-
-                <span class="material-symbols-outlined text-slate-500 dark:text-slate-300">
-                    filter_list
-                </span>
-                Filter
-            </button>
-
-            <!-- Dropdown -->
-            <div id="filterDropdown"
-                 class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-lg p-4 z-50 space-y-3">
-
-                <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-white">
-                    <input type="checkbox" class="accent-primary">
-                    Notes
-                </label>
-
-                <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-white">
-                    <input type="checkbox" class="accent-primary">
-                    PDFs
-                </label>
-
-                <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-white">
-                    <input type="checkbox" class="accent-primary">
-                    Exam Papers
-                </label>
-            </div>
-        </div>
-
-    </div>
-    <!-- Resource Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Resource Card 1 -->
-        <div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-6 border border-border-light dark:border-border-dark hover:border-primary/50 transition-all group flex flex-col gap-4 shadow-sm">
-            <div class="flex items-start justify-between">
-                <div class="size-12 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-2xl">picture_as_pdf</span>
-                </div>
-                <button class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 transition-colors">
-                    <span class="material-symbols-outlined">more_vert</span>
-                </button>
-            </div>
+<div class="container py-5 max-w-7xl">
+    <div class="d-flex flex-column gap-5">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
             <div>
-                <h3 class="font-bold text-slate-900 dark:text-white mb-1 group-hover:text-primary transition-colors">Advanced Calculus Notes</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Shared by Alex Johnson • 2 days ago</p>
+                <h2 class="display-6 fw-bold text-white tracking-tight mb-2">Resources Hub</h2>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-pill bg-primary" style="height: 4px; width: 48px;"></div>
+                    <p class="text-muted fs-5 fw-bold m-0" style="max-width: 600px;">Access and share study materials with your peers.</p>
+                </div>
             </div>
-            <div class="flex items-center justify-between mt-2 pt-4 border-t border-border-light dark:border-border-dark">
-                <span class="text-xs font-medium text-slate-400 italic">2.4 MB • PDF</span>
-                <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold text-sm transition-all text-slate-700 dark:text-white">
-                    <span class="material-symbols-outlined text-sm">download</span>
-                    Download
+            <div class="flex-shrink-0 d-flex gap-3">
+                <button class="btn btn-premium d-flex align-items-center gap-2 shadow-lg">
+                    <span class="material-symbols-outlined fs-5">upload</span>
+                    Upload
                 </button>
             </div>
         </div>
 
-        <!-- Resource Card 2 -->
-        <div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-6 border border-border-light dark:border-border-dark hover:border-primary/50 transition-all group flex flex-col gap-4 shadow-sm">
-            <div class="flex items-start justify-between">
-                <div class="size-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-2xl">description</span>
+        <!-- Search & Categories -->
+        <div class="d-flex flex-column flex-md-row gap-3">
+            <!-- Search -->
+            <div class="flex-grow-1 position-relative">
+                <span class="material-symbols-outlined position-absolute top-50 translate-middle-y text-muted" style="left: 1.5rem;">search</span>
+                <input class="form-control form-control-glass w-100 shadow-lg"
+                       style="padding: 1rem 1.5rem 1rem 3.5rem; border-radius: 1.5rem;"
+                       placeholder="Search for notes, PDFs, or exam papers..."
+                       type="text" />
+            </div>
+
+            <!-- Filter Button -->
+            <div class="position-relative flex-shrink-0">
+                <button class="btn btn-glass d-flex align-items-center justify-content-center gap-2 h-100 px-4 shadow-lg text-white" style="border-radius: 1.5rem;" data-bs-toggle="dropdown" aria-expanded="false" id="filterDropdownBtn">
+                    <span class="material-symbols-outlined text-muted">filter_list</span>
+                    Filter
+                </button>
+
+                <!-- Dropdown -->
+                <div class="dropdown-menu dropdown-menu-end shadow-lg border-glass" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border-radius: 1rem; width: 220px;" aria-labelledby="filterDropdownBtn">
+                    <h6 class="dropdown-header text-white fw-bold px-3 py-2 text-uppercase tracking-widest small">Resource Types</h6>
+                    <label class="dropdown-item d-flex align-items-center gap-3 text-muted hover-bg-glass cursor-pointer py-2 transition-colors">
+                        <input class="form-check-input mt-0 bg-transparent border-secondary" type="checkbox" checked>
+                        <span class="fw-bold">Notes</span>
+                    </label>
+                    <label class="dropdown-item d-flex align-items-center gap-3 text-muted hover-bg-glass cursor-pointer py-2 transition-colors">
+                        <input class="form-check-input mt-0 bg-transparent border-secondary" type="checkbox" checked>
+                        <span class="fw-bold">PDFs</span>
+                    </label>
+                    <label class="dropdown-item d-flex align-items-center gap-3 text-muted hover-bg-glass cursor-pointer py-2 transition-colors">
+                        <input class="form-check-input mt-0 bg-transparent border-secondary" type="checkbox">
+                        <span class="fw-bold">Exam Papers</span>
+                    </label>
                 </div>
-                <button class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 transition-colors">
-                    <span class="material-symbols-outlined">more_vert</span>
-                </button>
-            </div>
-            <div>
-                <h3 class="font-bold text-slate-900 dark:text-white mb-1 group-hover:text-primary transition-colors">Java Programming Lab Guide</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Shared by Sarah Smith • 5 days ago</p>
-            </div>
-            <div class="flex items-center justify-between mt-2 pt-4 border-t border-border-light dark:border-border-dark">
-                <span class="text-xs font-medium text-slate-400 italic">1.1 MB • DOCX</span>
-                <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold text-sm transition-all text-slate-700 dark:text-white">
-                    <span class="material-symbols-outlined text-sm">download</span>
-                    Download
-                </button>
             </div>
         </div>
 
-        <!-- Resource Card 3 -->
-        <div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-6 border border-border-light dark:border-border-dark hover:border-primary/50 transition-all group flex flex-col gap-4 shadow-sm">
-            <div class="flex items-start justify-between">
-                <div class="size-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-2xl">folder_zip</span>
+        <!-- Resource Grid -->
+        <div class="row g-4">
+            <!-- Resource Card 1 -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="glass-card p-4 d-flex flex-column h-100 gap-4 group transition-all hover-glow border-glass-strong shadow-lg">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="rounded-4 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);">
+                            <span class="material-symbols-outlined fs-2">picture_as_pdf</span>
+                        </div>
+                        <button class="btn btn-link p-1 text-muted hover-text-white transition-colors text-decoration-none">
+                            <span class="material-symbols-outlined">more_vert</span>
+                        </button>
+                    </div>
+                    <div>
+                        <h3 class="fs-5 fw-bold text-white mb-2 transition-colors cursor-pointer hover-glow">Advanced Calculus Notes</h3>
+                        <p class="text-muted small fst-italic m-0">Shared by Alex Johnson • 2 days ago</p>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mt-auto pt-3" style="border-top: 1px solid var(--border-glass);">
+                        <span class="text-muted fw-bold text-uppercase tracking-widest fst-italic" style="font-size: 0.7rem;">2.4 MB • PDF</span>
+                        <button class="btn btn-sm btn-glass d-flex align-items-center justify-content-center gap-1 px-3 py-1 rounded-pill shadow-sm">
+                            <span class="material-symbols-outlined small">download</span>
+                            Download
+                        </button>
+                    </div>
                 </div>
-                <button class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 transition-colors">
-                    <span class="material-symbols-outlined">more_vert</span>
-                </button>
             </div>
-            <div>
-                <h3 class="font-bold text-slate-900 dark:text-white mb-1 group-hover:text-primary transition-colors">Database Systems Lab Work</h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Shared by Mike Ross • 1 week ago</p>
+
+            <!-- Resource Card 2 -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="glass-card p-4 d-flex flex-column h-100 gap-4 group transition-all hover-glow border-glass-strong shadow-lg">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="rounded-4 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2);">
+                            <span class="material-symbols-outlined fs-2">description</span>
+                        </div>
+                        <button class="btn btn-link p-1 text-muted hover-text-white transition-colors text-decoration-none">
+                            <span class="material-symbols-outlined">more_vert</span>
+                        </button>
+                    </div>
+                    <div>
+                        <h3 class="fs-5 fw-bold text-white mb-2 transition-colors cursor-pointer hover-glow">Java Programming Lab Guide</h3>
+                        <p class="text-muted small fst-italic m-0">Shared by Sarah Smith • 5 days ago</p>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mt-auto pt-3" style="border-top: 1px solid var(--border-glass);">
+                        <span class="text-muted fw-bold text-uppercase tracking-widest fst-italic" style="font-size: 0.7rem;">1.1 MB • DOCX</span>
+                        <button class="btn btn-sm btn-glass d-flex align-items-center justify-content-center gap-1 px-3 py-1 rounded-pill shadow-sm">
+                            <span class="material-symbols-outlined small">download</span>
+                            Download
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center justify-between mt-2 pt-4 border-t border-border-light dark:border-border-dark">
-                <span class="text-xs font-medium text-slate-400 italic">15 MB • ZIP</span>
-                <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold text-sm transition-all text-slate-700 dark:text-white">
-                    <span class="material-symbols-outlined text-sm">download</span>
-                    Download
-                </button>
+
+            <!-- Resource Card 3 -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="glass-card p-4 d-flex flex-column h-100 gap-4 group transition-all hover-glow border-glass-strong shadow-lg">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="rounded-4 d-flex align-items-center justify-content-center text-aurora" style="width: 56px; height: 56px; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2);">
+                            <span class="material-symbols-outlined fs-2">folder_zip</span>
+                        </div>
+                        <button class="btn btn-link p-1 text-muted hover-text-white transition-colors text-decoration-none">
+                            <span class="material-symbols-outlined">more_vert</span>
+                        </button>
+                    </div>
+                    <div>
+                        <h3 class="fs-5 fw-bold text-white mb-2 transition-colors cursor-pointer hover-glow">Database Systems Lab Work</h3>
+                        <p class="text-muted small fst-italic m-0">Shared by Mike Ross • 1 week ago</p>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mt-auto pt-3" style="border-top: 1px solid var(--border-glass);">
+                        <span class="text-muted fw-bold text-uppercase tracking-widest fst-italic" style="font-size: 0.7rem;">15 MB • ZIP</span>
+                        <button class="btn btn-sm btn-glass d-flex align-items-center justify-content-center gap-1 px-3 py-1 rounded-pill shadow-sm">
+                            <span class="material-symbols-outlined small">download</span>
+                            Download
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-<script>
-        function toggleFilter() {
-        const dropdown = document.getElementById("filterDropdown");
-        dropdown.classList.toggle("hidden");
-        }
-    document.addEventListener("click", function(event) {
-        const dropdown = document.getElementById("filterDropdown");
-        const button = event.target.closest("button");
-        if (!event.target.closest("#filterDropdown") && !button) {
-            dropdown.classList.add("hidden");
-        }
-    });
-</script>

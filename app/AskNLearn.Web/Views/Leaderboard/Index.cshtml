@@ -1,134 +1,148 @@
+@model AskNLearn.Web.Models.LeaderboardViewModel
+@using System.Security.Claims
 @{
     Layout = "_DashboardLayout";
     ViewData["Title"] = "Student Leaderboard";
 }
 
-<div class="p-8 flex flex-col gap-8 pb-20">
+<div class="container py-5 max-w-7xl">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Leaderboard</h2>
-            <p class="text-slate-500 dark:text-slate-400">See who's topping the charts this semester.</p>
+    <div class="row align-items-center mb-5 g-4">
+        <div class="col-md-8 text-center text-md-start">
+            <h2 class="display-6 fw-bold text-white tracking-tight mb-2">Leaderboard</h2>
+            <p class="text-muted fs-5 m-0">See who's topping the charts this semester.</p>
         </div>
-        <div class="flex items-center gap-4 bg-surface-light dark:bg-surface-dark px-4 py-2 rounded-xl border border-border-light dark:border-border-dark">
-            <div class="flex flex-col items-center">
-                <span class="text-[10px] font-bold text-slate-400 uppercase">Your Rank</span>
-                <span class="text-lg font-bold text-primary">#42</span>
-            </div>
-            <div class="w-[1px] h-8 bg-border-light dark:bg-border-dark"></div>
-            <div class="flex flex-col items-center">
-                <span class="text-[10px] font-bold text-slate-400 uppercase">Points</span>
-                <span class="text-lg font-bold text-slate-900 dark:text-white">1,250</span>
+        <div class="col-md-4 text-center text-md-end d-flex justify-content-md-end">
+            <div class="glass-card p-4 d-inline-flex align-items-center gap-4 shadow-lg border-glass-strong" style="border-radius: 1.5rem;">
+                <div class="text-center">
+                    <span class="d-block text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.65rem;">Your Rank</span>
+                    <span class="fs-4 fw-bold text-aurora">@(Model.CurrentUserRank > 0 ? $"#{Model.CurrentUserRank}" : "-")</span>
+                </div>
+                <div style="width: 1px; height: 3rem; background: var(--border-glass-strong);"></div>
+                <div class="text-center">
+                    <span class="d-block text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.65rem;">Points</span>
+                    <span class="fs-4 fw-bold text-white">@Model.CurrentUserPoints</span>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Podiums (Top 3) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end max-w-4xl mx-auto w-full mt-8">
+    <div class="d-flex align-items-end justify-content-center mb-5 mx-auto gap-3 gap-md-5 overflow-auto pb-4 hide-scrollbar" style="max-width: 900px;">
+        
         <!-- 2nd Place -->
-        <div class="order-2 md:order-1 flex flex-col items-center">
-            <div class="size-20 rounded-full border-4 border-slate-300 relative mb-4">
-                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-300 text-white rounded-full size-6 flex items-center justify-center font-bold text-xs ring-4 ring-background-light dark:ring-background-dark">2</div>
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" class="w-full h-full rounded-full bg-slate-100" />
-            </div>
-            <div class="bg-surface-light dark:bg-surface-dark w-full rounded-t-2xl p-6 text-center border-x border-t border-border-light dark:border-border-dark shadow-sm">
-                <p class="font-bold text-slate-900 dark:text-white">Sarah Smith</p>
-                <p class="text-primary text-sm font-bold">2,840 pts</p>
-                <div class="h-24 md:h-32 mt-4 bg-gradient-to-b from-slate-200 to-transparent dark:from-slate-700/50 rounded-lg"></div>
-            </div>
-        </div>
-
-        <!-- 1st Place -->
-        <div class="order-1 md:order-2 flex flex-col items-center scale-110 z-10">
-            <div class="size-24 rounded-full border-4 border-yellow-400 relative mb-4">
-                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-white rounded-full size-8 flex items-center justify-center font-bold text-base ring-4 ring-background-light dark:ring-background-dark shadow-lg">1</div>
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" class="w-full h-full rounded-full bg-slate-100" />
-            </div>
-            <div class="bg-surface-light dark:bg-surface-dark w-full rounded-t-2xl p-8 text-center border-x border-t border-border-light dark:border-border-dark shadow-xl">
-                <p class="font-bold text-slate-900 dark:text-white text-lg">John Doe</p>
-                <p class="text-primary text-base font-bold">3,120 pts</p>
-                <div class="h-32 md:h-48 mt-4 bg-gradient-to-b from-yellow-400/20 to-transparent rounded-lg relative overflow-hidden">
-                    <span class="material-symbols-outlined absolute inset-0 flex items-center justify-center text-4xl text-yellow-400/30 animate-pulse">workspace_premium</span>
+        @if (Model.TopUsers.Count > 1) {
+            var second = Model.TopUsers[1];
+            <div class="d-flex flex-column align-items-center text-center order-2 order-md-1" style="width: 30%; min-width: 140px; max-width: 200px;">
+                <div class="position-relative mb-4" style="width: 80px; height: 80px;">
+                    <div class="position-absolute start-50 translate-middle-x rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-lg border border-dark z-3" style="top: -1rem; width: 32px; height: 32px; background: #94a3b8; font-size: 0.85rem; border-width: 4px !important;">2</div>
+                    <img src="@(second.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={second.FullName}")" class="w-100 h-100 rounded-circle object-cover border border-dark shadow-lg" style="background: rgba(255,255,255,0.1); border-color: #94a3b8 !important; border-width: 4px !important;" />
+                </div>
+                <div class="glass-card w-100 p-3 p-md-4 border-bottom-0 d-flex flex-column align-items-center shadow-lg" style="border-radius: 2rem 2rem 0 0; border-color: var(--border-glass-strong);">
+                    <p class="fw-bold text-white mb-1 text-truncate w-100">@second.FullName</p>
+                    <p class="text-aurora small fw-bold mb-4">@second.ReputationPoints pts</p>
+                    <div class="w-100 mt-auto rounded-top-3" style="height: 100px; background: linear-gradient(to top, rgba(148,163,184,0.2), transparent);"></div>
                 </div>
             </div>
-        </div>
+        }
+
+        <!-- 1st Place -->
+        @if (Model.TopUsers.Count > 0) {
+            var first = Model.TopUsers[0];
+            <div class="d-flex flex-column align-items-center text-center order-1 order-md-2 position-relative z-3 mb-4 mb-md-5" style="width: 35%; min-width: 160px; max-width: 240px; transform: scale(1.1);">
+                <div class="position-relative mb-4" style="width: 100px; height: 100px;">
+                    <div class="position-absolute start-50 translate-middle-x rounded-circle d-flex align-items-center justify-content-center fw-bold text-dark shadow-lg border border-dark z-3" style="top: -1.25rem; width: 40px; height: 40px; background: #fbbf24; font-size: 1rem; border-width: 4px !important;">1</div>
+                    <img src="@(first.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={first.FullName}")" class="w-100 h-100 rounded-circle object-cover border border-dark shadow-lg" style="background: rgba(255,255,255,0.1); border-color: #fbbf24 !important; border-width: 4px !important; box-shadow: 0 0 30px rgba(251,191,36,0.3) !important;" />
+                </div>
+                <div class="glass-card w-100 p-4 p-md-5 border-bottom-0 d-flex flex-column align-items-center shadow-lg" style="border-radius: 2rem 2rem 0 0; background: rgba(251,191,36,0.05); border-color: rgba(251,191,36,0.2);">
+                    <p class="fw-bold text-white fs-5 mb-1 text-truncate w-100">@first.FullName</p>
+                    <p class="text-aurora fw-bold mb-5">@first.ReputationPoints pts</p>
+                    <div class="w-100 mt-auto rounded-top-3 position-relative d-flex align-items-center justify-content-center overflow-hidden" style="height: 140px; background: linear-gradient(to top, rgba(251,191,36,0.2), transparent);">
+                        <span class="material-symbols-outlined position-absolute top-50 start-50 translate-middle" style="color: rgba(251,191,36,0.3); font-size: 5rem; animation: aurora-pulse 3s infinite alternate;">workspace_premium</span>
+                    </div>
+                </div>
+            </div>
+        }
 
         <!-- 3rd Place -->
-        <div class="order-3 md:order-3 flex flex-col items-center">
-            <div class="size-20 rounded-full border-4 border-orange-400/60 relative mb-4">
-                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-400/60 text-white rounded-full size-6 flex items-center justify-center font-bold text-xs ring-4 ring-background-light dark:ring-background-dark">3</div>
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Mike" class="w-full h-full rounded-full bg-slate-100" />
+        @if (Model.TopUsers.Count > 2) {
+            var third = Model.TopUsers[2];
+            <div class="d-flex flex-column align-items-center text-center order-3 order-md-3" style="width: 30%; min-width: 140px; max-width: 200px;">
+                <div class="position-relative mb-4" style="width: 80px; height: 80px;">
+                    <div class="position-absolute start-50 translate-middle-x rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-lg border border-dark z-3" style="top: -1rem; width: 32px; height: 32px; background: #fb923c; font-size: 0.85rem; border-width: 4px !important;">3</div>
+                    <img src="@(third.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={third.FullName}")" class="w-100 h-100 rounded-circle object-cover border border-dark shadow-lg" style="background: rgba(255,255,255,0.1); border-color: #fb923c !important; border-width: 4px !important;" />
+                </div>
+                <div class="glass-card w-100 p-3 p-md-4 border-bottom-0 d-flex flex-column align-items-center shadow-lg" style="border-radius: 2rem 2rem 0 0; border-color: var(--border-glass-strong);">
+                    <p class="fw-bold text-white mb-1 text-truncate w-100">@third.FullName</p>
+                    <p class="text-aurora small fw-bold mb-4">@third.ReputationPoints pts</p>
+                    <div class="w-100 mt-auto rounded-top-3" style="height: 80px; background: linear-gradient(to top, rgba(251,146,60,0.2), transparent);"></div>
+                </div>
             </div>
-            <div class="bg-surface-light dark:bg-surface-dark w-full rounded-t-2xl p-6 text-center border-x border-t border-border-light dark:border-border-dark shadow-sm">
-                <p class="font-bold text-slate-900 dark:text-white">Mike Ross</p>
-                <p class="text-primary text-sm font-bold">2,450 pts</p>
-                <div class="h-20 md:h-24 mt-4 bg-gradient-to-b from-orange-400/20 to-transparent rounded-lg"></div>
-            </div>
-        </div>
+        }
     </div>
 
     <!-- Ranking Table -->
-    <div class="max-w-4xl mx-auto w-full bg-surface-light dark:bg-surface-dark rounded-2xl border border-border-light dark:border-border-dark overflow-hidden shadow-sm">
-        <table class="w-full text-left">
-            <thead>
-                <tr class="bg-slate-50 dark:bg-background-dark/50 border-b border-border-light dark:border-border-dark">
-                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Rank</th>
-                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Student</th>
-                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Major</th>
-                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Points</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-border-light dark:divide-border-dark">
-                <!-- Row 4 -->
-                <tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                    <td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">#4</td>
-                    <td class="px-6 py-4 flex items-center gap-3">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Emily" class="size-8 rounded-full bg-slate-100" />
-                        <span class="font-bold text-slate-900 dark:text-white">Emily Blunt</span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="px-2.5 py-1 rounded-md bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 text-[10px] font-bold border border-indigo-500/20">Computer Science</span>
-                    </td>
-                    <td class="px-6 py-4 text-right font-bold text-slate-900 dark:text-white">2,120</td>
-                </tr>
-                <!-- Row 5 -->
-                <tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                    <td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">#5</td>
-                    <td class="px-6 py-4 flex items-center gap-3">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Dave" class="size-8 rounded-full bg-slate-100" />
-                        <span class="font-bold text-slate-900 dark:text-white">Dave Wilson</span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20">Mathematics</span>
-                    </td>
-                    <td class="px-6 py-4 text-right font-bold text-slate-900 dark:text-white">1,980</td>
-                </tr>
-                <!-- Global/Local Row (Simplified for Demo, but adding logic for Admin) -->
-                <tr class="@(User.IsInRole("Admin") ? "bg-red-500/5" : "bg-primary/5 dark:bg-primary/10") transition-colors">
-                    <td class="px-6 py-4 font-bold @(User.IsInRole("Admin") ? "text-red-500" : "text-primary")">
-                        @(User.IsInRole("Admin") ? "SYSTEM" : "#42")
-                    </td>
-                    <td class="px-6 py-4 flex items-center gap-3">
-                        <div class="size-8 rounded-full bg-cover bg-center border @(User.IsInRole("Admin") ? "border-red-500/50" : "border-primary/50")" 
-                             style='background-image: url("@(User.IsInRole("Admin") ? "https://api.dicebear.com/7.x/bottts/svg?seed=Admin" : "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex")");'></div>
-                        <div class="flex flex-col">
-                            <span class="font-bold text-slate-900 dark:text-white">@(User.Identity.Name)</span>
-                            <span class="text-[10px] @(User.IsInRole("Admin") ? "text-red-500" : "text-primary") font-bold">@(User.IsInRole("Admin") ? "ADMINISTRATOR" : "You")</span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="px-2.5 py-1 rounded-md @(User.IsInRole("Admin") ? "bg-red-500/10 text-red-500" : "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400") text-[10px] font-bold border @(User.IsInRole("Admin") ? "border-red-500/20" : "border-indigo-500/20")">
-                            @(User.IsInRole("Admin") ? "Authority" : "Computer Science")
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-right font-bold @(User.IsInRole("Admin") ? "text-red-400" : "text-primary")">
-                        @(User.IsInRole("Admin") ? "REDACTED" : "1,250")
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="p-4 text-center border-t border-border-light dark:border-border-dark">
-            <button class="text-sm font-bold text-slate-400 hover:text-primary transition-colors">Show full rankings</button>
+    <div class="glass-card overflow-hidden shadow-lg border-glass-strong" style="border-radius: 2.5rem;">
+        <div class="table-responsive">
+            <table class="table table-borderless table-hover mb-0 align-middle text-white">
+                <thead style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-glass);">
+                    <tr>
+                        <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0" style="border-top-left-radius: 2.5rem;">Rank</th>
+                        <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0">Student</th>
+                        <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0">Major</th>
+                        <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold text-end border-0" style="border-top-right-radius: 2.5rem;">Points</th>
+                    </tr>
+                </thead>
+                <tbody style="border-top: none;">
+                    @{ int rank = 4; }
+                    @foreach (var user in Model.RankingTable)
+                    {
+                        var isCurrentUser = user.Id == User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+                        if (isCurrentUser)
+                        {
+                            <tr class="transition-colors position-relative z-1 shadow-lg" style="background: rgba(52, 211, 153, 0.05); border-top: 1px solid rgba(52, 211, 153, 0.2); border-bottom: 1px solid rgba(52, 211, 153, 0.2);">
+                                <td class="py-4 px-4 px-md-5 fw-bold fs-5 text-aurora">#@rank</td>
+                                <td class="py-4 px-4 px-md-5">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="position-relative">
+                                            <img src="@(user.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={user.FullName}")" class="rounded-circle object-cover shadow-lg" style="width: 48px; height: 48px; background: rgba(255,255,255,0.05); border: 2px solid var(--color-mint-bright);" />
+                                            <div class="position-absolute rounded-circle border border-dark" style="bottom: -2px; right: -2px; width: 14px; height: 14px; background: var(--color-mint-bright); border-width: 2px !important;"></div>
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold fs-6 text-white text-truncate" style="max-width: 150px;">@user.FullName</span>
+                                            <span class="text-aurora fw-bold text-uppercase tracking-widest" style="font-size: 0.65rem;">YOU</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 px-md-5">
+                                    <span class="badge rounded-pill fw-bold text-uppercase tracking-wider" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.2); padding: 0.35rem 0.65rem; font-size: 0.65rem;">@(string.IsNullOrEmpty(user.Institution) ? "Student" : user.Institution)</span>
+                                </td>
+                                <td class="py-4 px-4 px-md-5 text-end fw-bold fs-5 text-aurora">@user.ReputationPoints</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr class="transition-colors hover-bg-glass" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td class="py-4 px-4 px-md-5 fw-bold text-muted">#@rank</td>
+                                <td class="py-4 px-4 px-md-5">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="@(user.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={user.FullName}")" class="rounded-circle object-cover border border-glass" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05);" />
+                                        <span class="fw-bold">@user.FullName</span>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 px-md-5">
+                                    <span class="badge rounded-pill fw-bold text-uppercase tracking-wider" style="background: rgba(20, 184, 166, 0.1); color: #2dd4bf; border: 1px solid rgba(20, 184, 166, 0.2); padding: 0.35rem 0.65rem; font-size: 0.65rem;">@(string.IsNullOrEmpty(user.Institution) ? "Student" : user.Institution)</span>
+                                </td>
+                                <td class="py-4 px-4 px-md-5 text-end fw-bold text-white">@user.ReputationPoints</td>
+                            </tr>
+                        }
+                        rank++;
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="p-3 text-center" style="border-top: 1px solid var(--border-glass); background: rgba(0,0,0,0.2);">
+            <button class="btn btn-link text-muted hover-text-white fw-bold text-uppercase tracking-widest text-decoration-none transition-colors rounded-pill" style="font-size: 0.75rem;">Show full rankings</button>
         </div>
     </div>
 </div>

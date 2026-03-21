@@ -9,31 +9,31 @@
 }
 
 @section Sidebar {
-    <div class="flex flex-col h-full bg-surface-light dark:bg-background-dark w-72 shrink-0">
-        <div class="p-6 flex-1 overflow-y-auto space-y-8 scrollbar-hide">
+    <div class="d-flex flex-column h-100" style="background: var(--bg-universe); width: 260px; flex-shrink: 0; border-right: 1px solid var(--border-glass);">
+        <div class="p-4 flex-grow-1 overflow-y-auto custom-scrollbar d-flex flex-column gap-4">
             <!-- Text Channels -->
             <div>
-                <div class="flex items-center justify-between px-2 mb-4">
-                    <h3 class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px]">Text Channels</h3>
+                <div class="d-flex align-items-center justify-content-between px-2 mb-3">
+                    <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Text Channels</h3>
                     @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
                     {
-                        <button onclick="openCreateChannelModal('Text')" class="size-6 flex items-center justify-center rounded-lg hover:bg-primary/10 text-slate-400 hover:text-primary transition-all">
-                            <span class="material-symbols-outlined text-lg">add</span>
+                        <button onclick="openCreateChannelModal('Text')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
+                            <span class="material-symbols-outlined fs-6">add</span>
                         </button>
                     }
                 </div>
-                <div class="space-y-1">
+                <div class="d-flex flex-column gap-1">
                     @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text))
                     {
-                        <a href="javascript:void(0)" onclick="joinTextChannel('@channel.Id', '@channel.Name')" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary transition-all font-bold text-sm">
-                            <span class="text-xl font-bold text-slate-300 dark:text-slate-600 group-hover:text-primary/60 transition-colors">#</span>
-                            <span class="truncate">@channel.Name</span>
+                        <a href="javascript:void(0)" onclick="joinTextChannel('@channel.Id', '@channel.Name')" class="text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold transition-all hover-glow" style="font-size: 0.85rem;">
+                            <span class="fs-5 fw-bold text-aurora opacity-75">#</span>
+                            <span class="text-truncate">@channel.Name</span>
                         </a>
                     }
                     @if (!Model.Channels.Any(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text))
                     {
-                        <div class="px-4 py-8 text-center rounded-2xl border-2 border-dashed border-border-light dark:border-border-dark/30">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No text channels</p>
+                        <div class="px-3 py-4 text-center rounded-lg border border-dashed" style="border-color: var(--border-glass) !important;">
+                            <p class="text-muted fw-bold text-uppercase m-0" style="font-size: 0.6rem; letter-spacing: 1px;">No text channels</p>
                         </div>
                     }
                 </div>
@@ -41,83 +41,79 @@
 
             <!-- Voice Channels -->
             <div>
-                <div class="flex items-center justify-between px-2 mb-4">
-                    <h3 class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px]">Voice Channels</h3>
+                <div class="d-flex align-items-center justify-content-between px-2 mb-3">
+                    <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Voice Channels</h3>
                     @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
                     {
-                        <button onclick="openCreateChannelModal('Voice')" class="size-6 flex items-center justify-center rounded-lg hover:bg-primary/10 text-slate-400 hover:text-primary transition-all">
-                            <span class="material-symbols-outlined text-lg">add</span>
+                        <button onclick="openCreateChannelModal('Voice')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
+                            <span class="material-symbols-outlined fs-6">add</span>
                         </button>
                     }
                 </div>
-                <div class="space-y-1" id="voiceChannelList">
+                <div class="d-flex flex-column gap-1" id="voiceChannelList">
                     @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Voice || c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video))
                     {
-                        <div class="group/voice">
+                        <div>
                             <button onclick="joinVoice('@channel.Id', '@channel.Name')" 
-                                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 dark:hover:text-primary transition-all font-bold text-sm">
-                                <span class="material-symbols-outlined text-lg opacity-40 group-hover/voice:opacity-100 transition-opacity">@(channel.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video ? "videocam" : "volume_up")</span>
-                                <span class="truncate">@channel.Name</span>
+                                    class="w-100 btn btn-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold transition-all hover-glow" style="font-size: 0.85rem;">
+                                <span class="material-symbols-outlined fs-6 opacity-75">@(channel.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video ? "videocam" : "volume_up")</span>
+                                <span class="text-truncate">@channel.Name</span>
                             </button>
-                            <!-- Connected Users List for this channel -->
-                            <div id="users-@channel.Id" class="hidden pl-9 pr-2 py-1 flex flex-col gap-1 animating-pulse">
-                            </div>
+                            <!-- Connected Users List -->
+                            <div id="users-@channel.Id" class="d-none d-flex flex-column gap-1 ps-5 pe-2 py-1"></div>
                         </div>
                     }
                     @if (!Model.Channels.Any(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Voice || c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video))
                     {
-                        <div class="px-4 py-8 text-center rounded-2xl border-2 border-dashed border-border-light dark:border-border-dark/30">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No voice channels</p>
+                        <div class="px-3 py-4 text-center rounded-lg border border-dashed" style="border-color: var(--border-glass) !important;">
+                            <p class="text-muted fw-bold text-uppercase m-0" style="font-size: 0.6rem; letter-spacing: 1px;">No voice channels</p>
                         </div>
                     }
                 </div>
             </div>
-
         </div>
 
         <!-- Sidebar Footer & Voice Status -->
-        <div class="mt-auto border-t border-border-light dark:border-border-dark bg-slate-50/50 dark:bg-black/20">
-            <!-- Voice Status Panel (Visible when connected) -->
-            <div id="voiceStatusPanel" class="hidden animate-in slide-in-from-bottom-2 duration-300">
-                <div class="p-4 flex items-center justify-between border-b border-border-light/50 dark:border-white/5">
-                    <div class="flex flex-col gap-0.5">
-                        <div class="flex items-center gap-1.5">
-                             <span class="material-symbols-outlined text-emerald-500 text-sm font-bold">wifi</span>
-                            <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Voice Connected</span>
+        <div class="mt-auto border-top p-0" style="background: rgba(0,0,0,0.2); border-color: var(--border-glass) !important;">
+            <!-- Voice Status Panel -->
+            <div id="voiceStatusPanel" class="d-none animate-entrance">
+                <div class="p-3 d-flex align-items-center justify-content-between border-bottom" style="border-color: var(--border-glass) !important;">
+                    <div class="d-flex flex-column gap-1">
+                        <div class="d-flex align-items-center gap-1">
+                             <span class="material-symbols-outlined text-aurora fw-bold" style="font-size: 0.8rem;">wifi</span>
+                            <span class="text-aurora fw-bold text-uppercase tracking-wider" style="font-size: 0.6rem;">Voice Connected</span>
                         </div>
-                        <p id="connectedChannelName" class="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[120px]">Channel Name</p>
+                        <p id="connectedChannelName" class="text-white fw-bold mb-0 text-truncate" style="font-size: 0.75rem; max-width: 120px;">Channel Name</p>
                     </div>
-                    <div class="flex items-center gap-1">
-                        <button onclick="leaveVoice()" class="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all group" title="Disconnect">
-                            <span class="material-symbols-outlined text-xl">call_end</span>
-                        </button>
-                    </div>
+                    <button onclick="leaveVoice()" class="btn btn-link p-2 text-muted hover-text-danger text-decoration-none d-flex align-items-center justify-content-center rounded-lg transition-all" title="Disconnect">
+                        <span class="material-symbols-outlined fs-5">call_end</span>
+                    </button>
                 </div>
             </div>
 
             <!-- Profile & Group Settings -->
-            <div class="p-3 flex items-center justify-between">
-                <div class="flex items-center gap-2 px-2 py-1 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer group flex-1">
-                    <div class="relative">
-                        <div id="voiceAvatar" class="size-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-black text-[10px]">
+            <div class="p-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2 p-1 rounded-3 flex-grow-1 hover-glow" style="cursor: pointer; background: rgba(255,255,255,0.02);">
+                    <div class="position-relative">
+                        <div id="voiceAvatar" class="avatar-sm rounded-circle d-flex flex-center text-aurora fw-black shadow" style="background: rgba(0,245,160,0.1); border: 1px solid var(--color-emerald); font-size: 0.65rem;">
                              @(User.Identity?.Name?[0] ?? '?')
                         </div>
-                        <div class="absolute -bottom-0.5 -right-0.5 size-3 bg-emerald-500 border-2 border-white dark:border-[#1a1c1e] rounded-full"></div>
+                        <div class="position-absolute rounded-circle" style="bottom: -2px; right: -2px; width: 12px; height: 12px; background: var(--color-emerald); border: 2px solid var(--bg-universe);"></div>
                     </div>
-                    <div class="flex-1 min-w-0">
-                         <p class="text-[11px] font-bold text-slate-900 dark:text-white truncate">@(User.Identity?.Name ?? "User")</p>
-                         <p class="text-[9px] font-semibold text-slate-500 uppercase tracking-normal">Online</p>
+                    <div class="flex-grow-1 min-w-0">
+                         <p class="fw-bold text-white text-truncate mb-0" style="font-size: 0.75rem;">@(User.Identity?.Name ?? "User")</p>
+                         <p class="fw-semibold text-muted text-uppercase mb-0 tracking-normal" style="font-size: 0.6rem;">Online</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-1">
-                    <button onclick="toggleCamera()" id="videoButton" class="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-primary/10 hover:text-primary transition-all" title="Toggle Camera">
-                        <span id="videoIcon" class="material-symbols-outlined text-lg">videocam_off</span>
+                <div class="d-flex align-items-center gap-1 ms-2">
+                    <button onclick="toggleCamera()" id="videoButton" class="btn btn-link p-1 text-muted hover-glow text-decoration-none rounded-lg d-flex align-items-center justify-content-center" title="Toggle Camera" style="width: 32px; height: 32px;">
+                        <span id="videoIcon" class="material-symbols-outlined fs-6">videocam_off</span>
                     </button>
-                     <button onclick="toggleMic()" id="micButton" class="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-primary/10 hover:text-primary transition-all" title="Toggle Microphone">
-                        <span id="micIcon" class="material-symbols-outlined text-lg">mic</span>
+                     <button onclick="toggleMic()" id="micButton" class="btn btn-link p-1 text-muted hover-glow text-decoration-none rounded-lg d-flex align-items-center justify-content-center" title="Toggle Microphone" style="width: 32px; height: 32px;">
+                        <span id="micIcon" class="material-symbols-outlined fs-6">mic</span>
                     </button>
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-primary/10 hover:text-primary transition-all" title="Group Settings">
-                        <span class="material-symbols-outlined text-lg">settings</span>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-link p-1 text-muted hover-glow text-decoration-none rounded-lg d-flex align-items-center justify-content-center" title="Group Settings" style="width: 32px; height: 32px;">
+                        <span class="material-symbols-outlined fs-6">settings</span>
                     </a>
                 </div>
             </div>
@@ -127,167 +123,163 @@
 
 <style>
     .voice-talking {
-        box-shadow: 0 0 0 2px #13c8ec;
+        box-shadow: 0 0 0 2px var(--color-emerald);
         animation: voice-pulse 1.5s infinite;
     }
 
     @@keyframes voice-pulse {
-        0% { box-shadow: 0 0 0 0px rgba(19, 200, 236, 0.4); }
-        70% { box-shadow: 0 0 0 6px rgba(19, 200, 236, 0); }
-        100% { box-shadow: 0 0 0 0px rgba(19, 200, 236, 0); }
+        0% { box-shadow: 0 0 0 0px rgba(0,245,160, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(0,245,160, 0); }
+        100% { box-shadow: 0 0 0 0px rgba(0,245,160, 0); }
     }
 </style>
 
-<div id="drop-zone" class="fixed inset-0 z-[60] bg-primary/20 backdrop-blur-sm hidden flex items-center justify-center pointer-events-none">
-    <div class="bg-white dark:bg-surface-dark p-8 rounded-3xl shadow-2xl border-2 border-dashed border-primary flex flex-col items-center gap-4 animate-in zoom-in duration-300">
-        <div class="size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <span class="material-symbols-outlined text-5xl">upload_file</span>
+<div id="drop-zone" class="d-none position-fixed top-0 bottom-0 start-0 end-0 z-3 align-items-center justify-content-center" style="background: rgba(15,23,42,0.8); backdrop-filter: blur(5px); z-index: 1060; pointer-events: none;">
+    <div class="glass-card p-5 d-flex flex-column align-items-center gap-4 animate-entrance" style="border: 2px dashed var(--color-emerald);">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: rgba(0,245,160,0.1);">
+            <span class="material-symbols-outlined text-aurora" style="font-size: 3rem;">upload_file</span>
         </div>
-        <p class="text-xl font-bold text-slate-900 dark:text-white">Release to upload files</p>
+        <p class="fs-4 fw-bold text-white mb-0">Release to upload files</p>
     </div>
 </div>
 
 <!-- Unified Video Grid Overlay -->
-<div id="videoGrid" class="hidden fixed top-24 bottom-32 left-[300px] right-[300px] z-40 grid gap-4 p-6 pointer-events-none transition-all duration-500">
-    <div id="localVideoContainer" class="hidden relative aspect-video bg-black/40 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl backdrop-blur-3xl animate-in zoom-in-95 pointer-events-auto group">
-        <video id="localVideo" autoplay muted playsinline class="w-full h-full object-cover"></video>
-        <div class="absolute bottom-6 left-6 flex items-center gap-2 px-3 py-1.5 glass rounded-xl">
-            <span class="text-[10px] font-black text-white uppercase tracking-widest">You</span>
+<div id="videoGrid" class="d-none position-fixed z-3 d-grid gap-3 p-4 p-md-5 pointer-events-none transition-all" style="top: 80px; bottom: 100px; left: 300px; right: 300px;">
+    <div id="localVideoContainer" class="d-none position-relative bg-black rounded-lg overflow-hidden border shadow-lg pointer-events-auto group animate-entrance" style="border-color: var(--border-glass) !important;">
+        <video id="localVideo" autoplay muted playsinline class="w-100 h-100 object-cover"></video>
+        <div class="position-absolute bottom-0 start-0 m-3 px-3 py-1 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
+            <span class="fw-black text-white text-uppercase" style="font-size: 0.65rem; letter-spacing: 1px;">You</span>
         </div>
     </div>
 </div>
 
-<!-- Main Content Area: Simplified height-managed structure -->
-<div class="flex-1 flex overflow-hidden w-full bg-background-light dark:bg-background-dark">
-        <!-- Center Feed (Restored Symmetry) -->
-        <main class="flex-1 flex flex-col bg-background-light dark:bg-background-dark min-w-0 relative">
-            <div class="flex-1 overflow-y-auto p-10 scroll-smooth scrollbar-hide">
-                <div class="max-w-3xl mx-auto space-y-12">
-                    <!-- Welcome Section -->
-                    <section class="py-16 text-center">
-                        <div class="size-28 flex items-center justify-center mx-auto mb-8 relative">
-                           <div class="absolute inset-0 bg-primary/10 blur-3xl rounded-full"></div>
-                           <div class="size-24 rounded-[2rem] bg-gradient-to-br from-primary to-emerald-600 text-white flex items-center justify-center rotate-6 hover:rotate-0 transition-all duration-500 shadow-2xl relative">
-                                <span class="material-symbols-outlined text-5xl font-bold">auto_awesome</span>
-                           </div>
+<!-- Main Content Area -->
+<div class="d-flex flex-grow-1 overflow-hidden w-100 position-relative bg-transparent">
+    <!-- Center Feed -->
+    <main class="d-flex flex-column flex-grow-1 min-w-0 position-relative">
+        <div class="flex-grow-1 overflow-y-auto p-4 p-md-5 custom-scrollbar">
+            <div class="mx-auto" style="max-width: 800px;">
+                <!-- Welcome Section -->
+                <section class="py-5 text-center position-relative">
+                    <div class="position-absolute start-50 top-50 translate-middle rounded-circle" style="width: 200px; height: 200px; background: var(--gradient-aurora); filter: blur(60px); opacity: 0.15;"></div>
+                    <div class="d-flex align-items-center justify-content-center mx-auto mb-4 position-relative z-1">
+                        <div class="rounded-lg d-flex align-items-center justify-content-center shadow-lg transition-transform" style="width: 80px; height: 80px; background: var(--gradient-aurora); color: var(--bg-universe); transform: rotate(5deg);">
+                            <span class="material-symbols-outlined fw-bold" style="font-size: 2.5rem;">auto_awesome</span>
                         </div>
-                        <h2 class="text-5xl font-black text-slate-900 dark:text-white mb-6 tracking-tighter leading-tight italic">
-                            Welcome to <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-600 uppercase not-italic">@Model.Name</span>
-                        </h2>
-                        <p class="text-xl text-slate-500 dark:text-slate-400 leading-relaxed font-medium max-w-xl mx-auto">
-                            @(string.IsNullOrEmpty(Model.Description) ? "This is the start of your learning journey. Collaborate, study, and grow together!" : Model.Description)
-                        </p>
-                    </section>
-
-                    <div class="h-px bg-gradient-to-r from-transparent via-border-light dark:via-border-dark to-transparent opacity-50"></div>
-                </div>
+                    </div>
+                    <h2 class="display-5 fw-black text-white mb-4 tracking-tighter position-relative z-1">
+                        Welcome to <span class="text-aurora text-uppercase" style="font-style: italic;">@Model.Name</span>
+                    </h2>
+                    <p class="fs-5 text-muted fw-medium mx-auto position-relative z-1" style="max-width: 600px;">
+                        @(string.IsNullOrEmpty(Model.Description) ? "This is the start of your learning journey. Collaborate, study, and grow together!" : Model.Description)
+                    </p>
+                </section>
+                <hr class="w-100 border-top" style="border-color: var(--border-glass) !important;" />
             </div>
-            
-            <!-- Quick Input Bar -->
-            <div class="p-8 bg-gradient-to-t from-background-light dark:from-background-dark to-transparent absolute bottom-0 left-0 right-0 pointer-events-none">
-                <div class="max-w-4xl mx-auto w-full pointer-events-auto">
-                    <div id="input-container" class="bg-white/80 dark:bg-surface-dark/80 backdrop-blur-xl border border-white dark:border-white/10 rounded-3xl p-3 px-6 shadow-2xl flex items-center gap-5 transition-all focus-within:ring-2 focus-within:ring-primary/20 relative">
-                        <!-- Emoji/GIF Picker Popup -->
-                        <div id="picker-popup" class="hidden absolute bottom-full left-0 mb-4 w-80 h-96 bg-white dark:bg-surface-dark rounded-3xl shadow-2xl border border-white dark:border-white/10 overflow-hidden flex flex-col animate-in slide-in-from-bottom-2 duration-300 z-50">
-                            <div class="flex border-b border-border-light dark:border-white/5">
-                                <button onclick="switchPickerTab('emoji')" id="tab-emoji" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-primary border-b-2 border-primary transition-all">Emojis</button>
-                                <button onclick="switchPickerTab('gif')" id="tab-gif" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all">GIFs</button>
-                            </div>
-                            <div id="emoji-picker-container" class="flex-1 overflow-hidden"></div>
-                            <div id="gif-picker-container" class="hidden flex-1 flex flex-col p-4 overflow-hidden">
-                                <div class="relative mb-3">
-                                    <input type="text" id="gif-search" placeholder="Search Giphy..." class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-background-dark border-none rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-1 focus:ring-primary/40 outline-none">
-                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">search</span>
-                                </div>
-                                <div id="gif-results" class="flex-1 overflow-y-auto grid grid-cols-2 gap-2 scrollbar-hide">
-                                    <!-- GIFs via JS -->
-                                </div>
-                            </div>
+        </div>
+        
+        <!-- Quick Input Bar -->
+        <div class="p-4 position-absolute bottom-0 start-0 end-0 pointer-events-none" style="background: linear-gradient(to top, var(--bg-universe) 40%, transparent);">
+            <div class="mx-auto w-100 pointer-events-auto position-relative" style="max-width: 800px;">
+                <!-- Emoji/GIF Picker Popup -->
+                <div id="picker-popup" class="d-none position-absolute bottom-100 start-0 mb-3 glass-card flex-column overflow-hidden animate-entrance" style="width: 320px; height: 380px; z-index: 1050; display: flex;">
+                    <div class="d-flex border-bottom" style="border-color: var(--border-glass) !important;">
+                        <button onclick="switchPickerTab('emoji')" id="tab-emoji" class="btn btn-link flex-grow-1 py-3 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-aurora" style="font-size: 0.65rem; border-bottom: 2px solid var(--color-emerald) !important;">Emojis</button>
+                        <button onclick="switchPickerTab('gif')" id="tab-gif" class="btn btn-link flex-grow-1 py-3 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-muted hover-glow" style="font-size: 0.65rem; border-bottom: 2px solid transparent !important;">GIFs</button>
+                    </div>
+                    <div id="emoji-picker-container" class="flex-grow-1 overflow-hidden"></div>
+                    <div id="gif-picker-container" class="d-none flex-grow-1 flex-column p-3 overflow-hidden" style="display: flex;">
+                        <div class="position-relative mb-3">
+                            <input type="text" id="gif-search" placeholder="Search Giphy..." class="form-control form-control-glass ps-5 text-white" style="font-size: 0.8rem; border-radius: 0.75rem;">
+                            <span class="material-symbols-outlined position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 1rem;">search</span>
                         </div>
+                        <div id="gif-results" class="flex-grow-1 overflow-y-auto d-grid custom-scrollbar gap-2" style="grid-template-columns: 1fr 1fr;">
+                            <!-- GIFs via JS -->
+                        </div>
+                    </div>
+                </div>
 
-                        <button id="attachment-btn" class="text-slate-400 hover:text-primary transition-colors">
-                            <span class="material-symbols-outlined text-2xl">add_circle</span>
+                <div id="input-container" class="glass-card d-flex align-items-center gap-3 p-2 px-4 shadow-lg transition-all" style="border-radius: 2rem;">
+                    <button id="attachment-btn" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center">
+                        <span class="material-symbols-outlined fs-4">add_circle</span>
+                    </button>
+                    <input type="text" id="message-input" placeholder="Message to @Model.Name..." class="form-control bg-transparent border-0 text-white shadow-none ps-0" style="font-size: 0.95rem;">
+                    <div class="d-flex align-items-center gap-3">
+                        <button id="emoji-btn" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center">
+                            <span class="material-symbols-outlined fs-4">mood</span>
                         </button>
-                        <input type="text" id="message-input" placeholder="Message to @Model.Name..." class="flex-1 bg-transparent border-none outline-none text-base font-medium text-slate-700 dark:text-slate-200 placeholder:text-slate-400">
-                        <div class="flex items-center gap-4">
-                            <button id="emoji-btn" class="text-slate-400 hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined text-2xl">mood</span>
-                            </button>
-                            <button id="send-btn" class="px-7 py-2.5 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary-dark shadow-xl shadow-primary/20 transition-all active:scale-95">Send</button>
-                        </div>
+                        <button id="send-btn" class="btn btn-premium d-flex align-items-center justify-content-center rounded-pill px-4" style="height: 40px; font-size: 0.75rem;">SEND</button>
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
+    </main>
 
-        <!-- Right Sidebar: Members (Restored Symmetry) -->
-        <aside class="w-72 flex-shrink-0 bg-surface-light dark:bg-background-dark border-l border-border-light dark:border-border-dark hidden xl:flex flex-col p-6">
-            <div class="flex items-center justify-between mb-8 px-2">
-                <h3 class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px]">Members — @Model.MemberCount</h3>
-                <button class="size-8 flex items-center justify-center rounded-lg hover:bg-primary/10 text-slate-400 hover:text-primary transition-all">
-                    <span class="material-symbols-outlined text-lg">person_add</span>
-                </button>
-            </div>
-            <div class="space-y-4 flex-1 overflow-y-auto scrollbar-hide">
-                <div class="p-3.5 rounded-2xl hover:bg-white dark:hover:bg-white/5 transition-all group cursor-pointer border border-transparent hover:border-border-light dark:hover:border-white/10 flex items-center gap-4">
-                    <div class="relative">
-                        <div class="size-11 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-sm shadow-sm transition-transform group-hover:scale-110">
-                            <span class="material-symbols-outlined text-2xl">account_circle</span>
-                        </div>
-                        <div class="absolute -top-1 -right-1 size-5 bg-amber-400 border-[3px] border-surface-light dark:border-background-dark rounded-full flex items-center justify-center shadow-sm">
-                            <span class="material-symbols-outlined text-[9px] text-white font-black">star</span>
-                        </div>
+    <!-- Right Sidebar: Members -->
+    <aside class="d-none d-xl-flex flex-column p-4 flex-shrink-0" style="background: rgba(15,23,42,0.3); width: 260px; border-left: 1px solid var(--border-glass);">
+        <div class="d-flex align-items-center justify-content-between mb-4 px-2">
+            <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Members — @Model.MemberCount</h3>
+            <button class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center rounded-lg lh-1 p-0">
+                <span class="material-symbols-outlined fs-6">person_add</span>
+            </button>
+        </div>
+        <div class="d-flex flex-column gap-3 flex-grow-1 overflow-y-auto custom-scrollbar">
+            <div class="d-flex align-items-center gap-3 p-2 rounded-lg hover-glow transition-all" style="cursor: pointer; border: 1px solid transparent;">
+                <div class="position-relative">
+                    <div class="avatar-sm rounded-lg d-flex flex-center text-aurora shadow-sm" style="background: rgba(0,245,160,0.1); border: 1px solid rgba(0,245,160,0.2);">
+                        <span class="material-symbols-outlined fs-6">account_circle</span>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-black text-slate-900 dark:text-white truncate">@(Model.OwnerUserName ?? "Owner")</p>
-                        <span class="text-[9px] font-black text-primary uppercase bg-primary/10 px-2 py-0.5 rounded-md tracking-tighter">Group Creator</span>
+                    <div class="position-absolute d-flex flex-center shadow-sm" style="top: -4px; right: -4px; width: 14px; height: 14px; background: #fbbf24; border: 2px solid var(--bg-universe); border-radius: 50%;">
+                        <span class="material-symbols-outlined text-white fw-black" style="font-size: 8px;">star</span>
                     </div>
                 </div>
+                <div class="flex-grow-1 min-w-0">
+                    <p class="fw-bold text-white text-truncate mb-0" style="font-size: 0.8rem;">@(Model.OwnerUserName ?? "Owner")</p>
+                    <span class="fw-black text-aurora text-uppercase px-1 rounded d-inline-block" style="font-size: 0.55rem; letter-spacing: -0.5px; background: rgba(0,245,160,0.1);">Group Creator</span>
+                </div>
             </div>
-        </aside>
-    </div>
+        </div>
+    </aside>
 </div>
 
 <!-- Modal: Create Channel -->
-<div id="createChannelModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-0">
-    <div class="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm" onclick="closeCreateChannelModal()"></div>
-    <div class="bg-white dark:bg-surface-dark w-full max-w-lg rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden border border-white dark:border-white/10 animate-in fade-in zoom-in duration-300">
-        <div class="p-10">
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Create <span id="modalChannelTypeLabel">Channel</span></h2>
-                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Setup a new space for collaboration.</p>
+<div id="createChannelModal" class="d-none position-fixed top-0 bottom-0 start-0 end-0 z-3 align-items-center justify-content-center p-3" style="z-index: 1060; display: flex;">
+    <div class="position-absolute top-0 bottom-0 start-0 end-0" style="background: rgba(2,6,23,0.8); backdrop-filter: blur(5px);" onclick="closeCreateChannelModal()"></div>
+    <div class="glass-card position-relative z-1 w-100 animate-entrance" style="max-width: 500px; padding: 2.5rem;">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h2 class="h3 fw-black text-white tracking-tighter mb-1">Create <span id="modalChannelTypeLabel" class="text-aurora">Channel</span></h2>
+                <p class="small fw-medium text-muted mb-0">Setup a new space for collaboration.</p>
+            </div>
+            <button onclick="closeCreateChannelModal()" class="btn btn-link p-2 text-muted hover-text-danger d-flex flex-center rounded-lg bg-dark border-0">
+                <span class="material-symbols-outlined fs-5">close</span>
+            </button>
+        </div>
+
+        <form asp-action="CreateChannel" method="post" class="d-flex flex-column gap-4">
+            <input type="hidden" name="GroupId" value="@Model.Id" />
+            <input type="hidden" name="Type" id="modalChannelTypeInput" value="0" />
+
+            <div class="d-flex flex-column gap-2">
+                <label class="fw-black text-muted text-uppercase tracking-widest ms-1" style="font-size: 0.65rem;">Channel Name</label>
+                <div class="position-relative">
+                    <span class="position-absolute top-50 translate-middle-y fw-bold text-muted transition-colors" style="left: 1rem; font-size: 1.25rem;">#</span>
+                    <input type="text" name="Name" required placeholder="new-channel" 
+                           class="form-control form-control-glass w-100 fw-bold text-white ps-5 py-3" style="border-radius: 1rem;" />
                 </div>
-                <button onclick="closeCreateChannelModal()" class="size-10 rounded-2xl bg-slate-50 dark:bg-background-dark text-slate-400 flex items-center justify-center hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 transition-all">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
             </div>
 
-            <form asp-action="CreateChannel" method="post" class="space-y-8">
-                <input type="hidden" name="GroupId" value="@Model.Id" />
-                <input type="hidden" name="Type" id="modalChannelTypeInput" value="0" />
+            <div class="d-flex flex-column gap-2">
+                <label class="fw-black text-muted text-uppercase tracking-widest ms-1" style="font-size: 0.65rem;">Topic (Optional)</label>
+                <textarea name="Topic" rows="2" placeholder="What is this channel about?" 
+                          class="form-control form-control-glass w-100 fw-medium text-white p-3" style="border-radius: 1rem;"></textarea>
+            </div>
 
-                <div class="space-y-3">
-                    <label class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px] ml-1">Channel Name</label>
-                    <div class="relative group">
-                        <div class="absolute left-5 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-300 dark:text-slate-600 transition-colors group-focus-within:text-primary">#</div>
-                        <input type="text" name="Name" required placeholder="new-channel" 
-                               class="w-full pl-12 pr-6 py-4 rounded-2xl bg-slate-50 dark:bg-background-dark border-2 border-transparent focus:border-primary/30 focus:bg-white dark:focus:bg-surface-dark outline-none transition-all font-bold text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-700 shadow-inner" />
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <label class="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[2px] ml-1">Topic (Optional)</label>
-                    <textarea name="Topic" rows="2" placeholder="What is this channel about?" 
-                              class="w-full p-6 rounded-2xl bg-slate-50 dark:bg-background-dark border-2 border-transparent focus:border-primary/30 focus:bg-white dark:focus:bg-surface-dark outline-none transition-all font-medium text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-700 shadow-inner"></textarea>
-                </div>
-
-                <div class="flex gap-4 pt-4">
-                    <button type="button" onclick="closeCreateChannelModal()" class="flex-1 py-4 rounded-2xl border-2 border-slate-100 dark:border-white/5 font-black text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">Cancel</button>
-                    <button type="submit" class="flex-[2] py-4 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest hover:bg-primary-dark transition-all shadow-xl shadow-primary/20">Create Channel</button>
-                </div>
-            </form>
-        </div>
+            <div class="d-flex gap-3 mt-2">
+                <button type="button" onclick="closeCreateChannelModal()" class="btn btn-glass flex-grow-1 fw-black text-uppercase py-3" style="font-size: 0.75rem; letter-spacing: 1px;">Cancel</button>
+                <button type="submit" class="btn btn-premium flex-grow-1 fw-black text-uppercase py-3" style="font-size: 0.75rem; letter-spacing: 1px; flex: 2;">Create Channel</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -298,12 +290,10 @@
         let currentTextChannelId = null;
         let connection = null;
         
-        // WebRTC State
         let localStream = null;
-        const peers = {}; // connectionId -> { pc, stream, type }
+        const peers = {}; 
         const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-        // Initialize SignalR
         async function startSignalR() {
             connection = new signalR.HubConnectionBuilder()
                 .withUrl("/communicationHub")
@@ -316,35 +306,27 @@
                 }
             });
 
-            // WebRTC Presence & Signaling
             connection.on("UserJoinedVoice", async (data) => {
-                console.log("Peer joined:", data.connectionId);
-                
-                // Update Sidebar UI
                 const container = document.getElementById(`users-${data.channelId}`);
                 if (container && !document.getElementById(`user-indicator-${data.connectionId}`)) {
-                    container.classList.remove('hidden');
+                    container.classList.remove('d-none');
                     const userHtml = `
-                        <div id="user-indicator-${data.connectionId}" class="flex items-center gap-2 py-1 group/user animate-in fade-in slide-in-from-left-2 duration-300">
-                            <div class="relative">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${data.userName}" class="size-5 rounded-lg" />
-                                <div id="micOffIcon" class="hidden absolute -bottom-1 -right-1 size-2.5 bg-red-500 rounded-full flex items-center justify-center border border-white dark:border-slate-800">
-                                    <span class="material-symbols-outlined text-[7px] text-white font-black">mic_off</span>
+                        <div id="user-indicator-${data.connectionId}" class="d-flex align-items-center gap-2 py-1 animate-entrance">
+                            <div class="position-relative">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${data.userName}" class="avatar-xs rounded-lg object-cover" />
+                                <div id="micOffIcon" class="d-none position-absolute d-flex flex-center bg-danger rounded-circle border border-dark shadow-sm" style="bottom: -4px; right: -4px; width: 14px; height: 14px;">
+                                    <span class="material-symbols-outlined text-white fw-black" style="font-size: 8px;">mic_off</span>
                                 </div>
                             </div>
-                            <span class="text-[10px] font-bold text-slate-500 group-hover/user:text-primary transition-colors">${data.userName}</span>
+                            <span class="fw-bold text-muted transition-colors hover-glow" style="font-size: 0.65rem;">${data.userName}</span>
                         </div>
                     `;
                     container.insertAdjacentHTML('beforeend', userHtml);
                 }
-
-                if (currentVoiceChannelId) {
-                    await createPeerConnection(data.connectionId, true);
-                }
+                if (currentVoiceChannelId) await createPeerConnection(data.connectionId, true);
             });
 
             connection.on("UserLeftVoice", (connectionId) => {
-                console.log("Peer left:", connectionId);
                 if (peers[connectionId]) {
                     peers[connectionId].pc.close();
                     delete peers[connectionId];
@@ -358,7 +340,6 @@
             connection.on("ReceiveSignal", async (signal, fromConnectionId) => {
                 const data = JSON.parse(signal);
                 let peer = peers[fromConnectionId];
-
                 if (data.sdp) {
                     if (!peer) peer = await createPeerConnection(fromConnectionId, false);
                     await peer.pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
@@ -374,40 +355,26 @@
 
             connection.on("UserMuteChanged", (connectionId, isMuted) => {
                 const icon = document.querySelector(`#user-indicator-${connectionId} #micOffIcon`);
-                if (icon) icon.classList.toggle('hidden', !isMuted);
-            });
-
-            connection.on("UserVideoChanged", (connectionId, isVideoOn) => {
-                // Potential UI update for video status in sidebar or grid
-                console.log("Peer video changed:", connectionId, isVideoOn);
+                if (icon) {
+                    if (isMuted) icon.classList.remove('d-none');
+                    else icon.classList.add('d-none');
+                }
             });
 
             try {
                 await connection.start();
-                console.log("SignalR Connected.");
-                
-                // Join initial text channel
                 const initialChannelId = "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Id";
-                if (initialChannelId) {
-                    joinTextChannel(initialChannelId, "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Name");
-                }
-            } catch (err) {
-                console.error("SignalR Connection Error:", err);
-            }
+                if (initialChannelId) joinTextChannel(initialChannelId, "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Name");
+            } catch (err) { console.error("SignalR Error:", err); }
         }
 
         async function createPeerConnection(connectionId, isOffer) {
             const pc = new RTCPeerConnection(iceServers);
             peers[connectionId] = { pc };
-
             pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    connection.invoke("SendSignal", JSON.stringify({ candidate: event.candidate }), connectionId);
-                }
+                if (event.candidate) connection.invoke("SendSignal", JSON.stringify({ candidate: event.candidate }), connectionId);
             };
-
             pc.ontrack = (event) => {
-                console.log("Received remote track:", event.track.kind, "from", connectionId);
                 if (event.track.kind === 'audio') {
                     let audio = document.getElementById(`peer-audio-${connectionId}`);
                     if (!audio) {
@@ -422,117 +389,99 @@
                     if (!container) {
                         container = document.createElement('div');
                         container.id = `peer-video-container-${connectionId}`;
-                        container.className = 'relative aspect-video bg-black/40 rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl pointer-events-auto animate-in zoom-in-95';
+                        container.className = 'position-relative bg-black rounded-lg overflow-hidden border shadow-lg pointer-events-auto animate-entrance';
+                        container.style.borderColor = 'var(--border-glass)';
                         container.innerHTML = `
-                            <video id="peer-video-${connectionId}" autoplay playsinline class="w-full h-full object-cover"></video>
-                            <div class="absolute bottom-6 left-6 flex items-center gap-2 px-3 py-1.5 glass rounded-xl">
-                                <span id="peer-name-${connectionId}" class="text-[10px] font-black text-white uppercase tracking-widest">Peer</span>
+                            <video id="peer-video-${connectionId}" autoplay playsinline class="w-100 h-100 object-cover"></video>
+                            <div class="position-absolute bottom-0 start-0 m-3 px-3 py-1 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
+                                <span id="peer-name-${connectionId}" class="fw-black text-white text-uppercase" style="font-size: 0.65rem; letter-spacing: 1px;">Peer</span>
                             </div>
                         `;
                         document.getElementById('videoGrid').appendChild(container);
-                        document.getElementById('videoGrid').classList.remove('hidden');
+                        document.getElementById('videoGrid').classList.replace('d-none', 'd-grid');
                     }
                     const video = document.getElementById(`peer-video-${connectionId}`);
                     video.srcObject = event.streams[0];
                     updateVideoGrid();
                 }
             };
-
-            // Add local tracks
-            if (localStream) {
-                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-            }
-
+            if (localStream) localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
             if (isOffer) {
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
                 connection.invoke("SendSignal", JSON.stringify({ sdp: offer }), connectionId);
             }
-
             return peers[connectionId];
         }
 
         async function joinTextChannel(id, name) {
             if (currentTextChannelId === id) return;
             if (currentTextChannelId) await connection.invoke("LeaveChannel", currentTextChannelId);
-            
-            console.log("Attempting to join text channel:", id);
             currentTextChannelId = id;
             await connection.invoke("JoinChannel", id);
             
             document.getElementById('message-input').placeholder = `Message to #${name}...`;
-            
-            // Cleanup and Setup Feed
-            const welcome = document.querySelector('section.py-16');
-            if (welcome) welcome.classList.add('hidden');
+            const welcome = document.querySelector('section.py-5');
+            if (welcome) welcome.classList.add('d-none');
+            const hr = document.querySelector('hr.border-top');
+            if (hr) hr.classList.add('d-none');
             
             let list = document.getElementById('message-list');
             if (!list) {
-                const container = document.querySelector('main .max-w-3xl.mx-auto');
+                const container = document.querySelector('main .mx-auto');
                 list = document.createElement('div');
                 list.id = 'message-list';
-                list.className = 'space-y-8 pb-40 min-h-[50vh]';
+                list.className = 'd-flex flex-column gap-4 pb-5 mb-5';
                 container.appendChild(list);
             }
-            
             list.innerHTML = `
-                <div class="py-24 text-center opacity-40 animate-in fade-in duration-700">
-                    <div class="size-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
-                        <span class="material-symbols-outlined text-primary text-3xl">chat_bubble</span>
+                <div class="py-5 text-center opacity-50 animate-entrance">
+                    <div class="rounded-circle d-flex flex-center mx-auto mb-4" style="width: 64px; height: 64px; background: rgba(0,245,160,0.1); color: var(--color-emerald);">
+                        <span class="material-symbols-outlined fs-2">chat_bubble</span>
                     </div>
-                    <p class="text-[10px] font-bold uppercase tracking-widest text-primary">Connected to #${name}</p>
-                    <p class="text-[9px] font-medium text-slate-500 mt-2">Start a conversation with your group members.</p>
+                    <p class="fw-bold text-uppercase tracking-widest text-aurora mb-2" style="font-size: 0.65rem;">Connected to #${name}</p>
+                    <p class="fw-medium text-muted mb-0" style="font-size: 0.75rem;">Start a conversation with your group members.</p>
                 </div>
             `;
-            
-            console.log("Successfully switched to text channel:", name);
         }
 
         async function joinVoice(id, name) {
             if (currentVoiceChannelId === id) return;
             if (currentVoiceChannelId) await leaveVoice();
-
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 currentVoiceChannelId = id;
                 await connection.invoke("JoinVoice", id);
 
-                document.getElementById('voiceStatusPanel').classList.remove('hidden');
+                document.getElementById('voiceStatusPanel').classList.remove('d-none');
                 document.getElementById('connectedChannelName').innerText = name;
-                document.getElementById('voiceAvatar').classList.toggle('voice-talking', !isMuted);
                 
                 const container = document.getElementById(`users-${id}`);
                 if (container) {
-                    container.classList.remove('hidden');
+                    container.classList.remove('d-none');
                     const myUserName = "@(User.Identity?.Name ?? "User")";
                     const userHtml = `
-                        <div id="user-indicator-local" class="flex items-center gap-2 py-1 group/user animate-in fade-in slide-in-from-left-2 duration-300">
-                            <div class="relative">
-                                <div id="localVoiceAvatar" class="size-5 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-[8px] text-primary font-bold transition-all ${isMuted ? '' : 'voice-talking'}">
-                                    ${myUserName.charAt(0).toUpperCase()}
+                        <div id="user-indicator-local" class="d-flex align-items-center gap-2 py-1 animate-entrance">
+                            <div class="position-relative">
+                                <div id="localVoiceAvatar" class="avatar-xs rounded-circle d-flex flex-center text-primary fw-bold text-uppercase transition-all ${isMuted ? '' : 'voice-talking'}" style="background: rgba(0,245,160,0.2); font-size: 10px; border: 1px solid var(--color-emerald);">
+                                    ${myUserName.charAt(0)}
                                 </div>
-                                <div id="localMicOffIcon" class="${isMuted ? '' : 'hidden'} absolute -bottom-1 -right-1 size-2.5 bg-red-500 rounded-full flex items-center justify-center border border-white dark:border-slate-800">
-                                    <span class="material-symbols-outlined text-[7px] text-white font-bold">mic_off</span>
+                                <div id="localMicOffIcon" class="${isMuted ? '' : 'd-none'} position-absolute d-flex flex-center bg-danger rounded-circle border border-dark shadow-sm" style="bottom: -4px; right: -4px; width: 14px; height: 14px;">
+                                    <span class="material-symbols-outlined text-white fw-black" style="font-size: 8px;">mic_off</span>
                                 </div>
                             </div>
-                            <span class="text-[10px] font-semibold text-primary group-hover/user:text-primary transition-colors">${myUserName} (You)</span>
+                            <span class="fw-bold text-aurora" style="font-size: 0.65rem;">${myUserName} (You)</span>
                         </div>
                     `;
                     container.insertAdjacentHTML('beforeend', userHtml);
                 }
-                
-                console.log(`Joined voice channel: ${name}`);
-            } catch (err) {
-                alert("Microphone access denied or unavailable.");
-                console.error(err);
-            }
+            } catch (err) { alert("Microphone access denied."); }
         }
 
         let isVideoOn = false;
         async function toggleCamera() {
             if (!currentVoiceChannelId) return;
             isVideoOn = !isVideoOn;
-            
             try {
                 if (isVideoOn) {
                     const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -551,49 +500,31 @@
                         localStream.removeTrack(videoTrack);
                     }
                 }
-                
                 connection.invoke("ToggleVideo", currentVoiceChannelId, isVideoOn);
                 document.getElementById('videoIcon').innerText = isVideoOn ? 'videocam' : 'videocam_off';
-                document.getElementById('videoButton').classList.toggle('text-primary', isVideoOn);
-                document.getElementById('videoButton').classList.toggle('bg-primary/10', isVideoOn);
+                document.getElementById('videoButton').classList.toggle('text-aurora', isVideoOn);
+                document.getElementById('videoButton').classList.toggle('bg-primary-subtle', isVideoOn);
                 updateVideoGrid();
-            } catch (err) {
-                console.error("Camera error:", err);
-                isVideoOn = false;
-            }
-        }
-
-        async function joinVideo(id, name) {
-            await joinVoice(id, name);
-            if (!isVideoOn) toggleCamera();
+            } catch (err) { isVideoOn = false; }
         }
 
         async function leaveVoice() {
             if (!currentVoiceChannelId) return;
-            
             await connection.invoke("LeaveVoice", currentVoiceChannelId);
-            
-            // Clean up WebRTC
             Object.keys(peers).forEach(id => {
                 peers[id].pc.close();
                 const el = document.getElementById(`peer-audio-${id}`);
                 if (el) el.remove();
             });
-            
             if (localStream) {
                 localStream.getTracks().forEach(t => t.stop());
                 localStream = null;
             }
-
             const myIndicator = document.getElementById('user-indicator-local');
             if (myIndicator) myIndicator.remove();
-            
             const container = document.getElementById(`users-${currentVoiceChannelId}`);
-            if (container && container.children.length === 0) {
-                container.classList.add('hidden');
-            }
-
-            document.getElementById('voiceStatusPanel').classList.add('hidden');
+            if (container && container.children.length === 0) container.classList.add('d-none');
+            document.getElementById('voiceStatusPanel').classList.add('d-none');
             currentVoiceChannelId = null;
         }
 
@@ -601,14 +532,15 @@
             const grid = document.getElementById('videoGrid');
             const containers = grid.querySelectorAll('div[id$="-container"]');
             const count = containers.length + (isVideoOn ? 1 : 0);
-            
             if (count === 0) {
-                grid.classList.add('hidden');
+                grid.classList.add('d-none');
+                grid.classList.remove('d-grid');
                 return;
             }
-            
-            grid.classList.remove('hidden');
-            document.getElementById('localVideoContainer').classList.toggle('hidden', !isVideoOn);
+            grid.classList.remove('d-none');
+            grid.classList.add('d-grid');
+            if (isVideoOn) document.getElementById('localVideoContainer').classList.remove('d-none');
+            else document.getElementById('localVideoContainer').classList.add('d-none');
             
             const localVideo = document.getElementById('localVideo');
             if (isVideoOn && localStream && localStream.getVideoTracks().length > 0) {
@@ -616,43 +548,32 @@
             } else {
                 localVideo.srcObject = null;
             }
-            
             const cols = count > 4 ? 3 : count > 1 ? 2 : 1;
             grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
         }
 
         function appendMessage(msg) {
             let list = document.getElementById('message-list');
-            if (!list) {
-                const container = document.querySelector('main .max-w-3xl.mx-auto') || document.querySelector('main article') || document.querySelector('main');
-                list = document.createElement('div');
-                list.id = 'message-list';
-                list.className = 'space-y-8 pb-40 min-h-[50vh]';
-                container.appendChild(list);
-                const welcome = document.querySelector('section.py-16');
-                if (welcome) welcome.classList.add('hidden');
-            }
-            
+            if (!list) return;
             const isMine = msg.authorId === "@User.FindFirst(ClaimTypes.NameIdentifier)?.Value";
             
             const msgHtml = `
-                <div class="flex ${isMine ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div class="flex items-start gap-4 max-w-[85%]">
-                        ${!isMine ? `<img src="${msg.authorAvatar}" class="size-9 rounded-2xl border border-white/10 mt-1 shadow-lg" />` : ''}
-                        <div class="space-y-1.5 ${isMine ? 'items-end' : 'items-start'}">
-                            <div class="flex items-center gap-3 px-2">
-                                <span class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic">${msg.authorName}</span>
-                                <span class="text-[9px] font-bold text-slate-300 dark:text-slate-600">${msg.createdAt}</span>
+                <div class="d-flex w-100 ${isMine ? 'justify-content-end' : 'justify-content-start'} animate-entrance">
+                    <div class="d-flex ${isMine ? 'flex-row-reverse' : ''} gap-3 align-items-end" style="max-width: 85%;">
+                        ${!isMine ? `<img src="${msg.authorAvatar}" class="avatar-sm rounded-lg shadow-sm border" style="border-color: var(--border-glass) !important;"/>` : ''}
+                        <div class="d-flex flex-column gap-1 ${isMine ? 'align-items-end' : 'align-items-start'}">
+                            <div class="d-flex align-items-center gap-2 px-1">
+                                <span class="fw-black text-muted text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">${msg.authorName}</span>
+                                <span class="fw-bold text-muted" style="font-size: 0.55rem;">${msg.createdAt}</span>
                             </div>
-                            <div class="px-6 py-4 rounded-3xl ${isMine ? 'bg-gradient-to-br from-primary to-indigo-600 text-white rounded-tr-none shadow-xl shadow-primary/20 italic font-medium' : 'glass bg-white dark:bg-white/5 border border-border-light dark:border-white/10 dark:text-slate-100 rounded-tl-none font-medium'}">
-                                ${msg.content.startsWith('http') && msg.content.includes('giphy.com') ? `<img src="${msg.content}" class="max-w-xs rounded-xl" />` : `<p class="text-sm leading-relaxed">${msg.content}</p>`}
+                            <div class="p-3 shadow-lg" style="border-radius: 1.5rem; ${isMine ? 'background: var(--gradient-aurora); color: var(--bg-universe); border-top-right-radius: 0.25rem;' : 'background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: white; border-top-left-radius: 0.25rem; backdrop-filter: blur(10px);'}">
+                                ${msg.content.startsWith('http') && msg.content.includes('giphy.com') ? `<img src="${msg.content}" class="img-fluid rounded-3" style="max-width: 250px;" />` : `<p class="mb-0 fw-medium" style="font-size: 0.9rem; line-height: 1.5;">${msg.content}</p>`}
                             </div>
                         </div>
                     </div>
                 </div>
             `;
             list.insertAdjacentHTML('beforeend', msgHtml);
-            list.scrollTop = list.scrollHeight;
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
@@ -664,13 +585,11 @@
                 await connection.invoke("SendMessage", currentTextChannelId, content);
                 input.value = '';
                 input.focus();
-            } catch (err) { console.error("Send error:", err); }
+            } catch (err) {}
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             startSignalR();
-            
-            // Re-bind send button
             const input = document.getElementById('message-input');
             const sendBtn = document.getElementById('send-btn');
             if (sendBtn) sendBtn.onclick = sendMessage;
@@ -681,25 +600,35 @@
         function toggleMic() {
             isMuted = !isMuted;
             if (currentVoiceChannelId) connection.invoke("ToggleMute", currentVoiceChannelId, isMuted);
-            
-            if (localStream) {
-                localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
-            }
+            if (localStream) localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
             
             const micIcon = document.getElementById('micIcon');
             const micButton = document.getElementById('micButton');
             micIcon.innerText = isMuted ? 'mic_off' : 'mic';
-            micButton.classList.toggle('text-red-500', isMuted);
-            micButton.classList.toggle('bg-red-500/10', isMuted);
+            
+            if(isMuted) {
+                micButton.classList.add('text-danger');
+            } else {
+                micButton.classList.remove('text-danger');
+            }
             
             const avatar = document.getElementById('voiceAvatar');
-            if (avatar) avatar.classList.toggle('voice-talking', !isMuted && currentVoiceChannelId);
+            if (avatar) {
+                if(!isMuted && currentVoiceChannelId) avatar.classList.add('voice-talking');
+                else avatar.classList.remove('voice-talking');
+            }
             
             const localAvatarList = document.getElementById('localVoiceAvatar');
-            if (localAvatarList) localAvatarList.classList.toggle('voice-talking', !isMuted);
+            if (localAvatarList) {
+                if(!isMuted) localAvatarList.classList.add('voice-talking');
+                else localAvatarList.classList.remove('voice-talking');
+            }
             
             const localMicIcon = document.getElementById('localMicOffIcon');
-            if (localMicIcon) localMicIcon.classList.toggle('hidden', !isMuted);
+            if (localMicIcon) {
+                if(isMuted) localMicIcon.classList.remove('d-none');
+                else localMicIcon.classList.add('d-none');
+            }
         }
 
         function openCreateChannelModal(type) {
@@ -708,13 +637,11 @@
             const input = document.getElementById('modalChannelTypeInput');
             label.innerText = (type === 'Text' ? 'Text' : type === 'Voice' ? 'Voice' : 'Video') + ' Channel';
             input.value = type === 'Text' ? '0' : type === 'Voice' ? '1' : '2';
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+            modal.classList.remove('d-none');
         }
 
         function closeCreateChannelModal() {
-            document.getElementById('createChannelModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
+            document.getElementById('createChannelModal').classList.add('d-none');
         }
 
         const emojiBtn = document.getElementById('emoji-btn');
@@ -730,15 +657,15 @@
                     const picmoModule = await import('https://unpkg.com/picmo@latest/dist/index.js');
                     window.createPicker = picmoModule.createPicker;
                 }
-                picker = window.createPicker({ rootElement: emojiContainer, theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' });
+                picker = window.createPicker({ rootElement: emojiContainer, theme: 'dark' });
                 picker.addEventListener('emoji:select', (selection) => { messageInput.value += selection.emoji; });
-            } catch (err) { console.error(err); }
+            } catch (err) {}
         }
 
         emojiBtn.onclick = (e) => {
             e.stopPropagation();
-            pickerPopup.classList.toggle('hidden');
-            if (!pickerPopup.classList.contains('hidden')) { initEmojiPicker(); switchPickerTab('emoji'); }
+            pickerPopup.classList.toggle('d-none');
+            if (!pickerPopup.classList.contains('d-none')) { initEmojiPicker(); switchPickerTab('emoji'); }
         };
 
         const GIPHY_API_KEY = 'dc6zaTOxFJmzC';
@@ -749,7 +676,7 @@
                 const resp = await fetch(url);
                 const data = await resp.json();
                 renderGifs(data.data);
-            } catch (err) { console.error(err); }
+            } catch (err) {}
         }
 
         function renderGifs(gifs) {
@@ -757,8 +684,9 @@
             gifs.forEach(gif => {
                 const img = document.createElement('img');
                 img.src = gif.images.fixed_height_small.url;
-                img.className = 'w-full h-24 object-cover rounded-xl cursor-pointer hover:border-2 hover:border-primary transition-all';
-                img.onclick = () => { if (currentTextChannelId) connection.invoke("SendMessage", currentTextChannelId, gif.images.original.url); pickerPopup.classList.add('hidden'); };
+                img.className = 'w-100 object-cover rounded-3 pointer hover-glow transition-all';
+                img.style.height = '100px';
+                img.onclick = () => { if (currentTextChannelId) connection.invoke("SendMessage", currentTextChannelId, gif.images.original.url); pickerPopup.classList.add('d-none'); };
                 gifResults.appendChild(img);
             });
         }
@@ -770,14 +698,27 @@
 
         window.switchPickerTab = (tab) => {
             const isEmoji = tab === 'emoji';
-            document.getElementById('emoji-picker-container').classList.toggle('hidden', !isEmoji);
-            document.getElementById('gif-picker-container').classList.toggle('hidden', isEmoji);
-            if (!isEmoji) searchGifs();
+            if(isEmoji) {
+                document.getElementById('emoji-picker-container').style.display = 'block';
+                document.getElementById('gif-picker-container').style.display = 'none';
+                document.getElementById('tab-emoji').style.borderBottomColor = 'var(--color-emerald)';
+                document.getElementById('tab-emoji').classList.replace('text-muted', 'text-aurora');
+                document.getElementById('tab-gif').style.borderBottomColor = 'transparent';
+                document.getElementById('tab-gif').classList.replace('text-aurora', 'text-muted');
+            } else {
+                document.getElementById('emoji-picker-container').style.display = 'none';
+                document.getElementById('gif-picker-container').style.display = 'flex';
+                document.getElementById('tab-gif').style.borderBottomColor = 'var(--color-emerald)';
+                document.getElementById('tab-gif').classList.replace('text-muted', 'text-aurora');
+                document.getElementById('tab-emoji').style.borderBottomColor = 'transparent';
+                document.getElementById('tab-emoji').classList.replace('text-aurora', 'text-muted');
+                searchGifs();
+            }
         };
 
         const dropZone = document.getElementById('drop-zone');
-        window.ondragenter = (e) => { e.preventDefault(); dropZone.classList.remove('hidden'); };
-        dropZone.ondragleave = (e) => { if (e.relatedTarget === null || !dropZone.contains(e.relatedTarget)) dropZone.classList.add('hidden'); };
-        dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.add('hidden'); alert('Files detected.'); };
+        window.ondragenter = (e) => { e.preventDefault(); dropZone.classList.remove('d-none'); dropZone.classList.add('d-flex'); };
+        dropZone.ondragleave = (e) => { if (e.relatedTarget === null || !dropZone.contains(e.relatedTarget)) { dropZone.classList.add('d-none'); dropZone.classList.remove('d-flex'); } };
+        dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.add('d-none'); dropZone.classList.remove('d-flex'); alert('Files detected.'); };
     </script>
 }

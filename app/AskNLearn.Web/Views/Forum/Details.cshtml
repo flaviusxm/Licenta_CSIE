@@ -14,28 +14,28 @@
         var currentComments = allComments.Where(c => c.ReplyToMessageId == parentId).OrderBy(c => c.CreatedAt).ToList();
         foreach (var comment in currentComments)
         {
-            <div class="flex flex-col gap-2 @(depth > 0 ? "border-l-2 border-slate-100 dark:border-white/5 ml-4 pl-4 mt-3" : "mt-4")">
-                <div class="flex gap-3">
-                    <div class="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
-                        <span class="material-symbols-outlined text-sm">person</span>
+            <div class="d-flex flex-column gap-2 @(depth > 0 ? "ms-4 ps-4 mt-3" : "mt-4")" style="@(depth > 0 ? "border-left: 2px solid var(--border-glass);" : "")">
+                <div class="d-flex gap-3">
+                    <div class="avatar-sm rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(255,255,255,0.05);">
+                        <span class="material-symbols-outlined fs-6 text-muted">person</span>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-0.5">
-                            <span class="text-xs font-bold text-slate-900 dark:text-white">@comment.AuthorName</span>
-                            <span class="text-[10px] text-slate-400">• @comment.CreatedAt.ToString("MMM dd, HH:mm")</span>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="fw-bold text-white" style="font-size: 0.85rem;">@comment.AuthorName</span>
+                            <span class="text-muted" style="font-size: 0.65rem;">• @comment.CreatedAt.ToString("MMM dd, HH:mm")</span>
                         </div>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">@comment.Content</p>
+                        <p class="text-muted mb-2" style="font-size: 0.9rem; line-height: 1.5;">@comment.Content</p>
 
                         @if (comment.Attachments.Any())
                         {
-                            <div class="mt-2 flex flex-wrap gap-2">
+                            <div class="d-flex flex-wrap gap-2 mb-2">
                                 @foreach (var attachment in comment.Attachments)
                                 {
-                                    <a href="@attachment.Url" target="_blank" class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-white/5 border border-border-light dark:border-border-dark rounded-lg hover:border-primary transition-all group">
-                                        <span class="material-symbols-outlined text-[16px] text-slate-400 group-hover:text-primary">
+                                    <a href="@attachment.Url" target="_blank" class="text-decoration-none d-flex align-items-center gap-2 px-3 py-1 rounded-lg border hover-glow transition-all" style="background: rgba(255,255,255,0.02); border-color: var(--border-glass);">
+                                        <span class="material-symbols-outlined fs-6 text-muted">
                                             @(attachment.FileType?.Contains("image") == true ? "image" : "description")
                                         </span>
-                                        <span class="text-[10px] font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary truncate max-w-[150px]">
+                                        <span class="text-muted fw-medium text-truncate" style="font-size: 0.7rem; max-width: 150px;">
                                             @System.IO.Path.GetFileName(attachment.Url)
                                         </span>
                                     </a>
@@ -44,28 +44,28 @@
                         }
                         
                         <!-- Reply Button -->
-                        <button onclick="toggleReplyForm('@comment.Id')" class="text-[10px] font-bold text-primary hover:underline mt-1">Reply</button>
+                        <button onclick="toggleReplyForm('@comment.Id')" class="btn btn-link p-0 text-aurora fw-bold text-decoration-none" style="font-size: 0.7rem;">Reply</button>
                         
                         <!-- Reply Form (Hidden) -->
-                        <div id="reply-form-@comment.Id" class="hidden mt-3">
-                            <form asp-action="AddComment" method="post" enctype="multipart/form-data" class="flex flex-col gap-2">
+                        <div id="reply-form-@comment.Id" class="d-none mt-3">
+                            <form asp-action="AddComment" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-2">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="PostId" value="@ViewBag.CurrentPostId" />
                                 <input type="hidden" name="CommunityId" value="@Model.Id" />
                                 <input type="hidden" name="ReplyToMessageId" value="@comment.Id" />
-                                <div class="flex gap-2">
-                                    <input type="text" name="Content" class="flex-1 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl px-4 py-2 text-xs outline-none focus:ring-1 focus:ring-primary transition-all text-slate-900 dark:text-white" placeholder="Write a reply..." required />
-                                    <button type="submit" class="bg-primary text-white size-8 rounded-xl flex items-center justify-center hover:bg-primary/90 transition-all shrink-0">
-                                        <span class="material-symbols-outlined text-[18px]">send</span>
+                                <div class="d-flex gap-2">
+                                    <input type="text" name="Content" class="form-control form-control-glass flex-grow-1 py-1" style="font-size: 0.8rem;" placeholder="Write a reply..." required />
+                                    <button type="submit" class="btn btn-premium d-flex align-items-center justify-content-center flex-shrink-0 p-0" style="width: 36px; height: 36px;">
+                                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">send</span>
                                     </button>
                                 </div>
-                                <div class="flex items-center gap-2 overflow-hidden">
-                                     <label class="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-light dark:border-border-dark text-[10px] font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
-                                        <span class="material-symbols-outlined text-[14px]">attach_file</span>
+                                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                    <label class="cursor-pointer d-flex align-items-center gap-1 px-3 py-1 rounded-lg border text-muted fw-bold hover-glow transition-all mb-0" style="font-size: 0.7rem; border-color: var(--border-glass);">
+                                        <span class="material-symbols-outlined" style="font-size: 0.9rem;">attach_file</span>
                                         <span>Attach File</span>
-                                         <input type="file" name="Attachment" class="hidden" onchange="updateFileName(this)" accept=".pdf,.docx,.jpeg,.jpg,.png" />
+                                        <input type="file" name="Attachment" class="d-none" onchange="updateFileName(this)" accept=".pdf,.docx,.jpeg,.jpg,.png" />
                                     </label>
-                                    <span class="file-name text-[10px] text-slate-400 truncate"></span>
+                                    <span class="file-name text-muted text-truncate" style="font-size: 0.7rem;"></span>
                                 </div>
                             </form>
                         </div>
@@ -77,118 +77,123 @@
     }
 }
 
-<div class="p-8 flex flex-col gap-8 pb-20">
-     <div class="rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-
+<div class="container-fluid py-5" style="max-width: 1000px;">
+    <!-- Community Header -->
+    <div class="glass-card p-4 p-md-5 mb-5 d-flex flex-column flex-md-row align-items-center gap-4 animate-entrance position-relative overflow-hidden">
+        <div class="position-absolute rounded-circle" style="top: -20px; left: -20px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(0,217,245,0.15) 0%, transparent 70%); filter: blur(20px);"></div>
+        
         <!-- Icon / Image -->
         @if (!string.IsNullOrEmpty(Model.ImageUrl))
         {
-            <div class="size-14 rounded-2xl border border-border-light dark:border-border-dark overflow-hidden shrink-0">
-                <img src="@Model.ImageUrl" class="w-full h-full object-cover" alt="@Model.Name" />
+            <div class="rounded-xl flex-shrink-0 overflow-hidden position-relative z-1" style="width: 80px; height: 80px; border: 1px solid var(--border-glass);">
+                <img src="@Model.ImageUrl" class="w-100 h-100 object-cover" alt="@Model.Name" />
             </div>
         }
         else
         {
-            <div class="size-14 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-2xl">groups</span>
+            <div class="rounded-xl flex-shrink-0 d-flex align-items-center justify-content-center position-relative z-1" style="width: 80px; height: 80px; background: rgba(0,217,245,0.1); border: 1px solid rgba(0,217,245,0.2);">
+                <span class="material-symbols-outlined text-aurora" style="font-size: 2.5rem;">groups</span>
             </div>
         }
 
         <!-- Main Info -->
-        <div class="flex-1 min-w-0">
-            <div class="flex flex-wrap items-center gap-3">
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white truncate">
-                    @Model.Name
-                </h1>
-
-
-            </div>
-
-            <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1 mt-1">
+        <div class="flex-grow-1 min-w-0 text-center text-md-start position-relative z-1">
+            <h1 class="display-6 fw-bold text-white text-truncate mb-2 tracking-tighter">
+                @Model.Name
+            </h1>
+            <p class="text-muted fs-6 mb-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                 @Model.Description
             </p>
-
-            <div class="flex items-center gap-4 mt-2 text-xs text-slate-400">
-                <span>@Model.PostCount posts</span>
+            <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 mt-1 text-muted" style="font-size: 0.8rem;">
+                <span class="fw-bold">@Model.PostCount posts</span>
                 <span>•</span>
-                <span>@Model.CreatedAt.ToString("MMM yyyy")</span>
+                <span>Created @Model.CreatedAt.ToString("MMM yyyy")</span>
             </div>
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center gap-2">
-
-            <a asp-action="CreatePost"
-               asp-route-communityId="@Model.Id"
-               class="flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark text-sm font-semibold hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
-                <span class="material-symbols-outlined text-[18px]">add</span>
+        <div class="d-flex align-items-center gap-2 position-relative z-1">
+            <a asp-action="CreatePost" asp-route-communityId="@Model.Id" class="btn btn-premium d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined fs-5">add</span>
                 Post
             </a>
-
-            <a asp-controller="Explore"
-               asp-action="Index"
-               class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 transition-colors">
-                <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+            <a asp-controller="Explore" asp-action="Index" class="btn btn-glass p-2 d-flex align-items-center justify-content-center" title="Back">
+                <span class="material-symbols-outlined fs-5">arrow_back</span>
             </a>
-
-            <a asp-action="Edit"
-               asp-route-id="@Model.Id"
-               class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined text-[20px]">settings</span>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-glass p-2 d-flex align-items-center justify-content-center" title="Settings">
+                <span class="material-symbols-outlined fs-5">settings</span>
             </a>
-
         </div>
     </div>
+
     <!-- Posts Section -->
-    <div class="flex flex-col gap-6">
-        <div class="flex items-center justify-between border-b border-border-light dark:border-border-dark pb-4">
-            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Recent Posts</h2>
-         
+    <div class="d-flex flex-column gap-4 animate-entrance delay-100">
+        <div class="d-flex justify-content-between align-items-center pb-3 mb-2 border-bottom" style="border-color: var(--border-glass) !important;">
+            <h2 class="h4 fw-bold text-white mb-0 tracking-tighter">Recent Discussions</h2>
         </div>
 
         @if (!posts.Any())
         {
-            <div class="text-center py-20 bg-surface-light dark:bg-surface-dark rounded-3xl border border-dashed border-border-light dark:border-border-dark">
-                <span class="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-700 mb-4">post_add</span>
-                <p class="text-slate-500 dark:text-slate-400 font-medium text-lg">No posts yet in this community.</p>
-                <p class="text-slate-400 dark:text-slate-500 text-sm mt-1">Be the first to share something!</p>
-                <a asp-action="CreatePost" asp-route-communityId="@Model.Id" class="mt-6 inline-flex items-center gap-2 px-6 py-2.5 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-surface-dark transition-all">
+            <div class="glass-card text-center py-5">
+                <span class="material-symbols-outlined display-1 text-muted mb-4 opacity-50">post_add</span>
+                <p class="text-white fw-bold fs-5 mb-1">No posts yet in this community.</p>
+                <p class="text-muted mb-4">Be the first to share something!</p>
+                <a asp-action="CreatePost" asp-route-communityId="@Model.Id" class="btn btn-premium d-inline-flex align-items-center gap-2 px-4 py-2">
                     Start a Discussion
                 </a>
             </div>
         }
         else
         {
-            <div class="grid grid-cols-1 gap-6">
+            <div class="d-flex flex-column gap-4">
                 @foreach (var post in posts)
                 {
-                    <div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-6 border border-border-light dark:border-border-dark hover:border-primary/50 transition-all shadow-sm group">
-                        <div class="flex gap-4 items-start translate-y-0.5">
-                            <div class="size-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
-                                <span class="material-symbols-outlined text-[20px]">person</span>
+                    <div class="glass-card p-4 p-md-5 group transition-all position-relative" id="post-@post.Id">
+                        <div class="d-flex gap-4 align-items-start">
+                            
+                            <!-- Vote Column -->
+                            <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0 bg-dark rounded-pill py-2" style="background: rgba(0,0,0,0.2) !important; border: 1px solid var(--border-glass);">
+                                <button onclick="votePost('@post.Id', '@Model.Id', 1)" 
+                                        class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-up-@post.Id transition-colors @(post.UserVote == 1 ? "text-mint font-weight-bold" : "text-muted hover-glow")">
+                                    <span class="material-symbols-outlined fs-5">keyboard_arrow_up</span>
+                                </button>
+                                
+                                <span class="fw-bold vote-count-@post.Id @(post.UserVote == 1 ? "text-mint" : post.UserVote == -1 ? "text-danger" : "text-white")" style="font-size: 0.9rem;">
+                                    @post.VoteCount
+                                </span>
+                                
+                                <button onclick="votePost('@post.Id', '@Model.Id', -1)" 
+                                        class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-down-@post.Id transition-colors @(post.UserVote == -1 ? "text-danger font-weight-bold" : "text-muted hover-text-danger")">
+                                    <span class="material-symbols-outlined fs-5">keyboard_arrow_down</span>
+                                </button>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-sm font-bold text-slate-900 dark:text-white">@post.AuthorName</span>
-                                    <span class="text-xs text-slate-400">• @post.CreatedAt.ToString("MMM dd")</span>
+                            
+                            <!-- Post Content -->
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="avatar-xs rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+                                        <span class="material-symbols-outlined text-muted" style="font-size: 14px;">person</span>
+                                    </div>
+                                    <span class="fw-bold text-white" style="font-size: 0.9rem;">@post.AuthorName</span>
+                                    <span class="text-muted" style="font-size: 0.75rem;">• @post.CreatedAt.ToString("MMM dd")</span>
                                     @if (post.IsSolved)
                                     {
-                                        <span class="px-2 py-0.5 rounded bg-green-500/10 text-green-500 text-[10px] font-bold uppercase border border-green-500/20">Solved</span>
+                                        <span class="badge" style="background: rgba(0,245,160,0.1); color: var(--color-emerald); border: 1px solid rgba(0,245,160,0.2); font-size: 0.6rem; letter-spacing: 1px;">SOLVED</span>
                                     }
                                 </div>
-                                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 transition-colors">@post.Title</h3>
-                                <p class="text-slate-600 dark:text-slate-400 line-clamp-2 text-sm leading-relaxed mb-4">@post.Content</p>
+                                <h3 class="h4 fw-bold text-white mb-2 text-aurora-hover transition-all">@post.Title</h3>
+                                <p class="text-muted mb-4 fs-6" style="line-height: 1.6;">@post.Content</p>
                                 
                                 @if (post.Attachments.Any())
                                 {
-                                    <div class="mb-4 flex flex-wrap gap-2">
+                                    <div class="d-flex flex-wrap gap-2 mb-4">
                                         @foreach (var attachment in post.Attachments)
                                         {
-                                            <a href="@attachment.Url" target="_blank" class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-white/5 border border-border-light dark:border-border-dark rounded-xl hover:border-primary transition-all group">
-                                                <span class="material-symbols-outlined text-[18px] text-slate-400 group-hover:text-primary">
+                                            <a href="@attachment.Url" target="_blank" class="text-decoration-none d-flex align-items-center gap-2 px-3 py-2 rounded-lg border hover-glow transition-all" style="background: rgba(255,255,255,0.02); border-color: var(--border-glass);">
+                                                <span class="material-symbols-outlined fs-5 text-muted">
                                                     @(attachment.FileType?.Contains("image") == true ? "image" : "description")
                                                 </span>
-                                                <span class="text-xs font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary truncate max-w-[200px]">
+                                                <span class="text-muted fw-bold text-truncate" style="font-size: 0.75rem; max-width: 200px;">
                                                     @System.IO.Path.GetFileName(attachment.Url)
                                                 </span>
                                             </a>
@@ -196,70 +201,55 @@
                                     </div>
                                 }
                                 
-                                <div class="flex flex-col gap-4">
-                                    <div class="flex items-center justify-between border-b border-border-light dark:border-border-dark pb-3">
-                                        <div class="flex items-center gap-4 text-slate-400 text-xs font-bold">
-                                            <div onclick="toggleComments('@post.Id')"
-                                                 class="flex items-center gap-1.5 cursor-pointer transition-colors">
-
-                                                <span class="material-symbols-outlined text-[18px] hover:text-primary transition-colors">
-                                                    chat_bubble
-                                                </span>
-
-                                                <span class="hover:text-primary transition-colors">
-                                                    @post.CommentCount Comments
-                                                </span>
-
-                                                <div class="size-5 rounded-md bg-primary/10 text-primary
-                        flex items-center justify-center
-                        transition-all ml-1
-                        hover:bg-primary hover:text-white">
-                                                    <span class="material-symbols-outlined text-[14px]">
-                                                        add
-                                                    </span>
+                                <div class="d-flex flex-column gap-3 mt-2">
+                                    <div class="d-flex align-items-center justify-content-between pb-3 border-bottom" style="border-color: var(--border-glass) !important;">
+                                        <div class="d-flex align-items-center gap-4 text-muted fw-bold" style="font-size: 0.8rem;">
+                                            <div onclick="toggleComments('@post.Id')" class="d-flex align-items-center gap-2" style="cursor: pointer;">
+                                                <span class="material-symbols-outlined fs-5 hover-glow transition-all">chat_bubble</span>
+                                                <span class="hover-glow transition-all">@post.CommentCount Comments</span>
+                                                <div class="rounded d-flex flex-center hover-glow" style="width: 20px; height: 20px; background: rgba(0,245,160,0.1); color: var(--color-emerald);">
+                                                    <span class="material-symbols-outlined" style="font-size: 14px;">add</span>
                                                 </div>
                                             </div>
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="material-symbols-outlined fs-5">visibility</span>
                                                 <span>@post.ViewCount Views</span>
                                             </div>
                                         </div>
                                         
-                                        <div class="flex gap-2">
-                                            <form asp-action="DeletePost" asp-route-id="@post.Id" asp-route-communityId="@Model.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this post?')">
-                                                <button type="submit" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-red-500 transition-colors">
-                                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                        <div class="d-flex gap-2">
+                                            <form asp-action="DeletePost" asp-route-id="@post.Id" asp-route-communityId="@Model.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this post?')" class="m-0 p-0">
+                                                <button type="submit" class="btn btn-link p-1 text-muted hover-text-danger text-decoration-none d-flex align-items-center justify-content-center">
+                                                    <span class="material-symbols-outlined fs-5">delete</span>
                                                 </button>
                                             </form>
                                         </div>
                                     </div>
 
                                     <!-- Inline Comments Tree -->
-                                    <div id="comments-@post.Id" class="hidden animate-slide-down">
-                                        <div class="bg-slate-50/50 dark:bg-white/5 rounded-2xl p-4 border border-border-light dark:border-white/5">
+                                    <div id="comments-@post.Id" class="d-none animate-slide-down mt-2">
+                                        <div class="p-4 rounded-xl" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass);">
                                             <!-- Comment Input -->
-                                            <form asp-action="AddComment" method="post" enctype="multipart/form-data" class="flex flex-col gap-3 mb-6">
+                                            <form asp-action="AddComment" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-3 mb-4">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="PostId" value="@post.Id" />
                                                 <input type="hidden" name="CommunityId" value="@Model.Id" />
-                                                <div class="flex gap-3">
-                                                    <div class="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                                        <span class="material-symbols-outlined text-sm">person</span>
+                                                <div class="d-flex gap-3 align-items-start">
+                                                    <div class="avatar-sm rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(0,245,160,0.1);">
+                                                        <span class="material-symbols-outlined fs-6 text-aurora">person</span>
                                                     </div>
-                                                    <div class="flex-1 relative">
-                                                        <input type="text" name="Content" class="w-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-primary transition-all text-slate-900 dark:text-white placeholder:text-slate-400" placeholder="Write a comment..." required />
+                                                    <div class="flex-grow-1 position-relative">
+                                                        <input type="text" name="Content" class="form-control form-control-glass w-100" placeholder="Write a comment..." required />
                                                     </div>
-                                                    <button type="submit" class="bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
-                                                        Post
-                                                    </button>
+                                                    <button type="submit" class="btn btn-premium px-4" style="height: 48px;">Post</button>
                                                 </div>
-                                                <div class="flex items-center gap-2 pl-12 overflow-hidden">
-                                                    <label class="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-light dark:border-border-dark text-[10px] font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
-                                                        <span class="material-symbols-outlined text-[14px]">attach_file</span>
+                                                <div class="d-flex align-items-center gap-2 overflow-hidden" style="padding-left: 2.75rem;">
+                                                    <label class="cursor-pointer d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-lg border text-muted fw-bold hover-glow transition-all mb-0" style="font-size: 0.75rem; border-color: var(--border-glass);">
+                                                        <span class="material-symbols-outlined" style="font-size: 1rem;">attach_file</span>
                                                         <span>Attach File</span>
-                                                        <input type="file" name="Attachment" class="hidden" onchange="updateFileName(this)" accept=".pdf,.docx,.jpeg,.jpg,.png" />
+                                                        <input type="file" name="Attachment" class="d-none" onchange="updateFileName(this)" accept=".pdf,.docx,.jpeg,.jpg,.png" />
                                                     </label>
-                                                    <span class="file-name text-[10px] text-slate-400 truncate"></span>
+                                                    <span class="file-name text-muted text-truncate" style="font-size: 0.75rem;"></span>
                                                 </div>
                                             </form>
 
@@ -284,15 +274,15 @@
     function toggleComments(postId) {
         const el = document.getElementById(`comments-${postId}`);
         if (el) {
-            el.classList.toggle('hidden');
+            el.classList.toggle('d-none');
         }
     }
 
     function toggleReplyForm(commentId) {
         const el = document.getElementById(`reply-form-${commentId}`);
         if (el) {
-            el.classList.toggle('hidden');
-            if (!el.classList.contains('hidden')) {
+            el.classList.toggle('d-none');
+            if (!el.classList.contains('d-none')) {
                 const input = el.querySelector('input[type="text"]');
                 if (input) input.focus();
             }
@@ -306,6 +296,54 @@
             container.textContent = fileName;
         }
     }
+
+    function votePost(postId, communityId, value) {
+        fetch(`/Forum/VotePost?postId=${postId}&communityId=${communityId}&value=${value}`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update Vote Count
+                const countEls = document.querySelectorAll(`.vote-count-${postId}`);
+                countEls.forEach(el => {
+                    el.textContent = data.voteCount;
+                    // Reset colors
+                    el.classList.remove('text-mint', 'text-danger', 'text-white');
+                    if (data.userVote === 1) el.classList.add('text-mint');
+                    else if (data.userVote === -1) el.classList.add('text-danger');
+                    else el.classList.add('text-white');
+                });
+                
+                // Update Upvote Button State
+                const upBtns = document.querySelectorAll(`.vote-btn-up-${postId}`);
+                upBtns.forEach(el => {
+                    el.classList.remove('text-mint', 'text-muted', 'font-weight-bold');
+                    if (data.userVote === 1) {
+                        el.classList.add('text-mint', 'font-weight-bold');
+                    } else {
+                        el.classList.add('text-muted');
+                    }
+                });
+                
+                // Update Downvote Button State
+                const downBtns = document.querySelectorAll(`.vote-btn-down-${postId}`);
+                downBtns.forEach(el => {
+                    el.classList.remove('text-danger', 'text-muted', 'font-weight-bold');
+                    if (data.userVote === -1) {
+                        el.classList.add('text-danger', 'font-weight-bold');
+                    } else {
+                        el.classList.add('text-muted');
+                    }
+                });
+            }
+        });
+    }
 </script>
 
 <style>
@@ -315,5 +353,13 @@
     }
     .animate-slide-down {
         animation: slide-down 0.3s ease-out;
+    }
+    
+    .hover-text-danger:hover {
+        color: #ff6b6b !important;
+    }
+
+    .text-mint {
+        color: var(--color-mint-bright) !important;
     }
 </style>

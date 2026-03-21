@@ -6,53 +6,47 @@
     Layout = "_AuthLayout";
 }
 
-<form asp-controller="Auth" asp-action="SignIn" method="post" class="space-y-6">
+<form asp-controller="Auth" asp-action="SignIn" method="post" class="d-flex flex-column gap-4">
     @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="text-red-400 text-xs text-center"></div>
+    <div asp-validation-summary="ModelOnly" class="text-danger small text-center fw-bold"></div>
 
     <!-- Email -->
-    <div class="space-y-1">
-        <label asp-for="Email" class="text-xs text-slate-400 uppercase">Email</label>
-        <div class="relative">
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">mail</span>
-            <input asp-for="Email"
-                   class="w-full py-3 pl-12 pr-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-600
-                       focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition text-sm" />
+    <div class="d-flex flex-column gap-1">
+        <label asp-for="Email" class="text-muted small text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Email</label>
+        <div class="position-relative">
+            <span class="material-symbols-outlined position-absolute top-50 translate-middle-y text-muted" style="left: 1rem;">mail</span>
+            <input asp-for="Email" class="form-control form-control-glass w-100" style="padding-left: 3rem;" />
         </div>
-        <span asp-validation-for="Email" class="text-red-400 text-xs"></span>
+        <span asp-validation-for="Email" class="text-danger small fw-bold mt-1" style="font-size: 0.75rem;"></span>
     </div>
 
     <!-- Password -->
-    <div class="space-y-1">
-        <label asp-for="Password" class="text-xs text-slate-400 uppercase">Password</label>
-        <div class="relative">
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">lock</span>
-            <input asp-for="Password" id="PasswordSignIn" type="password" placeholder="••••••••"
-                   class="w-full py-3 pl-12 pr-10 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-600
-                       focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition text-sm" />
-            <button type="button" id="togglePasswordSignIn"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
-                <span class="material-symbols-outlined">visibility</span>
+    <div class="d-flex flex-column gap-1">
+        <label asp-for="Password" class="text-muted small text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Password</label>
+        <div class="position-relative">
+            <span class="material-symbols-outlined position-absolute top-50 translate-middle-y text-muted" style="left: 1rem;">lock</span>
+            <input asp-for="Password" id="PasswordSignIn" type="password" placeholder="••••••••" class="form-control form-control-glass w-100" style="padding-left: 3rem; padding-right: 3rem;" />
+            <button type="button" id="togglePasswordSignIn" class="btn btn-link position-absolute top-50 translate-middle-y text-muted p-0 text-decoration-none" style="right: 1rem;">
+                <span class="material-symbols-outlined fs-5">visibility</span>
             </button>
         </div>
-        <span asp-validation-for="Password" class="text-red-400 text-xs"></span>
+        <span asp-validation-for="Password" class="text-danger small fw-bold mt-1" style="font-size: 0.75rem;"></span>
     </div>
 
     <!-- Remember Me -->
-    <label class="flex items-center gap-2 text-xs text-slate-400">
-        <input asp-for="RememberMe" type="checkbox" />
+    <label class="d-flex align-items-center gap-2 text-muted small fw-bold cursor-pointer mt-2" style="font-size: 0.8rem;">
+        <input asp-for="RememberMe" type="checkbox" class="form-check-input mt-0 bg-transparent border-secondary" />
         Remember me
     </label>
 
     <!-- Submit Button -->
-    <button type="submit"
-            class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary text-black font-semibold uppercase tracking-wider hover:bg-white transition active:scale-95">
-        Sign In
-        <span class="material-symbols-outlined text-lg">arrow_forward</span>
+    <button type="submit" class="btn btn-premium w-100 d-flex align-items-center justify-content-center gap-2 mt-4">
+        Log In
+        <span class="material-symbols-outlined fs-5">arrow_forward</span>
     </button>
 
-    <p class="text-xs text-center text-slate-500">
+    <p class="small text-center text-muted fw-bold mt-3 mb-0" style="font-size: 0.8rem;">
         No account?
-        <a asp-controller="Auth" asp-action="SignUp" class="text-primary hover:text-white ml-1">Register</a>
+        <a asp-controller="Auth" asp-action="SignUp" class="text-aurora text-decoration-none ms-1">Register</a>
     </p>
 </form>

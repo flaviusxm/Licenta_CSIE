@@ -25,6 +25,15 @@ builder.Host.UseSerilog();
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddSignalR();
+
+builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("DefaultConnection");
+    options.UseNpgsql(connectionString, b => b.MigrationsAssembly("AskNLearn.Infrastructure"));
+    options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+});
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -49,7 +58,27 @@ if (args.Contains("seeddb"))
     await dbContext.Database.MigrateAsync();
     
     Console.WriteLine("Seeding database...");
-    await DatabaseInitializer.SeedAsync(dbContext, userManager);
+    await DatabaseSeeder.SeedAsync(dbContext, userManager);
+    
+    Console.WriteLine("Database initialization complete!");
+    return;
+}
+
+if (args.Contains("drop-seed"))
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    
+    Console.WriteLine("Dropping database...");
+    await dbContext.Database.EnsureDeletedAsync();
+    
+    Console.WriteLine("Applying migrations...");
+    await dbContext.Database.MigrateAsync();
+    
+    Console.WriteLine("Seeding database...");
+    await DatabaseSeeder.SeedAsync(dbContext, userManager);
     
     Console.WriteLine("Database initialization complete!");
     return;
@@ -79,6 +108,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<AskNLearn.Web.Hubs.CommunicationHub>("/communicationHub");
 
 app.MapStaticAssets();
 

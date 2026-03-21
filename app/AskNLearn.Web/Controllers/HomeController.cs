@@ -8,6 +8,10 @@ namespace app_licenta.Controllers
     {
         public IActionResult Index()
         {
+            if (User.Identity?.IsAuthenticated == true && User.HasClaim(System.Security.Claims.ClaimTypes.Role, "Admin"))
+            {
+                return RedirectToAction("Index", "Admin");
+            }
             return View();
         }
 

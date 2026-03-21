@@ -31,5 +31,6 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
         public string Role { get; set; } = "Member";
         public string? BannerUrl { get; set; }
         public string? SocialLinks { get; set; }
+        public bool HasPendingVerification { get; set; }
     }
 }

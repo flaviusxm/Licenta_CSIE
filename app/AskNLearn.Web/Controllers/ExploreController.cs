@@ -1,6 +1,7 @@
 using AskNLearn.Application.Features.Communities.Queries.GetCommunities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AskNLearn.Web.Controllers
 {
@@ -15,7 +16,12 @@ namespace AskNLearn.Web.Controllers
 
         public async Task<IActionResult> Index(string? searchTerm)
         {
-            var communities = await _mediator.Send(new GetCommunitiesQuery { SearchTerm = searchTerm });
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var communities = await _mediator.Send(new GetCommunitiesQuery 
+            { 
+                SearchTerm = searchTerm,
+                CurrentUserId = userId
+            });
             return View(communities);
         }
     }

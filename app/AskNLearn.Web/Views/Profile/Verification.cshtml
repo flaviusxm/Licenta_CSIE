@@ -6,127 +6,186 @@
     ViewData["IsVerificationPage"] = true;
 }
 
-<div class="max-w-4xl mx-auto p-6 md:p-10 flex flex-col gap-12 animate-fade-in pb-20">
+<div class="container py-5" style="max-width: 1000px;">
     
     <!-- Profile Header Section -->
-    <div class="flex flex-col gap-8">
+    <div class="d-flex flex-column gap-5 mb-5">
         <partial name="_ProfileHeader" model="Model" />
     </div>
 
     <!-- Verification Path Section -->
-    <div class="px-4 md:px-8 flex flex-col gap-12">
-        <div class="flex flex-col gap-2">
-            <h2 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Verification Path</h2>
-            <p class="text-slate-500 dark:text-slate-400 font-medium italic">Complete the milestones below to unlock the "Verified Student" status and exclusive community features.</p>
+    <div class="px-3 px-md-5 d-flex flex-column gap-5 mt-4">
+        <div class="d-flex flex-column gap-2 mb-3">
+            <h2 class="display-6 fw-bold text-white tracking-tight text-uppercase m-0">Verification Path</h2>
+            <p class="text-muted fw-bold">Complete the milestones below to unlock the "Verified Student" status and exclusive community features.</p>
         </div>
 
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger d-flex align-items-center gap-2 p-3 p-md-4 shadow-sm" style="border-radius: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444;" role="alert">
+                <span class="material-symbols-outlined fs-5">error</span>
+                <span class="fw-bold tracking-widest text-uppercase" style="font-size: 0.75rem;">@TempData["Error"]</span>
+            </div>
+        }
+        @if (TempData["Success"] != null)
+        {
+             <div class="alert alert-success d-flex align-items-center gap-2 p-3 p-md-4 shadow-sm" style="border-radius: 1.5rem; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); color: var(--color-mint-bright);" role="alert">
+                <span class="material-symbols-outlined fs-5">check_circle</span>
+                <span class="fw-bold tracking-widest text-uppercase" style="font-size: 0.75rem;">@TempData["Success"]</span>
+            </div>
+        }
+
         <!-- The Journey Stepper -->
-        <div class="relative flex flex-col gap-16">
+        <div class="position-relative d-flex flex-column gap-5">
             <!-- Central Line -->
-            <div class="absolute left-6 md:left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-primary via-slate-200 to-slate-100 dark:from-primary dark:via-slate-800 dark:to-slate-900 rounded-full"></div>
+            <div class="position-absolute h-100" style="left: 2rem; top: 0; width: 4px; background: linear-gradient(to bottom, var(--color-mint-bright), rgba(255,255,255,0.05)); transform: translateX(-50%); border-radius: 2px;"></div>
 
             <!-- Milestone 1: Initiation -->
-            <div class="relative flex items-start gap-8 group">
-                <div class="z-10 size-12 md:size-16 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
-                    <span class="material-symbols-outlined text-2xl md:text-3xl">rocket_launch</span>
+            <div class="position-relative d-flex align-items-start gap-4 gap-md-5 group">
+                <div class="position-relative z-1 d-flex align-items-center justify-content-center bg-primary text-dark shadow-lg transition-transform hover-scale flex-shrink-0" style="width: 4rem; height: 4rem; border-radius: 1rem; box-shadow: 0 0 20px rgba(52, 211, 153, 0.3) !important;">
+                    <span class="material-symbols-outlined fs-1">rocket_launch</span>
                 </div>
-                <div class="flex-1 pt-2">
-                    <div class="flex items-center gap-3 mb-2">
-                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Step 1: Initiation</h3>
-                        <span class="px-2 py-0.5 rounded-md bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-widest border border-green-500/20">Completed</span>
+                <div class="flex-grow-1 pt-2">
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+                        <h3 class="fs-4 fw-bold text-white text-uppercase tracking-tight m-0">Step 1: Initiation</h3>
+                        <span class="badge rounded-pill fw-bold text-uppercase tracking-widest px-3 py-2 shadow-sm" style="background: rgba(52, 211, 153, 0.1); color: var(--color-mint-bright); border: 1px solid rgba(52, 211, 153, 0.2); font-size: 0.65rem;">Completed</span>
                     </div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl">
-                        Your journey began on @Model.CreatedAt.ToString("MMMM dd, yyyy"). You took the first step by joining the AskNLearn community.
+                    <p class="text-muted fw-bold lh-base small m-0" style="max-width: 600px;">
+                        Your journey began on <span class="text-white">@Model.CreatedAt.ToString("MMMM dd, yyyy")</span>. You took the first step by joining the AskNLearn community.
                     </p>
                 </div>
             </div>
 
             <!-- Milestone 2: Profile Maturity -->
-            <div class="relative flex items-start gap-8 group">
-                <div class="z-10 size-12 md:size-16 rounded-2xl @(Model.ProfileCompletionPercentage >= 100 ? "bg-primary" : "bg-slate-100 dark:bg-surface-dark") @(Model.ProfileCompletionPercentage >= 100 ? "text-white" : "text-slate-400") flex items-center justify-center border-2 border-border-light dark:border-border-dark transition-transform group-hover:scale-110">
-                    <span class="material-symbols-outlined text-2xl md:text-3xl">person_edit</span>
+            <div class="position-relative d-flex align-items-start gap-4 gap-md-5 group">
+                <div class="position-relative z-1 d-flex align-items-center justify-content-center border border-2 transition-transform hover-scale flex-shrink-0 shadow-sm" style="width: 4rem; height: 4rem; border-radius: 1rem; @(Model.ProfileCompletionPercentage >= 100 ? "background: var(--color-mint-bright); color: var(--bg-universe); border-color: var(--color-mint-bright); box-shadow: 0 0 20px rgba(52, 211, 153, 0.3) !important;" : "background: rgba(0,0,0,0.5); color: #94a3b8; border-color: rgba(255,255,255,0.1);")">
+                    <span class="material-symbols-outlined fs-1">person_edit</span>
                 </div>
-                <div class="flex-1 pt-2">
-                    <div class="flex items-center gap-3 mb-2">
-                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Step 2: Profile Maturity</h3>
+                <div class="flex-grow-1 pt-2">
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+                        <h3 class="fs-4 fw-bold text-white text-uppercase tracking-tight m-0">Step 2: Profile Maturity</h3>
                         @if (Model.ProfileCompletionPercentage >= 100)
                         {
-                            <span class="px-2 py-0.5 rounded-md bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-widest border border-green-500/20">Completed</span>
+                            <span class="badge rounded-pill fw-bold text-uppercase tracking-widest px-3 py-2 shadow-sm" style="background: rgba(52, 211, 153, 0.1); color: var(--color-mint-bright); border: 1px solid rgba(52, 211, 153, 0.2); font-size: 0.65rem;">Completed</span>
                         }
                         else
                         {
-                            <span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">In Progress</span>
+                            <span class="badge rounded-pill fw-bold text-uppercase tracking-widest px-3 py-2 shadow-sm" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); font-size: 0.65rem;">In Progress</span>
                         }
                     </div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mb-4">
+                    <p class="text-muted fw-bold lh-base small mb-3" style="max-width: 600px;">
                         A complete profile helps us verify your identity. Add your bio, occupation, institution, and interests.
                     </p>
-                    <div class="max-w-xs p-1 bg-slate-100 dark:bg-slate-800 rounded-full border border-border-light dark:border-border-dark overflow-hidden">
-                        <div class="h-2 bg-primary rounded-full transition-all duration-1000" style="width: @Model.ProfileCompletionPercentage%"></div>
+                    <div class="rounded-pill p-1 overflow-hidden w-100" style="max-width: 300px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+                        <div class="rounded-pill transition-all shadow-sm bg-primary" style="height: 0.5rem; width: @Model.ProfileCompletionPercentage%; transition-duration: 0.5s;"></div>
                     </div>
-                    <p class="text-[10px] font-black text-primary uppercase tracking-widest mt-2">@Model.ProfileCompletionPercentage% Completion</p>
+                    <p class="mt-2 text-uppercase tracking-widest fw-bold text-aurora" style="font-size: 0.65rem;">
+                        @Model.ProfileCompletionPercentage% Completion
+                    </p>
                 </div>
             </div>
 
             <!-- Milestone 3: Verification Request -->
-            <div class="relative flex items-start gap-8 group">
-                <div class="z-10 size-12 md:size-16 rounded-2xl @(Model.IsVerified ? "bg-primary text-white" : "bg-slate-100 dark:bg-surface-dark text-slate-400") flex items-center justify-center border-2 border-border-light dark:border-border-dark transition-transform group-hover:scale-110">
-                    <span class="material-symbols-outlined text-2xl md:text-3xl">upload_file</span>
+            <div class="position-relative d-flex align-items-start gap-4 gap-md-5 group">
+                <div class="position-relative z-1 d-flex align-items-center justify-content-center border border-2 transition-transform hover-scale flex-shrink-0 shadow-sm" style="width: 4rem; height: 4rem; border-radius: 1rem; @(Model.IsVerified || Model.HasPendingVerification ? "background: var(--color-mint-bright); color: var(--bg-universe); border-color: var(--color-mint-bright); box-shadow: 0 0 20px rgba(52, 211, 153, 0.3) !important;" : "background: rgba(0,0,0,0.5); color: #94a3b8; border-color: rgba(255,255,255,0.1);")">
+                    <span class="material-symbols-outlined fs-1">upload_file</span>
                 </div>
-                <div class="flex-1 pt-2">
-                    <div class="flex items-center gap-3 mb-2">
-                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Step 3: Identity Verification</h3>
+                <div class="flex-grow-1 pt-2">
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+                        <h3 class="fs-4 fw-bold text-white text-uppercase tracking-tight m-0">Step 3: Identity Verification</h3>
                          @if (Model.IsVerified)
                         {
-                            <span class="px-2 py-0.5 rounded-md bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-widest border border-green-500/20">Approved</span>
+                            <span class="badge rounded-pill fw-bold text-uppercase tracking-widest px-3 py-2 shadow-sm" style="background: rgba(52, 211, 153, 0.1); color: var(--color-mint-bright); border: 1px solid rgba(52, 211, 153, 0.2); font-size: 0.65rem;">Approved</span>
+                        }
+                        else if (Model.HasPendingVerification)
+                        {
+                            <span class="badge rounded-pill fw-bold text-uppercase tracking-widest px-3 py-2 shadow-sm" style="background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); font-size: 0.65rem;">Pending Review</span>
                         }
                         else
                         {
-                            <span class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] font-black uppercase tracking-widest border border-border-light dark:border-border-dark">Action Required</span>
+                            <span class="badge rounded-pill fw-bold text-uppercase tracking-widest px-3 py-2 shadow-sm text-muted" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); font-size: 0.65rem;">Action Required</span>
                         }
                     </div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mb-6">
-                        Upload your Student ID or any official enrollment document to confirm you are a real student.
-                    </p>
-                    @if (!Model.IsVerified)
+                    
+                    @if (!Model.IsVerified && !Model.HasPendingVerification)
                     {
-                        <a href="#" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all">
-                            Submit Documents <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                        </a>
+                        <p class="text-muted fw-bold lh-base small mb-4" style="max-width: 600px;">
+                            Upload your Student ID and your university Carnet/Booklet to confirm you are a real student.
+                        </p>
+                        
+                        <!-- Upload Form -->
+                        <div class="glass-card p-4 p-md-5 shadow-lg border-glass-strong" style="max-width: 600px; border-radius: 2rem;">
+                            <form asp-action="SubmitVerification" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-4">
+                                @Html.AntiForgeryToken()
+                                <div class="d-flex flex-column gap-2">
+                                    <label class="text-white text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Student ID (Badge)</label>
+                                    <div class="position-relative group">
+                                        <input type="file" name="studentId" class="form-control form-control-glass text-muted w-100 shadow-sm" style="padding: 0.75rem 1rem; border-radius: 1rem;" accept="image/*,.pdf" required />
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column gap-2 mb-2">
+                                    <label class="text-white text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Carnet (Student Booklet)</label>
+                                    <div class="position-relative group">
+                                        <input type="file" name="carnet" class="form-control form-control-glass text-muted w-100 shadow-sm" style="padding: 0.75rem 1rem; border-radius: 1rem;" accept="image/*,.pdf" required />
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-premium w-100 d-flex align-items-center justify-content-center gap-2 text-uppercase tracking-wider fw-bold shadow-lg py-3" style="border-radius: 1rem;">
+                                    <span class="material-symbols-outlined fs-5">cloud_upload</span>
+                                    Submit Documents
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else if (Model.HasPendingVerification && !Model.IsVerified)
+                    {
+                        <p class="text-muted fw-bold lh-base small m-0" style="max-width: 600px;">
+                            The administrators are currently reviewing your documents. Please wait up to 48 hours.
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="text-muted fw-bold lh-base small m-0" style="max-width: 600px;">
+                            Your identity has been verified by the community administration.
+                        </p>
                     }
                 </div>
             </div>
 
             <!-- Milestone 4: Community Influence -->
-            <div class="relative flex items-start gap-8 group">
-                <div class="z-10 size-12 md:size-16 rounded-2xl @(Model.Level >= 5 ? "bg-primary text-white" : "bg-slate-100 dark:bg-surface-dark text-slate-400") flex items-center justify-center border-2 border-border-light dark:border-border-dark transition-transform group-hover:scale-110">
-                    <span class="material-symbols-outlined text-2xl md:text-3xl">military_tech</span>
+            <div class="position-relative d-flex align-items-start gap-4 gap-md-5 group">
+                <div class="position-relative z-1 d-flex align-items-center justify-content-center border border-2 transition-transform hover-scale flex-shrink-0 shadow-sm" style="width: 4rem; height: 4rem; border-radius: 1rem; @(Model.Level >= 5 ? "background: var(--color-mint-bright); color: var(--bg-universe); border-color: var(--color-mint-bright); box-shadow: 0 0 20px rgba(52, 211, 153, 0.3) !important;" : "background: rgba(0,0,0,0.5); color: #94a3b8; border-color: rgba(255,255,255,0.1);")">
+                    <span class="material-symbols-outlined fs-1">military_tech</span>
                 </div>
-                <div class="flex-1 pt-2">
-                    <div class="flex items-center gap-3 mb-2">
-                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Step 4: Community Level</h3>
-                        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Target: Level 5</span>
+                <div class="flex-grow-1 pt-2">
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+                        <h3 class="fs-4 fw-bold text-white text-uppercase tracking-tight m-0">Step 4: Community Level</h3>
+                        <span class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Target: Level 5</span>
                     </div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl">
-                        Interact with others and share knowledge to reach level 5. You are currently at **Level @Model.Level**.
+                    <p class="text-muted fw-bold lh-base small mb-3" style="max-width: 600px;">
+                        Interact with others and share knowledge to reach level 5. You are currently at <strong class="text-white">Level @Model.Level</strong>.
                     </p>
-                    <div class="flex items-center gap-4 mt-4">
-                        <div class="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-xs">@Model.Level</div>
-                        <div class="flex-1 max-w-xs h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full">
-                            <div class="h-full bg-primary rounded-full" style="width: @(Math.Min(Model.Level * 20, 100))%"></div>
+                    <div class="d-flex align-items-center gap-3 mt-2" style="max-width: 300px;">
+                        <div class="d-flex align-items-center justify-content-center fw-bold flex-shrink-0 text-aurora shadow-sm" style="width: 40px; height: 40px; border-radius: 1rem; background: rgba(52, 211, 153, 0.1);">
+                            @Model.Level
+                        </div>
+                        <div class="rounded-pill p-1 overflow-hidden flex-grow-1" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+                            <div class="rounded-pill transition-all shadow-sm bg-primary" style="height: 0.5rem; width: @(Math.Min(Model.Level * 20, 100))%; transition-duration: 0.5s;"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- The Goal -->
-            <div class="relative flex items-start gap-8 group">
-                <div class="z-10 size-12 md:size-16 rounded-2xl @(Model.IsVerified ? "bg-blue-600 text-white shadow-blue-500/40" : "bg-slate-50 dark:bg-slate-900/50 text-slate-300 dark:text-slate-700 shadow-none") border-2 border-border-light dark:border-border-dark flex items-center justify-center transition-all duration-700 shadow-2xl">
-                    <span class="material-symbols-outlined text-2xl md:text-3xl @(Model.IsVerified ? "fill-1" : "")">verified</span>
+            <div class="position-relative d-flex align-items-start gap-4 gap-md-5 group mt-3">
+                <div class="position-relative z-1 d-flex align-items-center justify-content-center border border-2 transition-transform hover-scale flex-shrink-0 shadow-sm" style="width: 4rem; height: 4rem; border-radius: 1rem; @(Model.IsVerified ? "border-color: #3b82f6; background: #2563eb; color: white; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3) !important;" : "border-color: rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); color: #475569;")">
+                    <span class="material-symbols-outlined fs-1">verified</span>
                 </div>
-                <div class="flex-1 pt-2">
-                    <h3 class="text-xl font-black @(Model.IsVerified ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-600") uppercase tracking-tight">Verified Student Status</h3>
-                    <p class="text-sm @(Model.IsVerified ? "text-slate-600 dark:text-white" : "text-slate-400") leading-relaxed max-w-xl">
+                <div class="flex-grow-1 pt-2">
+                    <h3 class="fs-3 fw-bold text-uppercase tracking-tight m-0 @(Model.IsVerified ? "text-primary text-opacity-75" : "text-muted")" style="@(Model.IsVerified ? "color: #3b82f6 !important;" : "")">
+                        Verified Student Status
+                    </h3>
+                    <p class="fw-bold lh-base mt-2 small m-0 @(Model.IsVerified ? "text-white" : "text-muted")" style="max-width: 600px;">
                         Unlock the full potential: Verified Badge, priority in discussions, and exclusive Study Groups access.
                     </p>
                 </div>
@@ -134,13 +193,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    @@keyframes fade-up {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .milestone-animate {
-        animation: fade-up 0.6s ease-out forwards;
-    }
-</style>

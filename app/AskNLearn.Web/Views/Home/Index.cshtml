@@ -1,137 +1,135 @@
-﻿@{
+@{
     Layout = "_DashboardLayout";
     ViewData["ActivePage"] = "Home";
     ViewData["Title"] = "Home";
 }
 
-<div class="max-w-[800px] mx-auto p-4 md:p-8 flex flex-col gap-6 min-h-full">
+<div class="container py-4" style="max-width: 900px;">
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-slate-800 dark:text-red-400 border border-red-200 dark:border-red-500/30 flex items-center gap-2 animate-bounce">
+        <div class="alert alert-danger d-flex align-items-center gap-2 rounded-4 mb-4 fw-bold shadow-sm" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444;" role="alert">
             <span class="material-symbols-outlined">error</span>
-            <span class="font-bold">@TempData["ErrorMessage"]</span>
+            <div>@TempData["ErrorMessage"]</div>
         </div>
     }
-    <div id="feed-content" class="flex flex-col gap-6 transition-opacity duration-300">
+
+    <div id="feed-content" class="d-flex flex-column gap-4 transition-all" style="animation: slide-up-fade 0.5s ease-out;">
         @if (User.Identity.IsAuthenticated)
         {
             <!-- Welcome Card (Authenticated) -->
-            <div class="relative overflow-hidden rounded-2xl bg-surface-light dark:bg-surface-dark shadow-sm border border-border-light dark:border-border-dark p-6">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-                    <div class="flex flex-col gap-2 text-center md:text-left">
-                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome back! 👋</h2>
-                        <p class="text-slate-500 dark:text-[#92c0c9]">You're on a <span class="text-primary font-bold">5-day study streak</span>. Keep up the momentum!</p>
-                        <div class="flex gap-2 mt-2 justify-center md:justify-start">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-bold border border-green-500/20">
-                                <span class="material-symbols-outlined text-[16px]">check_circle</span> 3 Tasks Done
+            <div class="glass-card p-4 p-md-5 position-relative overflow-hidden mb-2">
+                <div class="row align-items-center position-relative z-1">
+                    <div class="col-md-8 text-center text-md-start mb-4 mb-md-0">
+                        <h2 class="fs-3 fw-bold text-white mb-2">Welcome back! 👋</h2>
+                        <p class="text-muted mb-4">You're on a <span class="text-aurora fw-bold">5-day study streak</span>. Keep up the momentum!</p>
+                        <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-start">
+                            <span class="badge rounded-pill d-flex align-items-center gap-1 px-3 py-2 text-success fw-bold" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); font-size: 0.85rem;">
+                                <span class="material-symbols-outlined fs-6">check_circle</span> 3 Tasks Done
                             </span>
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-bold border border-orange-500/20">
-                                <span class="material-symbols-outlined text-[16px]">schedule</span> Exam in 2 days
+                            <span class="badge rounded-pill d-flex align-items-center gap-1 px-3 py-2 text-warning fw-bold" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); font-size: 0.85rem;">
+                                <span class="material-symbols-outlined fs-6">schedule</span> Exam in 2 days
                             </span>
                         </div>
                     </div>
-                    <div class="shrink-0 relative">
-                        <div class="size-24 rounded-full bg-gradient-to-tr from-primary to-purple-500 opacity-20 blur-xl absolute -top-4 -right-4"></div>
-                        <button class="inline-flex items-center justify-center px-6 py-2.5 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white text-sm">
+                    <div class="col-md-4 text-center text-md-end">
+                        <button class="btn btn-glass w-100 w-md-auto fw-bold px-4 py-2">
                             View Stats
                         </button>
                     </div>
                 </div>
-                <div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-primary/5 to-transparent pointer-events-none"></div>
             </div>
         }
         else
         {
             <!-- Hero Card (Guest) -->
-             <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-surface-light to-slate-100 dark:from-surface-dark dark:to-background-dark shadow-lg border border-border-light dark:border-border-dark p-8 md:p-10 text-center md:text-left">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-                    <div class="flex flex-col gap-4 max-w-lg">
-                        <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight">
-                            Master your studies with <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-cyan-400">AskNLearn</span>
-                        </h1>
-                        <p class="text-lg text-slate-600 dark:text-slate-300">
-                            Join thousands of students collaborating in live study rooms, sharing resources, and helping each other succeed.
-                        </p>
-                        <div class="flex gap-4 justify-center md:justify-start mt-2">
-                            <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">
-                                Get Started Free
-                            </a>
-                             <a asp-controller="Auth" asp-action="SignIn" class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">
-                                Log In
-                            </a>
-                        </div>
-                    </div>
-                     <!-- Decorative Icon -->
-                    <div class="hidden md:block shrink-0 relative">
-                         <div class="absolute inset-0 bg-primary/20 blur-3xl rounded-full"></div>
-                         <span class="material-symbols-outlined text-[120px] text-slate-900 dark:text-white relative z-10 drop-shadow-2xl">school</span>
+             <div class="glass-card p-4 p-md-5 text-center text-md-start position-relative overflow-hidden mb-2">
+                <div class="position-absolute top-0 end-0 h-100 w-50 d-none d-md-block" style="background: radial-gradient(ellipse at right, rgba(52, 211, 153, 0.1), transparent); pointer-events: none;"></div>
+                <div class="position-relative z-1 col-md-8">
+                    <h1 class="display-5 fw-bold text-white mb-3" style="letter-spacing: -0.03em; line-height: 1.1;">
+                        Master your studies with <span class="text-aurora">AskNLearn</span>
+                    </h1>
+                    <p class="fs-5 text-muted mb-4 opacity-75">
+                        Join thousands of students collaborating in live study rooms, sharing resources, and helping each other succeed.
+                    </p>
+                    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-md-start">
+                        <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium px-4 py-3 shadow-lg">Get Started Free</a>
+                        <a asp-controller="Auth" asp-action="SignIn" class="btn btn-glass px-4 py-3">Log In</a>
                     </div>
                 </div>
             </div>
         }
 
         <!-- Feed Tabs -->
-        <div class="sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm pt-2 -mx-4 px-4 md:-mx-8 md:px-8 border-b border-border-light dark:border-border-dark">
-            <div class="flex gap-8">
-                <a class="flex items-center gap-2 border-b-[3px] border-primary text-slate-900 dark:text-white pb-3 px-2 transition-colors" href="#">
-                    <span class="material-symbols-outlined text-[20px] text-primary">auto_awesome</span>
-                    <p class="text-sm font-bold">For You</p>
-                </a>
-                <a class="flex items-center gap-2 border-b-[3px] border-transparent text-slate-500 dark:text-[#92c0c9] hover:text-slate-700 dark:hover:text-white pb-3 px-2 transition-colors" href="#">
-                    <span class="material-symbols-outlined text-[20px]">trending_up</span>
-                    <p class="text-sm font-bold">Trending</p>
-                </a>
-                <a class="flex items-center gap-2 border-b-[3px] border-transparent text-slate-500 dark:text-[#92c0c9] hover:text-slate-700 dark:hover:text-white pb-3 px-2 transition-colors" href="#">
-                    <span class="material-symbols-outlined text-[20px]">new_releases</span>
-                    <p class="text-sm font-bold">New</p>
-                </a>
-            </div>
+        <div class="sticky-top bg-transparent z-3 pb-2" style="top: 0; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-glass-strong); margin: 0 -1rem 1rem -1rem; padding: 1rem 1rem 0 1rem;">
+            <ul class="nav nav-pills gap-4 border-bottom border-secondary border-opacity-25 pb-0 mb-0 flex-nowrap overflow-auto hide-scrollbar" style="border-bottom: 1px solid var(--border-glass);">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active bg-transparent text-white fw-bold d-flex align-items-center gap-2 p-0 pb-3 h-100 rounded-0" style="border-bottom: 2px solid var(--color-mint-bright);">
+                        <span class="material-symbols-outlined text-aurora">auto_awesome</span>
+                        For You
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link bg-transparent text-muted hover-text-white fw-bold d-flex align-items-center gap-2 p-0 pb-3 h-100 rounded-0 border-bottom border-transparent hover-border-white transition-colors">
+                        <span class="material-symbols-outlined">trending_up</span>
+                        Trending
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link bg-transparent text-muted hover-text-white fw-bold d-flex align-items-center gap-2 p-0 pb-3 h-100 rounded-0 border-bottom border-transparent hover-border-white transition-colors">
+                        <span class="material-symbols-outlined">new_releases</span>
+                        New
+                    </a>
+                </li>
+            </ul>
         </div>
         
         <!-- Feed Content -->
-        <div class="flex flex-col gap-4 pb-10">
+        <div class="d-flex flex-column gap-4 pb-5">
             <!-- Example Post 1 -->
-            <article class="flex flex-col rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm hover:border-primary/50 transition-colors">
-                <div class="p-4 flex gap-4">
-                    <div class="flex flex-col items-center gap-1 pt-1">
-                        <button class="text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_up</span></button>
-                        <span class="text-sm font-bold text-slate-700 dark:text-white">42</span>
-                        <button class="text-slate-400 hover:text-red-400 hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_down</span></button>
+            <article class="glass-panel p-4 position-relative hover-glow transition-all" style="border-radius: 1.5rem;">
+                <div class="d-flex gap-3">
+                    <!-- Voting Column -->
+                    <div class="d-flex flex-column align-items-center" style="width: 40px; flex-shrink: 0;">
+                        <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none transition-colors"><span class="material-symbols-outlined fs-4">keyboard_arrow_up</span></button>
+                        <span class="fw-bold text-white small my-1">42</span>
+                        <button class="btn btn-link p-0 text-muted text-hover-danger text-decoration-none transition-colors"><span class="material-symbols-outlined fs-4">keyboard_arrow_down</span></button>
                     </div>
-                    <div class="flex flex-col flex-1 gap-3">
-                        <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-[#92c0c9]">
-                            <div class="size-5 rounded bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold">CS</div>
-                            <span class="font-medium text-slate-700 dark:text-slate-300">Comp Sci 101</span>
-                            <span>•</span>
+                    
+                    <!-- Content Column -->
+                    <div class="flex-grow-1 min-vw-0">
+                        <div class="d-flex flex-wrap align-items-center gap-2 small text-muted mb-2 fw-semibold">
+                            <span class="badge bg-primary text-white rounded-2 px-2 py-1">CS</span>
+                            <span class="text-light">Comp Sci 101</span>
+                            <span class="opacity-50">•</span>
                             <span>Posted by u/SarahDev</span>
-                            <span>•</span>
+                            <span class="opacity-50">•</span>
                             <span>2h ago</span>
                         </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Late Night Java Coding Session ☕️</h3>
-                            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-                                Hey everyone! I'm struggling with the recursion assignment. Starting a study room in 10 mins if anyone wants to join and debug together. Beginners welcome!
-                            </p>
-                        </div>
-                         @if (!User.Identity.IsAuthenticated)
+                        
+                        <h3 class="fs-5 fw-bold text-white mb-2 text-decoration-none cursor-pointer hover-glow">
+                            Late Night Java Coding Session ☕️
+                        </h3>
+                        <p class="text-muted small mb-3 lh-base">
+                            Hey everyone! I'm struggling with the recursion assignment. Starting a study room in 10 mins if anyone wants to join and debug together. Beginners welcome!
+                        </p>
+                        
+                        @if (!User.Identity.IsAuthenticated)
                         {
-                             <div class="flex items-center gap-4 bg-background-light dark:bg-background-dark p-3 rounded-lg border border-border-light dark:border-border-dark mt-2">
-                                <span class="material-symbols-outlined text-primary">lock</span>
-                                <div class="flex-1">
-                                    <p class="text-sm font-bold text-slate-900 dark:text-white">Join to enable live collaboration</p>
-                                </div>
+                            <div class="d-flex align-items-center gap-2 p-3 rounded-4 mb-3" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass-strong);">
+                                <span class="material-symbols-outlined text-aurora fs-5">lock</span>
+                                <span class="fw-bold text-light small">Join to enable live collaboration</span>
                             </div>
                         }
                         
-                        <div class="flex items-center gap-4 mt-1">
-                            <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
-                                <span class="material-symbols-outlined text-[18px]">chat_bubble</span> 12 Comments
+                        <div class="d-flex align-items-center gap-4 mt-3 pt-2">
+                            <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none d-flex align-items-center gap-1 small fw-bold transition-colors">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">chat_bubble</span> 12 Comments
                             </button>
-                            <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
-                                <span class="material-symbols-outlined text-[18px]">share</span> Share
+                            <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none d-flex align-items-center gap-1 small fw-bold transition-colors">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">share</span> Share
                             </button>
-                            <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors ml-auto">
-                                <span class="material-symbols-outlined text-[18px]">bookmark</span> Save
+                            <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none d-flex align-items-center gap-1 small fw-bold ms-auto transition-colors">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">bookmark</span> Save
                             </button>
                         </div>
                     </div>
@@ -139,34 +137,34 @@
             </article>
 
              <!-- Example Post 2 -->
-             <article class="flex flex-col rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm hover:border-primary/50 transition-colors">
-                <div class="p-4 flex gap-4">
-                     <div class="flex flex-col items-center gap-1 pt-1">
-                        <button class="text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_up</span></button>
-                        <span class="text-sm font-bold text-slate-700 dark:text-white">15</span>
-                        <button class="text-slate-400 hover:text-red-400 hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_down</span></button>
+             <article class="glass-panel p-4 position-relative hover-glow transition-all" style="border-radius: 1.5rem;">
+                <div class="d-flex gap-3">
+                     <div class="d-flex flex-column align-items-center" style="width: 40px; flex-shrink: 0;">
+                        <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none transition-colors"><span class="material-symbols-outlined fs-4">keyboard_arrow_up</span></button>
+                        <span class="fw-bold text-white small my-1">15</span>
+                        <button class="btn btn-link p-0 text-muted text-hover-danger text-decoration-none transition-colors"><span class="material-symbols-outlined fs-4">keyboard_arrow_down</span></button>
                     </div>
-                     <div class="flex flex-col flex-1 gap-3">
-                         <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-[#92c0c9]">
-                            <div class="size-5 rounded bg-emerald-500 flex items-center justify-center text-[10px] text-white font-bold">MA</div>
-                            <span class="font-medium text-slate-700 dark:text-slate-300">Calculus II</span>
-                            <span>•</span>
+                     <div class="flex-grow-1 min-vw-0">
+                         <div class="d-flex flex-wrap align-items-center gap-2 small text-muted mb-2 fw-semibold">
+                            <span class="badge bg-success text-white rounded-2 px-2 py-1" style="background: var(--color-mint-deep) !important;">MA</span>
+                            <span class="text-light">Calculus II</span>
+                            <span class="opacity-50">•</span>
                             <span>Posted by u/MathWhiz</span>
-                            <span>•</span>
+                            <span class="opacity-50">•</span>
                             <span>5h ago</span>
                         </div>
-                        <div>
-                             <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Integration Techniques Cheat Sheet (PDF) 📚</h3>
-                            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
-                                Compiled all the major integration formulas and techniques into a single page reference sheet.
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-4 mt-1">
-                            <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
-                                <span class="material-symbols-outlined text-[18px]">chat_bubble</span> 8 Comments
+                        <h3 class="fs-5 fw-bold text-white mb-2 text-decoration-none cursor-pointer hover-glow">
+                            Integration Techniques Cheat Sheet (PDF) 📚
+                        </h3>
+                        <p class="text-muted small mb-3 lh-base">
+                            Compiled all the major integration formulas and techniques into a single page reference sheet.
+                        </p>
+                        <div class="d-flex align-items-center gap-4 mt-3 pt-2">
+                            <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none d-flex align-items-center gap-1 small fw-bold transition-colors">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">chat_bubble</span> 8 Comments
                             </button>
-                            <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
-                                <span class="material-symbols-outlined text-[18px]">share</span> Share
+                            <button class="btn btn-link p-0 text-muted hover-text-white text-decoration-none d-flex align-items-center gap-1 small fw-bold transition-colors">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">share</span> Share
                             </button>
                         </div>
                      </div>
@@ -174,23 +172,4 @@
              </article>
         </div>
     </div> 
-
-    <!-- Auth Wall Section -->
-    <div id="auth-wall" class="hidden flex-grow flex flex-col items-center justify-center py-12 text-center animate-fade-in">
-        <div class="size-20 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-6">
-            <span class="material-symbols-outlined text-5xl">lock</span>
-        </div>
-        <h2 id="auth-title" class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Join the Community</h2>
-        <p id="auth-message" class="text-lg text-slate-500 dark:text-[#92c0c9] max-w-md mx-auto mb-8">
-            Connect with classmates, join live study sessions, and access exclusive resources. Create an account to get started.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-            <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-8 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">
-                Sign Up Free
-            </a>
-            <a asp-controller="Auth" asp-action="SignIn" class="inline-flex items-center justify-center px-8 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">
-                Log In
-            </a>
-        </div>
-    </div>
 </div>

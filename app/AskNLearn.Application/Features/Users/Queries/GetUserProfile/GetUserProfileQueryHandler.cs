@@ -46,6 +46,9 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
                 }
             }
 
+            var hasPendingVerification = await _context.VerificationRequests
+                .AnyAsync(v => v.UserId == user.Id && v.Status == Status.Pending, cancellationToken);
+
             var completion = 0;
             if (!string.IsNullOrEmpty(user.FullName)) completion += 20;
             if (!string.IsNullOrEmpty(user.Bio)) completion += 20;
@@ -75,7 +78,8 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
                 IsVerified = user.IsVerified,
                 Role = user.Role.ToString(),
                 BannerUrl = user.BannerUrl,
-                SocialLinks = user.SocialLinks
+                SocialLinks = user.SocialLinks,
+                HasPendingVerification = hasPendingVerification
             };
         }
     }

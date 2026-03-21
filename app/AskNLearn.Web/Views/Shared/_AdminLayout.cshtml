@@ -1,141 +1,129 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>@ViewData["Title"] - Admin Portal</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-            extend: {
-                colors: {
-                "primary": "#13c8ec",
-                "background-light": "#f6f8f8",
-                "background-dark": "#101f22",
-                "surface-dark": "#192f33",
-                "surface-light": "#ffffff",
-                "border-dark": "#234248",
-                "border-light": "#e2e8f0",
-                },
-                fontFamily: {
-                "display": ["Lexend", "sans-serif"]
-                },
-                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
-            },
-            },
-        }
-    </script>
-    <style>
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #234248; border-radius: 3px; }
-        body { background-color: #101f22; }
-    </style>
+    
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="~/css/theme.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex flex-col transition-colors duration-200">
+<body class="dark-mesh-bg d-flex flex-column min-vh-100 overflow-hidden">
+
+    <!-- Ambient Aurora Orbs -->
+    <div class="aurora-orb aurora-orb-cyan position-fixed"></div>
+    <div class="aurora-orb aurora-orb-purple position-fixed"></div>
+
     <!-- Top Navigation Bar -->
-    <header class="h-16 flex items-center justify-between px-6 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark z-50 shrink-0">
+    <header class="glass-nav position-relative z-3 w-100 px-4 d-flex align-items-center justify-content-between" style="height: 80px; flex-shrink: 0;">
         <!-- Logo Area -->
-        <div class="flex items-center gap-8 w-64 justify-center">
-            <a asp-controller="Admin" asp-action="Index" class="flex items-center gap-3 text-slate-900 dark:text-white cursor-pointer hover:opacity-80 transition-opacity">
-                <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
-                    AskNLearn <span class="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded border border-primary/30 font-bold uppercase tracking-wider">Admin</span>
+        <div class="d-flex align-items-center" style="width: 250px;">
+            <a asp-controller="Admin" asp-action="Index" class="d-flex align-items-center gap-2 text-decoration-none">
+                <h1 class="fs-4 fw-bold tracking-tight text-white mb-0">
+                    Ask<span class="text-aurora">N</span>Learn <span class="badge bg-opacity-10 bg-info text-info border border-info border-opacity-25 small ms-2" style="font-size: 0.6rem; vertical-align: middle;">ADMIN</span>
                 </h1>
             </a>
         </div>
+
+        <!-- Center Navigation -->
+        <nav class="d-none d-lg-flex align-items-center gap-2">
+            <a asp-controller="Home" asp-action="Index" class="nav-link-premium animate-entrance delay-100">
+                Exit to Site
+            </a>
+        </nav>
+        
         <!-- Right Actions -->
-        <div class="flex items-center justify-end gap-4 w-64">
-             <div class="flex items-center gap-3">
-                <div class="text-right hidden sm:block">
-                    <p class="text-xs font-bold text-slate-900 dark:text-white">System Admin</p>
-                    <p class="text-[10px] text-slate-500 uppercase font-medium">Verification Root</p>
+        <div class="d-flex align-items-center justify-content-end gap-3" style="width: 250px;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-end d-none d-sm-block">
+                    <p class="small fw-bold text-white mb-0">System Admin</p>
+                    <p class="text-muted mb-0" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;">Root Access</p>
                 </div>
-                <div class="size-10 rounded-xl bg-slate-100 dark:bg-surface-dark border border-border-light dark:border-border-dark flex items-center justify-center text-primary font-bold">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-aurora fw-bold border border-glass-strong" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05);">
                     SA
                 </div>
             </div>
         </div>
     </header>
 
-    <div class="flex flex-1 overflow-hidden">
-        <!-- Left Sidebar (Navigation) -->
-        <aside id="leftSidebar" class="relative w-64 hidden lg:flex flex-col border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark overflow-y-auto p-4 gap-8 shrink-0">
-            <div>
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[2px] mb-4 px-4">Management</p>
-                <nav class="flex flex-col gap-1">
-                    <a asp-controller="Admin" asp-action="Index" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors group">
-                        <span class="material-symbols-outlined text-slate-500 group-hover:text-primary">dashboard</span>
-                        <span class="font-bold text-sm">Dashboard Overview</span>
+    <!-- Main Content Area -->
+    <div class="d-flex flex-grow-1 overflow-hidden position-relative z-1">
+        <!-- Left Sidebar -->
+        <aside id="leftSidebar" class="d-none d-lg-flex flex-column h-100 flex-shrink-0 transition-all" style="width: 300px; border-right: 1px solid var(--border-glass); background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px);">
+            <div class="p-4">
+                <p class="text-muted fw-bold text-uppercase tracking-widest mb-4 px-2" style="font-size: 0.65rem;">Management</p>
+                <div class="d-flex flex-column gap-2">
+                    <a asp-controller="Admin" asp-action="Index" class="nav-link-premium justify-content-start w-100 gap-3 @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                        <span class="material-symbols-outlined fs-5">dashboard</span>
+                        <span>Dashboard Overview</span>
                     </a>
-                    <a asp-controller="Admin" asp-action="Verifications" class="flex items-center justify-between px-4 py-3 rounded-xl bg-primary/10 text-primary border border-primary/20 transition-colors group">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined">verified_user</span>
-                            <span class="font-bold text-sm">Verification Requests</span>
+                    <a asp-controller="Admin" asp-action="Verifications" class="nav-link-premium justify-content-start w-100 gap-3 @(ViewContext.RouteData.Values["action"]?.ToString() == "Verifications" ? "active" : "")">
+                        <span class="material-symbols-outlined fs-5">verified_user</span>
+                        <div class="d-flex align-items-center justify-content-between flex-grow-1">
+                            <span>Verification Requests</span>
+                            <span class="badge rounded-pill bg-aurora text-dark fw-bold" style="font-size: 0.6rem;">12</span>
                         </div>
-                        <span class="size-5 rounded bg-primary text-[10px] flex items-center justify-center text-background-dark font-bold">12</span>
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors group opacity-50 cursor-not-allowed">
-                        <span class="material-symbols-outlined text-slate-500">person_search</span>
-                        <span class="font-bold text-sm">Student Directory</span>
+                    <a href="#" class="nav-link-premium justify-content-start w-100 gap-3 opacity-50">
+                        <span class="material-symbols-outlined fs-5">person_search</span>
+                        <span>Student Directory</span>
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors group opacity-50 cursor-not-allowed">
-                        <span class="material-symbols-outlined text-slate-500">forum</span>
-                        <span class="font-bold text-sm">Study Communities</span>
+                    <a href="#" class="nav-link-premium justify-content-start w-100 gap-3 opacity-50">
+                        <span class="material-symbols-outlined fs-5">forum</span>
+                        <span>Study Communities</span>
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors group opacity-50 cursor-not-allowed">
-                        <span class="material-symbols-outlined text-slate-500">flag</span>
-                        <span class="font-bold text-sm">Reported Content</span>
+                    <a href="#" class="nav-link-premium justify-content-start w-100 gap-3 opacity-50">
+                        <span class="material-symbols-outlined fs-5">flag</span>
+                        <span>Reported Content</span>
                     </a>
-                </nav>
-            </div>
+                </div>
 
-            <!-- System Status -->
-            <div class="mt-auto p-4 rounded-2xl bg-surface-dark border border-border-dark">
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">System Status</p>
-                <div class="flex items-center gap-2">
-                    <div class="size-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span class="text-xs text-white">Cloud Nodes Active</span>
+                <div class="mt-5 p-4 rounded-4 border border-glass-strong" style="background: rgba(52, 211, 153, 0.05);">
+                    <p class="text-muted fw-bold text-uppercase tracking-widest mb-2" style="font-size: 0.6rem;">System Status</p>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-success" style="width: 8px; height: 8px; box-shadow: 0 0 10px var(--color-mint-bright);"></div>
+                        <span class="small text-white">Cloud Nodes Online</span>
+                    </div>
                 </div>
             </div>
         </aside>
 
         <button id="toggleLeftSidebar"
-                class="hidden lg:flex items-center justify-center
-                absolute top-1/2 -translate-y-1/2
-                left-64
-                bg-primary text-white
-                z-50
-                w-8 h-12 rounded-r-lg shadow-md
-                hover:bg-primary/80 transition-all">
-            ❮
+                class="d-none d-lg-flex align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 transition-all p-0 shadow-lg"
+                style="left: 300px; width: 28px; height: 64px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(10px);">
+            <span class="material-symbols-outlined text-muted m-0 p-0" style="margin-left: -2px !important;">chevron_left</span>
         </button>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto relative bg-background-light dark:bg-background-dark p-8">
+        <main class="flex-grow-1 h-100 overflow-y-auto position-relative custom-scrollbar p-4 p-md-5">
             @RenderBody()
         </main>
     </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
         const leftSidebar = document.getElementById("leftSidebar");
         const leftButton = document.getElementById("toggleLeftSidebar");
+        const chevron = leftButton ? leftButton.querySelector('span') : null;
 
-        leftButton.addEventListener("click", () => {
-            leftSidebar.classList.toggle("lg:flex");
+        if (leftSidebar && leftButton) {
+            leftButton.addEventListener("click", () => {
+                leftSidebar.classList.toggle("d-lg-flex");
 
-            if (!leftSidebar.classList.contains("lg:flex")) {
-                leftButton.innerHTML = "❯";
-                leftButton.classList.remove("left-64");
-                leftButton.classList.add("left-0");
-            } else {
-                leftButton.innerHTML = "❮";
-                leftButton.classList.remove("left-0");
-                leftButton.classList.add("left-64");
-            }
-        });
+                if (!leftSidebar.classList.contains("d-lg-flex")) {
+                    chevron.innerText = "chevron_right";
+                    leftButton.style.left = "0px";
+                } else {
+                    chevron.innerText = "chevron_left";
+                    leftButton.style.left = "300px";
+                }
+            });
+        }
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

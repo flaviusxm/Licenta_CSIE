@@ -19,7 +19,7 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
 
         public async Task<List<PostDto>> Handle(GetPostsByCommunityQuery request, CancellationToken cancellationToken)
         {
-            return await _context.Posts
+            var posts = await _context.Posts
                 .Where(p => p.CommunityId == request.CommunityId)
                 .Include(p => p.Author)
                 .Include(p => p.Attachments)
@@ -38,10 +38,15 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
                     IsLocked = p.IsLocked,
                     ViewCount = p.ViewCount,
                     CommentCount = p.Comments.Count,
+                    VoteCount = _context.PostVotes.Where(v => v.PostId == p.Id).Select(v => (int)v.VoteValue).Sum(),
+                    UserVote = !string.IsNullOrEmpty(request.CurrentUserId) 
+                        ? _context.PostVotes.Where(v => v.PostId == p.Id && v.UserId == request.CurrentUserId).Select(v => (int)v.VoteValue).FirstOrDefault()
+                        : 0,
                     CreatedAt = p.CreatedAt,
                     Comments = p.Comments.OrderBy(c => c.CreatedAt).Select(c => new CommentDto
                     {
                         Id = c.Id,
+                        AuthorId = c.AuthorId,
                         AuthorName = c.Author != null ? c.Author.FullName : "Unknown",
                         Content = c.Content ?? "",
                         CreatedAt = c.CreatedAt,
@@ -61,6 +66,8 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
                     }).ToList()
                 })
                 .ToListAsync(cancellationToken);
+
+            return posts;
         }
     }
 }

@@ -32,8 +32,6 @@ namespace AskNLearn.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
-            if (!User.Identity?.IsAuthenticated ?? true) return RedirectToAction("SignIn", "Auth");
-
             if (!await IsAdmin())
             {
                 TempData["ErrorMessage"] = "Access Denied: You do not have the Admin role.";
@@ -50,8 +48,6 @@ namespace AskNLearn.Web.Controllers
 
         public async Task<IActionResult> Verifications()
         {
-            if (!User.Identity?.IsAuthenticated ?? true) return RedirectToPage("/Account/Login", new { area = "Identity" });
-
             if (!await IsAdmin())
             {
                 TempData["ErrorMessage"] = "Access Denied: You do not have the Admin role.";

@@ -1,270 +1,131 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>@ViewData["Title"] - AskNLearn</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-            extend: {
-                colors: {
-                "primary": "#13c8ec",
-                "background-light": "#f6f8f8",
-                "background-dark": "#101f22",
-                "surface-dark": "#192f33",
-                "surface-light": "#ffffff",
-                "border-dark": "#234248",
-                "border-light": "#e2e8f0",
-                },
-                fontFamily: {
-                "display": ["Lexend", "sans-serif"]
-                },
-                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
-            },
-            },
-        }
-    </script>
-    <style>
-      
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #234248;
-            border-radius: 3px;
-        }
-
-        .dark ::-webkit-scrollbar-thumb {
-            background: #234248;
-        }
-
-        .light ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-        }
-    </style>
+    
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="~/css/theme.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex flex-col transition-colors duration-200">
+<body class="dark-mesh-bg d-flex flex-column min-vh-100 overflow-hidden">
+
+    <!-- Ambient Aurora Orbs -->
+    <div class="aurora-orb aurora-orb-cyan position-fixed"></div>
+    <div class="aurora-orb aurora-orb-purple position-fixed"></div>
+
     <!-- Top Navigation Bar -->
-    <header class="h-16 flex items-center justify-between px-6 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark z-50 shrink-0 shadow-sm">
+    <header class="glass-nav position-relative z-3 w-100 px-4 d-flex align-items-center justify-content-between" style="height: 80px; flex-shrink: 0;">
         <!-- Logo Area -->
-        <div class="flex items-center w-48">
-            <a asp-controller="Home" asp-action="Index" class="flex items-center gap-3 text-slate-900 dark:text-white cursor-pointer hover:opacity-80 transition-opacity">
-                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">AskNLearn</h1>
+        <div class="d-flex align-items-center" style="width: 250px;">
+            <a asp-controller="Home" asp-action="Index" class="d-flex align-items-center gap-2 text-decoration-none">
+                <h1 class="fs-4 fw-bold tracking-tight text-white mb-0">
+                    Ask<span class="text-aurora">N</span>Learn
+                </h1>
             </a>
         </div>
 
         <!-- Center Global Navigation -->
-        <nav class="hidden md:flex items-center gap-1 bg-slate-100/50 dark:bg-white/5 p-1 rounded-2xl border border-border-light dark:border-white/5">
-            <a asp-controller="Home" asp-action="Index" class="px-4 py-2 rounded-xl text-sm font-bold transition-all @(ViewData["ActivePage"] as string == "Home" ? "bg-white dark:bg-surface-dark text-primary shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white")">
+        <nav class="d-none d-lg-flex align-items-center gap-2">
+            <a asp-controller="Home" asp-action="Index" class="nav-link-premium justify-content-center @(ViewData["ActivePage"] as string == "Home" ? "active" : "") animate-entrance delay-100">
                 Home
             </a>
-            <a asp-controller="Explore" asp-action="Index" class="px-4 py-2 rounded-xl text-sm font-bold transition-all @(ViewData["ActivePage"] as string == "Explore" ? "bg-white dark:bg-surface-dark text-primary shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white")">
+            <a asp-controller="Explore" asp-action="Index" class="nav-link-premium justify-content-center @(ViewData["ActivePage"] as string == "Explore" ? "active" : "") animate-entrance delay-200">
                 Explore
             </a>
-            <a asp-controller="Resources" asp-action="Index" class="px-4 py-2 rounded-xl text-sm font-bold transition-all @(ViewData["ActivePage"] as string == "Resources" ? "bg-white dark:bg-surface-dark text-primary shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white")">
+            <a asp-controller="Resources" asp-action="Index" class="nav-link-premium justify-content-center @(ViewData["ActivePage"] as string == "Resources" ? "active" : "") animate-entrance delay-300">
                 Resources
             </a>
-            <a asp-controller="StudyGroups" asp-action="Index" class="px-4 py-2 rounded-xl text-sm font-bold transition-all @(ViewData["ActivePage"] as string == "StudyGroups" ? "bg-white dark:bg-surface-dark text-primary shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white")">
+            <a asp-controller="StudyGroups" asp-action="Index" class="nav-link-premium justify-content-center @(ViewData["ActivePage"] as string == "StudyGroups" ? "active" : "") animate-entrance delay-400">
                 Groups
             </a>
-            <a asp-controller="Leaderboard" asp-action="Index" class="px-4 py-2 rounded-xl text-sm font-bold transition-all @(ViewData["ActivePage"] as string == "Leaderboard" ? "bg-white dark:bg-surface-dark text-primary shadow-sm" : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white")">
+            <a asp-controller="Leaderboard" asp-action="Index" class="nav-link-premium justify-content-center @(ViewData["ActivePage"] as string == "Leaderboard" ? "active" : "") animate-entrance delay-500">
                 Leaderboard
             </a>
         </nav>
         
         <!-- Right Actions -->
-        <div class="flex items-center justify-end gap-3 w-48">
-             @if (User.Identity.IsAuthenticated)
+        <div class="d-flex align-items-center justify-content-end gap-3" style="width: 250px;">
+            @if (User.Identity.IsAuthenticated)
             {
-                <!-- Tasks -->
-                <div class="relative">
-                    <button onclick="toggleDropdown('tasks-dropdown')" class="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-[#92c0c9] dark:hover:bg-surface-dark transition-colors">
-                        <span class="material-symbols-outlined">task_alt</span>
-                    </button>
-                    <!-- Tasks Dropdown (Placeholder content) -->
-                    <div id="tasks-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xl z-50 overflow-hidden animate-fade-in">
-                        <div class="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
-                            <h4 class="font-bold text-slate-900 dark:text-white text-sm">My Tasks</h4>
-                            <span class="text-xs text-primary font-medium cursor-pointer">View all</span>
-                        </div>
-                        <div class="p-4 text-center text-sm text-slate-500">No pending tasks</div>
-                    </div>
-                </div>
+                <!-- Inbox -->
+                <a asp-controller="Inbox" asp-action="Index" class="btn btn-link text-muted hover-text-white p-2 rounded-circle transition-all d-flex align-items-center justify-content-center text-decoration-none hover-bg-glass">
+                    <span class="material-symbols-outlined fs-5">all_inbox</span>
+                </a>
 
-                <!-- Notifications -->
-                <div class="relative">
-                    <button onclick="toggleDropdown('notif-dropdown')" class="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-[#92c0c9] dark:hover:bg-surface-dark transition-colors">
-                        <span class="material-symbols-outlined">notifications</span>
-                    </button>
-                    <!-- Notification Dropdown -->
-                     <div id="notif-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xl z-50 overflow-hidden animate-fade-in">
-                        <div class="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
-                            <h4 class="font-bold text-slate-900 dark:text-white text-sm">Notifications</h4>
-                        </div>
-                         <div class="p-8 text-center flex flex-col items-center gap-3">
-                            <div class="size-12 rounded-full bg-slate-100 dark:bg-background-dark flex items-center justify-center text-slate-400 dark:text-slate-500">
-                                <span class="material-symbols-outlined text-2xl">notifications_off</span>
-                            </div>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">No new notifications</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- DMs -->
-                <div class="relative">
-                    <button onclick="toggleDropdown('dm-dropdown')" class="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-[#92c0c9] dark:hover:bg-surface-dark transition-colors">
-                        <span class="material-symbols-outlined">chat_bubble</span>
-                    </button>
-                    <!-- DM Dropdown -->
-                     <div id="dm-dropdown" class="hidden absolute top-full right-0 mt-2 w-80 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-xl z-50 overflow-hidden animate-fade-in">
-                        <div class="p-4 border-b border-border-light dark:border-border-dark flex justify-between items-center">
-                            <h4 class="font-bold text-slate-900 dark:text-white text-sm">Messages</h4>
-                        </div>
-                        <div class="p-8 text-center flex flex-col items-center gap-3">
-                            <div class="size-12 rounded-full bg-slate-100 dark:bg-background-dark flex items-center justify-center text-slate-400 dark:text-slate-500">
-                                <span class="material-symbols-outlined text-2xl">chat_bubble_outline</span>
-                            </div>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">No new messages</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="h-8 w-[1px] bg-border-light dark:bg-border-dark mx-1"></div>
+                <div class="mx-2" style="width: 1px; height: 24px; background: var(--border-glass-strong);"></div>
                 
                 <!-- Profile Link -->
-                <a asp-controller="Profile" asp-action="Index" class="flex items-center gap-2 group">
-                    <div class="size-9 rounded-full bg-cover bg-center border-2 border-transparent group-hover:border-primary transition-all bg-surface-dark flex items-center justify-center text-slate-400">
-                        <span class="material-symbols-outlined text-sm">person</span>
+                <a asp-controller="Profile" asp-action="Index" class="text-decoration-none">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-muted transition-colors hover-glow" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass-strong);">
+                        <span class="material-symbols-outlined fs-5">person</span>
                     </div>
                 </a>
             }
             else
             {
-                 <div class="flex items-center gap-3">
-                    <a asp-controller="Auth" asp-action="SignIn" class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">Log In</a>
-                    <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">Sign Up</a>
+                <div class="d-flex align-items-center gap-3">
+                    <a asp-controller="Auth" asp-action="SignIn" class="btn btn-link text-muted hover-text-white text-decoration-none fw-bold small text-uppercase tracking-widest px-3">Log In</a>
+                    <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium d-flex align-items-center justify-content-center py-2 px-4 shadow-sm" style="font-size: 0.8rem;">Sign Up</a>
                 </div>
             }
         </div>
     </header>
+
     <!-- Main Content Area -->
-    <div class="flex flex-1 overflow-hidden">
+    <div class="d-flex flex-grow-1 overflow-hidden position-relative z-1">
         @if (IsSectionDefined("Sidebar"))
         {
-            <!-- Left Sidebar (Conditional Navigation) -->
-            <aside id="leftSidebar" class="relative w-72 hidden lg:flex flex-col border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-background-dark overflow-y-auto shrink-0 transition-all duration-300">
-                <!-- Sidebar content will be rendered by the View -->
-                <div class="flex-1 flex flex-col min-h-0">
+            <!-- Left Sidebar -->
+            <aside id="leftSidebar" class="d-none d-lg-flex flex-column h-100 flex-shrink-0 transition-all" style="width: 300px; border-right: 1px solid var(--border-glass); background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px);">
+                <div class="flex-grow-1 d-flex flex-column min-vh-0 overflow-y-auto custom-scrollbar">
                     @RenderSection("Sidebar")
                 </div>
             </aside>
             <button id="toggleLeftSidebar"
-                    class="hidden lg:flex items-center justify-center
-             absolute top-1/2 -translate-y-1/2
-             left-72
-             bg-primary text-white
-             z-50
-             w-8 h-12 rounded-r-lg shadow-md
-             hover:bg-primary/80 transition-all">
-                ❮
+                    class="d-none d-lg-flex align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 transition-all p-0 shadow-lg"
+                    style="left: 300px; width: 28px; height: 64px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(10px);">
+                <span class="material-symbols-outlined text-muted m-0 p-0" style="margin-left: -2px !important;">chevron_left</span>
             </button>
         }
 
         <!-- Center Feed -->
-        <main class="flex-1 overflow-y-auto relative bg-background-light dark:bg-background-dark">
+        <main class="flex-grow-1 h-100 overflow-y-auto position-relative custom-scrollbar w-100">
             @if (User.Identity.IsAuthenticated)
             {
-                <div class="px-6 py-4">
+                <div class="p-4 p-md-5 pb-0">
                     @await Component.InvokeAsync("ProfileCompletion")
                 </div>
             }
             @RenderBody()
         </main>
-
-
-
-
-
     </div>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-               
         const leftSidebar = document.getElementById("leftSidebar");
         const leftButton = document.getElementById("toggleLeftSidebar");
+        const chevron = leftButton ? leftButton.querySelector('span') : null;
 
         if (leftSidebar && leftButton) {
             leftButton.addEventListener("click", () => {
-                leftSidebar.classList.toggle("lg:flex");
+                leftSidebar.classList.toggle("d-lg-flex");
 
-                if (!leftSidebar.classList.contains("lg:flex")) {
-                    leftButton.innerHTML = "❯";
-                    leftButton.classList.remove("left-72");
-                    leftButton.classList.add("left-0");
+                if (!leftSidebar.classList.contains("d-lg-flex")) {
+                    chevron.innerText = "chevron_right";
+                    leftButton.style.left = "0px";
                 } else {
-                    leftButton.innerHTML = "❮";
-                    leftButton.classList.remove("left-0");
-                    leftButton.classList.add("left-72");
+                    chevron.innerText = "chevron_left";
+                    leftButton.style.left = "300px";
                 }
             });
         }
-
-    
-        function toggleDropdown(id) {
-            const el = document.getElementById(id);
-            const allDropdowns = ['notif-dropdown', 'dm-dropdown', 'tasks-dropdown'];
-            
-            allDropdowns.forEach(d => {
-                if(d !== id) document.getElementById(d)?.classList.add('hidden');
-            });
-
-            if(el) {
-                el.classList.toggle('hidden');
-            }
-        }
-        window.addEventListener('click', function(e) {
-            if (!e.target.closest('.relative')) {
-                 const allDropdowns = ['notif-dropdown', 'dm-dropdown', 'tasks-dropdown'];
-                 allDropdowns.forEach(d => {
-                    const el = document.getElementById(d);
-                    if(el) el.classList.add('hidden');
-                });
-            }
-        });
-        
-        
-         function showFeed() {
-            const feed = document.getElementById('feed-content');
-            const auth = document.getElementById('auth-wall');
-            
-            if(feed) {
-                feed.classList.remove('hidden');
-                feed.style.opacity = '1';
-            }
-            if(auth) auth.classList.add('hidden');
-        }
-
-        function showAuthWall(title, message) {
-            const feed = document.getElementById('feed-content');
-            const auth = document.getElementById('auth-wall');
-            const titleEl = document.getElementById('auth-title');
-            const msgEl = document.getElementById('auth-message');
-
-            if(title && titleEl) titleEl.textContent = title;
-            if(message && msgEl) msgEl.textContent = message;
-
-            if(feed) feed.classList.add('hidden');
-            if(auth) auth.classList.remove('hidden');
-        }
     </script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

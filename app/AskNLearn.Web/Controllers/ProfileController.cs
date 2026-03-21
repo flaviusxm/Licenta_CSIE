@@ -4,16 +4,21 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
+using AskNLearn.Application.Common.Interfaces;
+using AskNLearn.Application.Features.Users.Commands.SubmitVerificationRequest;
+
 namespace AskNLearn.Web.Controllers
 {
     [Authorize]
     public class ProfileController : Controller
     {
         private readonly IMediator _mediator;
+        private readonly IFileService _fileService;
 
-        public ProfileController(IMediator mediator)
+        public ProfileController(IMediator mediator, IFileService fileService)
         {
             _mediator = mediator;
+            _fileService = fileService;
         }
 
         public async Task<IActionResult> Index()
@@ -55,6 +60,42 @@ namespace AskNLearn.Web.Controllers
             // Actually, let's just use the profile's IsVerified status as the primary indicator.
             
             return View(profile);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SubmitVerification(IFormFile studentId, IFormFile carnet)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return RedirectToAction("SignIn", "Auth");
+
+            if (studentId == null || carnet == null)
+            {
+                TempData["Error"] = "Both Student ID and Carnet are required.";
+                return RedirectToAction("Verification");
+            }
+
+            var studentIdUrl = await _fileService.UploadFileAsync(studentId.OpenReadStream(), studentId.FileName, "verifications");
+            var carnetUrl = await _fileService.UploadFileAsync(carnet.OpenReadStream(), carnet.FileName, "verifications");
+
+            var command = new SubmitVerificationRequestCommand
+            {
+                UserId = userId,
+                StudentIdUrl = studentIdUrl,
+                CarnetUrl = carnetUrl
+            };
+
+            var errors = await _mediator.Send(command);
+
+            if (errors.Count > 0)
+            {
+                TempData["Error"] = string.Join(" ", errors);
+            }
+            else
+            {
+                TempData["Success"] = "Verification request submitted successfully.";
+            }
+
+            return RedirectToAction("Verification");
         }
         [HttpPost]
         public async Task<IActionResult> Update(AskNLearn.Application.Features.Users.Commands.UpdateUserProfile.UpdateUserProfileCommand command)

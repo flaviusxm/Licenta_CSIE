@@ -1,58 +1,42 @@
-﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - AskNLearn</title>
 
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#10b981",
-                        "background-dark": "#0f172a",
-                    },
-                    fontFamily: {
-                        display: ["Inter", "sans-serif"]
-                    }
-                }
-            }
-        }
-    </script>
-
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="~/css/theme.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-background-dark text-white font-display">
+<body class="dark-mesh-bg d-flex align-items-center justify-content-center min-vh-100 position-relative overflow-hidden">
 
-    <!-- Background -->
-    <div class="fixed inset-0 pointer-events-none overflow-hidden">
-        <div class="absolute top-[-20%] left-[-10%] w-[700px] h-[700px] bg-primary/10 rounded-full blur-[140px]"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px]"></div>
-    </div>
+    <!-- Ambient Aurora Orbs -->
+    <div class="aurora-orb aurora-orb-cyan position-fixed"></div>
+    <div class="aurora-orb aurora-orb-purple position-fixed"></div>
 
-    <main class="relative z-10 w-full max-w-md px-6">
+    <main class="container position-relative z-1" style="max-width: 480px;">
 
         <!-- Logo -->
-        <div class="flex flex-col items-center mb-10">
-            <h1 class="text-3xl font-bold tracking-tight">
-                Ask<span class="text-primary">N</span>Learn
+        <div class="text-center mb-5 animate-entrance">
+            <h1 class="display-5 fw-bold tracking-tighter text-white m-0">
+                Ask<span class="text-aurora">N</span>Learn
             </h1>
         </div>
 
-        <!-- Container care înlocuiește clasa .glass -->
-        <div class="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+        <!-- Glass Container -->
+        <div class="glass-card p-4 p-md-5 animate-entrance delay-100">
             @RenderBody()
         </div>
 
     </main>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
@@ -65,8 +49,8 @@
                 const type = input.type === "password" ? "text" : "password";
                 input.type = type;
                 toggle.innerHTML = type === "password"
-                    ? '<span class="material-symbols-outlined">visibility</span>'
-                    : '<span class="material-symbols-outlined">visibility_off</span>';
+                    ? '<span class="material-symbols-outlined fs-5">visibility</span>'
+                    : '<span class="material-symbols-outlined fs-5">visibility_off</span>';
             });
         }
 
@@ -84,7 +68,7 @@
         const strengthText = document.querySelector("#passwordStrengthText");
         const confirmText = document.querySelector("#confirmMatchText");
 
-        if (passwordInput) {
+        if (passwordInput && strengthBar) {
             passwordInput.addEventListener("input", () => {
                 let value = passwordInput.value;
                 let strength = 0;
@@ -98,19 +82,19 @@
                     case 0:
                     case 1:
                         strengthBar.style.width = "20%";
-                        strengthBar.className = "h-1 bg-red-500";
+                        strengthBar.className = "progress-bar bg-danger";
                         strengthText.textContent = "Weak password";
                         break;
                     case 2:
                     case 3:
                         strengthBar.style.width = "60%";
-                        strengthBar.className = "h-1 bg-yellow-500";
+                        strengthBar.className = "progress-bar bg-warning";
                         strengthText.textContent = "Medium password";
                         break;
                     case 4:
                     case 5:
                         strengthBar.style.width = "100%";
-                        strengthBar.className = "h-1 bg-emerald-500";
+                        strengthBar.className = "progress-bar bg-success";
                         strengthText.textContent = "Strong password";
                         break;
                 }

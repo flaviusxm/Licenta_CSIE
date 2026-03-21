@@ -1141,13 +1141,13 @@ namespace AskNLearn.Infrastructure.Persistance
 
         private static void PrintTestAccounts()
         {
-            Console.WriteLine("\n╔══════════════════════════════════════════════════════════════╗");
+            Console.WriteLine("\n╔════════════════════════════════════════════════════════════╗");
             Console.WriteLine("║              TEST ACCOUNTS (password: Test@1234!)            ║");
             Console.WriteLine("╠══════════════════════════════════════════════════════════════╣");
             Console.WriteLine("║  ADMIN     │ admin@asknlearn.com                             ║");
-            Console.WriteLine("║  MODERATOR │ moderator@asknlearn.com                        ║");
-            Console.WriteLine("║  VERIFIED  │ verified@asknlearn.com                         ║");
-            Console.WriteLine("║  MEMBER    │ member@asknlearn.com                           ║");
+            Console.WriteLine("║  MODERATOR │ moderator@asknlearn.com                         ║");
+            Console.WriteLine("║  VERIFIED  │ verified@asknlearn.com                          ║");
+            Console.WriteLine("║  MEMBER    │ member@asknlearn.com                            ║");
             Console.WriteLine("╚══════════════════════════════════════════════════════════════╝\n");
         }
 

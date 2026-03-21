@@ -7,5 +7,6 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
     public class GetPostsByCommunityQuery : IRequest<List<PostDto>>
     {
         public Guid CommunityId { get; set; }
+        public string? CurrentUserId { get; set; }
     }
 }

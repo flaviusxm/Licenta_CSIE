@@ -13,9 +13,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
-
 using AskNLearn.Application.Features.Posts.Commands.AddComment;
 using AskNLearn.Application.Features.Posts.Commands.RecordPostView;
+using AskNLearn.Application.Features.Communities.Commands.JoinCommunity;
+using AskNLearn.Application.Features.Communities.Commands.LeaveCommunity;
+using AskNLearn.Application.Features.Posts.Commands.VotePost;
+using AskNLearn.Application.Features.Posts.Commands.DeleteComment;
+using AskNLearn.Application.Features.Posts.Commands.UpdateComment;
+using AskNLearn.Application.Features.Posts.Commands.TogglePostSolved;
 
 namespace AskNLearn.Web.Controllers
 {
@@ -34,13 +39,65 @@ namespace AskNLearn.Web.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Details(Guid id)
         {
-            var community = await _mediator.Send(new GetCommunityByIdQuery { Id = id });
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var community = await _mediator.Send(new GetCommunityByIdQuery { Id = id, CurrentUserId = userId });
             if (community == null) return NotFound();
 
-            var posts = await _mediator.Send(new GetPostsByCommunityQuery { CommunityId = id });
+            var posts = await _mediator.Send(new GetPostsByCommunityQuery { CommunityId = id, CurrentUserId = userId });
             ViewBag.Posts = posts;
 
             return View(community);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Join(Guid id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _mediator.Send(new JoinCommunityCommand { CommunityId = id, UserId = userId });
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Leave(Guid id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _mediator.Send(new LeaveCommunityCommand { CommunityId = id, UserId = userId });
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VotePost(Guid postId, Guid communityId, short value)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = await _mediator.Send(new VotePostCommand { PostId = postId, UserId = userId, Value = value });
+            
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest" || 
+                (Request.Headers["Accept"].ToString().Contains("application/json")))
+            {
+                return Json(new { 
+                    success = result.Success, 
+                    voteCount = result.VoteCount,
+                    userVote = result.UserVote
+                });
+            }
+
+            return RedirectToAction(nameof(Details), new { id = communityId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateComment(Guid id, Guid communityId, string content)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _mediator.Send(new UpdateCommentCommand { Id = id, UserId = userId, Content = content });
+            return RedirectToAction(nameof(Details), new { id = communityId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteComment(Guid id, Guid communityId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _mediator.Send(new DeleteCommentCommand { Id = id, UserId = userId });
+            return RedirectToAction(nameof(Details), new { id = communityId });
         }
 
 
@@ -102,6 +159,10 @@ namespace AskNLearn.Web.Controllers
             var community = await _mediator.Send(new GetCommunityByIdQuery { Id = id });
             if (community == null) return NotFound();
 
+            // Check if user is creator
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (community.CreatorId != userId) return Forbid();
+
             var command = new UpdateCommunityCommand
             {
                 Id = community.Id,
@@ -117,6 +178,12 @@ namespace AskNLearn.Web.Controllers
         {
             if (!ModelState.IsValid) return View(command);
 
+            var community = await _mediator.Send(new GetCommunityByIdQuery { Id = command.Id });
+            if (community == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (community.CreatorId != userId) return Forbid();
+
             var result = await _mediator.Send(command);
             if (!result) return NotFound();
 
@@ -126,6 +193,12 @@ namespace AskNLearn.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(Guid id)
         {
+            var community = await _mediator.Send(new GetCommunityByIdQuery { Id = id });
+            if (community == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (community.CreatorId != userId) return Forbid();
+
             var result = await _mediator.Send(new DeleteCommunityCommand { Id = id });
             if (!result) return NotFound();
 
@@ -154,6 +227,10 @@ namespace AskNLearn.Web.Controllers
             var post = await _mediator.Send(new GetPostByIdQuery { Id = id });
             if (post == null) return NotFound();
 
+            // Check if user is author
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (post.AuthorId != userId) return Forbid();
+
             var command = new UpdatePostCommand
             {
                 Id = post.Id,
@@ -170,6 +247,12 @@ namespace AskNLearn.Web.Controllers
         {
             if (!ModelState.IsValid) return View(command);
 
+            var post = await _mediator.Send(new GetPostByIdQuery { Id = command.Id });
+            if (post == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (post.AuthorId != userId) return Forbid();
+
             var result = await _mediator.Send(command);
             if (!result) return NotFound();
 
@@ -179,9 +262,23 @@ namespace AskNLearn.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> DeletePost(Guid id, Guid communityId)
         {
+            var post = await _mediator.Send(new GetPostByIdQuery { Id = id });
+            if (post == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (post.AuthorId != userId) return Forbid();
+
             var result = await _mediator.Send(new DeletePostCommand { Id = id });
             if (!result) return NotFound();
 
+            return RedirectToAction(nameof(Details), new { id = communityId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleSolved(Guid id, Guid communityId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _mediator.Send(new TogglePostSolvedCommand { Id = id, UserId = userId });
             return RedirectToAction(nameof(Details), new { id = communityId });
         }
     }
