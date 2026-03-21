@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
+using AskNLearn.Application.Common.Interfaces;
+using AskNLearn.Infrastructure.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +21,7 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithThreadId()
     .WriteTo.Console()
     .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
-    .WriteTo.Seq("http://localhost:5341")
+    // .WriteTo.Seq("http://localhost:5341")
     .CreateLogger();
 
 builder.Host.UseSerilog(); 
@@ -27,13 +30,19 @@ builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddSignalR();
 
-builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
-{
-    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("DefaultConnection");
-    options.UseNpgsql(connectionString, b => b.MigrationsAssembly("AskNLearn.Infrastructure"));
-    options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-});
+// AI & Moderation Services
+builder.Services.AddHttpClient<IOllamaService, OllamaService>();
+builder.Services.AddSingleton<IModerationQueue, ModerationQueue>();
+builder.Services.AddHostedService<ModerationBackgroundService>();
+
+
+// builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+// {
+//     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+//     var connectionString = configuration.GetConnectionString("DefaultConnection");
+//     options.UseNpgsql(connectionString, b => b.MigrationsAssembly("AskNLearn.Infrastructure"));
+//     options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+// });
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();

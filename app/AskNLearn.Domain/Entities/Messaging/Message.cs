@@ -42,6 +42,8 @@ namespace AskNLearn.Domain.Entities.Messaging
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+        public ModerationStatus ModerationStatus { get; set; } = ModerationStatus.Pending;
+        public string? ModerationReason { get; set; }
 
         public ICollection<MessageReaction> Reactions { get; set; } = new List<MessageReaction>();
         public ICollection<MessageAttachment> Attachments { get; set; } = new List<MessageAttachment>();

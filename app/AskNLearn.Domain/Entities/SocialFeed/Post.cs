@@ -38,6 +38,8 @@ namespace AskNLearn.Domain.Entities.SocialFeed
         public int ViewCount { get; set; } = 0;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public ModerationStatus ModerationStatus { get; set; } = ModerationStatus.Pending;
+        public string? ModerationReason { get; set; }
 
         public ICollection<Message> Comments { get; set; } = [];
 

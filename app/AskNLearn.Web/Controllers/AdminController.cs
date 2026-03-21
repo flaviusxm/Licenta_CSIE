@@ -30,6 +30,14 @@ namespace AskNLearn.Web.Controllers
             return user.Role == Role.Admin;
         }
 
+        private async Task SetSidebarStats()
+        {
+            ViewBag.PendingVerifications = await _context.VerificationRequests.CountAsync(v => v.Status == Status.Pending);
+            var flaggedPosts = await _context.Posts.CountAsync(p => p.ModerationStatus == ModerationStatus.Flagged);
+            var flaggedMessages = await _context.Messages.CountAsync(m => m.ModerationStatus == ModerationStatus.Flagged);
+            ViewBag.FlaggedContentCount = flaggedPosts + flaggedMessages;
+        }
+
         public async Task<IActionResult> Index()
         {
             if (!await IsAdmin())
@@ -40,8 +48,9 @@ namespace AskNLearn.Web.Controllers
             
             // Statistics for dashboard
             ViewBag.TotalUsers = await _context.Users.CountAsync();
-            ViewBag.PendingVerifications = await _context.VerificationRequests.CountAsync(v => v.Status == Status.Pending);
             ViewBag.TotalCommunities = await _context.Communities.CountAsync();
+            
+            await SetSidebarStats();
             
             return View();
         }
@@ -53,6 +62,8 @@ namespace AskNLearn.Web.Controllers
                 TempData["ErrorMessage"] = "Access Denied: You do not have the Admin role.";
                 return RedirectToAction("Index", "Home");
             }
+
+            await SetSidebarStats();
 
             var requests = await _context.VerificationRequests
                 .Include(v => v.User)
@@ -99,6 +110,81 @@ namespace AskNLearn.Web.Controllers
 
             await _context.SaveChangesAsync(default);
             return RedirectToAction(nameof(Verifications));
+        }
+
+        public async Task<IActionResult> Moderation()
+        {
+            if (!await IsAdmin())
+            {
+                TempData["ErrorMessage"] = "Access Denied: You do not have the Admin role.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var posts = await _context.Posts
+                .Include(p => p.Author)
+                .OrderByDescending(p => p.ModerationStatus == ModerationStatus.Flagged)
+                .ThenByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            var messages = await _context.Messages
+                .Include(m => m.Author)
+                .Include(m => m.Post)
+                .OrderByDescending(m => m.ModerationStatus == ModerationStatus.Flagged)
+                .ThenByDescending(m => m.CreatedAt)
+                .ToListAsync();
+
+            ViewBag.Posts = posts;
+            ViewBag.Messages = messages;
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApprovePost(Guid id)
+        {
+            if (!await IsAdmin()) return Forbid();
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null) return NotFound();
+
+            post.ModerationStatus = ModerationStatus.Approved;
+            await _context.SaveChangesAsync(default);
+            return RedirectToAction(nameof(Moderation));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> FlagPost(Guid id)
+        {
+            if (!await IsAdmin()) return Forbid();
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null) return NotFound();
+
+            post.ModerationStatus = ModerationStatus.Flagged;
+            await _context.SaveChangesAsync(default);
+            return RedirectToAction(nameof(Moderation));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveComment(Guid id)
+        {
+            if (!await IsAdmin()) return Forbid();
+            var message = await _context.Messages.FindAsync(id);
+            if (message == null) return NotFound();
+
+            message.ModerationStatus = ModerationStatus.Approved;
+            await _context.SaveChangesAsync(default);
+            return RedirectToAction(nameof(Moderation));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> FlagComment(Guid id)
+        {
+            if (!await IsAdmin()) return Forbid();
+            var message = await _context.Messages.FindAsync(id);
+            if (message == null) return NotFound();
+
+            message.ModerationStatus = ModerationStatus.Flagged;
+            await _context.SaveChangesAsync(default);
+            return RedirectToAction(nameof(Moderation));
         }
 
         [AllowAnonymous]

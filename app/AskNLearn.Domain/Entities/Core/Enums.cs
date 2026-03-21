@@ -14,4 +14,12 @@ namespace AskNLearn.Domain.Entities.Core
         Resolved,
         Dismissed
     }
+
+    public enum ModerationStatus
+    {
+        Pending,
+        Approved,
+        Flagged,
+        AwaitingManualReview
+    }
 }
