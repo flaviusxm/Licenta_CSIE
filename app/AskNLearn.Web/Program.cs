@@ -21,7 +21,7 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithThreadId()
     .WriteTo.Console()
     .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
-    // .WriteTo.Seq("http://localhost:5341")
+    .WriteTo.Seq("http://localhost:5341")
     .CreateLogger();
 
 builder.Host.UseSerilog(); 
@@ -36,13 +36,13 @@ builder.Services.AddSingleton<IModerationQueue, ModerationQueue>();
 builder.Services.AddHostedService<ModerationBackgroundService>();
 
 
-// builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
-// {
-//     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-//     var connectionString = configuration.GetConnectionString("DefaultConnection");
-//     options.UseNpgsql(connectionString, b => b.MigrationsAssembly("AskNLearn.Infrastructure"));
-//     options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-// });
+builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("DefaultConnection");
+    options.UseNpgsql(connectionString, b => b.MigrationsAssembly("AskNLearn.Infrastructure"));
+    options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+});
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();

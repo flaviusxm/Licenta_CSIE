@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using AskNLearn.Domain.Entities.Core;
 
 namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
 {
@@ -19,6 +20,8 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
         public DateTime CreatedAt { get; set; }
         public List<CommentDto> Comments { get; set; } = [];
         public List<AttachmentDto> Attachments { get; set; } = [];
+        public ModerationStatus ModerationStatus { get; set; }
+        public string? ModerationReason { get; set; }
     }
 
     public class CommentDto
@@ -30,6 +33,8 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
         public string Content { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public List<AttachmentDto> Attachments { get; set; } = new();
+        public ModerationStatus ModerationStatus { get; set; }
+        public string? ModerationReason { get; set; }
     }
 
     public class AttachmentDto

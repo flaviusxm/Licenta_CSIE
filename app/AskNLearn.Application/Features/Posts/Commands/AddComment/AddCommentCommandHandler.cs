@@ -15,12 +15,14 @@ namespace AskNLearn.Application.Features.Posts.Commands.AddComment
         private readonly IApplicationDbContext _context;
         private readonly IFileService _fileService;
         private readonly ILogger<AddCommentCommandHandler> _logger;
+        private readonly IModerationQueue _moderationQueue;
 
-        public AddCommentCommandHandler(IApplicationDbContext context, IFileService fileService, ILogger<AddCommentCommandHandler> logger)
+        public AddCommentCommandHandler(IApplicationDbContext context, IFileService fileService, ILogger<AddCommentCommandHandler> logger, IModerationQueue moderationQueue)
         {
             _context = context;
             _fileService = fileService;
             _logger = logger;
+            _moderationQueue = moderationQueue;
         }
 
         public async Task<Guid> Handle(AddCommentCommand request, CancellationToken cancellationToken)
@@ -68,8 +70,15 @@ namespace AskNLearn.Application.Features.Posts.Commands.AddComment
                 }
 
                 await _context.Messages.AddAsync(comment, cancellationToken);
-                _logger.LogInformation("Saving comment to database for post {PostId}", request.PostId);
                 await _context.SaveChangesAsync(cancellationToken);
+
+                // Enqueue for AI Moderation
+                _moderationQueue.Enqueue(new ModerationTask
+                {
+                    Id = comment.Id,
+                    Content = comment.Content ?? string.Empty,
+                    Target = ModerationTarget.Comment
+                });
 
                 return comment.Id;
             }

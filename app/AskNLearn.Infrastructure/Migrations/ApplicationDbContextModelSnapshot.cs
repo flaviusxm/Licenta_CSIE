@@ -234,6 +234,7 @@ namespace AskNLearn.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Reason")
@@ -245,17 +246,8 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.Property<Guid?>("ReportedPostId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ReportedUserId")
-                        .HasColumnType("text");
-
                     b.Property<string>("ReporterId")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ResolvedById")
                         .HasColumnType("text");
 
                     b.Property<int>("Status")
@@ -263,9 +255,11 @@ namespace AskNLearn.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ReporterId");
+                    b.HasIndex("ReportedMessageId");
 
-                    b.HasIndex("ResolvedById");
+                    b.HasIndex("ReportedPostId");
+
+                    b.HasIndex("ReporterId");
 
                     b.ToTable("Reports");
                 });
@@ -432,6 +426,12 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.Property<bool>("IsPinned")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("ModerationReason")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ModerationStatus")
+                        .HasColumnType("integer");
+
                     b.Property<Guid?>("PostId")
                         .HasColumnType("uuid");
 
@@ -505,8 +505,8 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean");
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -547,6 +547,57 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.ToTable("CommunityMemberships");
                 });
 
+            modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.Event", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CommunityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("CurrentAttendees")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("MaxAttendees")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OrganizerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommunityId");
+
+                    b.HasIndex("OrganizerId");
+
+                    b.ToTable("Events");
+                });
+
             modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.Post", b =>
                 {
                     b.Property<Guid>("Id")
@@ -572,8 +623,17 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.Property<bool>("IsLocked")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsPinned")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsSolved")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("ModerationReason")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ModerationStatus")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -615,6 +675,21 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.HasIndex("PostId");
 
                     b.ToTable("PostAttachments");
+                });
+
+            modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.PostTag", b =>
+                {
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("PostId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("PostTags");
                 });
 
             modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.PostView", b =>
@@ -835,6 +910,52 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.HasIndex("GroupId");
 
                     b.ToTable("GroupRoles");
+                });
+
+            modelBuilder.Entity("AskNLearn.Domain.Entities.StudyGroup.LearningResource", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("DownloadCount")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ResourceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("UploaderId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UploaderId");
+
+                    b.ToTable("LearningResources");
                 });
 
             modelBuilder.Entity("AskNLearn.Domain.Entities.StudyGroup.StudyGroup", b =>
@@ -1064,19 +1185,25 @@ namespace AskNLearn.Infrastructure.Migrations
 
             modelBuilder.Entity("AskNLearn.Domain.Entities.Core.Report", b =>
                 {
+                    b.HasOne("AskNLearn.Domain.Entities.Messaging.Message", "ReportedMessage")
+                        .WithMany()
+                        .HasForeignKey("ReportedMessageId");
+
+                    b.HasOne("AskNLearn.Domain.Entities.SocialFeed.Post", "ReportedPost")
+                        .WithMany()
+                        .HasForeignKey("ReportedPostId");
+
                     b.HasOne("AskNLearn.Domain.Entities.Core.ApplicationUser", "Reporter")
                         .WithMany()
                         .HasForeignKey("ReporterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("AskNLearn.Domain.Entities.Core.ApplicationUser", "ResolvedBy")
-                        .WithMany()
-                        .HasForeignKey("ResolvedById");
+                    b.Navigation("ReportedMessage");
+
+                    b.Navigation("ReportedPost");
 
                     b.Navigation("Reporter");
-
-                    b.Navigation("ResolvedBy");
                 });
 
             modelBuilder.Entity("AskNLearn.Domain.Entities.Core.StoredFile", b =>
@@ -1214,6 +1341,25 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.Event", b =>
+                {
+                    b.HasOne("AskNLearn.Domain.Entities.SocialFeed.Community", "Community")
+                        .WithMany()
+                        .HasForeignKey("CommunityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AskNLearn.Domain.Entities.Core.ApplicationUser", "Organizer")
+                        .WithMany()
+                        .HasForeignKey("OrganizerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Community");
+
+                    b.Navigation("Organizer");
+                });
+
             modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.Post", b =>
                 {
                     b.HasOne("AskNLearn.Domain.Entities.Core.ApplicationUser", "Author")
@@ -1242,6 +1388,25 @@ namespace AskNLearn.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Post");
+                });
+
+            modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.PostTag", b =>
+                {
+                    b.HasOne("AskNLearn.Domain.Entities.SocialFeed.Post", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AskNLearn.Domain.Entities.SocialFeed.Tag", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("AskNLearn.Domain.Entities.SocialFeed.PostView", b =>
@@ -1333,6 +1498,25 @@ namespace AskNLearn.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("AskNLearn.Domain.Entities.StudyGroup.LearningResource", b =>
+                {
+                    b.HasOne("AskNLearn.Domain.Entities.StudyGroup.StudyGroup", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AskNLearn.Domain.Entities.Core.ApplicationUser", "Uploader")
+                        .WithMany()
+                        .HasForeignKey("UploaderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Uploader");
                 });
 
             modelBuilder.Entity("AskNLearn.Domain.Entities.StudyGroup.StudyGroup", b =>

@@ -30,14 +30,6 @@ namespace AskNLearn.Web.Controllers
             return user.Role == Role.Admin;
         }
 
-        private async Task SetSidebarStats()
-        {
-            ViewBag.PendingVerifications = await _context.VerificationRequests.CountAsync(v => v.Status == Status.Pending);
-            var flaggedPosts = await _context.Posts.CountAsync(p => p.ModerationStatus == ModerationStatus.Flagged);
-            var flaggedMessages = await _context.Messages.CountAsync(m => m.ModerationStatus == ModerationStatus.Flagged);
-            ViewBag.FlaggedContentCount = flaggedPosts + flaggedMessages;
-        }
-
         public async Task<IActionResult> Index()
         {
             if (!await IsAdmin())
@@ -48,9 +40,15 @@ namespace AskNLearn.Web.Controllers
             
             // Statistics for dashboard
             ViewBag.TotalUsers = await _context.Users.CountAsync();
+            ViewBag.PendingVerifications = await _context.VerificationRequests.CountAsync(v => v.Status == Status.Pending);
             ViewBag.TotalCommunities = await _context.Communities.CountAsync();
             
-            await SetSidebarStats();
+            // Flagged content statistics (AI + User Reports)
+            var flaggedPosts = await _context.Posts.CountAsync(p => p.ModerationStatus == ModerationStatus.Flagged || p.ModerationStatus == ModerationStatus.Pending);
+            var flaggedMessages = await _context.Messages.CountAsync(m => m.ModerationStatus == ModerationStatus.Flagged || m.ModerationStatus == ModerationStatus.Pending);
+            var pendingReports = await _context.Reports.CountAsync(r => r.Status == ReportStatus.Pending);
+            ViewBag.FlaggedContentCount = flaggedPosts + flaggedMessages;
+            ViewBag.PendingReportsCount = pendingReports;
             
             return View();
         }
@@ -62,8 +60,6 @@ namespace AskNLearn.Web.Controllers
                 TempData["ErrorMessage"] = "Access Denied: You do not have the Admin role.";
                 return RedirectToAction("Index", "Home");
             }
-
-            await SetSidebarStats();
 
             var requests = await _context.VerificationRequests
                 .Include(v => v.User)
@@ -120,23 +116,112 @@ namespace AskNLearn.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var posts = await _context.Posts
-                .Include(p => p.Author)
-                .OrderByDescending(p => p.ModerationStatus == ModerationStatus.Flagged)
-                .ThenByDescending(p => p.CreatedAt)
+            // Just send counts for the tabs
+            ViewBag.FlaggedPostsCount = await _context.Posts.CountAsync(p => p.ModerationStatus == ModerationStatus.Flagged || p.ModerationStatus == ModerationStatus.Pending);
+            ViewBag.FlaggedMessagesCount = await _context.Messages.CountAsync(m => m.ModerationStatus == ModerationStatus.Flagged || m.ModerationStatus == ModerationStatus.Pending);
+            ViewBag.PendingReportsCount = await _context.Reports.CountAsync(r => r.Status == ReportStatus.Pending);
+            
+            return View(new AskNLearn.Web.Models.ModerationViewModel());
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> LoadAIReports(int skip = 0, int take = 20, string filter = "ALL")
+        {
+            if (!await IsAdmin()) return Forbid();
+
+            var postsQuery = _context.Posts.AsNoTracking()
+                .Where(p => p.ModerationStatus == ModerationStatus.Flagged || p.ModerationStatus == ModerationStatus.Pending);
+            
+            var messagesQuery = _context.Messages.AsNoTracking()
+                .Where(m => m.ModerationStatus == ModerationStatus.Flagged || m.ModerationStatus == ModerationStatus.Pending);
+
+            int totalCount = 0;
+            var combinedList = new System.Collections.Generic.List<dynamic>();
+
+            if (filter == "ALL" || filter == "POST")
+            {
+                totalCount += await postsQuery.CountAsync();
+                var posts = await postsQuery
+                    .Include(p => p.Author)
+                    .Select(p => new { 
+                        Id = p.Id, 
+                        Title = p.Title, 
+                        Content = p.Content, 
+                        Author = p.Author.UserName, 
+                        CreatedAt = p.CreatedAt, 
+                        Type = "POST",
+                        Reason = p.ModerationReason,
+                        Status = p.ModerationStatus,
+                        ParentTitle = (string)null
+                    })
+                    .OrderByDescending(p => p.Status == ModerationStatus.Flagged)
+                    .ThenByDescending(p => p.CreatedAt)
+                    .Skip(skip).Take(take)
+                    .ToListAsync();
+                combinedList.AddRange(posts);
+            }
+
+            if (filter == "ALL" || filter == "COMMENT")
+            {
+                totalCount += await messagesQuery.CountAsync();
+                var messages = await messagesQuery
+                    .Include(m => m.Author)
+                    .Include(m => m.Post)
+                    .Select(m => new { 
+                        Id = m.Id, 
+                        Title = (string)null, 
+                        Content = m.Content, 
+                        Author = m.Author.UserName, 
+                        CreatedAt = m.CreatedAt, 
+                        Type = "COMMENT",
+                        Reason = m.ModerationReason,
+                        Status = m.ModerationStatus,
+                        ParentTitle = m.Post.Title
+                    })
+                    .OrderByDescending(m => m.Status == ModerationStatus.Flagged)
+                    .ThenByDescending(m => m.CreatedAt)
+                    .Skip(skip).Take(take)
+                    .ToListAsync();
+                combinedList.AddRange(messages);
+            }
+
+            Response.Headers.Add("X-Total-Count", totalCount.ToString());
+
+            // Final sort and slice if ALL combined
+            var finalResult = combinedList
+                .OrderByDescending(x => (ModerationStatus)x.Status == ModerationStatus.Flagged)
+                .ThenByDescending(x => (DateTime)x.CreatedAt)
+                .Take(take)
+                .ToList();
+
+            return PartialView("_AIReportsTable", finalResult);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> LoadUserReports(int skip = 0, int take = 20, string filter = "ALL")
+        {
+            if (!await IsAdmin()) return Forbid();
+
+            var query = _context.Reports.AsNoTracking()
+                .Include(r => r.Reporter)
+                .Include(r => r.ReportedPost)
+                .Include(r => r.ReportedMessage)
+                .Where(r => r.Status == ReportStatus.Pending);
+
+            if (filter == "POST")
+                query = query.Where(r => r.ReportedPostId != null);
+            else if (filter == "COMMENT")
+                query = query.Where(r => r.ReportedMessageId != null);
+
+            int totalCount = await query.CountAsync();
+            Response.Headers.Add("X-Total-Count", totalCount.ToString());
+
+            var reports = await query
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip(skip).Take(take)
                 .ToListAsync();
 
-            var messages = await _context.Messages
-                .Include(m => m.Author)
-                .Include(m => m.Post)
-                .OrderByDescending(m => m.ModerationStatus == ModerationStatus.Flagged)
-                .ThenByDescending(m => m.CreatedAt)
-                .ToListAsync();
-
-            ViewBag.Posts = posts;
-            ViewBag.Messages = messages;
-
-            return View();
+            return PartialView("_UserReportsTable", reports);
         }
 
         [HttpPost]
@@ -148,6 +233,7 @@ namespace AskNLearn.Web.Controllers
 
             post.ModerationStatus = ModerationStatus.Approved;
             await _context.SaveChangesAsync(default);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Ok();
             return RedirectToAction(nameof(Moderation));
         }
 
@@ -160,6 +246,7 @@ namespace AskNLearn.Web.Controllers
 
             post.ModerationStatus = ModerationStatus.Flagged;
             await _context.SaveChangesAsync(default);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Ok();
             return RedirectToAction(nameof(Moderation));
         }
 
@@ -172,6 +259,7 @@ namespace AskNLearn.Web.Controllers
 
             message.ModerationStatus = ModerationStatus.Approved;
             await _context.SaveChangesAsync(default);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Ok();
             return RedirectToAction(nameof(Moderation));
         }
 
@@ -184,6 +272,33 @@ namespace AskNLearn.Web.Controllers
 
             message.ModerationStatus = ModerationStatus.Flagged;
             await _context.SaveChangesAsync(default);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Ok();
+            return RedirectToAction(nameof(Moderation));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResolveReport(Guid id)
+        {
+            if (!await IsAdmin()) return Forbid();
+            var report = await _context.Reports.FindAsync(id);
+            if (report == null) return NotFound();
+
+            report.Status = ReportStatus.Resolved;
+            await _context.SaveChangesAsync(default);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Ok();
+            return RedirectToAction(nameof(Moderation));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DismissReport(Guid id)
+        {
+            if (!await IsAdmin()) return Forbid();
+            var report = await _context.Reports.FindAsync(id);
+            if (report == null) return NotFound();
+
+            report.Status = ReportStatus.Dismissed;
+            await _context.SaveChangesAsync(default);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Ok();
             return RedirectToAction(nameof(Moderation));
         }
 

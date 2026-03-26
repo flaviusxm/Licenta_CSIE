@@ -19,33 +19,50 @@
             color: #e5e7eb !important;
         }
         .table-responsive { background-color: transparent !important; }
+
+        /* Custom Premium Sidebar Badges */
+        .glass-badge {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 2rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        .glass-badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
+        .glass-badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
+        .glass-badge-aurora { background: rgba(52, 211, 153, 0.15); color: #34d399; border-color: rgba(52, 211, 153, 0.3); }
+
+        .sidebar-item-active {
+            background: rgba(52, 211, 153, 0.1) !important;
+            color: var(--color-mint-bright) !important;
+            border-right: 3px solid var(--color-mint-bright);
+        }
     </style>
 </head>
 <body class="dark-mesh-bg d-flex flex-column vh-100 overflow-hidden">
     <!-- Ambient Aurora Orbs -->
     <div class="aurora-orb aurora-orb-cyan position-fixed"></div>
     <div class="aurora-orb aurora-orb-purple position-fixed"></div>
+    <div class="aurora-orb aurora-orb-blue position-fixed"></div>
 
     <!-- Top Navigation Bar -->
     <header class="glass-nav position-relative z-3 w-100 px-4 d-flex align-items-center justify-content-between" style="height: 80px; flex-shrink: 0;">
         <!-- Logo Area -->
         <div class="d-flex align-items-center" style="width: 250px;">
-            <a asp-controller="Admin" asp-action="Index" class="d-flex align-items-center text-decoration-none">
-                <div class="p-2 rounded-3 bg-aurora-glass d-flex align-items-center justify-content-center shadow-glow me-2" style="background: rgba(52, 211, 153, 0.15) !important; border: 1px solid rgba(52, 211, 153, 0.3) !important;">
-                    <span class="material-symbols-outlined text-white fs-4" style="display: block !important;">school</span>
-                </div>
+            <a asp-controller="Admin" asp-action="Index" class="d-flex align-items-center text-decoration-none transition-all hover-translate-y">
+                
                 <h1 class="fs-4 fw-bold tracking-tight text-white mb-0">
-                    Ask<span class="text-aurora">N</span>Learn <span class="badge bg-opacity-10 bg-info text-info border border-info border-opacity-25 small ms-2" style="font-size: 0.6rem; vertical-align: middle;">ADMIN</span>
+                    Ask<span class="text-aurora">N</span>Learn <span class="text-muted fw-normal opacity-50 ms-1 small" style="font-size: 0.8rem;">Admin</span>
                 </h1>
             </a>
         </div>
 
-        <!-- Center Navigation -->
+        <!-- Center Navigation (Empty or space for other links) -->
         <nav class="d-none d-lg-flex align-items-center gap-2">
-            <a asp-controller="Home" asp-action="Index" class="nav-link-premium gap-2 animate-entrance delay-100">
-                <span class="material-symbols-outlined fs-5">exit_to_app</span>
-                <span>Exit to Site</span>
-            </a>
+            <!-- Space for future top-nav items -->
         </nav>
         
         <!-- Right Actions -->
@@ -53,9 +70,9 @@
             <div class="d-flex align-items-center gap-3">
                 <div class="text-end d-none d-sm-block">
                     <p class="small fw-bold text-white mb-0">System Admin</p>
-                    <p class="text-muted mb-0" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;">Root Access</p>
+                    <p class="text-muted mb-0 opacity-75" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;">Root Access</p>
                 </div>
-                <div class="rounded-circle d-flex align-items-center justify-content-center text-aurora fw-bold border border-glass-strong" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05);">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-aurora fw-bold border border-glass-strong shadow-sm" style="width: 42px; height: 42px; background: rgba(52, 211, 153, 0.05);">
                     SA
                 </div>
             </div>
@@ -65,11 +82,11 @@
     <!-- Main Content Area -->
     <div class="d-flex flex-grow-1 overflow-hidden position-relative z-1">
         <!-- Left Sidebar -->
-        <aside id="leftSidebar" class="d-flex sidebar-transition flex-column h-100 flex-shrink-0 position-relative" style="width: 300px; border-right: 1px solid var(--border-glass); background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px); overflow-x: hidden; z-index: 2;">
-            <div class="flex-grow-1 d-flex flex-column min-vh-0 overflow-hidden">
+        <aside id="leftSidebar" class="d-flex sidebar-transition flex-column h-100 flex-shrink-0 position-relative" style="width: 300px; border-right: 1px solid var(--border-glass); background: rgba(2, 8, 6, 0.7); backdrop-filter: blur(40px); overflow-x: hidden; z-index: 2;">
+            <div class="flex-grow-1 d-flex flex-column min-vh-0 overflow-hidden" style="background: radial-gradient(circle at 0% 0%, rgba(52, 211, 153, 0.05) 0%, transparent 50%);">
                 <div class="p-4 flex-grow-1 overflow-y-auto custom-scrollbar">
-                    <p class="text-muted fw-bold text-uppercase tracking-widest mb-4 px-2" style="font-size: 0.65rem;">Management</p>
-                    <div class="d-flex flex-column gap-2">
+                    <p class="text-muted fw-bold text-uppercase tracking-widest mb-4 px-2 opacity-50" style="font-size: 0.6rem;">System Management</p>
+                    <div class="d-flex flex-column gap-1">
                         <a asp-controller="Admin" asp-action="Index" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
                             <span class="material-symbols-outlined fs-5">dashboard</span>
                             <span>Dashboard Overview</span>
@@ -77,28 +94,50 @@
                         <a asp-controller="Admin" asp-action="Verifications" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "Verifications" ? "active" : "")">
                             <span class="material-symbols-outlined fs-5">verified_user</span>
                             <div class="d-flex align-items-center justify-content-between flex-grow-1">
-                                <span>Pending Requests</span>
-                                <span class="badge rounded-pill bg-aurora text-dark fw-bold" style="font-size: 0.6rem;">@ViewBag.PendingVerifications</span>
+                                <span>Verifications</span>
+                                @if (ViewBag.PendingVerifications > 0)
+                                {
+                                    <span class="glass-badge glass-badge-aurora">@ViewBag.PendingVerifications</span>
+                                }
                             </div>
                         </a>
                         <a asp-controller="Admin" asp-action="Moderation" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "Moderation" ? "active" : "")">
                             <span class="material-symbols-outlined fs-5">security</span>
                             <div class="d-flex align-items-center justify-content-between flex-grow-1">
-                                <span>AI Moderation</span>
-                                <span class="badge rounded-pill bg-danger text-white fw-bold" style="font-size: 0.6rem;">@ViewBag.FlaggedContentCount</span>
+                                <span>Moderation</span>
+                                @if (ViewBag.FlaggedContentCount > 0)
+                                {
+                                    <span class="glass-badge glass-badge-danger">@ViewBag.FlaggedContentCount</span>
+                                }
                             </div>
                         </a>
-                        <a href="#" class="nav-link-premium justify-content-start w-100 gap-3 opacity-50">
+                        
+                        <div class="my-3 border-top border-glass opacity-10 mx-2"></div>
+                        
+                        <a href="#" class="nav-link-premium justify-content-start w-100 gap-3 opacity-25" style="pointer-events: none;">
                             <span class="material-symbols-outlined fs-5">person_search</span>
-                            <span>Student Directory</span>
+                            <span>Students</span>
                         </a>
-                        <a href="#" class="nav-link-premium justify-content-start w-100 gap-3 opacity-50">
+                        <a href="#" class="nav-link-premium justify-content-start w-100 gap-3 opacity-25" style="pointer-events: none;">
                             <span class="material-symbols-outlined fs-5">forum</span>
-                            <span>Study Communities</span>
+                            <span>Communities</span>
                         </a>
-                        <a href="#" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition opacity-50">
+                        <a asp-controller="Admin" asp-action="Moderation" asp-fragment="user-reports" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition">
                             <span class="material-symbols-outlined fs-5">flag</span>
-                            <span>User Reports</span>
+                            <div class="d-flex align-items-center justify-content-between flex-grow-1">
+                                <span>Reports</span>
+                                @if (ViewBag.PendingReportsCount > 0)
+                                {
+                                    <span class="glass-badge glass-badge-warning">@ViewBag.PendingReportsCount</span>
+                                }
+                            </div>
+                        </a>
+                        
+                        <div class="my-4 border-top border-glass opacity-25"></div>
+                        
+                        <a asp-controller="Home" asp-action="Index" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition mb-4 text-aurora-hover">
+                            <span class="material-symbols-outlined fs-5">arrow_back</span>
+                            <span>Exit Admin View</span>
                         </a>
                     </div>
                 </div>
@@ -107,12 +146,12 @@
 
         <button id="toggleLeftSidebar"
                 class="d-flex sidebar-transition align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 p-0 shadow-lg border-0"
-                style="left: 300px; width: 28px; height: 64px; background: rgba(52, 211, 153, 0.1); backdrop-filter: blur(20px); border: 1px solid var(--border-glass-strong) !important; border-left: none !important;">
-            <span class="material-symbols-outlined m-0 p-0" style="color: var(--color-mint-bright); margin-left: -2px !important;">chevron_left</span>
+                style="left: 300px; width: 22px; height: 60px; background: rgba(52, 211, 153, 0.1); backdrop-filter: blur(20px); border: 1px solid var(--border-glass-strong) !important; border-left: none !important;">
+            <span class="material-symbols-outlined m-0 p-0 fs-6" style="color: var(--color-mint-bright); margin-left: -2px !important;">chevron_left</span>
         </button>
 
         <!-- Main Content -->
-        <main class="flex-grow-1 h-100 overflow-y-auto position-relative custom-scrollbar p-4 p-md-5">
+        <main class="flex-grow-1 h-100 overflow-y-auto position-relative custom-scrollbar p-4 p-xl-5">
             @RenderBody()
         </main>
     </div>

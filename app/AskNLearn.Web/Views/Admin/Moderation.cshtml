@@ -1,0 +1,275 @@
+@model AskNLearn.Web.Models.ModerationViewModel
+@using AskNLearn.Domain.Entities.Core
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Moderation Center";
+    int aiTotal = (int)ViewBag.FlaggedPostsCount + (int)ViewBag.FlaggedMessagesCount;
+    int userTotal = (int)ViewBag.PendingReportsCount;
+}
+
+<div class="container-fluid p-0 animate-entrance">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-4">
+        <div>
+            <h2 class="display-6 fw-bold text-white mb-2">Moderation</h2>
+            <div class="d-flex align-items-center gap-2 small text-muted">
+                <div class="rounded-circle bg-danger shadow-glow" style="width: 8px; height: 8px;"></div>
+                Advanced moderation tools. Review AI automated flags and user community reports.
+            </div>
+        </div>
+        <div class="d-flex gap-3">
+             <ul class="nav nav-pills glass-panel p-1 border-glass-strong" id="moderationTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link nav-link-premium active px-4 py-2" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai-reports" type="button" role="tab" aria-controls="ai-reports" aria-selected="true">
+                        AI Flagged <span class="glass-badge glass-badge-danger ms-2" id="ai-count-tab-badge">@aiTotal</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link nav-link-premium px-4 py-2" id="user-tab" data-bs-toggle="tab" data-bs-target="#user-reports" type="button" role="tab" aria-controls="user-reports" aria-selected="false">
+                        User Reports <span class="glass-badge glass-badge-warning ms-2" id="user-count-tab-badge">@userTotal</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="moderationTabContent">
+        <!-- AI Reports Tab -->
+        <div class="tab-pane fade show active" id="ai-reports" role="tabpanel" aria-labelledby="ai-tab">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-pill-glass active sub-filter-btn" data-target="ai" data-filter="ALL">All Content</button>
+                    <button class="btn btn-pill-glass sub-filter-btn" data-target="ai" data-filter="POST">Posts Only</button>
+                    <button class="btn btn-pill-glass sub-filter-btn" data-target="ai" data-filter="COMMENT">Comments Only</button>
+                </div>
+            </div>
+
+            <div class="glass-card border-glass-strong overflow-hidden mb-4 shadow-lg">
+                <div class="table-responsive bg-transparent" style="min-height: 450px;">
+                    <table class="table table-borderless table-hover mb-0 align-middle text-white bg-transparent">
+                        <thead style="background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border-glass-strong);">
+                            <tr>
+                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Type</th>
+                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Content Details</th>
+                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">AI Verdict</th>
+                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Status</th>
+                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ai-reports-body">
+                            <!-- Content loaded via AJAX -->
+                        </tbody>
+                    </table>
+                    <!-- Loading Shell -->
+                    <div id="ai-loading" class="p-5 text-center d-none">
+                        <div class="spinner-border text-aurora" role="status"></div>
+                        <p class="text-muted mt-3 small text-uppercase tracking-widest">Fetching intelligence...</p>
+                    </div>
+                </div>
+                
+                <!-- Pagination Footer -->
+                <div class="p-4 border-top border-glass-strong d-flex justify-content-between align-items-center small text-muted" style="background: rgba(0,0,0,0.15);" id="ai-pagination-footer">
+                    <p class="mb-0 fw-medium" id="ai-showing-text">Showing 0-0 of 0 records</p>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm mb-0 gap-1" id="ai-pagination-ul">
+                            <!-- Injected by JS -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Reports Tab -->
+        <div class="tab-pane fade" id="user-reports" role="tabpanel" aria-labelledby="user-tab">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-pill-glass active sub-filter-btn" data-target="user" data-filter="ALL">All Reports</button>
+                    <button class="btn btn-pill-glass sub-filter-btn" data-target="user" data-filter="POST">Post Reports</button>
+                    <button class="btn btn-pill-glass sub-filter-btn" data-target="user" data-filter="COMMENT">Comment Reports</button>
+                </div>
+            </div>
+
+             <div class="glass-card border-glass-strong overflow-hidden mb-4 shadow-lg">
+                <div class="table-responsive bg-transparent" style="min-height: 450px;">
+                    <table class="table table-borderless table-hover mb-0 align-middle text-white bg-transparent">
+                        <thead style="background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border-glass-strong);">
+                            <tr>
+                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Reported By</th>
+                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Target Content</th>
+                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Reason</th>
+                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-reports-body">
+                            <!-- Content loaded via AJAX -->
+                        </tbody>
+                    </table>
+                     <!-- Loading Shell -->
+                    <div id="user-loading" class="p-5 text-center d-none">
+                        <div class="spinner-border text-warning" role="status"></div>
+                        <p class="text-muted mt-3 small text-uppercase tracking-widest">Scanning community reports...</p>
+                    </div>
+                </div>
+
+                <!-- Pagination Footer -->
+                <div class="p-4 border-top border-glass-strong d-flex justify-content-between align-items-center small text-muted" style="background: rgba(0,0,0,0.15);" id="user-pagination-footer">
+                    <p class="mb-0 fw-medium" id="user-showing-text">Showing 0-0 of 0 records</p>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm mb-0 gap-1" id="user-pagination-ul">
+                            <!-- Injected by JS -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let aiPage = 1;
+            let userPage = 1;
+            const take = 10; 
+            let currentAiFilter = "ALL";
+            let currentUserFilter = "ALL";
+            
+            // Internal state for totals
+            let aiTotal = @aiTotal;
+            let userTotal = @userTotal;
+
+            // Initial load
+            loadAIReports(1);
+            loadUserReports(1);
+
+            // Sub-filtering
+            $('.sub-filter-btn').click(function() {
+                const target = $(this).data('target');
+                const filter = $(this).data('filter');
+                $(`.sub-filter-btn[data-target="${target}"]`).removeClass('active');
+                $(this).addClass('active');
+
+                if (target === 'ai') {
+                    currentAiFilter = filter;
+                    loadAIReports(1);
+                } else {
+                    currentUserFilter = filter;
+                    loadUserReports(1);
+                }
+            });
+
+            function loadAIReports(page) {
+                aiPage = page;
+                const skip = (page - 1) * take;
+                $('#ai-reports-body').addClass('opacity-25');
+                $('#ai-loading').removeClass('d-none');
+                $('#ai-pagination-footer').addClass('opacity-50').css('pointer-events', 'none');
+
+                $.ajax({
+                    url: `/Admin/LoadAIReports?skip=${skip}&take=${take}&filter=${currentAiFilter}`,
+                    type: 'GET',
+                    success: function(data, textStatus, request) {
+                        $('#ai-loading').addClass('d-none');
+                        $('#ai-reports-body').removeClass('opacity-25');
+                        $('#ai-pagination-footer').removeClass('opacity-50').css('pointer-events', 'all');
+                        
+                        // Update total from header
+                        const serverTotal = parseInt(request.getResponseHeader('X-Total-Count')) || 0;
+                        aiTotal = serverTotal;
+                        
+                        if (data.trim().length > 0) {
+                            $('#ai-reports-body').html(data);
+                        } else {
+                            $('#ai-reports-body').html('<tr><td colspan="5" class="py-5 text-center text-muted italic small">No flagged items found.</td></tr>');
+                        }
+                        updatePagination('ai', aiTotal, page, take);
+                    }
+                });
+            }
+
+            function loadUserReports(page) {
+                userPage = page;
+                const skip = (page - 1) * take;
+                $('#user-reports-body').addClass('opacity-25');
+                $('#user-loading').removeClass('d-none');
+                $('#user-pagination-footer').addClass('opacity-50').css('pointer-events', 'none');
+
+                $.ajax({
+                    url: `/Admin/LoadUserReports?skip=${skip}&take=${take}&filter=${currentUserFilter}`,
+                    type: 'GET',
+                    success: function(data, textStatus, request) {
+                        $('#user-loading').addClass('d-none');
+                        $('#user-reports-body').removeClass('opacity-25');
+                        $('#user-pagination-footer').removeClass('opacity-50').css('pointer-events', 'all');
+
+                        const serverTotal = parseInt(request.getResponseHeader('X-Total-Count')) || 0;
+                        userTotal = serverTotal;
+
+                        if (data.trim().length > 0) {
+                            $('#user-reports-body').html(data);
+                        } else {
+                            $('#user-reports-body').html('<tr><td colspan="4" class="py-5 text-center text-muted italic small">No community reports found.</td></tr>');
+                        }
+                        updatePagination('user', userTotal, page, take);
+                    }
+                });
+            }
+
+            function updatePagination(target, total, current, size) {
+                const totalPages = Math.max(1, Math.ceil(total / size));
+                const ul = $(`#${target}-pagination-ul`);
+                const text = $(`#${target}-showing-text`);
+                
+                ul.empty();
+                
+                const start = total === 0 ? 0 : (current - 1) * size + 1;
+                const end = Math.min(current * size, total);
+                text.text(`Showing ${start}-${end} of ${total} records`);
+
+                // Previous
+                const prevLi = $('<li class="page-item"></li>');
+                const prevBtn = $(`<button class="btn btn-glass btn-sm border-0 ${current === 1 ? 'disabled opacity-25' : ''}">❮</button>`);
+                if (current > 1) prevBtn.click(() => target === 'ai' ? loadAIReports(current - 1) : loadUserReports(current - 1));
+                ul.append(prevLi.append(prevBtn));
+
+                // Page numbers
+                for (let i = 1; i <= totalPages; i++) {
+                    if (totalPages > 5) {
+                        if (i > 1 && i < totalPages && (i < current - 1 || i > current + 1)) {
+                            if (i === current - 2 || i === current + 2) ul.append('<li class="page-item d-flex align-items-center"><span class="px-2 text-muted opacity-50 small">...</span></li>');
+                            continue;
+                        }
+                    }
+                    const li = $('<li class="page-item"></li>');
+                    const btn = $(`<button class="btn ${i === current ? 'btn-premium active' : 'btn-glass'} btn-sm border-0 px-3" style="${i === current ? 'min-width: 36px; height: 36px; border-radius: 50% !important;' : 'min-width: 36px; height: 36px; border-radius: 50% !important;'}">${i}</button>`);
+                    btn.click(() => target === 'ai' ? loadAIReports(i) : loadUserReports(i));
+                    ul.append(li.append(btn));
+                }
+
+                // Next
+                const nextLi = $('<li class="page-item"></li>');
+                const nextBtn = $(`<button class="btn btn-glass btn-sm border-0 ${current === totalPages ? 'disabled opacity-25' : ''}">❯</button>`);
+                if (current < totalPages) nextBtn.click(() => target === 'ai' ? loadAIReports(current + 1) : loadUserReports(current + 1));
+                ul.append(nextLi.append(nextBtn));
+            }
+
+            // AJAX actions
+            $(document).on('submit', '.ajax-action', function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const row = form.closest('tr');
+                
+                $.post(form.attr('action'), form.serialize(), function() {
+                    row.fadeOut(300, function() { 
+                        $(this).remove();
+                        // Optional: trigger reload of current page to refresh counts and list
+                        if (target === 'ai') loadAIReports(aiPage); else loadUserReports(userPage);
+                    });
+                }).fail(function() {
+                    alert("Action failed.");
+                });
+            });
+        });
+    </script>
+}

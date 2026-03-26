@@ -1,5 +1,6 @@
 using AskNLearn.Application.Common.Interfaces;
 using AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity;
+using AskNLearn.Domain.Entities.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostById
         public async Task<PostDto?> Handle(GetPostByIdQuery request, CancellationToken cancellationToken)
         {
             return await _context.Posts
-                .Where(p => p.Id == request.Id)
+                .Where(p => p.Id == request.Id && p.ModerationStatus != ModerationStatus.Flagged)
                 .Include(p => p.Author)
                 .Include(p => p.Attachments)
                 .Include(p => p.Comments)
@@ -38,12 +39,19 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostById
                     ViewCount = p.ViewCount,
                     CommentCount = p.Comments.Count,
                     CreatedAt = p.CreatedAt,
-                    Comments = p.Comments.OrderBy(c => c.CreatedAt).Select(c => new CommentDto
+                    ModerationStatus = p.ModerationStatus,
+                    ModerationReason = p.ModerationReason,
+                    Comments = p.Comments
+                        .Where(c => c.ModerationStatus != ModerationStatus.Flagged)
+                        .OrderBy(c => c.CreatedAt)
+                        .Select(c => new CommentDto
                     {
                         Id = c.Id,
                         AuthorName = c.Author != null ? c.Author.FullName : "Unknown",
                         Content = c.Content ?? "",
                         CreatedAt = c.CreatedAt,
+                        ModerationStatus = c.ModerationStatus,
+                        ModerationReason = c.ModerationReason,
                         ReplyToMessageId = c.ReplyToMessageId,
                         Attachments = c.Attachments != null ? c.Attachments.Select(a => new AttachmentDto
                         {

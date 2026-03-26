@@ -11,11 +11,13 @@ namespace AskNLearn.Application.Features.Posts.Commands.CreatePost
     {
         private readonly IApplicationDbContext _context;
         private readonly IFileService _fileService;
+        private readonly IModerationQueue _moderationQueue;
 
-        public CreatePostCommandHandler(IApplicationDbContext context, IFileService fileService)
+        public CreatePostCommandHandler(IApplicationDbContext context, IFileService fileService, IModerationQueue moderationQueue)
         {
             _context = context;
             _fileService = fileService;
+            _moderationQueue = moderationQueue;
         }
 
         public async Task<Guid> Handle(CreatePostCommand request, CancellationToken cancellationToken)
@@ -48,6 +50,15 @@ namespace AskNLearn.Application.Features.Posts.Commands.CreatePost
 
             await _context.Posts.AddAsync(post, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+
+            // Enqueue for AI Moderation
+            _moderationQueue.Enqueue(new ModerationTask
+            {
+                Id = post.Id,
+                Content = post.Content,
+                Title = post.Title,
+                Target = ModerationTarget.Post
+            });
 
             return post.Id;
         }

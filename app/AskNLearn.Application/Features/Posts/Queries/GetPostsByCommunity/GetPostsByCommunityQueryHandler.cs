@@ -1,4 +1,5 @@
 using AskNLearn.Application.Common.Interfaces;
+using AskNLearn.Domain.Entities.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
         public async Task<List<PostDto>> Handle(GetPostsByCommunityQuery request, CancellationToken cancellationToken)
         {
             var posts = await _context.Posts
-                .Where(p => p.CommunityId == request.CommunityId)
+                .Where(p => p.CommunityId == request.CommunityId && p.ModerationStatus != ModerationStatus.Flagged)
                 .Include(p => p.Author)
                 .Include(p => p.Attachments)
                 .Include(p => p.Comments)
@@ -43,13 +44,20 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
                         ? _context.PostVotes.Where(v => v.PostId == p.Id && v.UserId == request.CurrentUserId).Select(v => (int)v.VoteValue).FirstOrDefault()
                         : 0,
                     CreatedAt = p.CreatedAt,
-                    Comments = p.Comments.OrderBy(c => c.CreatedAt).Select(c => new CommentDto
+                    ModerationStatus = p.ModerationStatus,
+                    ModerationReason = p.ModerationReason,
+                    Comments = p.Comments
+                        .Where(c => c.ModerationStatus != ModerationStatus.Flagged)
+                        .OrderBy(c => c.CreatedAt)
+                        .Select(c => new CommentDto
                     {
                         Id = c.Id,
                         AuthorId = c.AuthorId,
                         AuthorName = c.Author != null ? c.Author.FullName : "Unknown",
                         Content = c.Content ?? "",
                         CreatedAt = c.CreatedAt,
+                        ModerationStatus = c.ModerationStatus,
+                        ModerationReason = c.ModerationReason,
                         ReplyToMessageId = c.ReplyToMessageId,
                         Attachments = c.Attachments != null ? c.Attachments.Select(a => new AttachmentDto
                         {
