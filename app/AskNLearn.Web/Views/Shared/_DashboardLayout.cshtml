@@ -50,7 +50,7 @@
         
         <!-- Right Actions -->
         <div class="d-flex align-items-center justify-content-end gap-3" style="width: 250px;">
-            @if (User.Identity.IsAuthenticated)
+            @if (User.Identity?.IsAuthenticated == true)
             {
                 <!-- Inbox -->
                 <a asp-controller="Inbox" asp-action="Index" class="btn btn-link text-muted hover-text-white p-2 rounded-circle transition-all d-flex align-items-center justify-content-center text-decoration-none hover-bg-glass">
@@ -88,7 +88,7 @@
             </aside>
             <button id="toggleLeftSidebar"
                     class="d-flex sidebar-transition align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 p-0 shadow-lg"
-                    style="left: 300px; width: 28px; height: 64px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(10px);">
+                    style="left: 300px; width: 28px; height: 64px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(10px); transition: left 0.6s var(--ease-apple);">
                 <span class="material-symbols-outlined text-muted m-0 p-0" style="margin-left: -2px !important;">chevron_left</span>
             </button>
         }
@@ -105,10 +105,66 @@
         </main>
     </div>
 
+    <!-- Apple-style Toast Container -->
+    <div id="toast-container" class="position-fixed bottom-0 end-0 p-4 z-5 d-flex flex-column gap-3" style="pointer-events: none;"></div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     
     <script>
+        // --- SignalR Real-time Hub ---
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/communicationHub")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("ReceiveConnectionRequest", (data) => {
+            showToast(data.message, "person_add", "var(--color-mint-bright)");
+        });
+
+        connection.on("ReceiveConnectionAccepted", (data) => {
+            showToast(data.message, "check_circle", "var(--color-mint-bright)");
+        });
+
+        connection.start().catch(err => console.error("SignalR Error:", err));
+
+        // --- Premium Apple-style Toast System ---
+        function showToast(message, icon, color) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'glass-card p-3 shadow-lg d-flex align-items-center gap-3 animate-entrance';
+            toast.style.cssText = `
+                width: 320px;
+                pointer-events: auto;
+                background: rgba(10, 24, 18, 0.9);
+                border-left: 4px solid ${color};
+                backdrop-filter: blur(20px);
+                transition: all 0.8s var(--ease-out-quint);
+                animation: toast-in 0.8s var(--ease-out-quint) forwards;
+            `;
+            
+            toast.innerHTML = `
+                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05);">
+                    <span class="material-symbols-outlined" style="color: ${color}; font-size: 20px;">${icon}</span>
+                </div>
+                <div class="flex-grow-1">
+                    <p class="text-white fw-bold mb-0" style="font-size: 0.85rem;">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="btn btn-link p-1 text-muted hover-text-white text-decoration-none">
+                    <span class="material-symbols-outlined fs-6">close</span>
+                </button>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px) scale(0.95)';
+                setTimeout(() => toast.remove(), 600);
+            }, 5000);
+        }
+
+        // --- Layout Logic ---
         const leftSidebar = document.getElementById("leftSidebar");
         const leftButton = document.getElementById("toggleLeftSidebar");
         const chevron = leftButton ? leftButton.querySelector('span') : null;
@@ -121,6 +177,12 @@
             });
         }
     </script>
+    <style>
+        @@keyframes toast-in {
+            from { opacity: 0; transform: translateX(100%) scale(0.9) blur(10px); }
+            to { opacity: 1; transform: translateX(0) scale(1) blur(0); }
+        }
+    </style>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

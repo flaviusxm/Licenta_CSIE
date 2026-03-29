@@ -5,39 +5,39 @@
 
 :root {
     /* --- Premium Dark Mint Palette --- */
-    --bg-universe: #020806;           /* Deep Forest Black */
-    --bg-nebula: #06120e;             /* Midnight Mint Surface */
-    
+    --bg-universe: #020806; /* Deep Forest Black */
+    --bg-nebula: #06120e; /* Midnight Mint Surface */
     /* --- Sophisticated Mint Accents --- */
-    --color-mint-bright: #34d399;     /* Energetic Mint (Emerald 400) */
-    --color-mint-deep: #059669;       /* Deep Mint (Emerald 600) */
-    --color-teal: #14b8a6;            /* Rich Teal */
-    --color-pale-mint: #a7f3d0;       /* Luminous Whisper Mint */
-    
+    --color-mint-bright: #34d399; /* Energetic Mint (Emerald 400) */
+    --color-mint-deep: #059669; /* Deep Mint (Emerald 600) */
+    --color-teal: #14b8a6; /* Rich Teal */
+    --color-pale-mint: #a7f3d0; /* Luminous Whisper Mint */
+    --color-emerald: var(--color-mint-bright); /* Define emerald as mint-bright for consistency */
+
     --gradient-aurora: linear-gradient(135deg, var(--color-mint-bright) 0%, var(--color-teal) 100%);
     --gradient-nebula: linear-gradient(135deg, var(--color-teal) 0%, var(--color-mint-deep) 100%);
-
     /* --- Frosted Glass Surfaces (Heavy Blur) --- */
-    --glass-surface: rgba(6, 18, 14, 0.5); 
-    --glass-nav: rgba(2, 8, 6, 0.8);        
-    --glass-highlight: rgba(52, 211, 153, 0.05); 
-    
+    --glass-surface: rgba(6, 18, 14, 0.45); /* High-quality Forest Mint Base */
+    --glass-nav: rgba(2, 8, 6, 0.8);
+    --glass-highlight: rgba(52, 211, 153, 0.05);
     /* --- Frost & Focus --- */
     --blur-heavy: 40px;
     --blur-medium: 24px;
-    
     /* --- Premium Structural Borders --- */
     --border-glass: rgba(255, 255, 255, 0.06); /* Faint structural edge */
     --border-glass-strong: rgba(255, 255, 255, 0.12);
     --border-glow: rgba(52, 211, 153, 0.25); /* Sophisticated mint edge glow */
-
     /* --- Typography --- */
     --text-pure: #ffffff;
     --text-muted: #94a3b8; /* Crisp Gray */
-    
     /* --- Dimensionality & Glow --- */
     --shadow-deep: 0 30px 60px -15px rgba(0, 0, 0, 0.9);
     --shadow-glow: 0 0 30px rgba(52, 211, 153, 0.08); /* Soft mint ambient glow */
+    --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-snappy: cubic-bezier(0.4, 0, 0.2, 1.2);
+    --ease-apple: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out-expo: cubic-bezier(1, 0, 0, 1);
 }
 
 /* =========================================================================
@@ -74,7 +74,7 @@ html, body {
     border: 1px solid var(--border-glass);
     border-radius: 1.5rem;
     box-shadow: var(--shadow-deep);
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.6s var(--ease-out-quint);
     position: relative;
     overflow: hidden;
 }
@@ -95,10 +95,10 @@ html, body {
 }
 
 .glass-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-5px);
     border-color: var(--border-glow);
-    box-shadow: 0 30px 50px -15px rgba(0, 0, 0, 0.8), var(--shadow-glow);
-    background: rgba(10, 24, 18, 0.7);
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8), var(--shadow-glow);
+    background: rgba(10, 24, 18, 0.6);
 }
 
 .glass-nav {
@@ -125,7 +125,7 @@ html, body {
     letter-spacing: 0.02em;
     padding: 0.6rem 1.25rem;
     border-radius: 2rem;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.6s var(--ease-apple);
     text-decoration: none !important;
     display: inline-flex;
     align-items: center;
@@ -141,7 +141,7 @@ html, body {
     background: var(--gradient-aurora);
     opacity: 0;
     transform: scale(0.85);
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.5s var(--ease-out-quint);
     z-index: -1;
     border-radius: inherit;
 }
@@ -245,7 +245,7 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0.75rem 1.75rem;
     border-radius: 2rem; 
     box-shadow: 0 8px 20px rgba(52, 211, 153, 0.2);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.4s var(--ease-apple);
     letter-spacing: 0.05em;
     font-size: 0.9rem;
     text-transform: uppercase;
@@ -264,7 +264,7 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 2rem;
     padding: 0.75rem 1.75rem;
     font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.4s var(--ease-apple);
 }
 
 .btn-glass:hover {
@@ -280,7 +280,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-pure);
     border-radius: 1rem;
     padding: 0.75rem 1.25rem;
-    transition: all 0.3s ease;
+    transition: all 0.4s var(--ease-apple);
 }
 
 .form-control-glass:focus {
@@ -420,7 +420,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .animate-entrance {
-    animation: slide-up-fade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: slide-up-fade 0.8s var(--ease-out-quint) forwards;
 }
 
 /* Delay utilities for staggered entrances */
@@ -437,8 +437,9 @@ h1, h2, h3, h4, h5, h6 {
 .rounded-lg { border-radius: 1rem; }
 
 .hover-glow:hover {
-    color: var(--color-emerald) !important;
-    text-shadow: 0 0 10px rgba(0, 245, 160, 0.4);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), var(--shadow-glow);
+    border-color: var(--border-glow);
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
@@ -473,7 +474,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Sidebar Animation Classes */
 .sidebar-transition {
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition: all 0.6s var(--ease-apple) !important;
 }
 
 .sidebar-collapsed {
