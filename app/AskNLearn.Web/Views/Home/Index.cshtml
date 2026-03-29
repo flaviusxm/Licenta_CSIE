@@ -4,7 +4,7 @@
     ViewData["Title"] = "Home";
 }
 
-<div class="container py-4" style="max-width: 900px;">
+<div class="container py-4" style="max-width:900px;">
     @if (TempData["ErrorMessage"] != null)
     {
         <div class="alert alert-danger d-flex align-items-center gap-2 rounded-4 mb-4 fw-bold shadow-sm" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444;" role="alert">
@@ -17,9 +17,9 @@
         @if (User.Identity.IsAuthenticated)
         {
             <!-- Performance Dashboard Header -->
-            <div class="glass-card mb-4 overflow-hidden border-0 shadow-lg" style="background: linear-gradient(135deg, rgba(6, 18, 14, 0.8) 0%, rgba(2, 8, 6, 0.9) 100%);">
+            <div class="glass-card mb-4 overflow-hidden border-0 shadow-lg" style="background: var(--glass-surface); border: 1px solid var(--border-glass-strong) !important;">
                 <div class="p-4 p-md-5 d-flex flex-column flex-md-row align-items-center justify-content-between gap-4 position-relative">
-                    <div class="position-absolute translate-middle-y" style="top: 0; right: 10%; width: 300px; height: 300px; background: var(--gradient-aurora); filter: blur(100px); opacity: 0.1;"></div>
+                    <div class="position-absolute translate-middle-y" style="top: 0; right: 10%; width: 400px; height: 400px; background: var(--color-mint-bright); filter: blur(150px); opacity: 0.05;"></div>
                     <div class="z-1">
                         <div class="d-flex align-items-center gap-3 mb-3">
                             <span class="badge bg-aurora-glass text-aurora px-3 py-1 fw-black text-uppercase tracking-widest" style="font-size: 0.6rem;">Academic Performance</span>
@@ -89,127 +89,120 @@
         </div>
         
         <!-- Feed Content -->
-        <div class="d-flex flex-column gap-4 pb-5">
-            <!-- Activity Insight 1 -->
-            <article class="glass-card p-4 transition-all hover-glow border-0" style="background: rgba(15, 23, 42, 0.4); border-radius: 1.5rem;">
-                <div class="d-flex align-items-start gap-4">
-                    <!-- Community Badge / Vertical ID -->
-                    <div class="d-flex flex-column align-items-center gap-2" style="width: 50px;">
-                        <div class="avatar-md rounded-lg d-flex flex-center text-primary fw-black shadow-lg" style="background: rgba(0,245,160,0.1); color: var(--color-mint-bright) !important; border: 1px solid rgba(0,245,160,0.2);">CS</div>
-                        <div class="d-flex flex-column align-items-center py-2 px-1 rounded-pill" style="background: rgba(255,255,255,0.03);">
-                             <button class="btn btn-link p-0 text-muted hover-text-white transition-colors"><span class="material-symbols-outlined" style="font-size: 1.25rem;">keyboard_arrow_up</span></button>
-                             <span class="text-white fw-black small my-1">42</span>
-                             <button class="btn btn-link p-0 text-muted hover-text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 1.25rem;">keyboard_arrow_down</span></button>
-                        </div>
-                    </div>
-                    
-                    <div class="flex-grow-1">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-aurora fw-bold" style="font-size: 0.75rem;">CS Student Community</span>
-                                <span class="text-muted opacity-50 small">•</span>
-                                <span class="text-muted small">Posted by SarahDev</span>
-                            </div>
-                            <span class="text-muted small fw-bold opacity-75">2h ago</span>
-                        </div>
-                        
-                        <h3 class="fs-4 fw-bold text-white mb-3 tracking-tight">Recursive Algorithms: Deep-Dive Collaboration Session</h3>
-                        <p class="text-muted mb-4 lh-relaxed" style="font-size: 0.9rem;">
-                            Exploring advanced memoization techniques in Java. We're hosting a live peer-review session in 15 minutes to analyze performance bottlenecks in the current assignment modules. All senior contributors welcome.
-                        </p>
-                        
-                        <div class="d-flex align-items-center gap-4">
-                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
-                                <span class="material-symbols-outlined fs-5">chat_bubble</span>
-                                12 Contributions
-                            </div>
-                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
-                                <span class="material-symbols-outlined fs-5">visibility</span>
-                                2.4k Views
-                            </div>
-                            <div class="ms-auto d-flex gap-2">
-                                <button class="btn btn-glass-sm p-2 d-flex align-items-center justify-content-center bookmark-toggle" title="Bookmark Post">
-                                    <span class="material-symbols-outlined fs-5 transition-all">star</span>
-                                </button>
-                                <button class="btn btn-premium-sm px-4 py-1">Join Session</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <!-- Activity Insight 2 -->
-            <article class="glass-card p-4 transition-all hover-glow border-0" style="background: rgba(15, 23, 42, 0.4); border-radius: 1.5rem;">
-                <div class="d-flex align-items-start gap-4">
-                    <div class="d-flex flex-column align-items-center gap-2" style="width: 50px;">
-                        <div class="avatar-md rounded-lg d-flex flex-center text-success fw-black shadow-lg" style="background: rgba(52, 211, 153, 0.1); color: var(--color-mint-bright) !important; border: 1px solid rgba(52, 211, 153, 0.2);">MA</div>
-                        <div class="d-flex flex-column align-items-center py-2 px-1 rounded-pill" style="background: rgba(255,255,255,0.03);">
-                             <button class="btn btn-link p-0 text-muted hover-text-white transition-colors"><span class="material-symbols-outlined" style="font-size: 1.25rem;">keyboard_arrow_up</span></button>
-                             <span class="text-white fw-black small my-1">15</span>
-                             <button class="btn btn-link p-0 text-muted hover-text-danger transition-colors"><span class="material-symbols-outlined" style="font-size: 1.25rem;">keyboard_arrow_down</span></button>
-                        </div>
-                    </div>
-                    
-                    <div class="flex-grow-1">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-aurora fw-bold" style="font-size: 0.75rem;">Mathematics & Logic Group</span>
-                                <span class="text-muted opacity-50 small">•</span>
-                                <span class="text-muted small">Posted by MathWhiz</span>
-                            </div>
-                            <span class="text-muted small fw-bold opacity-75">5h ago</span>
-                        </div>
-                        
-                        <h3 class="fs-4 fw-bold text-white mb-3 tracking-tight">Advanced Calculus: Integration Techniques Reference</h3>
-                        <p class="text-muted mb-4 lh-relaxed" style="font-size: 0.9rem;">
-                            The comprehensive PDF resource for integration by parts and trigonometric substitution is now available in the community archives. Categorized under "Exam Prep".
-                        </p>
-                        
-                        <div class="d-flex align-items-center gap-4">
-                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
-                                <span class="material-symbols-outlined fs-5">description</span>
-                                Resource Attached (PDF)
-                            </div>
-                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
-                                <span class="material-symbols-outlined fs-5">chat_bubble</span>
-                                8 Contributions
-                            </div>
-                            <div class="ms-auto d-flex gap-2">
-                                <button class="btn btn-glass-sm p-2 d-flex align-items-center justify-content-center bookmark-toggle" title="Bookmark Resource">
-                                    <span class="material-symbols-outlined fs-5 transition-all">star</span>
-                                </button>
-                                <button class="btn btn-premium-sm px-4 py-1">Download Resource</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </article>
+        <div id="feed-container" class="d-flex flex-column gap-4 pb-0">
+            @await Html.PartialAsync("_PostCards", ViewBag.RecentPosts as List<app_licenta.Controllers.HomeFeedPostDto>)
         </div>
-    </div> 
-</div>
 
-<script>
-    // --- Post Bookmarking Logic ---
-    document.querySelectorAll('.bookmark-toggle').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const icon = this.querySelector('.material-symbols-outlined');
-            const isActive = icon.classList.contains('fill-icon');
-            
-            if (isActive) {
-                icon.classList.remove('fill-icon');
-                icon.style.fontVariationSettings = "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24";
-                icon.style.color = '';
-                this.style.background = '';
-                this.style.borderColor = '';
-            } else {
-                icon.classList.add('fill-icon');
-                icon.style.fontVariationSettings = "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24";
-                icon.style.color = '#fbbf24';
-                this.style.background = 'rgba(251, 191, 36, 0.1)';
-                this.style.borderColor = 'rgba(251, 191, 36, 0.3)';
-                this.style.transform = 'scale(1.2)';
-                setTimeout(() => this.style.transform = '', 200);
+        <!-- Loading Spinner -->
+        <div id="feed-load-spinner" class="d-none text-center py-5">
+            <div class="spinner-border text-aurora" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mt-2 fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">Fetching more magic...</p>
+        </div>
+
+        <!-- Sentinel -->
+        <div id="feed-sentinel" class="py-2"></div>
+    </div> 
+</div>v>
+
+@section Scripts {
+    <script>
+        // --- Infinite Scroll Logic (Home) ---
+        let feedSkip = 10;
+        let feedLoading = false;
+        let feedAllLoaded = false;
+        
+        const feedSentinel = document.getElementById('feed-sentinel');
+        const feedContainer = document.getElementById('feed-container');
+        const feedSpinner = document.getElementById('feed-load-spinner');
+
+        const feedObserver = new IntersectionObserver(async (entries) => {
+            if (entries[0].isIntersecting && !feedLoading && !feedAllLoaded) {
+                await loadMorePosts();
             }
+        }, { threshold: 0.1 });
+
+        if (feedSentinel) {
+            feedObserver.observe(feedSentinel);
+        }
+
+        async function loadMorePosts() {
+            feedLoading = true;
+            feedSpinner.classList.remove('d-none');
+
+            try {
+                const response = await fetch(`/Home/GetFeed?skip=${feedSkip}`);
+                if (response.ok) {
+                    const html = await response.text();
+                    
+                    if (!html.trim()) {
+                        feedAllLoaded = true;
+                        feedSpinner.innerHTML = '<p class="text-muted fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">You have reached the end of the universe.</p>';
+                    } else {
+                        feedContainer.insertAdjacentHTML('beforeend', html);
+                        feedSkip += 10;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading more posts:', error);
+            } finally {
+                feedLoading = false;
+                if (!feedAllLoaded) feedSpinner.classList.add('d-none');
+            }
+        }
+
+        // --- Connection Actions Logic (Home) ---
+        async function handleConnectionHome(userId, action, btn) {
+            const container = btn.closest('div[id^="author-actions-home-"]');
+            if (container) {
+                container.style.opacity = '0.5';
+                container.style.pointerEvents = 'none';
+            }
+            try {
+                const resp = await fetch(`/Connections/${action}?userId=${userId}`, { method: 'POST' });
+                if (resp.ok) {
+                    if (action === 'SendRequest') {
+                        container.innerHTML = `<span class="text-muted opacity-50 d-flex flex-center" title="Request Pending"><span class="material-symbols-outlined" style="font-size: 16px;">hourglass_empty</span></span>`;
+                    } else if (action === 'AcceptRequest') {
+                        container.innerHTML = `
+                            <form action="/Direct/StartChat" method="post" class="m-0 p-0">
+                                <input type="hidden" name="userId" value="${userId}" />
+                                <button type="submit" class="btn btn-link p-0 text-aurora hover-glow text-decoration-none d-flex flex-center" title="Send Message" style="transition: transform 0.4s var(--ease-snappy);">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">chat</span>
+                                </button>
+                            </form>`;
+                    }
+                }
+                if (container) {
+                    container.style.opacity = '1';
+                    container.style.pointerEvents = 'all';
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // --- Post Bookmarking Logic ---
+        document.querySelectorAll('.bookmark-toggle').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const icon = this.querySelector('.material-symbols-outlined');
+                const isActive = icon.classList.contains('fill-icon');
+                
+                if (isActive) {
+                    icon.classList.remove('fill-icon');
+                    icon.style.fontVariationSettings = "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24";
+                    icon.style.color = '';
+                    this.style.background = '';
+                    this.style.borderColor = '';
+                } else {
+                    icon.classList.add('fill-icon');
+                    icon.style.fontVariationSettings = "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24";
+                    icon.style.color = '#fbbf24';
+                    this.style.background = 'rgba(251, 191, 36, 0.1)';
+                    this.style.borderColor = 'rgba(251, 191, 36, 0.3)';
+                    this.style.transform = 'scale(1.2)';
+                    setTimeout(() => this.style.transform = '', 200);
+                }
+            });
         });
-    });
-</script>
+    </script>
+}

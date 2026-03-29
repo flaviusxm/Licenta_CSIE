@@ -20,9 +20,25 @@ namespace AskNLearn.Web.Controllers
             var communities = await _mediator.Send(new GetCommunitiesQuery 
             { 
                 SearchTerm = searchTerm,
-                CurrentUserId = userId
+                CurrentUserId = userId,
+                Skip = 0,
+                Take = 12
             });
             return View(communities);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCommunities(int skip, string? searchTerm)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var communities = await _mediator.Send(new GetCommunitiesQuery
+            {
+                SearchTerm = searchTerm,
+                CurrentUserId = userId,
+                Skip = skip,
+                Take = 12
+            });
+            return PartialView("_CommunityCards", communities);
         }
     }
 }

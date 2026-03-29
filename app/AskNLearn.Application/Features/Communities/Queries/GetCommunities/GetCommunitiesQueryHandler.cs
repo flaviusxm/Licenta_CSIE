@@ -29,6 +29,9 @@ namespace AskNLearn.Application.Features.Communities.Queries.GetCommunities
             }
 
             var communities = await query
+                .OrderByDescending(c => c.CreatedAt)
+                .Skip(request.Skip)
+                .Take(request.Take)
                 .Select(c => new CommunityDto
                 {
                     Id = c.Id,

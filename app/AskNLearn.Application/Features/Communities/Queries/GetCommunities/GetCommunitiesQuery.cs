@@ -7,5 +7,7 @@ namespace AskNLearn.Application.Features.Communities.Queries.GetCommunities
     {
         public string? SearchTerm { get; set; }
         public string? CurrentUserId { get; set; }
+        public int Skip { get; set; } = 0;
+        public int Take { get; set; } = 12;
     }
 }

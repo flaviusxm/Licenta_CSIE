@@ -8,5 +8,7 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries.GetStudyGroups
     {
         public string? SearchTerm { get; set; }
         public bool OnlyPublic { get; set; } = true;
+        public int Skip { get; set; } = 0;
+        public int Take { get; set; } = 10;
     }
 }

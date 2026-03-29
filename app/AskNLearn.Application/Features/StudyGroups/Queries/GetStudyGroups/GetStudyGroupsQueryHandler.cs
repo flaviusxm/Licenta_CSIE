@@ -34,6 +34,8 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries.GetStudyGroups
 
             return await query
                 .OrderByDescending(x => x.CreatedAt)
+                .Skip(request.Skip)
+                .Take(request.Take)
                 .Select(x => new StudyGroupDto
                 {
                     Id = x.Id,
