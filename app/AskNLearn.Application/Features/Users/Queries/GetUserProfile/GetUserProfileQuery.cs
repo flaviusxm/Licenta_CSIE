@@ -1,10 +1,12 @@
 using MediatR;
+using AskNLearn.Application.Common.Models;
 
 namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
 {
     public class GetUserProfileQuery : IRequest<UserProfileDto>
     {
         public string UserId { get; set; } = string.Empty;
+        public string? CurrentUserId { get; set; }
     }
 
     public class UserProfileDto
@@ -32,5 +34,8 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
         public string? BannerUrl { get; set; }
         public string? SocialLinks { get; set; }
         public bool HasPendingVerification { get; set; }
+        public ConnectionStatus ConnectionStatus { get; set; } = ConnectionStatus.None;
+        public string FlowState { get; set; } = "Stable";
+        public bool IsOwnProfile { get; set; }
     }
 }

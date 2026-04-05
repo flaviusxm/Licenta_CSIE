@@ -154,25 +154,41 @@
 
             <!-- Milestone 4: Community Influence -->
             <div class="position-relative d-flex align-items-start gap-4 gap-md-5 group">
-                <div class="position-relative z-1 d-flex align-items-center justify-content-center border border-2 transition-transform hover-scale flex-shrink-0 shadow-sm" style="width: 4rem; height: 4rem; border-radius: 1rem; @(Model.Level >= 5 ? "background: var(--color-mint-bright); color: var(--bg-universe); border-color: var(--color-mint-bright); box-shadow: 0 0 20px rgba(52, 211, 153, 0.3) !important;" : "background: rgba(0,0,0,0.5); color: #94a3b8; border-color: rgba(255,255,255,0.1);")">
-                    <span class="material-symbols-outlined fs-1">military_tech</span>
+                <div class="position-relative z-1 d-flex align-items-center justify-content-center border border-2 transition-transform hover-scale flex-shrink-0 shadow-sm" style="width: 4rem; height: 4rem; border-radius: 1rem; @(Model.Role == "Admin" || Model.Level >= 5 ? "background: var(--color-mint-bright); color: var(--bg-universe); border-color: var(--color-mint-bright); box-shadow: 0 0 20px rgba(52, 211, 153, 0.3) !important;" : "background: rgba(0,0,0,0.5); color: #94a3b8; border-color: rgba(255,255,255,0.1);")">
+                    <span class="material-symbols-outlined fs-1">@(Model.Role == "Admin" ? "shield_person" : "military_tech")</span>
                 </div>
                 <div class="flex-grow-1 pt-2">
                     <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
                         <h3 class="fs-4 fw-bold text-white text-uppercase tracking-tight m-0">Step 4: Community Level</h3>
-                        <span class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Target: Level 5</span>
+                        @if (Model.Role == "Admin")
+                        {
+                            <span class="badge rounded-pill fw-bold text-uppercase tracking-widest px-3 py-2 shadow-sm" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.65rem;">Admin Bypass</span>
+                        }
+                        else 
+                        {
+                            <span class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Target: Level 5</span>
+                        }
                     </div>
-                    <p class="text-muted fw-bold lh-base small mb-3" style="max-width: 600px;">
-                        Interact with others and share knowledge to reach level 5. You are currently at <strong class="text-white">Level @Model.Level</strong>.
-                    </p>
-                    <div class="d-flex align-items-center gap-3 mt-2" style="max-width: 300px;">
-                        <div class="d-flex align-items-center justify-content-center fw-bold flex-shrink-0 text-aurora shadow-sm" style="width: 40px; height: 40px; border-radius: 1rem; background: rgba(52, 211, 153, 0.1);">
-                            @Model.Level
+                    @if (Model.Role == "Admin")
+                    {
+                        <p class="text-muted fw-bold lh-base small mb-3" style="max-width: 600px;">
+                            As a System Administrator, you are exempt from community level requirements.
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="text-muted fw-bold lh-base small mb-3" style="max-width: 600px;">
+                            Interact with others and share knowledge to reach level 5. You are currently at <strong class="text-white">Level @Model.Level</strong>.
+                        </p>
+                        <div class="d-flex align-items-center gap-3 mt-2" style="max-width: 300px;">
+                            <div class="d-flex align-items-center justify-content-center fw-bold flex-shrink-0 text-aurora shadow-sm" style="width: 40px; height: 40px; border-radius: 1rem; background: rgba(52, 211, 153, 0.1);">
+                                @Model.Level
+                            </div>
+                            <div class="rounded-pill p-1 overflow-hidden flex-grow-1" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+                                <div class="rounded-pill transition-all shadow-sm bg-primary" style="height: 0.5rem; width: @(Math.Min(Model.Level * 20, 100))%; transition-duration: 0.5s;"></div>
+                            </div>
                         </div>
-                        <div class="rounded-pill p-1 overflow-hidden flex-grow-1" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
-                            <div class="rounded-pill transition-all shadow-sm bg-primary" style="height: 0.5rem; width: @(Math.Min(Model.Level * 20, 100))%; transition-duration: 0.5s;"></div>
-                        </div>
-                    </div>
+                    }
                 </div>
             </div>
 
@@ -190,6 +206,46 @@
                     </p>
                 </div>
             </div>
+
+            <!-- Moderator Application (Optional Path) -->
+            @if (Model.IsVerified && Model.Role == "Member" && Model.Level >= 5)
+            {
+                <div class="position-relative d-flex align-items-start gap-4 gap-md-5 group mt-5 pt-5 border-top border-glass">
+                    <div class="position-relative z-1 d-flex align-items-center justify-content-center border border-2 border-aurora bg-aurora-soft text-aurora transition-transform hover-scale flex-shrink-0 shadow-lg" style="width: 4rem; height: 4rem; border-radius: 1rem;">
+                        <span class="material-symbols-outlined fs-1">gavel</span>
+                    </div>
+                    <div class="flex-grow-1 pt-2">
+                        <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+                            <h3 class="fs-4 fw-bold text-white text-uppercase tracking-tight m-0">Apply for Moderator</h3>
+                            <span class="badge rounded-pill fw-bold text-uppercase tracking-widest px-3 py-2 shadow-sm" style="background: rgba(52, 211, 153, 0.1); color: var(--color-mint-bright); border: 1px solid rgba(52, 211, 153, 0.2); font-size: 0.65rem;">Unlocked</span>
+                        </div>
+                        <p class="text-muted fw-bold lh-base small mb-4" style="max-width: 600px;">
+                            Your contributions have been recognized. You are now eligible to join the moderation team and help guide the community.
+                        </p>
+                        <form asp-controller="Admin" asp-action="ApplyForModerator" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-premium d-inline-flex align-items-center gap-2 text-uppercase tracking-wider fw-bold shadow-lg py-3 px-5" style="border-radius: 1rem;">
+                                <span class="material-symbols-outlined fs-5">send</span>
+                                Submit Moderator Application
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+            else if (Model.Role == "Moderator")
+            {
+                 <div class="position-relative d-flex align-items-start gap-4 gap-md-5 group mt-5 pt-5 border-top border-glass">
+                    <div class="position-relative z-1 d-flex align-items-center justify-content-center border border-2 border-aurora bg-aurora text-dark transition-transform hover-scale flex-shrink-0 shadow-lg" style="width: 4rem; height: 4rem; border-radius: 1rem;">
+                        <span class="material-symbols-outlined fs-1">verified_user</span>
+                    </div>
+                    <div class="flex-grow-1 pt-2">
+                        <h3 class="fs-4 fw-bold text-white text-uppercase tracking-tight m-0 mb-2">Active Moderator</h3>
+                        <p class="text-muted fw-bold lh-base small m-0" style="max-width: 600px;">
+                            You are already part of the community moderation team. Thank you for your service!
+                        </p>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </div>

@@ -6,13 +6,16 @@
          style="background-image: url('@(Model.BannerUrl ?? "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop")'); transition-duration: 1s;">
         <div class="position-absolute inset-0" style="background: linear-gradient(to top, var(--bg-universe), transparent);"></div>
     </div>
-    <div class="position-absolute bottom-0 end-0 p-4 z-3">
-        <div class="glass-card px-3 py-2 d-flex align-items-center gap-2 hover-bg-glass transition-colors border-glass shadow-sm" style="border-radius: 1rem;">
-            <span class="material-symbols-outlined text-muted fs-6">link</span>
-            <input type="text" name="BannerUrl" value="@Model.BannerUrl" placeholder="Banner URL..." 
-                   class="bg-transparent border-0 text-white text-uppercase tracking-widest fw-bold p-0 shadow-none" style="font-size: 0.65rem; width: 150px; outline: none; box-shadow: none !important;" />
+    @if (Model.IsOwnProfile)
+    {
+        <div class="position-absolute bottom-0 end-0 p-4 z-3">
+            <div class="glass-card px-3 py-2 d-flex align-items-center gap-2 hover-bg-glass transition-colors border-glass shadow-sm" style="border-radius: 1rem;">
+                <span class="material-symbols-outlined text-muted fs-6">link</span>
+                <input type="text" name="BannerUrl" value="@Model.BannerUrl" placeholder="Banner URL..." 
+                       class="bg-transparent border-0 text-white text-uppercase tracking-widest fw-bold p-0 shadow-none" style="font-size: 0.65rem; width: 150px; outline: none; box-shadow: none !important;" />
+            </div>
         </div>
-    </div>
+    }
 </div>
 
 <!-- Identity & Metrics Layout -->
@@ -29,7 +32,21 @@
     <div class="flex-grow-1 w-100 glass-card p-4 p-md-5 shadow-lg border-glass-strong" style="border-radius: 2.5rem; margin-top: 2rem;">
         <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-start gap-4">
             <div class="text-center text-md-start w-100">
-                <h1 class="display-6 fw-bold text-white tracking-tight mb-2">@Model.FullName</h1>
+                <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-4 mb-2">
+                    <h1 class="display-6 fw-bold text-white tracking-tight m-0">@Model.FullName</h1>
+                    @{
+                        var flowColor = Model.FlowState switch {
+                            "Peaking" => "#f472b6",
+                            "Active" => "#34d399",
+                            "Idle" => "#94a3b8",
+                            _ => "#a855f7"
+                        };
+                    }
+                    <div class="badge rounded-pill d-flex align-items-center gap-2 fw-bold tracking-widest text-uppercase px-3 py-1 shadow-sm" style="background: @(flowColor)1a; color: @flowColor; border: 1px solid @(flowColor)33; font-size: 0.6rem;">
+                        <span class="rounded-circle" style="width: 6px; height: 6px; background: @flowColor; box-shadow: 0 0 8px @flowColor;"></span>
+                        Flow: @Model.FlowState
+                    </div>
+                </div>
                 <p class="text-muted fw-bold text-uppercase tracking-widest d-inline-flex align-items-center gap-2 mb-4 mx-auto mx-md-0 px-2 py-1 rounded" style="font-size: 0.7rem; background: rgba(0,0,0,0.2);">
                     <span class="material-symbols-outlined small">alternate_email</span>
                     @(Model.FullName.ToLower().Replace(" ", "-"))#@((Math.Abs(Model.FullName.GetHashCode()) % 10000).ToString("D4"))
@@ -55,7 +72,40 @@
                             <span class="material-symbols-outlined fs-6">check_decagram</span> Verified Student
                         </div>
                     }
-                    else
+                    @if (!Model.IsOwnProfile)
+                    {
+                        var status = Model.ConnectionStatus;
+                        <div class="d-flex align-items-center gap-2" id="connection-actions-@Model.Id">
+                            @if (status == ConnectionStatus.None)
+                            {
+                                <button type="button" onclick="handleProfileAction('@Model.Id', 'SendRequest')" class="btn btn-premium px-4 py-2 text-uppercase tracking-widest fw-bold shadow-lg" style="font-size: 0.75rem;">
+                                    Connect
+                                </button>
+                            }
+                            else if (status == ConnectionStatus.PendingSent)
+                            {
+                                <button type="button" onclick="handleProfileAction('@Model.Id', 'DeclineRequest')" class="btn btn-glass px-4 py-2 text-muted text-uppercase tracking-widest fw-bold shadow-sm" style="font-size: 0.75rem; border-radius: 1rem;">
+                                    Cancel Request
+                                </button>
+                            }
+                            else if (status == ConnectionStatus.PendingReceived)
+                            {
+                                <button type="button" onclick="handleProfileAction('@Model.Id', 'AcceptRequest')" class="btn btn-premium px-4 py-2 text-uppercase tracking-widest fw-bold shadow-lg" style="font-size: 0.75rem;">
+                                    Accept Request
+                                </button>
+                            }
+                            else if (status == ConnectionStatus.Accepted)
+                            {
+                                <a asp-controller="Direct" asp-action="Index" asp-route-id="@Model.Id" class="btn btn-premium px-4 py-2 text-uppercase tracking-widest fw-bold shadow-lg text-decoration-none" style="font-size: 0.75rem;">
+                                    Message
+                                </a>
+                                <button type="button" onclick="handleProfileAction('@Model.Id', 'RemoveConnection')" class="btn btn-glass p-2 text-danger opacity-50 hover-opacity-100 transition-opacity" title="Remove Connection" style="width: 38px; height: 38px; border-radius: 1rem;">
+                                    <span class="material-symbols-outlined fs-5">person_remove</span>
+                                </button>
+                            }
+                        </div>
+                    }
+                    else if (!Model.IsVerified)
                     {
                          <a asp-action="Verification" class="btn btn-glass rounded-pill d-flex align-items-center gap-2 fw-bold tracking-widest text-uppercase px-3 py-2 text-decoration-none shadow-sm" style="font-size: 0.75rem;">
                             Verify Identity

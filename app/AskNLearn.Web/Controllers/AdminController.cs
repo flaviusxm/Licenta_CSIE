@@ -30,6 +30,34 @@ namespace AskNLearn.Web.Controllers
             return user.Role == Role.Admin;
         }
 
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplyForModerator()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("SignIn", "Auth");
+
+            if (!user.IsVerified || user.ReputationPoints < 500)
+            {
+                TempData["ErrorMessage"] = "You do not meet the requirements for moderation.";
+                return RedirectToAction("Verification", "Profile");
+            }
+
+            if (user.Role == Role.Member)
+            {
+                user.Role = Role.Moderator;
+                await _userManager.UpdateAsync(user);
+                TempData["SuccessMessage"] = "Congratulations! You are now a Moderator.";
+            }
+            else
+            {
+                TempData["InfoMessage"] = "You are already a Moderator or Admin.";
+            }
+
+            return RedirectToAction("Verification", "Profile");
+        }
+
         public async Task<IActionResult> Index()
         {
             if (!await IsAdmin())
@@ -53,7 +81,7 @@ namespace AskNLearn.Web.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Verifications()
+        public async Task<IActionResult> Verifications(int? pageNumber)
         {
             if (!await IsAdmin())
             {
@@ -61,12 +89,22 @@ namespace AskNLearn.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var requests = await _context.VerificationRequests
+            int pageSize = 10;
+            var query = _context.VerificationRequests
                 .Include(v => v.User)
                 .OrderByDescending(v => v.SubmittedAt)
-                .ToListAsync();
+                .AsNoTracking();
 
-            return View(requests);
+            ViewBag.PendingVerificationsCount = await query.CountAsync(v => v.Status == Status.Pending);
+
+            var paginatedRequests = await AskNLearn.Web.Models.PaginatedList<VerificationRequest>.CreateAsync(query, pageNumber ?? 1, pageSize);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_VerificationRows", paginatedRequests);
+            }
+
+            return View(paginatedRequests);
         }
 
         [HttpPost]
@@ -138,9 +176,57 @@ namespace AskNLearn.Web.Controllers
             int totalCount = 0;
             var combinedList = new System.Collections.Generic.List<dynamic>();
 
-            if (filter == "ALL" || filter == "POST")
+            if (filter == "ALL")
             {
-                totalCount += await postsQuery.CountAsync();
+                // For "ALL", we need to sum counts
+                totalCount = await postsQuery.CountAsync() + await messagesQuery.CountAsync();
+                
+                // Fetch a bit from both to merge, but ideally we should have a more robust paging
+                // if they are huge. For now, fetch 'take' from both, merge and 'take' again.
+                // This handles the first few pages well.
+                var posts = await postsQuery
+                    .Include(p => p.Author)
+                    .Select(p => new { 
+                        Id = p.Id, 
+                        Title = p.Title, 
+                        Content = p.Content, 
+                        Author = p.Author.UserName, 
+                        CreatedAt = p.CreatedAt, 
+                        Type = "POST",
+                        Reason = p.ModerationReason,
+                        Status = p.ModerationStatus,
+                        ParentTitle = (string)null
+                    })
+                    .OrderByDescending(p => p.Status == ModerationStatus.Flagged)
+                    .ThenByDescending(p => p.CreatedAt)
+                    .Skip(skip).Take(take)
+                    .ToListAsync();
+
+                var messages = await messagesQuery
+                    .Include(m => m.Author)
+                    .Include(m => m.Post)
+                    .Select(m => new { 
+                        Id = m.Id, 
+                        Title = (string)null, 
+                        Content = m.Content, 
+                        Author = m.Author.UserName, 
+                        CreatedAt = m.CreatedAt, 
+                        Type = "COMMENT",
+                        Reason = m.ModerationReason,
+                        Status = m.ModerationStatus,
+                        ParentTitle = m.Post.Title
+                    })
+                    .OrderByDescending(m => m.Status == ModerationStatus.Flagged)
+                    .ThenByDescending(m => m.CreatedAt)
+                    .Skip(skip).Take(take)
+                    .ToListAsync();
+
+                combinedList.AddRange(posts);
+                combinedList.AddRange(messages);
+            }
+            else if (filter == "POST")
+            {
+                totalCount = await postsQuery.CountAsync();
                 var posts = await postsQuery
                     .Include(p => p.Author)
                     .Select(p => new { 
@@ -160,10 +246,9 @@ namespace AskNLearn.Web.Controllers
                     .ToListAsync();
                 combinedList.AddRange(posts);
             }
-
-            if (filter == "ALL" || filter == "COMMENT")
+            else if (filter == "COMMENT")
             {
-                totalCount += await messagesQuery.CountAsync();
+                totalCount = await messagesQuery.CountAsync();
                 var messages = await messagesQuery
                     .Include(m => m.Author)
                     .Include(m => m.Post)
@@ -185,9 +270,9 @@ namespace AskNLearn.Web.Controllers
                 combinedList.AddRange(messages);
             }
 
-            Response.Headers.Add("X-Total-Count", totalCount.ToString());
+            Response.Headers["X-Total-Count"] = totalCount.ToString();
 
-            // Final sort and slice if ALL combined
+            // Final sort and slice
             var finalResult = combinedList
                 .OrderByDescending(x => (ModerationStatus)x.Status == ModerationStatus.Flagged)
                 .ThenByDescending(x => (DateTime)x.CreatedAt)
@@ -300,6 +385,27 @@ namespace AskNLearn.Web.Controllers
             await _context.SaveChangesAsync(default);
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") return Ok();
             return RedirectToAction(nameof(Moderation));
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> DataReport()
+        {
+            var report = new
+            {
+                Users = await _context.Users.CountAsync(),
+                Communities = await _context.Communities.CountAsync(),
+                Posts = await _context.Posts.CountAsync(),
+                Messages = await _context.Messages.CountAsync(),
+                VerificationRequests = await _context.VerificationRequests.CountAsync(),
+                StudyGroups = await _context.StudyGroups.CountAsync(),
+                Channels = await _context.Channels.CountAsync(),
+                Events = await _context.Events.CountAsync(),
+                Votes = await _context.PostVotes.CountAsync(),
+                Ranks = await _context.UserRanks.CountAsync(),
+                DatabaseProvider = _context is DbContext dc ? dc.Database.ProviderName : "Unknown"
+            };
+
+            return Json(report);
         }
 
         [AllowAnonymous]

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using AskNLearn.Domain.Entities.Gamification;
@@ -48,5 +48,8 @@ namespace AskNLearn.Domain.Entities.Core
         public DateTime? LastActive { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public virtual ICollection<Friendship> FriendshipsRequested { get; set; } = new List<Friendship>();
+        public virtual ICollection<Friendship> FriendshipsReceived { get; set; } = new List<Friendship>();
     }
 }

@@ -1,0 +1,79 @@
+@using AskNLearn.Domain.Entities.Core
+@model IEnumerable<VerificationRequest>
+
+@foreach (var request in Model)
+{
+    <tr class="transition-colors hover-bg-glass" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td class="py-4 px-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle border border-glass-strong overflow-hidden" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05);">
+                    @if (!string.IsNullOrEmpty(request.User.AvatarUrl))
+                    {
+                        <img src="@request.User.AvatarUrl" class="w-100 h-100 object-cover" />
+                    }
+                    else
+                    {
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-aurora fw-bold">
+                            @request.User.FullName?.Substring(0, 1)
+                        </div>
+                    }
+                </div>
+                <div>
+                    <p class="fw-bold text-white mb-0">@request.User.FullName</p>
+                    <p class="text-muted small mb-0">@@@request.User.UserName • @request.User.Institution</p>
+                </div>
+            </div>
+        </td>
+        <td class="py-4 px-4">
+            <div class="d-flex justify-content-center gap-2">
+                <a href="@request.StudentIdUrl" target="_blank" class="rounded-3 border border-glass-strong overflow-hidden hover-border-aurora transition-all" style="width: 48px; height: 48px; background: rgba(0,0,0,0.2);">
+                    <img src="@request.StudentIdUrl" class="w-100 h-100 object-cover opacity-75 hover-opacity-100" />
+                </a>
+                <a href="@request.CarnetUrl" target="_blank" class="rounded-3 border border-glass-strong overflow-hidden hover-border-aurora transition-all" style="width: 48px; height: 48px; background: rgba(0,0,0,0.2);">
+                    <img src="@request.CarnetUrl" class="w-100 h-100 object-cover opacity-75 hover-opacity-100" />
+                </a>
+            </div>
+        </td>
+        <td class="py-4 px-4">
+            <p class="fw-medium text-white mb-0">@request.SubmittedAt.ToString("MMM dd, yyyy")</p>
+            <p class="text-muted mb-0" style="font-size: 0.7rem;">@request.SubmittedAt.ToString("hh:mm tt")</p>
+        </td>
+        <td class="py-4 px-4">
+            @switch (request.Status)
+            {
+                case Status.Pending:
+                    <span class="badge rounded-pill bg-opacity-10 bg-info text-info border border-info border-opacity-25 px-3 py-2 fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">
+                        <span class="spinner-grow spinner-grow-sm me-1" role="status" style="width: 8px; height: 8px;"></span>
+                        Pending
+                    </span>
+                    break;
+                case Status.Approved:
+                    <span class="badge rounded-pill bg-opacity-10 bg-success text-success border border-success border-opacity-25 px-3 py-2 fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">
+                        Approved
+                    </span>
+                    break;
+                case Status.Rejected:
+                    <span class="badge rounded-pill bg-opacity-10 bg-danger text-danger border border-danger border-opacity-25 px-3 py-2 fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">
+                        Rejected
+                    </span>
+                    break;
+            }
+        </td>
+        <td class="py-4 px-4 text-end">
+            <div class="d-flex justify-content-end gap-2">
+                @if (request.Status == Status.Pending)
+                {
+                    <form asp-action="Approve" method="post" class="m-0">
+                        <input type="hidden" name="id" value="@request.Id" />
+                        <button class="btn btn-sm btn-glass rounded-circle p-2 d-flex align-items-center justify-content-center hover-text-success" title="Approve">
+                            <span class="material-symbols-outlined fs-6">check</span>
+                        </button>
+                    </form>
+                    <button onclick="openRejectModal('@request.Id')" class="btn btn-sm btn-glass rounded-circle p-2 d-flex align-items-center justify-content-center hover-text-danger" title="Reject">
+                        <span class="material-symbols-outlined fs-6">close</span>
+                    </button>
+                }
+            </div>
+        </td>
+    </tr>
+}

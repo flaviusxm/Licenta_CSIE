@@ -2,247 +2,323 @@
 
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = "Profile Settings";
+    ViewData["Title"] = Model.IsOwnProfile ? "My Profile" : $"{Model.FullName}'s Profile";
 }
 
 <div class="container py-5" style="max-width: 1200px;">
-    <form asp-action="Update" method="post" id="profileForm" class="d-flex flex-column gap-5">
-        <input type="hidden" name="FullName" value="@Model.FullName" />
-        <input type="hidden" name="AvatarUrl" value="@Model.AvatarUrl" />
-        <input type="hidden" name="SocialLinks" id="socialLinksHidden" value="@Model.SocialLinks" />
+    @if (Model.IsOwnProfile)
+    {
+        <form asp-action="Update" method="post" id="profileForm" class="d-flex flex-column gap-5">
+            <input type="hidden" name="FullName" value="@Model.FullName" />
+            <input type="hidden" name="AvatarUrl" value="@Model.AvatarUrl" />
+            <input type="hidden" name="SocialLinks" id="socialLinksHidden" value="@Model.SocialLinks" />
+            <input type="hidden" name="Interests" id="interestsHidden" value="@Model.Interests" />
+            
+            <partial name="_ProfileHeader" model="Model" />
 
-        <partial name="_ProfileHeader" model="Model" />
-
-        <div class="px-3 px-md-5 d-flex flex-column gap-5 mt-4 hover-parent">
-            <!-- Bio Section -->
-            <div class="d-flex flex-column gap-3">
-                <div class="d-flex align-items-center gap-2 ms-2">
-                    <span class="material-symbols-outlined text-aurora fs-5 fw-bold">edit_note</span>
-                    <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Biography</label>
-                </div>
-                <div class="position-relative">
-                    <textarea name="Bio" rows="4" placeholder="Tell us about your academic background and interests..." 
-                              class="form-control form-control-glass w-100 shadow-lg" style="border-radius: 2rem; padding: 1.5rem; resize: none;">@Model.Bio</textarea>
-                </div>
-            </div>
-
-            <!-- Occupation & Institution Row -->
-            <div class="row g-4">
-                <div class="col-12 col-md-6 d-flex flex-column gap-3">
+            <div class="px-3 px-md-5 d-flex flex-column gap-5 mt-4 hover-parent">
+                <!-- Bio Section -->
+                <div class="d-flex flex-column gap-3">
                     <div class="d-flex align-items-center gap-2 ms-2">
-                        <span class="material-symbols-outlined text-aurora fs-5 fw-bold">work</span>
-                        <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Current Occupation</label>
+                        <span class="material-symbols-outlined text-aurora fs-5 fw-bold">edit_note</span>
+                        <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Biography</label>
                     </div>
-                    <select name="Occupation" class="form-select form-control-glass w-100 text-uppercase tracking-widest fw-bold shadow-lg" style="border-radius: 1.5rem; padding: 1rem 1.5rem; font-size: 0.75rem;">
-                        <option value="" style="background: var(--bg-universe); color: white;">Select Occupation</option>
-                        <option value="Pupil" selected='@(Model.Occupation == "Pupil")' style="background: var(--bg-universe); color: white;">Student (Pupil)</option>
-                        <option value="Student" selected='@(Model.Occupation == "Student")' style="background: var(--bg-universe); color: white;">University Student</option>
-                        <option value="Teacher" selected='@(Model.Occupation == "Teacher")' style="background: var(--bg-universe); color: white;">Teacher</option>
-                        <option value="Researcher" selected='@(Model.Occupation == "Researcher")' style="background: var(--bg-universe); color: white;">Researcher</option>
-                    </select>
-                </div>
-                <div class="col-12 col-md-6 d-flex flex-column gap-3">
-                    <div class="d-flex align-items-center gap-2 ms-2">
-                        <span class="material-symbols-outlined text-aurora fs-5 fw-bold">account_balance</span>
-                        <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Institution</label>
-                    </div>
-                    <input type="text" name="Institution" value="@Model.Institution" placeholder="Enter institution name..." 
-                           class="form-control form-control-glass w-100 text-uppercase tracking-widest fw-bold shadow-lg" style="border-radius: 1.5rem; padding: 1rem 1.5rem; font-size: 0.75rem;" />
-                </div>
-            </div>
-
-            <!-- Academic Interests & External Links Section -->
-            <div class="row g-5 mt-2 position-relative">
-                <!-- Saving Indicator (Hidden by default) -->
-                <div id="saveIndicator" class="position-fixed bottom-0 end-0 p-4 z-3 transition-all" style="transform: translateY(100%); opacity: 0;">
-                    <div class="glass-card px-4 py-2 d-flex align-items-center gap-3 shadow-lg border-glass" style="border-radius: 2rem; border-color: rgba(52, 211, 153, 0.5);">
-                        <div class="spinner-grow text-aurora shadow-sm" style="width: 1rem; height: 1rem; animation-duration: 1.5s;" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <span id="saveText" class="text-white text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Saving changes...</span>
+                    <div class="position-relative">
+                        <textarea name="Bio" rows="4" placeholder="Tell us about your academic background and interests..." 
+                                  class="form-control form-control-glass w-100 shadow-lg" style="border-radius: 2rem; padding: 1.5rem; resize: none;">@Model.Bio</textarea>
                     </div>
                 </div>
 
-                <!-- Interests -->
-                <div class="col-12 col-xl-6 d-flex flex-column gap-4">
-                    <div class="d-flex align-items-center gap-3 ms-2">
-                        <div class="rounded-3 d-flex align-items-center justify-content-center text-aurora shadow-sm" style="width: 40px; height: 40px; background: rgba(52, 211, 153, 0.1);">
-                            <span class="material-symbols-outlined fs-5">psychology</span>
+                <!-- Occupation & Institution Row -->
+                <div class="row g-4">
+                    <div class="col-12 col-md-6 d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center gap-2 ms-2">
+                            <span class="material-symbols-outlined text-aurora fs-5 fw-bold">work</span>
+                            <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Current Occupation</label>
                         </div>
-                        <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Academic Focus</h3>
+                        <select name="Occupation" class="form-select form-control-glass w-100 text-uppercase tracking-widest fw-bold shadow-lg" style="border-radius: 1.5rem; padding: 1rem 1.5rem; font-size: 0.75rem;">
+                            <option value="">Select Occupation</option>
+                            <option value="Pupil" selected='@(Model.Occupation == "Pupil")'>Student (Pupil)</option>
+                            <option value="Student" selected='@(Model.Occupation == "Student")'>University Student</option>
+                            <option value="Teacher" selected='@(Model.Occupation == "Teacher")'>Teacher</option>
+                            <option value="Researcher" selected='@(Model.Occupation == "Researcher")'>Researcher</option>
+                        </select>
                     </div>
-                    <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-3" style="border-radius: 2rem; border: 1px solid var(--border-glass);">
-                        <p class="text-muted small mb-2 px-1">Select the domains you want to prioritize in your home feed:</p>
-                        
-                        <div id="interestsContainer" class="d-flex flex-wrap gap-2 mb-3">
-                            @{
-                                var categories = new[] { "Computer Science", "Economics", "Mathematics", "Law", "Medicine", "Engineering", "Arts", "Social Sciences", "Physics", "Chemistry" };
-                                var userInterests = (Model.Interests ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()).ToList();
-                            }
-                            @foreach (var cat in categories)
-                            {
-                                bool isActive = userInterests.Contains(cat);
-                                <button type="button" onclick="toggleInterest(this, '@cat')" 
-                                        class="interest-pill btn btn-glass-sm px-3 py-1 rounded-pill transition-all @(isActive ? "active" : "")"
-                                        style="font-size: 0.75rem; @(isActive ? "background: rgba(52, 211, 153, 0.15); border-color: rgba(52, 211, 153, 0.5); color: var(--color-mint-bright) !important;" : "")">
-                                    <span class="text-uppercase tracking-widest fw-bold">#@cat</span>
+                    <div class="col-12 col-md-6 d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center gap-2 ms-2">
+                            <span class="material-symbols-outlined text-aurora fs-5 fw-bold">account_balance</span>
+                            <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Institution</label>
+                        </div>
+                        <input type="text" name="Institution" value="@Model.Institution" placeholder="Enter institution name..." 
+                               class="form-control form-control-glass w-100 text-uppercase tracking-widest fw-bold shadow-lg" style="border-radius: 1.5rem; padding: 1rem 1.5rem; font-size: 0.75rem;" />
+                    </div>
+                </div>
+
+                <!-- Interests & Social Links -->
+                <div class="row g-5 mt-2 position-relative">
+                    <!-- Saving Indicator -->
+                    <div id="saveIndicator" class="position-fixed bottom-0 end-0 p-4 z-3 transition-all" style="transform: translateY(100%); opacity: 0;">
+                        <div class="glass-card px-4 py-2 d-flex align-items-center gap-3 shadow-lg border-glass" style="border-radius: 2rem; border-color: rgba(52, 211, 153, 0.5);">
+                            <div class="spinner-grow text-aurora shadow-sm" style="width: 1rem; height: 1rem; animation-duration: 1.5s;" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span id="saveText" class="text-white text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Saving changes...</span>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-6 d-flex flex-column gap-4">
+                        <div class="d-flex align-items-center gap-3 ms-2">
+                             <div class="rounded-3 d-flex align-items-center justify-content-center text-aurora shadow-sm" style="width: 40px; height: 40px; background: rgba(52, 211, 153, 0.1);">
+                                <span class="material-symbols-outlined fs-5">psychology</span>
+                            </div>
+                            <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Academic Focus</h3>
+                        </div>
+                        <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-3" style="border-radius: 2rem; border: 1px solid var(--border-glass);">
+                            <div id="interestsContainer" class="d-flex flex-wrap gap-2 mb-3">
+                                @{
+                                    var categories = new[] { "Computer Science", "Economics", "Mathematics", "Law", "Medicine", "Engineering", "Arts", "Social Sciences", "Physics", "Chemistry" };
+                                    var userInterests = (Model.Interests ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()).ToList();
+                                }
+                                @foreach (var cat in categories)
+                                {
+                                    bool isActive = userInterests.Contains(cat);
+                                    <button type="button" onclick="toggleInterest(this, '@cat')" 
+                                            class="interest-pill btn btn-glass-sm px-3 py-1 rounded-pill transition-all @(isActive ? "active" : "")"
+                                            style="font-size: 0.75rem; @(isActive ? "background: rgba(52, 211, 153, 0.15); border-color: rgba(52, 211, 153, 0.5); color: var(--color-mint-bright) !important;" : "")">
+                                        <span class="text-uppercase tracking-widest fw-bold">#@cat</span>
+                                    </button>
+                                }
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mt-auto pt-3 border-top border-glass opacity-75">
+                                <span class="material-symbols-outlined fs-6 text-muted">info</span>
+                                <span class="text-muted" style="font-size: 0.65rem;">Your feed will prioritize discussions from the selected domains.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-6 d-flex flex-column gap-4">
+                        <div class="d-flex align-items-center gap-3 ms-2">
+                            <div class="rounded-3 d-flex align-items-center justify-content-center text-muted shadow-sm" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+                                <span class="material-symbols-outlined fs-5">link</span>
+                            </div>
+                            <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Social Links</h3>
+                        </div>
+                        <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-4" style="border-radius: 2rem; border: 2px dashed rgba(255,255,255,0.1); min-height: 220px;">
+                            <div id="socialLinksContainer" class="d-flex flex-column gap-2 mb-3"></div>
+                            <div class="d-flex gap-2 mt-auto">
+                                <input type="text" id="socialInput" placeholder="Add Content Link (URL)..." 
+                                       class="form-control form-control-glass flex-grow-1 text-uppercase tracking-widest fw-bold shadow-sm" style="border-radius: 1rem; padding: 0.75rem 1rem; font-size: 0.75rem;" />
+                                <button type="button" onclick="addSocialLink()" class="btn btn-premium d-flex align-items-center justify-content-center shadow-lg" style="width: 3rem; height: 3rem; border-radius: 1rem; padding: 0;">
+                                    <span class="material-symbols-outlined">add_link</span>
                                 </button>
-                            }
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </form>
 
-                        <div class="d-flex align-items-center gap-2 mt-auto pt-3 border-top border-glass opacity-75">
-                            <span class="material-symbols-outlined fs-6 text-muted">info</span>
-                            <span class="text-muted" style="font-size: 0.65rem;">Your feed will prioritize discussions from the selected domains.</span>
-                        </div>
-                        
-                        <input type="hidden" name="Interests" id="interestsHidden" value="@Model.Interests" />
+        <!-- Security & Danger Zone (Only for owner) -->
+        <div class="glass-card mx-3 mx-md-5 mt-5 shadow-lg overflow-hidden d-flex flex-column border-glass-strong" style="border-radius: 2.5rem;">
+            <div class="p-4 p-md-5 d-flex flex-column flex-md-row align-items-center justify-content-between gap-4 border-bottom border-glass">
+                <div class="text-center text-md-start">
+                     <h4 class="fs-5 fw-bold text-white tracking-tight text-uppercase mb-2">Change password</h4>
+                     <p class="text-muted small m-0">Standard security procedures including password rotation.</p>
+                </div>
+                 <a href="/Identity/Account/Manage/ChangePassword" class="btn btn-glass px-4 py-2 text-white text-uppercase tracking-widest fw-bold">Update Password</a>
+            </div>
+            <div class="p-4 p-md-5 d-flex flex-column flex-md-row align-items-center justify-content-between gap-4" style="background: rgba(239, 68, 68, 0.05);">
+                <div class="text-center text-md-start">
+                     <h4 class="fs-5 fw-bold text-danger tracking-tight text-uppercase mb-2">Delete account</h4>
+                     <p class="small m-0" style="color: rgba(239, 68, 68, 0.8);">Permanently delete your account and all history.</p>
+                </div>
+                 <button onclick="return confirm('Initiate Protocol?')" class="btn btn-outline-danger px-4 py-2 text-uppercase tracking-widest fw-bold">Delete Account</button>
+            </div>
+        </div>
+        <div class="p-5 d-flex align-items-center justify-content-center">
+            <form asp-controller="Auth" asp-action="SignOut" method="post">
+                <button type="submit" class="btn btn-link text-muted text-hover-danger text-uppercase tracking-widest fw-bold d-flex align-items-center gap-2 text-decoration-none">
+                    <span class="material-symbols-outlined">power_settings_new</span> Sign Out
+                </button>
+            </form>
+        </div>
+    }
+    else
+    {
+        <!-- Read Only View for Other Users -->
+        <div class="d-flex flex-column gap-5">
+            <partial name="_ProfileHeader" model="Model" />
+
+            <div class="px-3 px-md-5 d-flex flex-column gap-5 mt-4">
+                <!-- Bio Section -->
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex align-items-center gap-2 ms-2">
+                        <span class="material-symbols-outlined text-aurora fs-5 fw-bold">description</span>
+                        <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Biography</label>
+                    </div>
+                    <div class="glass-card p-4 shadow-lg" style="border-radius: 2rem; border: 1px solid var(--border-glass);">
+                        <p class="text-white m-0" style="font-size: 0.95rem; line-height: 1.6;">@(string.IsNullOrEmpty(Model.Bio) ? "This user hasn't added a bio yet." : Model.Bio)</p>
                     </div>
                 </div>
 
-                <!-- External Links Manager -->
-                <div class="col-12 col-xl-6 d-flex flex-column gap-4">
-                    <div class="d-flex align-items-center gap-3 ms-2">
-                        <div class="rounded-3 d-flex align-items-center justify-content-center text-muted shadow-sm" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
-                            <span class="material-symbols-outlined fs-5">link</span>
+                <!-- Occupation & Institution Row -->
+                <div class="row g-4">
+                    <div class="col-12 col-md-6 d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center gap-2 ms-2">
+                             <span class="material-symbols-outlined text-aurora fs-5 fw-bold">work</span>
+                             <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Occupation</label>
                         </div>
-                        <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Social Links</h3>
+                        <div class="glass-card px-4 py-3 shadow-lg" style="border-radius: 1.5rem;">
+                            <span class="text-white text-uppercase tracking-widest fw-bold" style="font-size: 0.75rem;">@(Model.Occupation ?? "Not specified")</span>
+                        </div>
                     </div>
-                    <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-4" style="border-radius: 2rem; border: 2px dashed rgba(255,255,255,0.1); min-height: 220px;">
-                        <div id="socialLinksContainer" class="d-flex flex-column gap-2 mb-3">
-                            <!-- Links injected by JS -->
+                    <div class="col-12 col-md-6 d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center gap-2 ms-2">
+                             <span class="material-symbols-outlined text-aurora fs-5 fw-bold">account_balance</span>
+                             <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Institution</label>
                         </div>
-                        <div class="d-flex gap-2 mt-auto">
-                            <input type="text" id="socialInput" placeholder="Add Content Link (URL)..." 
-                                   class="form-control form-control-glass flex-grow-1 text-uppercase tracking-widest fw-bold shadow-sm" style="border-radius: 1rem; padding: 0.75rem 1rem; font-size: 0.75rem;" />
-                            <button type="button" onclick="addSocialLink()" class="btn btn-premium d-flex align-items-center justify-content-center shadow-lg flex-shrink-0" style="width: 3rem; height: 3rem; border-radius: 1rem; padding: 0;">
-                                <span class="material-symbols-outlined dropdown-icon">add_link</span>
-                            </button>
+                        <div class="glass-card px-4 py-3 shadow-lg" style="border-radius: 1.5rem;">
+                            <span class="text-white text-uppercase tracking-widest fw-bold" style="font-size: 0.75rem;">@(Model.Institution ?? "Not specified")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interests & Links -->
+                <div class="row g-5">
+                    <div class="col-12 col-xl-6 d-flex flex-column gap-4">
+                        <div class="d-flex align-items-center gap-3 ms-2">
+                             <div class="rounded-3 d-flex align-items-center justify-content-center text-aurora shadow-sm" style="width: 40px; height: 40px; background: rgba(52, 211, 153, 0.1);">
+                                <span class="material-symbols-outlined fs-5">psychology</span>
+                            </div>
+                            <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Academic Focus</h3>
+                        </div>
+                        <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-3" style="border-radius: 2rem; border: 1px solid var(--border-glass);">
+                             <div class="d-flex flex-wrap gap-2 mb-3">
+                                @{
+                                    var categories = new[] { "Computer Science", "Economics", "Mathematics", "Law", "Medicine", "Engineering", "Arts", "Social Sciences", "Physics", "Chemistry" };
+                                    var userInterests = (Model.Interests ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+                                }
+                                @foreach (var cat in categories)
+                                {
+                                    if (userInterests.Contains(cat)) {
+                                        <div class="px-3 py-1 rounded-pill" style="font-size: 0.75rem; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); color: var(--color-mint-bright);">
+                                            <span class="text-uppercase tracking-widest fw-bold">#@cat</span>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6 d-flex flex-column gap-4">
+                         <div class="d-flex align-items-center gap-3 ms-2">
+                            <div class="rounded-3 d-flex align-items-center justify-content-center text-muted shadow-sm" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+                                <span class="material-symbols-outlined fs-5">link</span>
+                            </div>
+                            <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Social Links</h3>
+                        </div>
+                        <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-4" style="border-radius: 2rem; border: 1px solid var(--border-glass); min-height: 200px;">
+                             <div id="socialDisplay" class="d-flex align-items-center gap-3 flex-wrap"></div>
+                             @if (string.IsNullOrEmpty(Model.SocialLinks)) {
+                                 <div class="d-flex flex-column align-items-center justify-content-center h-100 opacity-25">
+                                    <span class="material-symbols-outlined fs-1">link_off</span>
+                                    <span class="text-uppercase tracking-widest fw-bold mt-2" style="font-size: 0.6rem;">No social presence</span>
+                                 </div>
+                             }
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </form>
+    }
 
-    <!-- Stats Hub -->
+    <!-- Shared Stats Hub (Visible in both modes) -->
     <div class="row g-4 mt-5 px-3 px-md-5">
-        <div class="col-6 col-lg-3">
-            <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg transition-transform hover-translate-y border-glass-strong" style="border-radius: 2rem;">
-                <div class="rounded-4 d-flex align-items-center justify-content-center mb-1 text-warning shadow-sm" style="width: 56px; height: 56px; background: rgba(245, 158, 11, 0.1);">
-                    <span class="material-symbols-outlined fs-2">star</span>
-                </div>
-                <div class="text-center">
-                    <span class="fs-2 fw-bold text-white tracking-tight d-block lh-1 mb-2">@Model.ReputationPoints</span>
-                    <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Reputation Score</p>
+        @if (Model.Role != "Admin") {
+            <div class="col-6 col-lg-3">
+                <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg border-glass-strong" style="border-radius: 2rem;">
+                    <div class="rounded-4 d-flex align-items-center justify-content-center text-warning" style="width: 56px; height: 56px; background: rgba(245, 158, 11, 0.1);">
+                        <span class="material-symbols-outlined fs-2">star</span>
+                    </div>
+                    <div class="text-center">
+                        <span class="fs-2 fw-bold text-white tracking-tight d-block mb-1">@Model.ReputationPoints</span>
+                        <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Reputation</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
         <div class="col-6 col-lg-3">
-            <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg transition-transform hover-translate-y border-glass-strong" style="border-radius: 2rem;">
-                <div class="rounded-4 d-flex align-items-center justify-content-center mb-1 text-info shadow-sm" style="width: 56px; height: 56px; background: rgba(56, 189, 248, 0.1);">
+            <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg border-glass-strong" style="border-radius: 2rem;">
+                <div class="rounded-4 d-flex align-items-center justify-content-center text-info" style="width: 56px; height: 56px; background: rgba(56, 189, 248, 0.1);">
                     <span class="material-symbols-outlined fs-2">folder</span>
                 </div>
                 <div class="text-center">
-                    <span class="fs-2 fw-bold text-white tracking-tight d-block lh-1 mb-2">@Model.PostsCount</span>
-                    <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Total Posts</p>
+                    <span class="fs-2 fw-bold text-white tracking-tight d-block mb-1">@Model.PostsCount</span>
+                    <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Posts</p>
                 </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg transition-transform hover-translate-y border-glass-strong" style="border-radius: 2rem;">
-                <div class="rounded-4 d-flex align-items-center justify-content-center mb-1 text-aurora shadow-sm" style="width: 56px; height: 56px; background: rgba(52, 211, 153, 0.1);">
+            <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg border-glass-strong" style="border-radius: 2rem;">
+                <div class="rounded-4 d-flex align-items-center justify-content-center text-aurora" style="width: 56px; height: 56px; background: rgba(52, 211, 153, 0.1);">
                     <span class="material-symbols-outlined fs-2">terminal</span>
                 </div>
                 <div class="text-center">
-                    <span class="fs-2 fw-bold text-white tracking-tight d-block lh-1 mb-2">@Model.AnswersCount</span>
-                    <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Total Answers</p>
+                    <span class="fs-2 fw-bold text-white tracking-tight d-block mb-1">@Model.AnswersCount</span>
+                    <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Answers</p>
                 </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg transition-transform hover-translate-y border-glass-strong" style="border-radius: 2rem;">
-                <div class="rounded-4 d-flex align-items-center justify-content-center mb-1 text-danger shadow-sm" style="width: 56px; height: 56px; background: rgba(244, 63, 94, 0.1);">
+            <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg border-glass-strong" style="border-radius: 2rem;">
+                <div class="rounded-4 d-flex align-items-center justify-content-center text-danger" style="width: 56px; height: 56px; background: rgba(244, 63, 94, 0.1);">
                     <span class="material-symbols-outlined fs-2">groups</span>
                 </div>
                 <div class="text-center">
-                    <span class="fs-2 fw-bold text-white tracking-tight d-block lh-1 mb-2">@Model.GroupsCount</span>
-                    <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Groups</p>
+                    <span class="fs-2 fw-bold text-white tracking-tight d-block mb-1">@Model.GroupsCount</span>
+                    <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Communities</p>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Security & Danger Zone -->
-    <div class="glass-card mx-3 mx-md-5 mt-5 shadow-lg overflow-hidden d-flex flex-column border-glass-strong" style="border-radius: 2.5rem;">
-        <div class="p-4 p-md-5 d-flex flex-column flex-md-row align-items-center justify-content-between gap-4" style="border-bottom: 1px solid var(--border-glass);">
-            <div class="text-center text-md-start">
-                 <h4 class="fs-5 fw-bold text-white tracking-tight text-uppercase mb-2">Change your password</h4>
-                 <p class="text-muted small m-0">Standard security procedures including password rotation and auth sync.</p>
-            </div>
-             <a href="/Identity/Account/Manage/ChangePassword" class="btn btn-glass px-4 py-2 text-white text-uppercase tracking-widest fw-bold text-decoration-none shadow-sm w-100 w-md-auto text-center" style="font-size: 0.75rem; border-radius: 1rem;">
-                Update Password
-            </a>
-        </div>
-        <div class="p-4 p-md-5 d-flex flex-column flex-md-row align-items-center justify-content-between gap-4" style="background: rgba(239, 68, 68, 0.05);">
-            <div class="text-center text-md-start">
-                 <h4 class="fs-5 fw-bold text-danger tracking-tight text-uppercase mb-2">Delete your account</h4>
-                 <p class="small m-0" style="color: rgba(239, 68, 68, 0.8);">Permanently delete your account and all contribution history from the community.</p>
-            </div>
-             <button onclick="return confirm('Initiate Account Termination Protocol?')" class="btn btn-outline-danger px-4 py-2 text-uppercase tracking-widest fw-bold w-100 w-md-auto text-center shadow-sm" style="font-size: 0.75rem; border-radius: 1rem;">
-                Delete Account
-            </button>
-        </div>
-    </div>
-
-    <div class="p-5 d-flex align-items-center justify-content-center">
-        <form asp-controller="Auth" asp-action="SignOut" method="post" class="m-0 p-0">
-            <button type="submit" class="btn btn-link text-muted text-hover-danger text-uppercase tracking-widest fw-bold d-flex align-items-center gap-2 text-decoration-none transition-colors group p-0" style="font-size: 0.7rem;">
-                <span class="material-symbols-outlined transition-transform duration-500 hover-rotate-180">power_settings_new</span> 
-                Sign Out
-            </button>
-        </form>
-    </div>
-
 </div>
 
+@section Scripts {
 <script>
-    // --- Interests Logic (Pill Toggle) ---
-    const interestsHidden = document.getElementById('interestsHidden');
-    let interests = interestsHidden.value ? interestsHidden.value.split(',').filter(x => x.trim() !== '') : [];
-
-    function updateInterests() { 
-        interestsHidden.value = interests.join(',');
-        // Trigger auto-save if the helper exists
-        if (typeof performSave === 'function') performSave();
-    }
-
-    function toggleInterest(btn, value) {
-        if (interests.includes(value)) {
-            interests = interests.filter(i => i !== value);
-            btn.classList.remove('active');
-            btn.style.background = '';
-            btn.style.borderColor = '';
-            btn.style.color = '';
-        } else {
-            interests.push(value);
-            btn.classList.add('active');
-            btn.style.background = 'rgba(52, 211, 153, 0.15)';
-            btn.style.borderColor = 'rgba(52, 211, 153, 0.5)';
-            btn.style.color = 'var(--color-mint-bright)';
-        }
-        updateInterests();
-    }
-
-    // --- Social Links Logic ---
+    // --- Shared Logic ---
     const socialLinksHidden = document.getElementById('socialLinksHidden');
     const socialLinksContainer = document.getElementById('socialLinksContainer');
     const socialDisplay = document.getElementById('socialDisplay');
     const socialInput = document.getElementById('socialInput');
-    let links = socialLinksHidden.value ? socialLinksHidden.value.split(';').filter(x => x.trim() !== '') : [];
+    let links = (socialLinksHidden ? socialLinksHidden.value : "@(Model.SocialLinks ?? "")").split(';').filter(x => x.trim() !== '');
 
-    function updateLinks() {
-        socialLinksHidden.value = links.join(';');
-        renderSocialUI();
+    function renderSocialUI() {
+        if (socialLinksContainer) socialLinksContainer.innerHTML = '';
+        if (socialDisplay) socialDisplay.innerHTML = '';
+        
+        links.forEach(url => {
+            if (socialLinksContainer && @(Model.IsOwnProfile ? "true" : "false")) {
+                const item = document.createElement('div');
+                item.className = 'd-flex align-items-center justify-content-between p-3 hover-bg-glass transition-colors shadow-sm';
+                item.style.background = 'rgba(255,255,255,0.05)';
+                item.style.border = '1px solid var(--border-glass)';
+                item.style.borderRadius = '1rem';
+                item.innerHTML = `<span class="text-truncate text-muted fw-bold text-uppercase tracking-widest flex-grow-1 me-2" style="font-size: 0.65rem;">${url}</span>
+                                <button type="button" onclick="removeLink('${url}')" class="btn btn-link p-0 text-danger text-decoration-none text-uppercase tracking-widest fw-bold" style="font-size: 0.6rem;">Remove</button>`;
+                socialLinksContainer.appendChild(item);
+            }
+
+            if (socialDisplay) {
+                const badge = document.createElement('a');
+                badge.href = url.startsWith('http') ? url : 'https://' + url;
+                badge.target = '_blank';
+                badge.className = 'btn btn-glass d-flex align-items-center justify-content-center text-muted hover-text-white transition-colors shadow-sm p-0';
+                badge.style.width = '42px';
+                badge.style.height = '42px';
+                badge.style.borderRadius = '1rem';
+                badge.innerHTML = `<span class="material-symbols-outlined fs-5">${getIconForUrl(url)}</span>`;
+                socialDisplay.appendChild(badge);
+            }
+        });
     }
 
     function getIconForUrl(url) {
@@ -252,104 +328,82 @@
         return 'language';
     }
 
-    function renderSocialUI() {
-        socialLinksContainer.innerHTML = '';
-        if(socialDisplay) socialDisplay.innerHTML = '';
-        links.forEach(url => {
-            const item = document.createElement('div');
-            item.className = 'd-flex align-items-center justify-content-between p-2 p-md-3 hover-bg-glass transition-colors shadow-sm';
-            item.style.background = 'rgba(255,255,255,0.05)';
-            item.style.border = '1px solid var(--border-glass)';
-            item.style.borderRadius = '1rem';
-            item.innerHTML = `<span class="text-truncate text-muted fw-bold text-uppercase tracking-widest flex-grow-1 me-2" style="font-size: 0.65rem; max-width: 250px;">${url}</span>
-                            <button type="button" onclick="removeLink('${url}')" class="btn btn-link p-0 text-danger text-decoration-none text-uppercase tracking-widest fw-bold flex-shrink-0" style="font-size: 0.6rem;">Remove</button>`;
-            socialLinksContainer.appendChild(item);
-
-            if(socialDisplay) {
-                const badge = document.createElement('a');
-                badge.href = url.startsWith('http') ? url : 'https://' + url;
-                badge.target = '_blank';
-                badge.className = 'btn btn-glass d-flex align-items-center justify-content-center text-muted hover-text-white transition-colors shadow-sm p-0';
-                badge.style.width = '40px';
-                badge.style.height = '40px';
-                badge.style.borderRadius = '1rem';
-                badge.innerHTML = `<span class="material-symbols-outlined fs-5">${getIconForUrl(url)}</span>`;
-                socialDisplay.appendChild(badge);
-            }
-        });
+    async function handleProfileAction(userId, action) {
+        const btnRow = document.getElementById(`connection-actions-${userId}`);
+        if (btnRow) btnRow.style.opacity = '0.5';
+        try {
+            const resp = await fetch(`/Connections/${action}?userId=${userId}`, { method: 'POST' });
+            if (resp.ok) location.reload();
+            else if (btnRow) btnRow.style.opacity = '1';
+        } catch(e) { console.error(e); }
     }
 
-    function addSocialLink() {
-        const url = socialInput.value.trim();
-        if (!url) return;
-        
-        // Simple URL regex
-        const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
-        if (!urlPattern.test(url)) {
-            alert('Please enter a valid URL.');
-            return;
+    @if (Model.IsOwnProfile)
+    {
+        <text>
+        const interestsHidden = document.getElementById('interestsHidden');
+        let interests = interestsHidden.value ? interestsHidden.value.split(',').filter(x => x.trim() !== '') : [];
+        let autoSaveTimeout;
+
+        function updateInterests() { 
+            interestsHidden.value = interests.join(',');
+            triggerAutoSave();
         }
 
-        if (!links.includes(url)) { links.push(url); updateLinks(); socialInput.value = ''; }
-    }
+        function toggleInterest(btn, value) {
+            if (interests.includes(value)) {
+                interests = interests.filter(i => i !== value);
+                btn.classList.remove('active');
+                btn.style.background = ''; btn.style.borderColor = ''; btn.style.color = '';
+            } else {
+                interests.push(value);
+                btn.classList.add('active');
+                btn.style.background = 'rgba(52, 211, 153, 0.15)'; btn.style.borderColor = 'rgba(52, 211, 153, 0.5)'; btn.style.color = 'var(--color-mint-bright)';
+            }
+            updateInterests();
+        }
 
-    function removeLink(url) { links = links.filter(l => l !== url); updateLinks(); }
+        function updateLinks() {
+            socialLinksHidden.value = links.join(';');
+            renderSocialUI();
+            triggerAutoSave();
+        }
+
+        function addSocialLink() {
+            const url = socialInput.value.trim();
+            if (!url) return;
+            if (!links.includes(url)) { links.push(url); updateLinks(); socialInput.value = ''; }
+        }
+
+        function removeLink(url) { links = links.filter(l => l !== url); updateLinks(); }
+
+        function triggerAutoSave() {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(performSave, 1500);
+        }
+
+        async function performSave() {
+            const indicator = document.getElementById('saveIndicator');
+            const saveText = document.getElementById('saveText');
+            saveText.innerText = 'Saving changes...';
+            indicator.style.opacity = '1';
+            indicator.style.transform = 'translateY(0)';
+            
+            const form = document.getElementById('profileForm');
+            const formData = new FormData(form);
+            try {
+                const response = await fetch(form.action, { method: 'POST', body: formData });
+                if (response.ok) {
+                    saveText.innerText = 'Changes saved';
+                    setTimeout(() => { indicator.style.opacity = '0'; indicator.style.transform = 'translateY(100%)'; }, 2000);
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('profileForm').addEventListener('input', triggerAutoSave);
+        </text>
+    }
 
     renderSocialUI();
-
-    // --- Auto-save Logic ---
-    let autoSaveTimeout;
-    const form = document.getElementById('profileForm');
-    const indicator = document.getElementById('saveIndicator');
-    const saveText = document.getElementById('saveText');
-
-    function showIndicator(message, isSuccess = false) {
-        saveText.innerText = message;
-        indicator.style.opacity = '1';
-        indicator.style.transform = 'translateY(0)';
-        if (isSuccess) {
-            setTimeout(() => {
-                indicator.style.opacity = '0';
-                indicator.style.transform = 'translateY(100%)';
-            }, 2000);
-        }
-    }
-
-    async function performSave() {
-        showIndicator('Saving changes...');
-        const formData = new FormData(form);
-        try {
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData
-            });
-            if (response.ok) {
-                showIndicator('Changes saved', true);
-            } else {
-                showIndicator('Error saving', true);
-            }
-        } catch (err) {
-            showIndicator('Network error', true);
-        }
-    }
-
-    form.addEventListener('input', () => {
-        clearTimeout(autoSaveTimeout);
-        autoSaveTimeout = setTimeout(performSave, 1500);
-    });
-
-    // Special handlers for dynamic lists
-    const originalUpdateInterests = updateInterests;
-    updateInterests = function() {
-        originalUpdateInterests();
-        clearTimeout(autoSaveTimeout);
-        autoSaveTimeout = setTimeout(performSave, 500);
-    };
-
-    const originalUpdateLinks = updateLinks;
-    updateLinks = function() {
-        originalUpdateLinks();
-        clearTimeout(autoSaveTimeout);
-        autoSaveTimeout = setTimeout(performSave, 500);
-    };
 </script>
+}

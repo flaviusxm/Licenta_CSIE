@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using AskNLearn.Domain.Entities.Core;
 using AskNLearn.Application.Common.Interfaces;
+using AskNLearn.Application.Common.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
@@ -56,13 +57,43 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
             if (!string.IsNullOrEmpty(user.Occupation)) completion += 20;
             if (!string.IsNullOrEmpty(user.Institution) || !string.IsNullOrEmpty(user.Interests)) completion += 20; // Shared slot for 100%
 
+            // Connection Status Logic
+            var connectionStatus = ConnectionStatus.None;
+            if (!string.IsNullOrEmpty(request.CurrentUserId) && request.CurrentUserId != user.Id)
+            {
+                var friendship = await _context.Friendships.FirstOrDefaultAsync(f => 
+                    (f.RequesterId == request.CurrentUserId && f.AddresseeId == user.Id) || 
+                    (f.RequesterId == user.Id && f.AddresseeId == request.CurrentUserId), cancellationToken);
+
+                if (friendship != null)
+                {
+                    if (friendship.Status == FriendshipStatus.Accepted)
+                        connectionStatus = ConnectionStatus.Accepted;
+                    else if (friendship.Status == FriendshipStatus.Pending)
+                    {
+                        connectionStatus = friendship.RequesterId == request.CurrentUserId 
+                            ? ConnectionStatus.PendingSent 
+                            : ConnectionStatus.PendingReceived;
+                    }
+                }
+            }
+
+            // Flow State Logic
+            var last24hActivities = await _context.Messages.CountAsync(m => m.AuthorId == user.Id && m.CreatedAt > DateTime.UtcNow.AddDays(-1), cancellationToken);
+            var last48hActivities = await _context.Messages.CountAsync(m => m.AuthorId == user.Id && m.CreatedAt > DateTime.UtcNow.AddDays(-2), cancellationToken);
+            
+            string flowState = "Stable";
+            if (last24hActivities > 10) flowState = "Peaking";
+            else if (last24hActivities > 0 || last48hActivities > 0) flowState = "Active";
+            else if (user.LastActive < DateTime.UtcNow.AddDays(-7)) flowState = "Idle";
+
             return new UserProfileDto
             {
                 Id = user.Id,
                 FullName = user.FullName ?? "Anonymous",
                 Email = user.Email ?? string.Empty,
                 Bio = user.Bio,
-                AvatarUrl = user.AvatarUrl ?? "https://lh3.googleusercontent.com/aida-public/AB6AXuAtQnOLJpZ-UsH6E0M-Pwa3j5tbQuEa2K5UcyoFSPDLaeLZOCaR6pd7QYA3_usiM6RQUgtVwdWN3Ct6PabOSxI4CSvafcU5D9omVyYVtPrlSI_HkrJmfXLFU-I8_kRKAqqOJ_z-zPx5902KftyNultb0BHoXi6_r8SjUsVT1SqWu2nRUoLmlDZOVhsPe1ZEIEZ77oeWzV-f9qK9kaaGo4t_2GeUbe4MxMLioTEe0l4IlUMw0XebZAbn6gdCiulgIp6pwCnpCJPF",
+                AvatarUrl = user.AvatarUrl,
                 Occupation = user.Occupation,
                 Institution = user.Institution,
                 Interests = user.Interests,
@@ -79,7 +110,10 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
                 Role = user.Role.ToString(),
                 BannerUrl = user.BannerUrl,
                 SocialLinks = user.SocialLinks,
-                HasPendingVerification = hasPendingVerification
+                HasPendingVerification = hasPendingVerification,
+                ConnectionStatus = connectionStatus,
+                FlowState = flowState,
+                IsOwnProfile = request.CurrentUserId == user.Id
             };
         }
     }

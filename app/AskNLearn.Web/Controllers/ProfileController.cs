@@ -21,20 +21,26 @@ namespace AskNLearn.Web.Controllers
             _fileService = fileService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var targetUserId = id ?? currentUserId;
+
+            if (string.IsNullOrEmpty(targetUserId))
             {
                 return RedirectToAction("SignIn", "Auth");
             }
 
-            if (User.IsInRole("Admin"))
+            if (id == null && User.IsInRole("Admin"))
             {
                 return RedirectToAction("Index", "Admin");
             }
 
-            var profile = await _mediator.Send(new GetUserProfileQuery { UserId = userId });
+            var profile = await _mediator.Send(new GetUserProfileQuery 
+            { 
+                UserId = targetUserId,
+                CurrentUserId = currentUserId
+            });
             
             if (profile == null)
             {
