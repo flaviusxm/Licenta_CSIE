@@ -1,5 +1,6 @@
 using AskNLearn.Domain.Entities.Core;
 using AskNLearn.Application.Common.Interfaces;
+using AskNLearn.Domain.Entities.StudyGroup;
 using AskNLearn.Application.Features.StudyGroups.Commands.CreateChannel;
 using AskNLearn.Application.Features.StudyGroups.Commands.CreateStudyGroup;
 using AskNLearn.Application.Features.StudyGroups.Commands.DeleteChannel;
@@ -36,9 +37,11 @@ namespace AskNLearn.Web.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(string? searchTerm)
         {
+            var currentUserId = _userManager.GetUserId(User);
             var groups = await _mediator.Send(new GetStudyGroupsQuery 
             { 
                 SearchTerm = searchTerm,
+                CurrentUserId = currentUserId,
                 Skip = 0,
                 Take = 8
             });
@@ -49,13 +52,48 @@ namespace AskNLearn.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetGroups(int skip, string? searchTerm)
         {
+            var currentUserId = _userManager.GetUserId(User);
             var groups = await _mediator.Send(new GetStudyGroupsQuery 
             { 
                 SearchTerm = searchTerm,
+                CurrentUserId = currentUserId,
                 Skip = skip,
                 Take = 8
             });
             return PartialView("_GroupCards", groups);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Join(Guid id)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (userId == null) return Unauthorized();
+
+            var alreadyMember = await _context.GroupMemberships.AnyAsync(m => m.GroupId == id && m.UserId == userId);
+            if (alreadyMember) return Ok();
+
+            var memberRole = await _context.GroupRoles.FirstOrDefaultAsync(r => r.GroupId == id && r.Name == "Member");
+            
+            if (memberRole == null)
+            {
+                var adminRole = new GroupRole { Id = Guid.NewGuid(), GroupId = id, Name = "Admin", Permissions = "ALL" };
+                memberRole = new GroupRole { Id = Guid.NewGuid(), GroupId = id, Name = "Member", Permissions = "READ,WRITE" };
+                _context.GroupRoles.AddRange(adminRole, memberRole);
+                await _context.SaveChangesAsync(default);
+            }
+
+            var membership = new GroupMembership
+            {
+                GroupId = id,
+                UserId = userId,
+                GroupRoleId = memberRole.Id,
+                JoinedAt = DateTime.UtcNow
+            };
+
+            _context.GroupMemberships.Add(membership);
+            await _context.SaveChangesAsync(default);
+
+            return Ok();
         }
 
         [AllowAnonymous]

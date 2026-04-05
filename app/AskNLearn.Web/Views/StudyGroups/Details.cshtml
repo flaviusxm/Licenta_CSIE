@@ -16,81 +16,144 @@
             <button onclick="switchSidebarView('members')" id="btn-view-members" class="btn btn-link flex-grow-1 py-2 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-muted hover-glow" style="font-size: 0.6rem; border-bottom: 2px solid transparent !important;">Members</button>
         </div>
 
-        <div class="p-4 flex-grow-1 overflow-y-auto custom-scrollbar d-flex flex-column gap-4">
-            <!-- Channels View -->
-            <div id="sidebar-view-channels" class="d-flex flex-column gap-4">
-                <!-- Text Channels -->
-                <div>
-                    <div class="d-flex align-items-center justify-content-between px-2 mb-3">
-                        <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Text Channels</h3>
-                        @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
-                        {
-                            <button onclick="openCreateChannelModal('Text')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
-                                <span class="material-symbols-outlined fs-6">add</span>
-                            </button>
-                        }
-                    </div>
-                    <div class="d-flex flex-column gap-1">
-                        @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text))
-                        {
-                            <a href="javascript:void(0)" onclick="joinTextChannel('@channel.Id', '@channel.Name')" class="text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold transition-all hover-glow" style="font-size: 0.85rem;">
-                                <span class="fs-5 fw-bold text-aurora opacity-75">#</span>
-                                <span class="text-truncate">@channel.Name</span>
-                            </a>
-                        }
-                    </div>
-                </div>
-
-                <!-- Voice Channels -->
-                <div>
-                    <div class="d-flex align-items-center justify-content-between px-2 mb-3">
-                        <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Voice Channels</h3>
-                        @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
-                        {
-                            <button onclick="openCreateChannelModal('Voice')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
-                                <span class="material-symbols-outlined fs-6">add</span>
-                            </button>
-                        }
-                    </div>
-                    <div class="d-flex flex-column gap-1" id="voiceChannelList">
-                        @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Voice || c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video))
-                        {
-                            <div>
-                                <button onclick="joinVoice('@channel.Id', '@channel.Name')" 
-                                        class="w-100 btn btn-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold transition-all hover-glow" style="font-size: 0.85rem;">
-                                    <span class="material-symbols-outlined fs-6 opacity-75">@(channel.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video ? "videocam" : "volume_up")</span>
-                                    <span class="text-truncate">@channel.Name</span>
+        <div class="flex-grow-1 overflow-hidden d-flex flex-column">
+            <div id="sidebar-slider-track" class="sidebar-slider-track flex-grow-1">
+                <!-- Channels View -->
+                <div id="sidebar-view-channels" class="sidebar-view-pane p-4 custom-scrollbar overflow-y-auto d-flex flex-column gap-4">
+                    <!-- Text Channels -->
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between px-2 mb-3">
+                            <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Text Channels</h3>
+                            @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                            {
+                                <button onclick="openCreateChannelModal('Text')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
+                                    <span class="material-symbols-outlined fs-6">add</span>
                                 </button>
-                                <div id="users-@channel.Id" class="d-none d-flex flex-column gap-1 ps-5 pe-2 py-1"></div>
+                            }
+                        </div>
+                        <div class="d-flex flex-column gap-1">
+                            @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text))
+                            {
+                                <a href="javascript:void(0)" onclick="joinTextChannel('@channel.Id', '@channel.Name')" class="channel-item text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold" style="font-size: 0.85rem;">
+                                    <span class="fs-5 fw-bold text-aurora opacity-75">#</span>
+                                    <span class="text-truncate">@channel.Name</span>
+                                </a>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Voice Channels -->
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between px-2 mb-3">
+                            <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Voice Channels</h3>
+                            @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                            {
+                                <button onclick="openCreateChannelModal('Voice')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
+                                    <span class="material-symbols-outlined fs-6">add</span>
+                                </button>
+                            }
+                        </div>
+                        <div class="d-flex flex-column gap-1" id="voiceChannelList">
+                            @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Voice || c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video))
+                            {
+                                <div>
+                                    <button onclick="joinVoice('@channel.Id', '@channel.Name')"
+                                            class="channel-item w-100 btn btn-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold" style="font-size: 0.85rem;">
+                                        <span class="material-symbols-outlined fs-6 opacity-75">@(channel.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video ? "videocam" : "volume_up")</span>
+                                        <span class="text-truncate">@channel.Name</span>
+                                    </button>
+                                    <div id="users-@channel.Id" class="d-none d-flex flex-column gap-1 ps-5 pe-2 py-1"></div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Members View -->
+                <div id="sidebar-view-members" class="sidebar-view-pane p-4 custom-scrollbar overflow-y-auto d-flex flex-column gap-3">
+                    <div class="d-flex align-items-center justify-content-between px-2 mb-1">
+                        <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Members — @Model.MemberCount</h3>
+                        <button class="btn btn-link p-1 text-muted hover-glow text-decoration-none">
+                            <span class="material-symbols-outlined fs-6">person_add</span>
+                        </button>
+                    </div>
+                    <div class="d-flex flex-column gap-2" id="members-list">
+                        @foreach (var member in Model.Members)
+                        {
+                            var isMe = member.Id == User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                            <div class="d-flex align-items-center gap-3 p-2 rounded-lg hover-glow transition-all" style="cursor: pointer; background: rgba(255,255,255,0.02);">
+                                <div class="position-relative">
+                                    <div class="avatar-xs rounded-lg d-flex flex-center @(member.IsOwner ? "text-aurora" : "text-muted") shadow-sm" style="background: @(member.IsOwner ? "rgba(0,245,160,0.1); border: 1px solid rgba(0,245,160,0.2);" : "rgba(255,255,255,0.05); border: 1px solid var(--border-glass);")">
+                                        <span class="material-symbols-outlined fs-6">account_circle</span>
+                                    </div>
+                                    @if (member.IsOwner)
+                                    {
+                                        <div class="position-absolute d-flex flex-center shadow-sm" style="top: -4px; right: -4px; width: 14px; height: 14px; background: #fbbf24; border: 2px solid var(--bg-universe); border-radius: 50%;">
+                                            <span class="material-symbols-outlined text-white fw-black" style="font-size: 8px;">star</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="flex-grow-1 min-w-0">
+                                    <p class="fw-bold text-white text-truncate mb-0" style="font-size: 0.75rem;">
+                                        @(!string.IsNullOrEmpty(member.FullName) ? member.FullName : member.UserName)
+                                    </p>
+                                    @if (member.IsOwner)
+                                    {
+                                        <span class="fw-black text-aurora text-uppercase px-1 rounded d-inline-block" style="font-size: 0.5rem; letter-spacing: -0.5px; background: rgba(0,245,160,0.1);">Group Creator</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="fw-bold text-muted text-uppercase" style="font-size: 0.5rem; letter-spacing: 0.5px;">Member</span>
+                                    }
+                                </div>
+                                <!-- Connection Actions -->
+                                @if (!isMe)
+                                {
+                                    <div class="d-flex align-items-center gap-1 border-start ps-2" style="border-color: rgba(255,255,255,0.05) !important;" id="member-actions-@member.Id">
+                                        @switch (member.ConnectionStatus)
+                                        {
+                                            case ConnectionStatus.Accepted:
+                                                <form action="/Direct/StartChat" method="post" class="mb-0">
+                                                    <input type="hidden" name="userId" value="@member.Id" />
+                                                    <button type="submit" class="btn btn-link p-1 text-aurora hover-glow text-decoration-none d-flex flex-center" title="Send Message">
+                                                        <span class="material-symbols-outlined fs-6">chat</span>
+                                                    </button>
+                                                </form>
+                                                break;
+                                            case ConnectionStatus.PendingSent:
+                                                <button class="btn btn-link p-1 text-muted opacity-50 text-decoration-none d-flex flex-center cursor-default" title="Request Pending">
+                                                    <span class="material-symbols-outlined fs-6">hourglass_empty</span>
+                                                </button>
+                                                break;
+                                            case ConnectionStatus.PendingReceived:
+                                                <button onclick="acceptConnection('@member.Id')" class="btn btn-link p-1 text-success hover-glow text-decoration-none d-flex flex-center" title="Accept Request">
+                                                    <span class="material-symbols-outlined fs-6">check_circle</span>
+                                                </button>
+                                                <button onclick="declineConnection('@member.Id')" class="btn btn-link p-1 text-danger hover-glow text-decoration-none d-flex flex-center" title="Decline">
+                                                    <span class="material-symbols-outlined fs-6">cancel</span>
+                                                </button>
+                                                break;
+                                            default:
+                                                <button onclick="sendConnectionRequest('@member.Id')" class="btn btn-link p-1 text-muted hover-text-white hover-glow text-decoration-none d-flex flex-center" title="Connect">
+                                                    <span class="material-symbols-outlined fs-6">person_add</span>
+                                                </button>
+                                                break;
+                                        }
+                                    </div>
+                                }
                             </div>
                         }
                     </div>
-                </div>
-            </div>
 
-            <!-- Members View (Initially Hidden) -->
-            <div id="sidebar-view-members" class="d-none flex-column gap-3">
-                <div class="d-flex align-items-center justify-content-between px-2 mb-1">
-                    <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Members — @Model.MemberCount</h3>
-                    <button class="btn btn-link p-1 text-muted hover-glow text-decoration-none">
-                        <span class="material-symbols-outlined fs-6">person_add</span>
-                    </button>
-                </div>
-                <div class="d-flex flex-column gap-2">
-                    <div class="d-flex align-items-center gap-3 p-2 rounded-lg hover-glow transition-all" style="cursor: pointer; background: rgba(255,255,255,0.02);">
-                        <div class="position-relative">
-                            <div class="avatar-xs rounded-lg d-flex flex-center text-aurora shadow-sm" style="background: rgba(0,245,160,0.1); border: 1px solid rgba(0,245,160,0.2);">
-                                <span class="material-symbols-outlined fs-6">account_circle</span>
-                            </div>
-                            <div class="position-absolute d-flex flex-center shadow-sm" style="top: -4px; right: -4px; width: 14px; height: 14px; background: #fbbf24; border: 2px solid var(--bg-universe); border-radius: 50%;">
-                                <span class="material-symbols-outlined text-white fw-black" style="font-size: 8px;">star</span>
-                            </div>
+                    @if (Model.MemberCount > 20)
+                    {
+                        <!-- Spinner shown while loading -->
+                        <div id="members-load-spinner" class="d-none text-center py-2">
+                            <div class="spinner-border spinner-border-sm text-aurora" role="status"></div>
                         </div>
-                        <div class="flex-grow-1 min-w-0">
-                            <p class="fw-bold text-white text-truncate mb-0" style="font-size: 0.75rem;">@(Model.OwnerUserName ?? "Owner")</p>
-                            <span class="fw-black text-aurora text-uppercase px-1 rounded d-inline-block" style="font-size: 0.5rem; letter-spacing: -0.5px; background: rgba(0,245,160,0.1);">Group Creator</span>
-                        </div>
-                    </div>
+                        <!-- Sentinel — IntersectionObserver triggers load when visible -->
+                        <div id="members-sentinel" class="py-1"></div>
+                    }
                 </div>
             </div>
         </div>
@@ -154,7 +217,55 @@
         70% { box-shadow: 0 0 0 6px rgba(0,245,160, 0); }
         100% { box-shadow: 0 0 0 0px rgba(0,245,160, 0); }
     }
+
+    /* Smooth channel item hover — cubic-bezier matching sidebar feel */
+    .channel-item {
+        transition: background 0.3s var(--ease-smooth), color 0.25s var(--ease-smooth), transform 0.25s var(--ease-snappy), box-shadow 0.3s var(--ease-smooth);
+        border-radius: 0.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .channel-item::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(0,245,160,0.07) 0%, transparent 100%);
+        opacity: 0;
+        transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        border-radius: inherit;
+    }
+        .channel-item:hover {
+            background: rgba(255,255,255,0.07) !important;
+            color: white !important;
+            transform: translateX(6px) scale(1.02);
+        }
+    .channel-item:hover::before { opacity: 1; }
+    .channel-item:hover .channel-icon { color: var(--color-aurora) !important; }
+    .channel-item.active-channel {
+        background: rgba(0,245,160,0.08) !important;
+        color: white !important;
+    }
+    .channel-item.active-channel::before { opacity: 1; }
+
+    /* Slider specific */
+    .sidebar-slider-track {
+        display: flex;
+        width: 200%;
+        height: 100%;
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .sidebar-view-pane {
+        width: 50%;
+        flex-shrink: 0;
+        height: 100%;
+    }
+    .view-members-active #sidebar-slider-track {
+        transform: translateX(-50%);
+    }
 </style>
+
 
 <div id="drop-zone" class="d-none position-fixed top-0 bottom-0 start-0 end-0 z-3 align-items-center justify-content-center" style="background: rgba(15,23,42,0.8); backdrop-filter: blur(5px); z-index: 1060; pointer-events: none;">
     <div class="glass-card p-5 d-flex flex-column align-items-center gap-4 animate-entrance" style="border: 2px dashed var(--color-emerald);">
@@ -800,8 +911,10 @@
 
         window.switchSidebarView = (view) => {
             const isChannels = view === 'channels';
-            document.getElementById('sidebar-view-channels').classList.toggle('d-none', !isChannels);
-            document.getElementById('sidebar-view-members').classList.toggle('d-none', isChannels);
+            const container = document.querySelector('.flex-grow-1.overflow-hidden.d-flex.flex-column');
+            if (container) {
+                container.classList.toggle('view-members-active', !isChannels);
+            }
 
             const btnChannels = document.getElementById('btn-view-channels');
             const btnMembers = document.getElementById('btn-view-members');
@@ -816,7 +929,143 @@
                 btnMembers.style.borderBottomColor = 'var(--color-mint-bright)';
                 btnChannels.classList.replace('text-aurora', 'text-muted');
                 btnChannels.style.borderBottomColor = 'transparent';
+                initMembersLazyLoad();
             }
         };
+
+        // ── Progressive Members Load ──────────────────────────────
+        const GROUP_ID = '@Model.Id';
+        const CURRENT_USER_ID = '@User.FindFirst(ClaimTypes.NameIdentifier)?.Value';
+        let membersSkip = 20;
+        let membersLoading = false;
+        let membersAllLoaded = @(Model.MemberCount <= 20 ? "true" : "false");
+        let membersObserver = null;
+
+        function buildMemberHtml(m) {
+            const name = m.fullName || m.userName || m.id;
+            const isMe = m.id === CURRENT_USER_ID;
+            const avatarBg = m.isOwner
+                ? 'rgba(0,245,160,0.1); border:1px solid rgba(0,245,160,0.2);'
+                : 'rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);';
+            const starBadge = m.isOwner ? `
+                <div class="position-absolute d-flex flex-center shadow-sm"
+                     style="top:-4px;right:-4px;width:14px;height:14px;
+                            background:#fbbf24;border:2px solid var(--bg-universe);border-radius:50%;">
+                    <span class="material-symbols-outlined text-white fw-black" style="font-size:8px;">star</span>
+                </div>` : '';
+            const roleBadge = m.isOwner
+                ? `<span class="fw-black text-aurora text-uppercase px-1 rounded" style="font-size:0.5rem;background:rgba(0,245,160,0.1);">Group Creator</span>`
+                : `<span class="fw-bold text-muted text-uppercase" style="font-size:0.5rem;">Member</span>`;
+
+            let actionHtml = '';
+            if (!isMe) {
+                let innerAction = '';
+                switch (m.connectionStatus) {
+                    case 'Accepted':
+                        innerAction = `
+                            <form action="/Direct/StartChat" method="post" class="mb-0">
+                                <input type="hidden" name="userId" value="${m.id}" />
+                                <button type="submit" class="btn btn-link p-1 text-aurora hover-glow text-decoration-none d-flex flex-center" title="Send Message">
+                                    <span class="material-symbols-outlined fs-6">chat</span>
+                                </button>
+                            </form>`;
+                        break;
+                    case 'PendingSent':
+                        innerAction = `<button class="btn btn-link p-1 text-muted opacity-50 text-decoration-none d-flex flex-center cursor-default" title="Request Pending"><span class="material-symbols-outlined fs-6">hourglass_empty</span></button>`;
+                        break;
+                    case 'PendingReceived':
+                        innerAction = `
+                            <button onclick="acceptConnection('${m.id}')" class="btn btn-link p-1 text-success hover-glow text-decoration-none d-flex flex-center" title="Accept Request"><span class="material-symbols-outlined fs-6">check_circle</span></button>
+                            <button onclick="declineConnection('${m.id}')" class="btn btn-link p-1 text-danger hover-glow text-decoration-none d-flex flex-center" title="Decline"><span class="material-symbols-outlined fs-6">cancel</span></button>`;
+                        break;
+                    default:
+                        innerAction = `<button onclick="sendConnectionRequest('${m.id}')" class="btn btn-link p-1 text-muted hover-text-white hover-glow text-decoration-none d-flex flex-center" title="Connect"><span class="material-symbols-outlined fs-6">person_add</span></button>`;
+                        break;
+                }
+                actionHtml = `<div class="d-flex align-items-center gap-1 border-start ps-2" style="border-color: rgba(255,255,255,0.05) !important;" id="member-actions-${m.id}">${innerAction}</div>`;
+            }
+
+            return `
+                <div class="d-flex align-items-center gap-3 p-2 rounded-lg hover-glow transition-all animate-entrance"
+                     style="cursor:pointer;background:rgba(255,255,255,0.02);">
+                    <div class="position-relative">
+                        <div class="avatar-xs rounded-lg d-flex flex-center ${m.isOwner ? 'text-aurora' : 'text-muted'} shadow-sm"
+                             style="background:${avatarBg}">
+                            <span class="material-symbols-outlined fs-6">account_circle</span>
+                        </div>${starBadge}
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <p class="fw-bold text-white text-truncate mb-0" style="font-size:0.75rem;">${name}</p>
+                        ${roleBadge}
+                    </div>
+                    ${actionHtml}
+                </div>`;
+        }
+
+        async function loadMoreMembers() {
+            if (membersLoading || membersAllLoaded) return;
+            membersLoading = true;
+            const spinner = document.getElementById('members-load-spinner');
+            if (spinner) spinner.classList.remove('d-none');
+            try {
+                const resp = await fetch(`/StudyGroups/LoadMoreMembers?groupId=${GROUP_ID}&skip=${membersSkip}&take=20`);
+                const data = await resp.json();
+                const list = document.getElementById('members-list');
+                data.members.forEach(m => list.insertAdjacentHTML('beforeend', buildMemberHtml(m)));
+                membersSkip = data.nextSkip;
+                membersAllLoaded = !data.hasMore;
+                if (membersAllLoaded && membersObserver) {
+                    const sentinel = document.getElementById('members-sentinel');
+                    if (sentinel) membersObserver.unobserve(sentinel);
+                }
+            } catch(e) { console.error('Members load error:', e); }
+            finally {
+                membersLoading = false;
+                if (spinner) spinner.classList.add('d-none');
+            }
+        }
+
+        function initMembersLazyLoad() {
+            if (membersAllLoaded || membersObserver) return;
+            const sentinel = document.getElementById('members-sentinel');
+            if (!sentinel) return;
+            membersObserver = new IntersectionObserver(entries => {
+                if (entries[0].isIntersecting) loadMoreMembers();
+            }, { threshold: 0.1 });
+            membersObserver.observe(sentinel);
+        }
+
+        // Connection Actions JS
+        async function sendConnectionRequest(userId) {
+            const resp = await fetch(`/Connections/SendRequest?userId=${userId}`, { method: 'POST' });
+            if (resp.ok) {
+                const data = await resp.json();
+                document.getElementById(`member-actions-${userId}`).innerHTML = 
+                    `<button class="btn btn-link p-1 text-muted opacity-50 text-decoration-none d-flex flex-center cursor-default" title="Request Pending"><span class="material-symbols-outlined fs-6">hourglass_empty</span></button>`;
+            }
+        }
+
+        async function acceptConnection(userId) {
+            const resp = await fetch(`/Connections/AcceptRequest?userId=${userId}`, { method: 'POST' });
+            if (resp.ok) {
+                document.getElementById(`member-actions-${userId}`).innerHTML = `
+                    <form action="/Direct/StartChat" method="post" class="mb-0">
+                        <input type="hidden" name="userId" value="${userId}" />
+                        <button type="submit" class="btn btn-link p-1 text-aurora hover-glow text-decoration-none d-flex flex-center" title="Send Message">
+                            <span class="material-symbols-outlined fs-6">chat</span>
+                        </button>
+                    </form>`;
+            }
+        }
+
+        async function declineConnection(userId) {
+            const resp = await fetch(`/Connections/DeclineRequest?userId=${userId}`, { method: 'POST' });
+            if (resp.ok) {
+                document.getElementById(`member-actions-${userId}`).innerHTML = `
+                    <button onclick="sendConnectionRequest('${userId}')" class="btn btn-link p-1 text-muted hover-text-white hover-glow text-decoration-none d-flex flex-center" title="Connect">
+                        <span class="material-symbols-outlined fs-6">person_add</span>
+                    </button>`;
+            }
+        }
     </script>
 }

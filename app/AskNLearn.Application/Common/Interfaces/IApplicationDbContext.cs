@@ -19,6 +19,7 @@ namespace AskNLearn.Application.Common.Interfaces
         DbSet<Message> Messages { get; }
         DbSet<UserRank> UserRanks { get; }
         DbSet<GroupMembership> GroupMemberships { get; }
+        DbSet<GroupRole> GroupRoles { get; }
         DbSet<StudyGroup> StudyGroups { get; }
         DbSet<Channel> Channels { get; }
         DbSet<PostVote> PostVotes { get; }
@@ -28,6 +29,7 @@ namespace AskNLearn.Application.Common.Interfaces
         DbSet<MessageAttachment> MessageAttachments { get; }
         DbSet<MessageReaction> MessageReactions { get; }
         DbSet<VerificationRequest> VerificationRequests { get; }
+        DbSet<Friendship> Friendships { get; }
         
         DbSet<PostTag> PostTags { get; }
         DbSet<LearningResource> LearningResources { get; }

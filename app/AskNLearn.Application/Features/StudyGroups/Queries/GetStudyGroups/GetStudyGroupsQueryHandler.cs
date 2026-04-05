@@ -46,7 +46,8 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries.GetStudyGroups
                     OwnerId = x.OwnerId,
                     OwnerUserName = x.Owner != null ? x.Owner.UserName : null,
                     CreatedAt = x.CreatedAt,
-                    MemberCount = x.Members.Count
+                    MemberCount = x.Members.Count,
+                    IsMember = request.CurrentUserId != null && x.Members.Any(m => m.UserId == request.CurrentUserId)
                 })
                 .ToListAsync(cancellationToken);
         }

@@ -1,4 +1,4 @@
-using System;
+using AskNLearn.Application.Common.Models;
 
 namespace AskNLearn.Application.Features.StudyGroups.Queries
 {
@@ -13,6 +13,17 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries
         public string? OwnerUserName { get; set; }
         public DateTime CreatedAt { get; set; }
         public int MemberCount { get; set; }
+        public bool IsMember { get; set; }
         public List<ChannelDto> Channels { get; set; } = new ();
+        public List<MemberDto> Members { get; set; } = new ();
+    }
+
+    public class MemberDto
+    {
+        public string Id { get; set; } = null!;
+        public string? UserName { get; set; }
+        public string? FullName { get; set; }
+        public bool IsOwner { get; set; }
+        public ConnectionStatus ConnectionStatus { get; set; } = ConnectionStatus.None;
     }
 }

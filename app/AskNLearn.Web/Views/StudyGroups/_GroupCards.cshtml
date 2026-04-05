@@ -8,12 +8,10 @@
     {
         <div class="col-12 col-lg-6 animate-entrance">
             <div class="glass-card h-100 p-4 p-md-5 d-flex flex-column gap-4 position-relative overflow-hidden group transition-all hover-glow shadow-lg border-glass-strong" style="border-radius: 2rem; background: var(--glass-surface);">
-                <div class="position-absolute top-0 start-0 h-100 transition-all group-hover-opacity" style="width: 4px; background: var(--gradient-aurora); opacity: 0.3;"></div>
-                
                 <div class="d-flex justify-content-between align-items-start position-relative z-1 mb-2">
                     <div class="d-flex align-items-center gap-4">
                         <div class="rounded-4 d-flex align-items-center justify-content-center flex-shrink-0 transition-transform hover-scale" style="width: 64px; height: 64px; background: rgba(52, 211, 153, 0.05); border: 1px solid rgba(52, 211, 153, 0.1);">
-                            <span class="material-symbols-outlined text-aurora fs-1">school</span>
+                            <span class="material-symbols-outlined text-aurora fs-1">groups</span>
                         </div>
                         <div>
                             <h3 class="fs-4 fw-bold text-white mb-2 tracking-tight transition-colors text-truncate" style="max-width: 250px;">
@@ -45,7 +43,7 @@
                     @group.Description
                 </p>
 
-                <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between mt-auto pt-4 gap-3 position-relative z-1" style="border-top: 1px solid var(--border-glass);">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between mt-auto pt-2 gap-3 position-relative z-1">
                     <div class="d-flex align-items-center gap-3">
                         <div class="d-flex" style="margin-left: 0.5rem;">
                             @for(int i = 0; i < 3; i++) {
@@ -54,12 +52,62 @@
                         </div>
                         <span class="text-muted fw-bold text-uppercase tracking-wider" style="font-size: 0.7rem;">Active Members</span>
                     </div>
-                    <a asp-action="Details" asp-route-id="@group.Id" class="btn btn-glass d-flex align-items-center justify-content-center gap-2 fw-bold text-uppercase tracking-wider py-2 position-relative z-3 shadow-lg" style="font-size: 0.75rem;">
-                        Synchronize
-                        <span class="material-symbols-outlined text-aurora" style="font-size: 1rem;">bolt</span>
-                    </a>
+
+                    <div id="join-container-@group.Id" class="position-relative z-3">
+                        @if (group.IsMember)
+                        {
+                            <a asp-action="Details" asp-route-id="@group.Id" class="btn btn-premium d-flex align-items-center justify-content-center gap-2 fw-bold text-uppercase tracking-wider py-2 px-4 shadow-lg transition-transform hover-scale" style="font-size: 0.7rem; border-radius: 1rem;">
+                                Enter Hub
+                                <span class="material-symbols-outlined text-aurora" style="font-size: 1rem;">arrow_forward</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <button onclick="joinGroup('@group.Id', this)" class="btn btn-premium d-flex align-items-center justify-content-center gap-2 fw-bold text-uppercase tracking-wider py-2 px-4 shadow-lg transition-transform hover-scale" style="font-size: 0.7rem; border-radius: 1rem;">
+                                Join
+                                <span class="material-symbols-outlined text-aurora" style="font-size: 1rem;">person_add</span>
+                            </button>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
     }
 }
+
+<script>
+    if (typeof joinGroup === 'undefined') {
+        window.joinGroup = function(groupId, btn) {
+            const container = document.getElementById(`join-container-${groupId}`);
+            if (!container || btn.disabled) return;
+            
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Joining...';
+
+            fetch(`/StudyGroups/Join/${groupId}`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(resp => {
+                if (resp.ok) {
+                    // Option disappears and transforms into "Enter Hub"
+                    container.innerHTML = `
+                        <a href="/StudyGroups/Details/${groupId}" class="btn btn-premium d-flex align-items-center justify-content-center gap-2 fw-bold text-uppercase tracking-wider py-2 px-4 shadow-lg transition-transform hover-scale" style="font-size: 0.7rem; border-radius: 1rem;">
+                            Enter Hub
+                            <span class="material-symbols-outlined text-aurora" style="font-size: 1rem;">arrow_forward</span>
+                        </a>
+                    `;
+                } else {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.innerHTML = 'Join <span class="material-symbols-outlined text-aurora" style="font-size: 1rem;">person_add</span>';
+                }
+            }).catch(err => {
+                console.error(err);
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerHTML = 'Join <span class="material-symbols-outlined text-aurora" style="font-size: 1rem;">person_add</span>';
+            });
+        };
+    }
+</script>

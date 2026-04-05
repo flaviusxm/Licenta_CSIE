@@ -1,5 +1,7 @@
 using AskNLearn.Application.Common.Interfaces;
+using AskNLearn.Application.Common.Models;
 using AskNLearn.Application.Features.StudyGroups.Queries;
+using AskNLearn.Domain.Entities.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -39,7 +41,24 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries.GetStudyGroupById
                         Type = (ChannelType)c.Type,
                         Topic = c.Topic,
                         Position = c.Position
-                    }).ToList()
+                    }).ToList(),
+                    Members = x.Members
+                        .Where(m => !m.IsBanned)
+                        .OrderByDescending(m => m.UserId == x.OwnerId)
+                        .ThenBy(m => m.User != null ? m.User.UserName : "")
+                        .Take(20)
+                        .Select(m => new MemberDto
+                        {
+                            Id = m.UserId,
+                            UserName = m.User != null ? m.User.UserName : m.UserId,
+                            FullName = m.User != null ? m.User.FullName : null,
+                            IsOwner = m.UserId == x.OwnerId,
+                            ConnectionStatus = request.CurrentUserId == null ? ConnectionStatus.None : 
+                                _context.Friendships.Any(f => (f.RequesterId == request.CurrentUserId && f.AddresseeId == m.UserId && f.Status == FriendshipStatus.Accepted) || 
+                                                             (f.RequesterId == m.UserId && f.AddresseeId == request.CurrentUserId && f.Status == FriendshipStatus.Accepted)) ? ConnectionStatus.Accepted :
+                                _context.Friendships.Any(f => f.RequesterId == request.CurrentUserId && f.AddresseeId == m.UserId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingSent :
+                                _context.Friendships.Any(f => f.RequesterId == m.UserId && f.AddresseeId == request.CurrentUserId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingReceived : ConnectionStatus.None
+                        }).ToList()
                 })
                 .FirstOrDefaultAsync(cancellationToken);
         }
