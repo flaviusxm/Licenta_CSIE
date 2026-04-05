@@ -1,4 +1,5 @@
 using AskNLearn.Application.Common.Interfaces;
+using AskNLearn.Application.Common.Models;
 using AskNLearn.Domain.Entities.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -20,13 +21,16 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
 
         public async Task<List<PostDto>> Handle(GetPostsByCommunityQuery request, CancellationToken cancellationToken)
         {
+            var page = request.Page < 1 ? 1 : request.Page;
+            var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
+
             var posts = await _context.Posts
                 .Where(p => p.CommunityId == request.CommunityId && p.ModerationStatus != ModerationStatus.Flagged)
                 .Include(p => p.Author)
                 .Include(p => p.Attachments)
-                .Include(p => p.Comments)
-                    .ThenInclude(c => c.Author)
                 .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(p => new PostDto
                 {
                     Id = p.Id,
@@ -40,32 +44,19 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
                     ViewCount = p.ViewCount,
                     CommentCount = p.Comments.Count,
                     VoteCount = _context.PostVotes.Where(v => v.PostId == p.Id).Select(v => (int)v.VoteValue).Sum(),
-                    UserVote = !string.IsNullOrEmpty(request.CurrentUserId) 
+                    UserVote = !string.IsNullOrEmpty(request.CurrentUserId)
                         ? _context.PostVotes.Where(v => v.PostId == p.Id && v.UserId == request.CurrentUserId).Select(v => (int)v.VoteValue).FirstOrDefault()
                         : 0,
                     CreatedAt = p.CreatedAt,
                     ModerationStatus = p.ModerationStatus,
                     ModerationReason = p.ModerationReason,
-                    Comments = p.Comments
-                        .Where(c => c.ModerationStatus != ModerationStatus.Flagged)
-                        .OrderBy(c => c.CreatedAt)
-                        .Select(c => new CommentDto
-                    {
-                        Id = c.Id,
-                        AuthorId = c.AuthorId,
-                        AuthorName = c.Author != null ? c.Author.FullName : "Unknown",
-                        Content = c.Content ?? "",
-                        CreatedAt = c.CreatedAt,
-                        ModerationStatus = c.ModerationStatus,
-                        ModerationReason = c.ModerationReason,
-                        ReplyToMessageId = c.ReplyToMessageId,
-                        Attachments = c.Attachments != null ? c.Attachments.Select(a => new AttachmentDto
-                        {
-                            Id = a.FileId,
-                            Url = a.File != null ? a.File.FilePath : "",
-                            FileType = a.File != null ? a.File.FileType : ""
-                        }).ToList() : new List<AttachmentDto>()
-                    }).ToList(),
+                    AuthorConnectionStatus = string.IsNullOrEmpty(request.CurrentUserId) ? ConnectionStatus.None : 
+                        _context.Friendships.Any(f => (f.RequesterId == request.CurrentUserId && f.AddresseeId == p.AuthorId && f.Status == FriendshipStatus.Accepted) || 
+                                                     (f.RequesterId == p.AuthorId && f.AddresseeId == request.CurrentUserId && f.Status == FriendshipStatus.Accepted)) ? ConnectionStatus.Accepted :
+                        _context.Friendships.Any(f => f.RequesterId == request.CurrentUserId && f.AddresseeId == p.AuthorId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingSent :
+                        _context.Friendships.Any(f => f.RequesterId == p.AuthorId && f.AddresseeId == request.CurrentUserId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingReceived : ConnectionStatus.None,
+                    // Comments are NOT loaded here — lazy loaded via GetPostCommentsQuery
+                    Comments = new List<CommentDto>(),
                     Attachments = p.Attachments.Select(a => new AttachmentDto
                     {
                         Id = a.Id,

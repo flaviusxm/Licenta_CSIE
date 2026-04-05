@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using AskNLearn.Domain.Entities.Core;
+using AskNLearn.Application.Common.Models;
 
 namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
 {
@@ -9,6 +11,7 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
         public Guid? CommunityId { get; set; }
         public string? AuthorId { get; set; }
         public string? AuthorName { get; set; }
+        public ConnectionStatus AuthorConnectionStatus { get; set; } = ConnectionStatus.None;
         public string Title { get; set; } = null!;
         public string Content { get; set; } = null!;
         public bool IsSolved { get; set; }

@@ -8,6 +8,7 @@ using AskNLearn.Application.Features.Posts.Commands.DeletePost;
 using AskNLearn.Application.Features.Posts.Commands.UpdatePost;
 using AskNLearn.Application.Features.Posts.Queries.GetPostById;
 using AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity;
+using AskNLearn.Application.Features.Posts.Queries.GetPostComments;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,10 +44,64 @@ namespace AskNLearn.Web.Controllers
             var community = await _mediator.Send(new GetCommunityByIdQuery { Id = id, CurrentUserId = userId });
             if (community == null) return NotFound();
 
-            var posts = await _mediator.Send(new GetPostsByCommunityQuery { CommunityId = id, CurrentUserId = userId });
+            const int pageSize = 10;
+            var posts = await _mediator.Send(new GetPostsByCommunityQuery
+            {
+                CommunityId = id,
+                CurrentUserId = userId,
+                Page = 1,
+                PageSize = pageSize
+            });
+            var totalCount = await _mediator.Send(new GetPostsCountByCommunityQuery { CommunityId = id });
+
             ViewBag.Posts = posts;
+            ViewBag.TotalPostCount = totalCount;
+            ViewBag.PageSize = pageSize;
+            ViewBag.CurrentPage = 1;
 
             return View(community);
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> LoadMorePosts(Guid communityId, int page = 2)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            const int pageSize = 10;
+
+            var posts = await _mediator.Send(new GetPostsByCommunityQuery
+            {
+                CommunityId = communityId,
+                CurrentUserId = userId,
+                Page = page,
+                PageSize = pageSize
+            });
+
+            var totalCount = await _mediator.Send(new GetPostsCountByCommunityQuery { CommunityId = communityId });
+            var hasMore = page * pageSize < totalCount;
+
+            var community = await _mediator.Send(new GetCommunityByIdQuery { Id = communityId, CurrentUserId = userId });
+
+            ViewBag.CommunityId = communityId;
+            ViewBag.CurrentPage = page;
+            ViewBag.HasMorePosts = hasMore;
+            ViewBag.CurrentUserId = userId;
+            ViewBag.CommunityCreatorId = community?.CreatorId;
+
+            return PartialView("_PostListPartial", posts);
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> GetPostComments(Guid postId, Guid communityId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = await _mediator.Send(new GetPostCommentsQuery
+            {
+                PostId = postId,
+                CommunityId = communityId,
+                CurrentUserId = userId
+            });
+
+            return PartialView("_PostCommentsPartial", result);
         }
 
         [HttpPost]

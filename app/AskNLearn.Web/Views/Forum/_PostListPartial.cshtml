@@ -1,0 +1,146 @@
+@using AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
+@model List<PostDto>
+
+@{
+    var communityId = ViewBag.CommunityId as Guid? ?? Guid.Empty;
+    var currentUserId = ViewBag.CurrentUserId as string;
+    var communityCreatorId = ViewBag.CommunityCreatorId as string;
+}
+
+@foreach (var post in Model)
+{
+    var canDelete = !string.IsNullOrEmpty(currentUserId)
+        && (currentUserId == post.AuthorId || currentUserId == communityCreatorId);
+
+    <div class="glass-card p-4 p-md-5 group transition-all position-relative post-card-animate" id="post-@post.Id">
+        <div class="d-flex gap-4 align-items-start">
+
+            <!-- Vote Column -->
+            <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0 rounded-pill py-2" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass);">
+                <button onclick="votePost('@post.Id', '@communityId', 1)"
+                        class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-up-@post.Id transition-colors @(post.UserVote == 1 ? "text-mint font-weight-bold" : "text-muted hover-glow")">
+                    <span class="material-symbols-outlined fs-5">keyboard_arrow_up</span>
+                </button>
+
+                <span class="fw-bold vote-count-@post.Id @(post.UserVote == 1 ? "text-mint" : post.UserVote == -1 ? "text-danger" : "text-white")" style="font-size: 0.9rem;">
+                    @post.VoteCount
+                </span>
+
+                <button onclick="votePost('@post.Id', '@communityId', -1)"
+                        class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-down-@post.Id transition-colors @(post.UserVote == -1 ? "text-danger font-weight-bold" : "text-muted hover-text-danger")">
+                    <span class="material-symbols-outlined fs-5">keyboard_arrow_down</span>
+                </button>
+            </div>
+
+            <!-- Post Content -->
+            <div class="flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="avatar-xs rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+                        <span class="material-symbols-outlined text-muted" style="font-size: 14px;">person</span>
+                    </div>
+                    <span class="fw-bold text-white fs-6">@post.AuthorName</span>
+                    
+                    @if (currentUserId != post.AuthorId)
+                    {
+                        <div class="d-flex align-items-center gap-1 ms-1" id="author-actions-@post.Id-@post.AuthorId">
+                            @switch (post.AuthorConnectionStatus)
+                            {
+                                case ConnectionStatus.Accepted:
+                                    <form action="/Direct/StartChat" method="post" class="m-0 p-0">
+                                        <input type="hidden" name="userId" value="@post.AuthorId" />
+                                        <button type="submit" class="btn btn-link p-1 text-aurora hover-glow text-decoration-none d-flex flex-center" title="Send Message" style="transition: transform 0.4s var(--ease-snappy);">
+                                            <span class="material-symbols-outlined fs-6" style="font-size: 16px;">chat</span>
+                                        </button>
+                                    </form>
+                                    break;
+                                case ConnectionStatus.PendingSent:
+                                    <span class="text-muted opacity-50 d-flex flex-center px-1" title="Request Pending">
+                                        <span class="material-symbols-outlined fs-6" style="font-size: 16px;">hourglass_empty</span>
+                                    </span>
+                                    break;
+                                case ConnectionStatus.PendingReceived:
+                                    <button onclick="handleConnection('@post.AuthorId', 'AcceptRequest', this)" class="btn btn-link p-1 text-success hover-glow text-decoration-none d-flex flex-center" title="Accept Connection" style="transition: transform 0.4s var(--ease-snappy);">
+                                        <span class="material-symbols-outlined fs-6" style="font-size: 18px;">check_circle</span>
+                                    </button>
+                                    break;
+                                default:
+                                    <button onclick="handleConnection('@post.AuthorId', 'SendRequest', this)" class="btn btn-link p-1 text-muted hover-text-white hover-glow text-decoration-none d-flex flex-center" title="Connect" style="transition: transform 0.4s var(--ease-snappy);">
+                                        <span class="material-symbols-outlined fs-6" style="font-size: 18px;">person_add</span>
+                                    </button>
+                                    break;
+                            }
+                        </div>
+                    }
+
+                    <span class="text-muted ms-auto" style="font-size: 0.75rem;">• @post.CreatedAt.ToString("MMM dd")</span>
+                    @if (post.IsSolved)
+                    {
+                        <span class="badge" style="background: rgba(0,245,160,0.1); color: var(--color-emerald); border: 1px solid rgba(0,245,160,0.2); font-size: 0.6rem; letter-spacing: 1px;">SOLVED</span>
+                    }
+                </div>
+                <h3 class="h4 fw-bold text-white mb-2 text-aurora-hover transition-all">@post.Title</h3>
+                <p class="text-muted mb-4 fs-6" style="line-height: 1.6;">@post.Content</p>
+
+                @if (post.Attachments.Any())
+                {
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        @foreach (var attachment in post.Attachments)
+                        {
+                            <a href="@attachment.Url" target="_blank" class="text-decoration-none d-flex align-items-center gap-2 px-3 py-2 rounded-lg border hover-glow transition-all" style="background: rgba(255,255,255,0.02); border-color: var(--border-glass);">
+                                <span class="material-symbols-outlined fs-5 text-muted">
+                                    @(attachment.FileType?.Contains("image") == true ? "image" : "description")
+                                </span>
+                                <span class="text-muted fw-bold text-truncate" style="font-size: 0.75rem; max-width: 200px;">
+                                    @System.IO.Path.GetFileName(attachment.Url)
+                                </span>
+                            </a>
+                        }
+                    </div>
+                }
+
+                <div class="d-flex flex-column gap-3 mt-2">
+                    <div class="d-flex align-items-center justify-content-between pb-3 border-bottom" style="border-color: var(--border-glass) !important;">
+                        <div class="d-flex align-items-center gap-4 text-muted fw-bold" style="font-size: 0.8rem;">
+
+                            <!-- Comments Toggle — tot rândul e clickabil, fără casuta separată +/- -->
+                            <div onclick="toggleLazyComments('@post.Id', '@communityId')"
+                                 class="d-flex align-items-center gap-2 hover-glow transition-all"
+                                 style="cursor: pointer;"
+                                 id="comments-toggle-@post.Id">
+                                <span class="material-symbols-outlined fs-5 transition-all toggle-icon-@post.Id">chat_bubble</span>
+                                <span>@post.CommentCount Comments</span>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined fs-5">visibility</span>
+                                <span>@post.ViewCount Views</span>
+                            </div>
+                        </div>
+
+                        <!-- Delete: doar autorul postarii sau creatorul forumului -->
+                        @if (canDelete)
+                        {
+                            <div class="d-flex gap-2">
+                                <form asp-controller="Forum" asp-action="DeletePost" asp-route-id="@post.Id" asp-route-communityId="@communityId" method="post" onsubmit="return confirm('Stergi aceasta postare?')" class="m-0 p-0">
+                                    <button type="submit" class="btn btn-link p-1 text-muted hover-text-danger text-decoration-none d-flex align-items-center justify-content-center" title="Sterge postarea">
+                                        <span class="material-symbols-outlined fs-5">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Comments Section: lazy loaded -->
+                    <div id="comments-@post.Id" class="d-none animate-slide-down mt-2">
+                        <div class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm text-aurora" role="status">
+                                <span class="visually-hidden">Se incarca...</span>
+                            </div>
+                            <p class="text-muted mt-2 mb-0" style="font-size:0.8rem;">Se incarca comentariile...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,108 @@
+@using AskNLearn.Application.Features.Posts.Queries.GetPostComments
+@using AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
+@model PostCommentsResult
+
+@functions {
+    async Task RenderComments(List<CommentDto> allComments, Guid? parentId, int depth = 0)
+    {
+        var currentComments = allComments.Where(c => c.ReplyToMessageId == parentId).OrderBy(c => c.CreatedAt).ToList();
+        foreach (var comment in currentComments)
+        {
+            <div class="d-flex flex-column gap-2 @(depth > 0 ? "ms-4 ps-4 mt-3" : "mt-4")" style="@(depth > 0 ? "border-left: 2px solid var(--border-glass);" : "")">
+                <div class="d-flex gap-3">
+                    <div class="avatar-sm rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(255,255,255,0.05);">
+                        <span class="material-symbols-outlined fs-6 text-muted">person</span>
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="fw-bold text-white" style="font-size: 0.85rem;">@comment.AuthorName</span>
+                            <span class="text-muted" style="font-size: 0.65rem;">• @comment.CreatedAt.ToString("MMM dd, HH:mm")</span>
+                        </div>
+                        <p class="text-muted mb-2" style="font-size: 0.9rem; line-height: 1.5;">@comment.Content</p>
+
+                        @if (comment.Attachments.Any())
+                        {
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                @foreach (var attachment in comment.Attachments)
+                                {
+                                    <a href="@attachment.Url" target="_blank" class="text-decoration-none d-flex align-items-center gap-2 px-3 py-1 rounded-lg border hover-glow transition-all" style="background: rgba(255,255,255,0.02); border-color: var(--border-glass);">
+                                        <span class="material-symbols-outlined fs-6 text-muted">
+                                            @(attachment.FileType?.Contains("image") == true ? "image" : "description")
+                                        </span>
+                                        <span class="text-muted fw-medium text-truncate" style="font-size: 0.7rem; max-width: 150px;">
+                                            @System.IO.Path.GetFileName(attachment.Url)
+                                        </span>
+                                    </a>
+                                }
+                            </div>
+                        }
+
+                        <!-- Reply Button -->
+                        <button onclick="toggleReplyForm('@comment.Id')" class="btn btn-link p-0 text-aurora fw-bold text-decoration-none" style="font-size: 0.7rem;">Reply</button>
+
+                        <!-- Reply Form (Hidden) -->
+                        <div id="reply-form-@comment.Id" class="d-none mt-3">
+                            <form asp-controller="Forum" asp-action="AddComment" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="PostId" value="@Model.PostId" />
+                                <input type="hidden" name="CommunityId" value="@Model.CommunityId" />
+                                <input type="hidden" name="ReplyToMessageId" value="@comment.Id" />
+                                <div class="d-flex gap-2">
+                                    <input type="text" name="Content" class="form-control form-control-glass flex-grow-1 py-1" style="font-size: 0.8rem;" placeholder="Write a reply..." required />
+                                    <button type="submit" class="btn btn-premium d-flex align-items-center justify-content-center flex-shrink-0 p-0" style="width: 36px; height: 36px;">
+                                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">send</span>
+                                    </button>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                    <label class="cursor-pointer d-flex align-items-center gap-1 px-3 py-1 rounded-lg border text-muted fw-bold hover-glow transition-all mb-0" style="font-size: 0.7rem; border-color: var(--border-glass);">
+                                        <span class="material-symbols-outlined" style="font-size: 0.9rem;">attach_file</span>
+                                        <span>Attach File</span>
+                                        <input type="file" name="Attachment" class="d-none" onchange="updateFileName(this)" accept=".pdf,.docx,.jpeg,.jpg,.png" />
+                                    </label>
+                                    <span class="file-name text-muted text-truncate" style="font-size: 0.7rem;"></span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @{ await RenderComments(allComments, comment.Id, depth + 1); }
+            </div>
+        }
+    }
+}
+
+<div class="p-4 rounded-xl" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass);">
+    <!-- Comment Input Form -->
+    <form asp-controller="Forum" asp-action="AddComment" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-3 mb-4">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="PostId" value="@Model.PostId" />
+        <input type="hidden" name="CommunityId" value="@Model.CommunityId" />
+        <div class="d-flex gap-3 align-items-start">
+            <div class="avatar-sm rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(0,245,160,0.1);">
+                <span class="material-symbols-outlined fs-6 text-aurora">person</span>
+            </div>
+            <div class="flex-grow-1 position-relative">
+                <input type="text" name="Content" class="form-control form-control-glass w-100" placeholder="Write a comment..." required />
+            </div>
+            <button type="submit" class="btn btn-premium px-4" style="height: 48px;">Post</button>
+        </div>
+        <div class="d-flex align-items-center gap-2 overflow-hidden" style="padding-left: 2.75rem;">
+            <label class="cursor-pointer d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-lg border text-muted fw-bold hover-glow transition-all mb-0" style="font-size: 0.75rem; border-color: var(--border-glass);">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">attach_file</span>
+                <span>Attach File</span>
+                <input type="file" name="Attachment" class="d-none" onchange="updateFileName(this)" accept=".pdf,.docx,.jpeg,.jpg,.png" />
+            </label>
+            <span class="file-name text-muted text-truncate" style="font-size: 0.75rem;"></span>
+        </div>
+    </form>
+
+    <!-- Recursive Comment Tree -->
+    @if (Model.Comments.Any())
+    {
+        await RenderComments(Model.Comments, null);
+    }
+    else
+    {
+        <p class="text-muted text-center py-3 mb-0" style="font-size: 0.85rem;">No comments yet. Be the first!</p>
+    }
+</div>

@@ -8,5 +8,7 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
     {
         public Guid CommunityId { get; set; }
         public string? CurrentUserId { get; set; }
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
     }
 }

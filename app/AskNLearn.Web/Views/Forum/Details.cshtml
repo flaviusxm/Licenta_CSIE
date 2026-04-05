@@ -1,87 +1,20 @@
 @using AskNLearn.Application.Features.Communities.Queries.GetCommunities
 @using AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
-@using System.Threading.Tasks
 @model CommunityDto
 @{
     Layout = "_DashboardLayout";
     ViewData["Title"] = Model.Name;
     var posts = ViewBag.Posts as List<PostDto> ?? new List<PostDto>();
-}
-
-@functions {
-    async Task RenderComments(List<CommentDto> allComments, Guid? parentId, int depth = 0)
-    {
-        var currentComments = allComments.Where(c => c.ReplyToMessageId == parentId).OrderBy(c => c.CreatedAt).ToList();
-        foreach (var comment in currentComments)
-        {
-            <div class="d-flex flex-column gap-2 @(depth > 0 ? "ms-4 ps-4 mt-3" : "mt-4")" style="@(depth > 0 ? "border-left: 2px solid var(--border-glass);" : "")">
-                <div class="d-flex gap-3">
-                    <div class="avatar-sm rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(255,255,255,0.05);">
-                        <span class="material-symbols-outlined fs-6 text-muted">person</span>
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <span class="fw-bold text-white" style="font-size: 0.85rem;">@comment.AuthorName</span>
-                            <span class="text-muted" style="font-size: 0.65rem;">• @comment.CreatedAt.ToString("MMM dd, HH:mm")</span>
-                        </div>
-                        <p class="text-muted mb-2" style="font-size: 0.9rem; line-height: 1.5;">@comment.Content</p>
-
-                        @if (comment.Attachments.Any())
-                        {
-                            <div class="d-flex flex-wrap gap-2 mb-2">
-                                @foreach (var attachment in comment.Attachments)
-                                {
-                                    <a href="@attachment.Url" target="_blank" class="text-decoration-none d-flex align-items-center gap-2 px-3 py-1 rounded-lg border hover-glow transition-all" style="background: rgba(255,255,255,0.02); border-color: var(--border-glass);">
-                                        <span class="material-symbols-outlined fs-6 text-muted">
-                                            @(attachment.FileType?.Contains("image") == true ? "image" : "description")
-                                        </span>
-                                        <span class="text-muted fw-medium text-truncate" style="font-size: 0.7rem; max-width: 150px;">
-                                            @System.IO.Path.GetFileName(attachment.Url)
-                                        </span>
-                                    </a>
-                                }
-                            </div>
-                        }
-                        
-                        <!-- Reply Button -->
-                        <button onclick="toggleReplyForm('@comment.Id')" class="btn btn-link p-0 text-aurora fw-bold text-decoration-none" style="font-size: 0.7rem;">Reply</button>
-                        
-                        <!-- Reply Form (Hidden) -->
-                        <div id="reply-form-@comment.Id" class="d-none mt-3">
-                            <form asp-action="AddComment" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-2">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="PostId" value="@ViewBag.CurrentPostId" />
-                                <input type="hidden" name="CommunityId" value="@Model.Id" />
-                                <input type="hidden" name="ReplyToMessageId" value="@comment.Id" />
-                                <div class="d-flex gap-2">
-                                    <input type="text" name="Content" class="form-control form-control-glass flex-grow-1 py-1" style="font-size: 0.8rem;" placeholder="Write a reply..." required />
-                                    <button type="submit" class="btn btn-premium d-flex align-items-center justify-content-center flex-shrink-0 p-0" style="width: 36px; height: 36px;">
-                                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">send</span>
-                                    </button>
-                                </div>
-                                <div class="d-flex align-items-center gap-2 overflow-hidden">
-                                    <label class="cursor-pointer d-flex align-items-center gap-1 px-3 py-1 rounded-lg border text-muted fw-bold hover-glow transition-all mb-0" style="font-size: 0.7rem; border-color: var(--border-glass);">
-                                        <span class="material-symbols-outlined" style="font-size: 0.9rem;">attach_file</span>
-                                        <span>Attach File</span>
-                                        <input type="file" name="Attachment" class="d-none" onchange="updateFileName(this)" accept=".pdf,.docx,.jpeg,.jpg,.png" />
-                                    </label>
-                                    <span class="file-name text-muted text-truncate" style="font-size: 0.7rem;"></span>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                @{ await RenderComments(allComments, comment.Id, depth + 1); }
-            </div>
-        }
-    }
+    var totalPostCount = ViewBag.TotalPostCount as int? ?? 0;
+    var pageSize = ViewBag.PageSize as int? ?? 10;
+    var hasMore = posts.Count >= pageSize && posts.Count < totalPostCount;
 }
 
 <div class="container-fluid py-5" style="max-width: 1000px;">
     <!-- Community Header -->
     <div class="glass-card p-4 p-md-5 mb-5 d-flex flex-column flex-md-row align-items-center gap-4 animate-entrance position-relative overflow-hidden">
         <div class="position-absolute rounded-circle" style="top: -20px; left: -20px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(0,217,245,0.15) 0%, transparent 70%); filter: blur(20px);"></div>
-        
+
         <!-- Icon / Image -->
         @if (!string.IsNullOrEmpty(Model.ImageUrl))
         {
@@ -130,6 +63,10 @@
     <div class="d-flex flex-column gap-4 animate-entrance delay-100">
         <div class="d-flex justify-content-between align-items-center pb-3 mb-2 border-bottom" style="border-color: var(--border-glass) !important;">
             <h2 class="h4 fw-bold text-white mb-0 tracking-tighter">Recent Discussions</h2>
+            @if (totalPostCount > 0)
+            {
+                <span class="text-muted" style="font-size: 0.8rem;">@totalPostCount posts total</span>
+            }
         </div>
 
         @if (!posts.Any())
@@ -145,139 +82,172 @@
         }
         else
         {
-            <div class="d-flex flex-column gap-4">
-                @foreach (var post in posts)
-                {
-                    <div class="glass-card p-4 p-md-5 group transition-all position-relative" id="post-@post.Id">
-                        <div class="d-flex gap-4 align-items-start">
-                            
-                            <!-- Vote Column -->
-                            <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0 bg-dark rounded-pill py-2" style="background: rgba(0,0,0,0.2) !important; border: 1px solid var(--border-glass);">
-                                <button onclick="votePost('@post.Id', '@Model.Id', 1)" 
-                                        class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-up-@post.Id transition-colors @(post.UserVote == 1 ? "text-mint font-weight-bold" : "text-muted hover-glow")">
-                                    <span class="material-symbols-outlined fs-5">keyboard_arrow_up</span>
-                                </button>
-                                
-                                <span class="fw-bold vote-count-@post.Id @(post.UserVote == 1 ? "text-mint" : post.UserVote == -1 ? "text-danger" : "text-white")" style="font-size: 0.9rem;">
-                                    @post.VoteCount
-                                </span>
-                                
-                                <button onclick="votePost('@post.Id', '@Model.Id', -1)" 
-                                        class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-down-@post.Id transition-colors @(post.UserVote == -1 ? "text-danger font-weight-bold" : "text-muted hover-text-danger")">
-                                    <span class="material-symbols-outlined fs-5">keyboard_arrow_down</span>
-                                </button>
-                            </div>
-                            
-                            <!-- Post Content -->
-                            <div class="flex-grow-1 min-w-0">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <div class="avatar-xs rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
-                                        <span class="material-symbols-outlined text-muted" style="font-size: 14px;">person</span>
-                                    </div>
-                                    <span class="fw-bold text-white" style="font-size: 0.9rem;">@post.AuthorName</span>
-                                    <span class="text-muted" style="font-size: 0.75rem;">• @post.CreatedAt.ToString("MMM dd")</span>
-                                    @if (post.IsSolved)
-                                    {
-                                        <span class="badge" style="background: rgba(0,245,160,0.1); color: var(--color-emerald); border: 1px solid rgba(0,245,160,0.2); font-size: 0.6rem; letter-spacing: 1px;">SOLVED</span>
-                                    }
-                                </div>
-                                <h3 class="h4 fw-bold text-white mb-2 text-aurora-hover transition-all">@post.Title</h3>
-                                <p class="text-muted mb-4 fs-6" style="line-height: 1.6;">@post.Content</p>
-                                
-                                @if (post.Attachments.Any())
-                                {
-                                    <div class="d-flex flex-wrap gap-2 mb-4">
-                                        @foreach (var attachment in post.Attachments)
-                                        {
-                                            <a href="@attachment.Url" target="_blank" class="text-decoration-none d-flex align-items-center gap-2 px-3 py-2 rounded-lg border hover-glow transition-all" style="background: rgba(255,255,255,0.02); border-color: var(--border-glass);">
-                                                <span class="material-symbols-outlined fs-5 text-muted">
-                                                    @(attachment.FileType?.Contains("image") == true ? "image" : "description")
-                                                </span>
-                                                <span class="text-muted fw-bold text-truncate" style="font-size: 0.75rem; max-width: 200px;">
-                                                    @System.IO.Path.GetFileName(attachment.Url)
-                                                </span>
-                                            </a>
-                                        }
-                                    </div>
-                                }
-                                
-                                <div class="d-flex flex-column gap-3 mt-2">
-                                    <div class="d-flex align-items-center justify-content-between pb-3 border-bottom" style="border-color: var(--border-glass) !important;">
-                                        <div class="d-flex align-items-center gap-4 text-muted fw-bold" style="font-size: 0.8rem;">
-                                            <div onclick="toggleComments('@post.Id')" class="d-flex align-items-center gap-2" style="cursor: pointer;">
-                                                <span class="material-symbols-outlined fs-5 hover-glow transition-all">chat_bubble</span>
-                                                <span class="hover-glow transition-all">@post.CommentCount Comments</span>
-                                                <div class="rounded d-flex flex-center hover-glow" style="width: 20px; height: 20px; background: rgba(0,245,160,0.1); color: var(--color-emerald);">
-                                                    <span class="material-symbols-outlined" style="font-size: 14px;">add</span>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="material-symbols-outlined fs-5">visibility</span>
-                                                <span>@post.ViewCount Views</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="d-flex gap-2">
-                                            <form asp-action="DeletePost" asp-route-id="@post.Id" asp-route-communityId="@Model.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this post?')" class="m-0 p-0">
-                                                <button type="submit" class="btn btn-link p-1 text-muted hover-text-danger text-decoration-none d-flex align-items-center justify-content-center">
-                                                    <span class="material-symbols-outlined fs-5">delete</span>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-
-                                    <!-- Inline Comments Tree -->
-                                    <div id="comments-@post.Id" class="d-none animate-slide-down mt-2">
-                                        <div class="p-4 rounded-xl" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass);">
-                                            <!-- Comment Input -->
-                                            <form asp-action="AddComment" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-3 mb-4">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="PostId" value="@post.Id" />
-                                                <input type="hidden" name="CommunityId" value="@Model.Id" />
-                                                <div class="d-flex gap-3 align-items-start">
-                                                    <div class="avatar-sm rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(0,245,160,0.1);">
-                                                        <span class="material-symbols-outlined fs-6 text-aurora">person</span>
-                                                    </div>
-                                                    <div class="flex-grow-1 position-relative">
-                                                        <input type="text" name="Content" class="form-control form-control-glass w-100" placeholder="Write a comment..." required />
-                                                    </div>
-                                                    <button type="submit" class="btn btn-premium px-4" style="height: 48px;">Post</button>
-                                                </div>
-                                                <div class="d-flex align-items-center gap-2 overflow-hidden" style="padding-left: 2.75rem;">
-                                                    <label class="cursor-pointer d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-lg border text-muted fw-bold hover-glow transition-all mb-0" style="font-size: 0.75rem; border-color: var(--border-glass);">
-                                                        <span class="material-symbols-outlined" style="font-size: 1rem;">attach_file</span>
-                                                        <span>Attach File</span>
-                                                        <input type="file" name="Attachment" class="d-none" onchange="updateFileName(this)" accept=".pdf,.docx,.jpeg,.jpg,.png" />
-                                                    </label>
-                                                    <span class="file-name text-muted text-truncate" style="font-size: 0.75rem;"></span>
-                                                </div>
-                                            </form>
-
-                                            <!-- Recursive Tree Rendering -->
-                                            @{
-                                                ViewBag.CurrentPostId = post.Id;
-                                                await RenderComments(post.Comments, null);
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Posts Container — AJAX will append here -->
+            <div id="posts-container" class="d-flex flex-column gap-4">
+                @{
+                    var partialVd = new ViewDataDictionary(ViewData);
+                    partialVd["CommunityId"] = Model.Id;
+                    partialVd["HasMorePosts"] = hasMore;
+                    partialVd["CurrentPage"] = 1;
+                    partialVd["CurrentUserId"] = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    partialVd["CommunityCreatorId"] = Model.CreatorId;
                 }
+                @await Html.PartialAsync("_PostListPartial", posts, partialVd)
             </div>
+
+            <!-- Load More Area -->
+            <div id="load-more-area" class="@(hasMore ? "" : "d-none") text-center mt-2">
+                <button id="load-more-btn" onclick="loadMorePosts()" class="btn btn-glass d-inline-flex align-items-center gap-2 px-5 py-3">
+                    <span class="material-symbols-outlined fs-5">expand_more</span>
+                    Load More
+                </button>
+            </div>
+
+            <!-- Sentinel for IntersectionObserver -->
+            <div id="scroll-sentinel" style="height: 1px;"></div>
         }
     </div>
 </div>
 
 <script>
-    function toggleComments(postId) {
-        const el = document.getElementById(`comments-${postId}`);
-        if (el) {
-            el.classList.toggle('d-none');
+    // ─── State ─────────────────────────────────────────────────────────────────
+    const communityId = '@Model.Id';
+    let currentPage = 1;
+    let isLoading = false;
+    let hasMore = @hasMore.ToString().ToLower();
+
+    // Track which posts have had their comments loaded
+    const commentsLoaded = {};
+    const commentsOpen = {};
+
+    // ─── CSRF Token Helper ──────────────────────────────────────────────────────
+    function getAntiForgeryToken() {
+        const input = document.querySelector('input[name="__RequestVerificationToken"]');
+        return input ? input.value : '';
+    }
+
+    // ─── Load More Posts ────────────────────────────────────────────────────────
+    async function loadMorePosts() {
+        if (isLoading || !hasMore) return;
+        isLoading = true;
+
+        const btn = document.getElementById('load-more-btn');
+        if (btn) {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Loading...';
+            btn.disabled = true;
+        }
+
+        try {
+            const nextPage = currentPage + 1;
+            const response = await fetch(`/Forum/LoadMorePosts?communityId=${communityId}&page=${nextPage}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!response.ok) throw new Error('Network error');
+
+            const html = await response.text();
+
+            // Parse the response to check for more posts
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newCards = doc.querySelectorAll('.post-card-animate');
+
+            if (newCards.length === 0) {
+                hasMore = false;
+            } else {
+                const container = document.getElementById('posts-container');
+
+                // Inject cards with entrance animation
+                newCards.forEach(card => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    container.appendChild(card);
+                    requestAnimationFrame(() => {
+                        card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    });
+                });
+
+                currentPage = nextPage;
+
+                // Check if more remain
+                // We infer from whether we got a full page
+                if (newCards.length < 10) {
+                    hasMore = false;
+                }
+            }
+
+            const loadMoreArea = document.getElementById('load-more-area');
+            if (!hasMore && loadMoreArea) {
+                loadMoreArea.classList.add('d-none');
+            }
+
+        } catch (err) {
+            console.error('loadMorePosts error:', err);
+        } finally {
+            isLoading = false;
+            if (btn && hasMore) {
+                btn.innerHTML = '<span class="material-symbols-outlined fs-5">expand_more</span> Load More';
+                btn.disabled = false;
+            }
         }
     }
 
+    // ─── IntersectionObserver for auto-load ────────────────────────────────────
+    (function setupIntersectionObserver() {
+        const sentinel = document.getElementById('scroll-sentinel');
+        if (!sentinel || !hasMore) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasMore && !isLoading) {
+                loadMorePosts();
+            }
+        }, { rootMargin: '200px' });
+
+        observer.observe(sentinel);
+    })();
+
+    // ─── Lazy Comments ──────────────────────────────────────────────────────────
+    async function toggleLazyComments(postId, commId) {
+        const container = document.getElementById(`comments-${postId}`);
+        if (!container) return;
+
+        const isCurrentlyHidden = container.classList.contains('d-none');
+        const toggleIcon = document.querySelector(`.toggle-icon-${postId}`);
+
+        if (!isCurrentlyHidden) {
+            // Close
+            container.classList.add('d-none');
+            if (toggleIcon) toggleIcon.textContent = 'add';
+            commentsOpen[postId] = false;
+            return;
+        }
+
+        // Open
+        container.classList.remove('d-none');
+        if (toggleIcon) toggleIcon.textContent = 'remove';
+        commentsOpen[postId] = true;
+
+        // Load only if not already loaded
+        if (!commentsLoaded[postId]) {
+            commentsLoaded[postId] = true;
+            try {
+                const response = await fetch(`/Forum/GetPostComments?postId=${postId}&communityId=${commId}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                if (!response.ok) throw new Error('Error loading comments');
+                const html = await response.text();
+                container.innerHTML = html;
+            } catch (err) {
+                console.error('Error loading comments:', err);
+                container.innerHTML = '<p class="text-danger p-3 mb-0">Failed to load comments.</p>';
+                commentsLoaded[postId] = false; // Allow retry
+            }
+        }
+    }
+
+    // ─── Reply Form Toggle ──────────────────────────────────────────────────────
     function toggleReplyForm(commentId) {
         const el = document.getElementById(`reply-form-${commentId}`);
         if (el) {
@@ -289,112 +259,60 @@
         }
     }
 
+    // ─── File Name Display ──────────────────────────────────────────────────────
     function updateFileName(input) {
         const fileName = input.files[0] ? input.files[0].name : '';
         const container = input.closest('form').querySelector('.file-name');
-        if (container) {
-            container.textContent = fileName;
-        }
+        if (container) container.textContent = fileName;
     }
 
+    // ─── Vote Post ──────────────────────────────────────────────────────────────
     function votePost(postId, communityId, value) {
         const upBtn = document.querySelector(`.vote-btn-up-${postId}`);
         const downBtn = document.querySelector(`.vote-btn-down-${postId}`);
-        const upIcon = upBtn ? upBtn.querySelector('.material-symbols-outlined') : null;
-        const downIcon = downBtn ? downBtn.querySelector('.material-symbols-outlined') : null;
-        
-        // Save original icons
-        const originalUpIcon = upIcon ? upIcon.textContent : 'keyboard_arrow_up';
-        const originalDownIcon = downIcon ? downIcon.textContent : 'keyboard_arrow_down';
+        const upIcon = upBtn?.querySelector('.material-symbols-outlined');
+        const downIcon = downBtn?.querySelector('.material-symbols-outlined');
 
-        // Set Loading State
         if (upBtn) upBtn.style.pointerEvents = 'none';
         if (downBtn) downBtn.style.pointerEvents = 'none';
-        
-        if (value === 1 && upIcon) {
-            upIcon.textContent = 'sync';
-            upIcon.classList.add('spinning');
-        } else if (value === -1 && downIcon) {
-            downIcon.textContent = 'sync';
-            downIcon.classList.add('spinning');
-        }
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
 
         fetch(`/Forum/VotePost?postId=${postId}&communityId=${communityId}&value=${value}`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
-                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                'RequestVerificationToken': token
             }
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
             if (data.success) {
-                // Update Vote Count
-                const countEls = document.querySelectorAll(`.vote-count-${postId}`);
-                countEls.forEach(el => {
+                document.querySelectorAll(`.vote-count-${postId}`).forEach(el => {
                     el.textContent = data.voteCount;
-                    // Reset colors
                     el.classList.remove('text-mint', 'text-danger', 'text-white');
-                    if (data.userVote === 1) el.classList.add('text-mint');
-                    else if (data.userVote === -1) el.classList.add('text-danger');
-                    else el.classList.add('text-white');
+                    el.classList.add(data.userVote === 1 ? 'text-mint' : data.userVote === -1 ? 'text-danger' : 'text-white');
                 });
-                
-                // Update Upvote Button State
-                const upBtns = document.querySelectorAll(`.vote-btn-up-${postId}`);
-                upBtns.forEach(el => {
+                document.querySelectorAll(`.vote-btn-up-${postId}`).forEach(el => {
                     el.classList.remove('text-mint', 'text-muted', 'font-weight-bold');
                     const icon = el.querySelector('.material-symbols-outlined');
-                    if (icon) {
-                        icon.textContent = 'keyboard_arrow_up';
-                        icon.classList.remove('spinning');
-                    }
-                    if (data.userVote === 1) {
-                        el.classList.add('text-mint', 'font-weight-bold');
-                    } else {
-                        el.classList.add('text-muted');
-                    }
+                    if (icon) { icon.textContent = 'keyboard_arrow_up'; icon.classList.remove('spinning'); }
+                    el.classList.add(data.userVote === 1 ? 'text-mint' : 'text-muted');
+                    if (data.userVote === 1) el.classList.add('font-weight-bold');
                 });
-                
-                // Update Downvote Button State
-                const downBtns = document.querySelectorAll(`.vote-btn-down-${postId}`);
-                downBtns.forEach(el => {
+                document.querySelectorAll(`.vote-btn-down-${postId}`).forEach(el => {
                     el.classList.remove('text-danger', 'text-muted', 'font-weight-bold');
                     const icon = el.querySelector('.material-symbols-outlined');
-                    if (icon) {
-                        icon.textContent = 'keyboard_arrow_down';
-                        icon.classList.remove('spinning');
-                    }
-                    if (data.userVote === -1) {
-                        el.classList.add('text-danger', 'font-weight-bold');
-                    } else {
-                        el.classList.add('text-muted');
-                    }
+                    if (icon) { icon.textContent = 'keyboard_arrow_down'; icon.classList.remove('spinning'); }
+                    el.classList.add(data.userVote === -1 ? 'text-danger' : 'text-muted');
+                    if (data.userVote === -1) el.classList.add('font-weight-bold');
                 });
             }
         })
         .finally(() => {
             if (upBtn) upBtn.style.pointerEvents = 'auto';
             if (downBtn) downBtn.style.pointerEvents = 'auto';
-            
-            // Ensure icons are restored if they were spinning (on error or no-op)
-            const upBtnsAll = document.querySelectorAll(`.vote-btn-up-${postId}`);
-            upBtnsAll.forEach(btn => {
-                const icon = btn.querySelector('.material-symbols-outlined');
-                if (icon && icon.classList.contains('spinning')) {
-                    icon.textContent = 'keyboard_arrow_up';
-                    icon.classList.remove('spinning');
-                }
-            });
-            const downBtnsAll = document.querySelectorAll(`.vote-btn-down-${postId}`);
-            downBtnsAll.forEach(btn => {
-                const icon = btn.querySelector('.material-symbols-outlined');
-                if (icon && icon.classList.contains('spinning')) {
-                    icon.textContent = 'keyboard_arrow_down';
-                    icon.classList.remove('spinning');
-                }
-            });
         });
     }
 </script>
@@ -407,12 +325,13 @@
     .animate-slide-down {
         animation: slide-down 0.3s ease-out;
     }
-    
     .hover-text-danger:hover {
         color: #ff6b6b !important;
     }
-
     .text-mint {
         color: var(--color-mint-bright) !important;
+    }
+    .post-card-animate {
+        transition: opacity 0.4s ease, transform 0.4s ease;
     }
 </style>
