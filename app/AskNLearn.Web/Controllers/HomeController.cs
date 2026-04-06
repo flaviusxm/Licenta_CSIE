@@ -16,7 +16,7 @@ namespace app_licenta.Controllers
     {
         private readonly AskNLearn.Application.Common.Interfaces.IApplicationDbContext _context = context;
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortBy = "Latest")
         {
             if (User.Identity?.IsAuthenticated == true && User.HasClaim(ClaimTypes.Role, "Admin"))
             {
@@ -24,30 +24,39 @@ namespace app_licenta.Controllers
             }
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var recentPosts = await GetPosts(currentUserId, 0, 10);
+            var recentPosts = await GetPosts(currentUserId, 0, 10, sortBy);
 
             ViewBag.RecentPosts = recentPosts;
             ViewBag.CurrentUserId = currentUserId;
+            ViewBag.SortBy = sortBy;
             return View();
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetFeed(int skip = 10)
+        public async Task<IActionResult> GetFeed(int skip = 10, string sortBy = "Latest")
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var posts = await GetPosts(currentUserId, skip, 10);
+            var posts = await GetPosts(currentUserId, skip, 10, sortBy);
             
             ViewBag.CurrentUserId = currentUserId;
             return PartialView("_PostCards", posts);
         }
 
-        private async Task<List<HomeFeedPostDto>> GetPosts(string? currentUserId, int skip, int take)
+        private async Task<List<HomeFeedPostDto>> GetPosts(string? currentUserId, int skip, int take, string sortBy = "Latest")
         {
-            return await _context.Posts
-                .Where(p => p.CommunityId != null && p.ModerationStatus != ModerationStatus.Flagged)
+            var query = _context.Posts
+                .Where(p => p.CommunityId != null && p.ModerationStatus != ModerationStatus.Flagged);
+
+            query = sortBy switch
+            {
+                "TopRated" => query.OrderByDescending(p => _context.PostVotes.Where(v => v.PostId == p.Id).Sum(v => (int)v.VoteValue)),
+                "Latest" => query.OrderByDescending(p => p.CreatedAt),
+                _ => query.OrderByDescending(p => p.CreatedAt) // Default to latest for "Relevance" if not defined
+            };
+
+            return await query
                 .Include(p => p.Author)
                 .Include(p => p.Comments)
-                .OrderByDescending(p => p.CreatedAt)
                 .Skip(skip)
                 .Take(take)
                 .Join(_context.Communities,

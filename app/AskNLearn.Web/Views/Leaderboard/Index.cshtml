@@ -24,22 +24,25 @@
             <h2 class="display-6 fw-bold text-white tracking-tight mb-2">Leaderboard</h2>
             <p class="text-muted fs-5 m-0">See who's topping the charts this semester.</p>
         </div>
-        <div class="col-md-4 text-center text-md-end d-flex justify-content-md-end">
-            <div class="glass-card p-4 d-inline-flex align-items-center gap-4 shadow-lg border-glass-strong" style="border-radius: 1.5rem;">
-                <div class="text-center">
-                    <span class="d-block text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.65rem;">Your Rank</span>
-                    <span class="fs-4 fw-bold text-aurora">@(Model.CurrentUserRank > 0 ? $"#{Model.CurrentUserRank}" : "-")</span>
-                </div>
-                <div style="width: 1px; height: 3rem; background: var(--border-glass-strong);"></div>
-                <div class="text-center">
-                    <span class="d-block text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.65rem;">Points</span>
-                    <span class="fs-4 fw-bold text-white">@Model.CurrentUserPoints</span>
+        @if (!User.IsInRole("Admin"))
+        {
+            <div class="col-md-4 text-center text-md-end d-flex justify-content-md-end">
+                <div class="glass-card p-4 d-inline-flex align-items-center gap-4 shadow-lg border-glass-strong" style="border-radius: 1.5rem;">
+                    <div class="text-center">
+                        <span class="d-block text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.65rem;">Your Rank</span>
+                        <span class="fs-4 fw-bold text-aurora">@(Model.CurrentUserRank > 0 ? $"#{Model.CurrentUserRank}" : "-")</span>
+                    </div>
+                    <div style="width: 1px; height: 3rem; background: var(--border-glass-strong);"></div>
+                    <div class="text-center">
+                        <span class="d-block text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.65rem;">Points</span>
+                        <span class="fs-4 fw-bold text-white">@Model.CurrentUserPoints</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
     </div>
 
-    <!-- Podiums (Top 3) -->
+    <!-- Global Podiums (Always Top 3) -->
     <div class="d-flex align-items-end justify-content-center mb-5 mx-auto gap-3 gap-md-5 overflow-auto pb-4 hide-scrollbar" style="max-width: 900px;">
         
         <!-- 2nd Place -->
@@ -93,68 +96,118 @@
         }
     </div>
 
-    <!-- Ranking Table -->
-    <div class="glass-card overflow-hidden shadow-lg border-glass-strong" style="border-radius: 2.5rem;">
-        <div class="table-responsive">
-            <table class="table table-borderless table-hover mb-0 align-middle text-white bg-transparent">
-                <thead style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-glass);">
-                    <tr>
-                        <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0" style="border-top-left-radius: 2.5rem;">Rank</th>
-                        <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0">Student</th>
-                        <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0">Major</th>
-                        <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold text-end border-0" style="border-top-right-radius: 2.5rem;">Points</th>
-                    </tr>
-                </thead>
-                <tbody style="border-top: none;">
-                    @{ int rank = 4; }
-                    @foreach (var user in Model.RankingTable)
-                    {
-                        var isCurrentUser = user.Id == User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
-                        if (isCurrentUser)
-                        {
-                            <tr class="transition-colors position-relative z-1 shadow-lg" style="background: rgba(52, 211, 153, 0.05); border-top: 1px solid rgba(52, 211, 153, 0.2); border-bottom: 1px solid rgba(52, 211, 153, 0.2);">
-                                <td class="py-4 px-4 px-md-5 fw-bold fs-5 text-aurora">#@rank</td>
-                                <td class="py-4 px-4 px-md-5">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="position-relative">
-                                            <img src="@(user.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={user.FullName}")" class="rounded-circle object-cover shadow-lg" style="width: 48px; height: 48px; background: rgba(255,255,255,0.05); border: 2px solid var(--color-mint-bright);" />
-                                            <div class="position-absolute rounded-circle border border-dark" style="bottom: -2px; right: -2px; width: 14px; height: 14px; background: var(--color-mint-bright); border-width: 2px !important;"></div>
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="fw-bold fs-6 text-white text-truncate" style="max-width: 150px;">@user.FullName</span>
-                                            <span class="text-aurora fw-bold text-uppercase tracking-widest" style="font-size: 0.65rem;">YOU</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="py-4 px-4 px-md-5">
-                                    <span class="badge rounded-pill fw-bold text-uppercase tracking-wider" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.2); padding: 0.35rem 0.65rem; font-size: 0.65rem;">@(string.IsNullOrEmpty(user.Institution) ? "Student" : user.Institution)</span>
-                                </td>
-                                <td class="py-4 px-4 px-md-5 text-end fw-bold fs-5 text-aurora">@user.ReputationPoints</td>
-                            </tr>
-                        }
-                        else
-                        {
-                            <tr class="transition-colors hover-bg-glass" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <td class="py-4 px-4 px-md-5 fw-bold text-muted">#@rank</td>
-                                <td class="py-4 px-4 px-md-5">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <img src="@(user.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={user.FullName}")" class="rounded-circle object-cover border border-glass" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05);" />
-                                        <span class="fw-bold">@user.FullName</span>
-                                    </div>
-                                </td>
-                                <td class="py-4 px-4 px-md-5">
-                                    <span class="badge rounded-pill fw-bold text-uppercase tracking-wider" style="background: rgba(20, 184, 166, 0.1); color: #2dd4bf; border: 1px solid rgba(20, 184, 166, 0.2); padding: 0.35rem 0.65rem; font-size: 0.65rem;">@(string.IsNullOrEmpty(user.Institution) ? "Student" : user.Institution)</span>
-                                </td>
-                                <td class="py-4 px-4 px-md-5 text-end fw-bold text-white">@user.ReputationPoints</td>
-                            </tr>
-                        }
-                        rank++;
-                    }
-                </tbody>
-            </table>
-        </div>
-        <div class="p-3 text-center" style="border-top: 1px solid var(--border-glass); background: rgba(0,0,0,0.2);">
-            <button class="btn btn-link text-muted hover-text-white fw-bold text-uppercase tracking-widest text-decoration-none transition-colors rounded-pill" style="font-size: 0.75rem;">Show full rankings</button>
-        </div>
+    <!-- Filters -->
+    <div class="glass-card p-4 mb-4 shadow-lg border-glass-strong animate-entrance delay-100" style="border-radius: 1.5rem; background: rgba(0,0,0,0.2);">
+        <form onsubmit="return false;" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label text-muted small fw-black text-uppercase tracking-widest ms-1 mb-2" style="font-size: 0.65rem;">Search Student</label>
+                <div class="position-relative">
+                    <span class="material-symbols-outlined position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 1.1rem;">search</span>
+                    <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control form-control-glass ps-5 py-2 fw-bold text-white" style="border-radius: 0.75rem; font-size: 0.85rem;" placeholder="Name or username...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted small fw-black text-uppercase tracking-widest ms-1 mb-2" style="font-size: 0.65rem;">Institution</label>
+                <div class="position-relative">
+                    <span class="material-symbols-outlined position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 1.1rem;">account_balance</span>
+                    <input type="text" name="institution" value="@Model.Institution" class="form-control form-control-glass ps-5 py-2 fw-bold text-white" style="border-radius: 0.75rem; font-size: 0.85rem;" placeholder="University...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-black text-uppercase tracking-widest ms-1 mb-2" style="font-size: 0.65rem;">Sort By</label>
+                <div class="position-relative">
+                    <span class="material-symbols-outlined position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 1.1rem; z-index: 5;">sort</span>
+                    <select name="sortBy" class="form-select form-select-glass ps-5 py-2 fw-bold text-white" style="border-radius: 0.75rem; font-size: 0.85rem; appearance: none;">
+                        <option value="PointsDesc" selected="@(Model.SortBy == "PointsDesc")">Points: High to Low</option>
+                        <option value="PointsAsc" selected="@(Model.SortBy == "PointsAsc")">Points: Low to High</option>
+                        <option value="NameAsc" selected="@(Model.SortBy == "NameAsc")">Name: A-Z</option>
+                        <option value="NameDesc" selected="@(Model.SortBy == "NameDesc")">Name: Z-A</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="leaderboard-data-container" class="animate-entrance delay-200">
+        <partial name="_LeaderboardData" model="Model" />
     </div>
 </div>
+
+<script>
+    let debounceTimer;
+    
+    function loadLeaderboard(page = 1) {
+        const searchTerm = document.querySelector('input[name="searchTerm"]').value;
+        const institution = document.querySelector('input[name="institution"]').value;
+        const sortBy = document.querySelector('select[name="sortBy"]').value;
+
+        const url = `/Leaderboard?page=${page}&searchTerm=${encodeURIComponent(searchTerm)}&institution=${encodeURIComponent(institution)}&sortBy=${sortBy}`;
+        
+        const container = document.getElementById('leaderboard-data-container');
+        if (container) {
+            container.style.opacity = '0.6';
+            container.style.filter = 'blur(2px)';
+            container.style.pointerEvents = 'none';
+        }
+
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.text();
+        })
+        .then(html => {
+            if (container) {
+                container.innerHTML = html;
+                container.style.opacity = '1';
+                container.style.filter = 'none';
+                container.style.pointerEvents = 'auto';
+                
+                // Scroll to top of results if needed
+                if (page > 1) {
+                    window.scrollTo({ top: container.offsetTop - 100, behavior: 'smooth' });
+                }
+            }
+            // Update URL without reload
+            window.history.pushState({ path: url }, '', url);
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            if (container) {
+                container.style.opacity = '1';
+                container.style.filter = 'none';
+                container.style.pointerEvents = 'auto';
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.querySelector('input[name="searchTerm"]');
+        const institutionInput = document.querySelector('input[name="institution"]');
+        const sortBySelect = document.querySelector('select[name="sortBy"]');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => loadLeaderboard(1), 300);
+            });
+        }
+
+        if (institutionInput) {
+            institutionInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => loadLeaderboard(1), 300);
+            });
+        }
+
+        if (sortBySelect) {
+            sortBySelect.addEventListener('change', () => loadLeaderboard(1));
+        }
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', (event) => {
+            location.reload(); // Simplest way to handle state back for now
+        });
+    });
+</script>

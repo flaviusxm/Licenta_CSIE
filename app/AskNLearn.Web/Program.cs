@@ -67,7 +67,7 @@ if (args.Contains("seeddb"))
     await dbContext.Database.MigrateAsync();
     
     Console.WriteLine("Seeding database...");
-    await DatabaseSeeder.SeedAsync(dbContext, userManager);
+    await LoadTestDatabaseSeeder.SeedAsync(dbContext, userManager, LoadTestDatabaseSeeder.ScaleProfile.Enterprise);
     
     Console.WriteLine("Database initialization complete!");
     return;
@@ -87,7 +87,7 @@ if (args.Contains("drop-seed"))
     await dbContext.Database.MigrateAsync();
     
     Console.WriteLine("Seeding database...");
-    await DatabaseSeeder.SeedAsync(dbContext, userManager);
+    await LoadTestDatabaseSeeder.SeedAsync(dbContext, userManager, LoadTestDatabaseSeeder.ScaleProfile.Enterprise);
     
     Console.WriteLine("Database initialization complete!");
     return;

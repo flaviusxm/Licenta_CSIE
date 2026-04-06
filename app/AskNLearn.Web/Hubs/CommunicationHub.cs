@@ -8,6 +8,44 @@ namespace AskNLearn.Web.Hubs
 {
     public class CommunicationHub(IApplicationDbContext context) : Hub
     {
+        public override async Task OnConnectedAsync()
+        {
+            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{userId}");
+            }
+            await base.OnConnectedAsync();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user-{userId}");
+            }
+            await base.OnDisconnectedAsync(exception);
+        }
+
+        public async Task NotifyConnectionRequest(string targetUserId, string requesterName)
+        {
+            await Clients.Group($"user-{targetUserId}").SendAsync("ReceiveConnectionRequest", new
+            {
+                requesterName = requesterName,
+                message = $"{requesterName} wants to connect with you!"
+            });
+        }
+
+        public async Task NotifyConnectionAccepted(string targetUserId, string acceptorName)
+        {
+            await Clients.Group($"user-{targetUserId}").SendAsync("ReceiveConnectionAccepted", new
+            {
+                acceptorName = acceptorName,
+                message = $"{acceptorName} accepted your connection request!"
+            });
+        }
+
         public async Task JoinChannel(Guid channelId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());

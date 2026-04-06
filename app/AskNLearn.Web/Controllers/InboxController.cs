@@ -49,11 +49,39 @@ namespace AskNLearn.Web.Controllers
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
 
+            // Fetch Pending Friend Requests
+            var pendingRequests = await context.Friendships
+                .Include(f => f.Requester)
+                .Where(f => f.AddresseeId == user.Id && f.Status == FriendshipStatus.Pending)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToListAsync();
+
+            // Fetch Total Connections (Accepted)
+            var totalConnections = await context.Friendships
+                .CountAsync(f => (f.RequesterId == user.Id || f.AddresseeId == user.Id) && f.Status == FriendshipStatus.Accepted);
+
+            // Calculate Flow State
+            // Logic: Peaking (Active < 24h & high interactions), Active (< 48h), Stable (default), Idle (> 7 days)
+            var last24hActivities = await context.Messages.CountAsync(m => m.AuthorId == user.Id && m.CreatedAt > DateTime.UtcNow.AddDays(-1)) +
+                                    await context.Notifications.CountAsync(n => n.UserId == user.Id && n.CreatedAt > DateTime.UtcNow.AddDays(-1));
+            
+            var last48hActivities = await context.Messages.CountAsync(m => m.AuthorId == user.Id && m.CreatedAt > DateTime.UtcNow.AddDays(-2));
+
+            string flowState = "Stable";
+            if (last24hActivities > 10) flowState = "Peaking";
+            else if (last24hActivities > 0 || last48hActivities > 0) flowState = "Active";
+            else if (user.LastActive < DateTime.UtcNow.AddDays(-7)) flowState = "Idle";
+            
             var viewModel = new InboxViewModel
             {
                 RecentMessages = messagePreviews,
                 RecentNotifications = notifications,
-                TotalUnreadCount = messagePreviews.Count(c => c.IsUnread) + notifications.Count(n => !n.IsRead)
+                PendingRequests = pendingRequests,
+                TotalConnections = totalConnections,
+                FlowState = flowState,
+                TotalUnreadCount = messagePreviews.Count(c => c.IsUnread) + 
+                                  notifications.Count(n => !n.IsRead) +
+                                  pendingRequests.Count
             };
 
             return View(viewModel);

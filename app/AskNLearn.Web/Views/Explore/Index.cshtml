@@ -39,7 +39,6 @@
         <div class="spinner-border text-aurora" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="text-muted mt-2 fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">Discovering more worlds...</p>
     </div>
 
     <!-- Sentinel -->
@@ -79,8 +78,7 @@
                     
                     if (!html.trim()) {
                         communitiesAllLoaded = true;
-                        spinner.innerHTML = '<p class="text-muted fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">All communities have been discovered.</p>';
-                    } else {
+                        spinner.innerHTML = '';                    } else {
                         container.insertAdjacentHTML('beforeend', html);
                         communitiesSkip += 12;
                     }

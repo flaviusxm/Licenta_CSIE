@@ -249,7 +249,7 @@ namespace AskNLearn.Infrastructure.Persistance
         private static async Task<List<ApplicationUser>> SeedUsersAsync(
             UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
-            if (await context.Users.AnyAsync())
+            if (await context.Users.CountAsync() > 10)
                 return await context.Users.AsNoTracking().ToListAsync();
 
             var users = new List<ApplicationUser>();

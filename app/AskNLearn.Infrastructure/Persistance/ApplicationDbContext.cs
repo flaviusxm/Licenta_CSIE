@@ -53,5 +53,43 @@ namespace AskNLearn.Infrastructure.Persistance
         // Explicit interface implementations if needed, but here we just need public DbSets
         // that match the interface property names.
         DbSet<ApplicationUser> IApplicationDbContext.Users => Users;
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            // Indexes for Moderation performance
+            builder.Entity<Post>()
+                .HasIndex(p => new { p.ModerationStatus, p.CreatedAt });
+
+            builder.Entity<Message>()
+                .HasIndex(m => new { m.ModerationStatus, m.CreatedAt });
+
+            builder.Entity<Report>()
+                .HasIndex(r => new { r.Status, r.CreatedAt });
+
+            // Indexes for Verification performance
+            builder.Entity<VerificationRequest>()
+                .HasIndex(v => new { v.Status, v.SubmittedAt });
+            
+            builder.Entity<VerificationRequest>()
+                .HasIndex(v => v.UserId);
+
+            // Friendship Configuration (Self-referencing relationship)
+            builder.Entity<Friendship>(entity =>
+            {
+                entity.HasKey(f => new { f.RequesterId, f.AddresseeId });
+
+                entity.HasOne(f => f.Requester)
+                    .WithMany(u => u.FriendshipsRequested)
+                    .HasForeignKey(f => f.RequesterId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(f => f.Addressee)
+                    .WithMany(u => u.FriendshipsReceived)
+                    .HasForeignKey(f => f.AddresseeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+        }
     }
 }

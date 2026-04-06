@@ -15,10 +15,6 @@
                 <h2 class="display-5 fw-bold text-white tracking-tight mb-3 lh-1">
                     Inbox
                 </h2>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-pill bg-primary" style="height: 4px; width: 48px;"></div>
-                    <p class="text-muted fw-bold text-uppercase tracking-widest m-0" style="font-size: 0.7rem;">Live Updates</p>
-                </div>
             </div>
             <div class="d-flex align-items-center gap-3 flex-wrap">
                 <button onclick="markAllInboxRead()" class="btn btn-glass px-4 py-3 fw-bold text-uppercase tracking-widest shadow-lg" style="font-size: 0.75rem; border-radius: 1rem;">
@@ -33,48 +29,63 @@
         <!-- High-End Stats Grid -->
         <div class="row g-4">
             <!-- Unread Messages -->
-            <div class="col-12 col-md-4">
-                <div class="glass-card p-4 p-md-5 position-relative overflow-hidden group transition-all hover-glow shadow-lg border-glass-strong" style="border-radius: 2rem;">
-                    <div class="position-absolute rounded-circle transition-colors" style="top: -1.5rem; right: -1.5rem; width: 8rem; height: 8rem; background: rgba(52, 211, 153, 0.1); filter: blur(20px);"></div>
+            <div class="col-12 col-md-4 col-lg-3">
+                <div class="glass-card p-4 position-relative overflow-hidden group transition-all hover-glow shadow-lg border-glass-strong" style="border-radius: 2rem; transition: all 0.5s var(--ease-smooth);">
+                    <div class="position-absolute rounded-circle" style="top: -1.5rem; right: -1.5rem; width: 8rem; height: 8rem; background: rgba(52, 211, 153, 0.1); filter: blur(20px);"></div>
                     <div class="d-flex align-items-center gap-4 position-relative z-1">
-                        <div class="rounded-4 d-flex align-items-center justify-content-center text-aurora shadow-sm flex-shrink-0 transition-transform" style="width: 64px; height: 64px; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2);">
+                        <div class="rounded-4 d-flex align-items-center justify-content-center text-aurora shadow-sm flex-shrink-0 transition-transform" style="width: 54px; height: 54px; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); transition: transform 0.4s var(--ease-snappy);">
                             <span class="material-symbols-outlined fs-2 fw-bold">mail</span>
                         </div>
                         <div>
-                            <p class="text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.65rem;">Messages</p>
-                            <h4 class="display-6 fw-bold text-white lh-1 m-0">@Model.RecentMessages.Count(c => c.IsUnread)</h4>
+                            <p class="text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.6rem;">Messages</p>
+                            <h4 class="h3 fw-bold text-white lh-1 m-0">@Model.RecentMessages.Count(c => c.IsUnread)</h4>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Alerts -->
-            <div class="col-12 col-md-4">
-                <div class="glass-card p-4 p-md-5 position-relative overflow-hidden group transition-all hover-glow shadow-lg border-glass-strong" style="border-radius: 2rem;">
-                    <div class="position-absolute rounded-circle transition-colors" style="top: -1.5rem; right: -1.5rem; width: 8rem; height: 8rem; background: rgba(245, 158, 11, 0.1); filter: blur(20px);"></div>
+            <!-- Connection Requests -->
+            <div class="col-12 col-md-4 col-lg-3">
+                <div class="glass-card p-4 position-relative overflow-hidden group transition-all hover-glow shadow-lg border-glass-strong" style="border-radius: 2rem; transition: all 0.5s var(--ease-smooth);">
+                    <div class="position-absolute rounded-circle" style="top: -1.5rem; right: -1.5rem; width: 8rem; height: 8rem; background: rgba(56, 189, 248, 0.1); filter: blur(20px);"></div>
                     <div class="d-flex align-items-center gap-4 position-relative z-1">
-                        <div class="rounded-4 d-flex align-items-center justify-content-center text-warning shadow-sm flex-shrink-0 transition-transform" style="width: 64px; height: 64px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2);">
-                            <span class="material-symbols-outlined fs-2 fw-bold">notifications</span>
+                        <div class="rounded-4 d-flex align-items-center justify-content-center text-info shadow-sm flex-shrink-0 transition-transform" style="width: 54px; height: 54px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); transition: transform 0.4s var(--ease-snappy);">
+                            <span class="material-symbols-outlined fs-2 fw-bold">person_add</span>
                         </div>
                         <div>
-                            <p class="text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.65rem;">Notifications</p>
-                            <h4 class="display-6 fw-bold text-white lh-1 m-0">@Model.RecentNotifications.Count(n => !n.IsRead)</h4>
+                            <p class="text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.6rem;">Connections</p>
+                            <h4 class="h3 fw-bold text-white lh-1 m-0">@Model.TotalConnections</h4>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Tasks -->
-            <div class="col-12 col-md-4">
-                <div class="glass-card p-4 p-md-5 position-relative overflow-hidden group transition-all hover-glow shadow-lg border-glass-strong" style="border-radius: 2rem;">
-                    <div class="position-absolute rounded-circle transition-colors" style="top: -1.5rem; right: -1.5rem; width: 8rem; height: 8rem; background: rgba(99, 102, 241, 0.1); filter: blur(20px);"></div>
+
+            <!-- Reputation -->
+            <div class="col-12 col-md-4 col-lg-3">
+                <div class="glass-card p-4 position-relative overflow-hidden group transition-all hover-glow shadow-lg border-glass-strong" style="border-radius: 2rem; transition: all 0.5s var(--ease-smooth);">
+                    <div class="position-absolute rounded-circle" style="top: -1.5rem; right: -1.5rem; width: 8rem; height: 8rem; background: rgba(168, 85, 247, 0.1); filter: blur(20px);"></div>
                     <div class="d-flex align-items-center gap-4 position-relative z-1">
-                        <div class="rounded-4 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0 transition-transform" style="width: 64px; height: 64px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); color: #818cf8;">
-                            <span class="material-symbols-outlined fs-2 fw-bold">task_alt</span>
+                        @{
+                            var flowColor = Model.FlowState switch {
+                                "Peaking" => "#f472b6",
+                                "Active" => "#34d399",
+                                "Idle" => "#94a3b8",
+                                _ => "#a855f7"
+                            };
+                            var flowIcon = Model.FlowState switch {
+                                "Peaking" => "bolt",
+                                "Active" => "waves",
+                                "Idle" => "bedtime",
+                                _ => "insights"
+                            };
+                        }
+                        <div class="rounded-4 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0 transition-transform" style="width: 54px; height: 54px; background: @(flowColor)1a; border: 1px solid @(flowColor)33; color: @flowColor; transition: transform 0.4s var(--ease-snappy);">
+                            <span class="material-symbols-outlined fs-2 fw-bold">@flowIcon</span>
                         </div>
                         <div>
-                            <p class="text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.65rem;">Tasks</p>
-                            <h4 class="display-6 fw-bold text-white lh-1 m-0">0</h4>
+                            <p class="text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.6rem;">Flow State</p>
+                            <h4 class="h3 fw-bold text-white lh-1 m-0">@Model.FlowState</h4>
                         </div>
                     </div>
                 </div>
@@ -86,35 +97,32 @@
             <!-- Central Feed: Communications -->
             <section class="col-12 col-xl-8 d-flex flex-column gap-4">
                 <div class="d-flex align-items-center justify-content-between px-2">
-                    <h3 class="fs-4 fw-bold text-white tracking-tight d-flex align-items-center gap-3 m-0">
-                        <span class="rounded-circle bg-primary" style="width: 8px; height: 8px;"></span>
                         Recent Messages
                     </h3>
-                    <a asp-controller="Direct" asp-action="Index" class="fw-bold text-aurora text-uppercase tracking-widest hover-text-white d-flex align-items-center gap-1 transition-colors text-decoration-none" style="font-size: 0.75rem;">
+                    <a asp-controller="Direct" asp-action="Index" class="fw-bold text-aurora text-uppercase tracking-widest hover-text-white d-flex align-items-center gap-1 transition-all text-decoration-none" style="font-size: 0.75rem; transition: transform 0.3s var(--ease-snappy);">
                         Open Chat <span class="material-symbols-outlined" style="font-size: 1rem;">arrow_forward</span>
                     </a>
                 </div>
                 
-                <div class="glass-card overflow-hidden shadow-lg border-glass-strong" style="border-radius: 2.5rem;">
+                <div class="glass-card overflow-hidden shadow-lg border-glass-strong" style="border-radius: 2.5rem; transition: all 0.6s var(--ease-smooth);">
                     @if (Model.RecentMessages.Any())
                     {
-                        <div class="d-flex flex-column" style="border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); border-radius: 0;">
+                        <div class="d-flex flex-column">
                             @foreach (var conv in Model.RecentMessages)
                             {
-                                <a asp-controller="Direct" asp-action="Index" asp-route-id="@conv.ConversationId" class="d-flex align-items-center gap-4 p-4 p-md-5 transition-all group position-relative text-decoration-none @(conv.IsUnread ? "bg-primary bg-opacity-10" : "hover-bg-glass")" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <a asp-controller="Direct" asp-action="Index" asp-route-id="@conv.ConversationId" class="d-flex align-items-center gap-4 p-4 p-md-5 transition-all group position-relative text-decoration-none @(conv.IsUnread ? "bg-primary bg-opacity-10" : "hover-bg-glass")" style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: all 0.4s var(--ease-smooth);">
                                     <div class="position-relative flex-shrink-0">
-                                        <div class="position-absolute start-0 top-0 w-100 h-100 rounded-4 opacity-0 transition-opacity blur-medium" style="background: rgba(52, 211, 153, 0.2);"></div>
-                                        <div class="rounded-4 shadow-lg position-relative z-1 bg-cover bg-center border border-glass" style="width: 80px; height: 80px; background-image: url('@conv.OtherUserAvatar'); background-color: rgba(255,255,255,0.05);"></div>
+                                        <div class="rounded-4 shadow-lg position-relative z-1 bg-cover bg-center border border-glass transition-transform" style="width: 80px; height: 80px; background-image: url('@conv.OtherUserAvatar'); background-color: rgba(255,255,255,0.05); transition: transform 0.5s var(--ease-snappy);"></div>
                                         @if(conv.IsUnread) {
                                             <div class="position-absolute rounded-circle shadow-sm z-2 border border-dark border-2" style="top: -4px; right: -4px; width: 16px; height: 16px; background: var(--color-mint-bright);"></div>
                                         }
                                     </div>
                                     <div class="flex-grow-1 min-vw-0 d-flex flex-column justify-content-center">
                                         <div class="d-flex justify-content-between align-items-baseline mb-2">
-                                            <h5 class="fw-bold text-white fs-5 fst-italic tracking-tight m-0 text-truncate">@conv.OtherUserName</h5>
-                                            <span class="text-muted fw-bold text-uppercase tracking-widest flex-shrink-0 ms-3 transition-opacity" style="font-size: 0.65rem;">@conv.LastMessageAt.ToString("HH:mm") [UPLINK]</span>
+                                            <h5 class="fw-bold text-white fs-5 tracking-tight m-0 text-truncate">@conv.OtherUserName</h5>
+                                            <span class="text-muted fw-bold text-uppercase tracking-widest flex-shrink-0 ms-3" style="font-size: 0.6rem; opacity: 0.5;">@conv.LastMessageAt.ToShortTimeString()</span>
                                         </div>
-                                        <p class="text-truncate lh-base m-0 text-break @(conv.IsUnread ? "fw-bold text-white fst-italic" : "text-muted fw-bold")">
+                                        <p class="text-truncate lh-base m-0 @(conv.IsUnread ? "fw-bold text-white" : "text-muted")" style="font-size: 0.9rem;">
                                             @conv.LastMessageContent
                                         </p>
                                     </div>
@@ -124,46 +132,45 @@
                     }
                     else
                     {
-                        <div class="p-5 p-md-5 text-center d-flex flex-column align-items-center">
-                            <div class="position-relative mb-4 d-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
-                                <div class="position-absolute start-0 top-0 w-100 h-100 rounded-circle" style="background: rgba(52, 211, 153, 0.2); filter: blur(30px); animation: aurora-pulse 10s infinite alternate;"></div>
-                                <div class="w-100 h-100 rounded-4 d-flex align-items-center justify-content-center text-muted position-relative z-1 shadow-lg" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
-                                    <span class="material-symbols-outlined fw-bold" style="font-size: 4rem;">mail_lock</span>
-                                </div>
+                        <div class="p-5 text-center d-flex flex-column align-items-center">
+                            <div class="w-100 h-100 py-5 rounded-4 d-flex align-items-center justify-content-center text-muted position-relative z-1" style="background: rgba(255,255,255,0.02);">
+                                <span class="material-symbols-outlined fw-bold opacity-25" style="font-size: 5rem;">mail</span>
                             </div>
-                            <h4 class="fs-3 fw-bold text-white mb-3 tracking-tight">No messages found</h4>
-                            <p class="text-muted fw-bold fs-6 m-0">Send a direct message to bridge the gap.</p>
+                            <h4 class="fs-4 fw-bold text-white mt-4 mb-2">Secure Channels Empty</h4>
+                            <p class="text-muted fw-bold small text-uppercase tracking-widest">Initialization required</p>
                         </div>
                     }
                 </div>
             </section>
 
-            <!-- Peripheral Hub: Alerts & Tasks -->
+            <!-- Peripheral Hub -->
             <aside class="col-12 col-xl-4 d-flex flex-column gap-5">
-                <!-- Notifications -->
+                <!-- Pending Connections -->
                 <div class="d-flex flex-column gap-4">
-                    <h3 class="fs-4 fw-bold text-white tracking-tight d-flex align-items-center gap-3 m-0">
-                        <span class="rounded-circle bg-warning" style="width: 8px; height: 8px;"></span>
-                        Recent Notifications
+                        Friend Requests
                     </h3>
-                    <div class="glass-card overflow-hidden shadow-lg border-glass-strong d-flex flex-column" style="border-radius: 2.5rem; max-height: 500px;">
-                        @if (Model.RecentNotifications.Any())
+                    <div class="glass-card overflow-hidden shadow-lg border-glass-strong d-flex flex-column animate-entrance" style="border-radius: 2.5rem; transition: all 0.6s var(--ease-smooth);">
+                        @if (Model.PendingRequests.Any())
                         {
-                            <div class="flex-grow-1 overflow-y-auto d-flex flex-column custom-scrollbar" style="border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); border-radius: 0;">
-                                @foreach (var notif in Model.RecentNotifications)
+                            <div class="d-flex flex-column">
+                                @foreach (var request in Model.PendingRequests)
                                 {
-                                    <div class="p-4 transition-all group @(notif.IsRead ? "opacity-50 hover-bg-glass" : "bg-warning bg-opacity-10")" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                        <div class="d-flex gap-3">
-                                            <div class="flex-shrink-0 rounded-3 d-flex align-items-center justify-content-center text-warning" style="width: 40px; height: 40px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2);">
-                                                <span class="material-symbols-outlined fs-5 fw-bold fst-italic">@(notif.IsRead ? "notifications" : "notifications_active")</span>
+                                    <div class="p-4 border-bottom border-glass hover-bg-glass transition-all" id="request-row-@request.RequesterId" style="transition: all 0.4s var(--ease-smooth);">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar-md rounded-4 overflow-hidden border border-glass" style="width: 50px; height: 50px;">
+                                                <img src="@(request.Requester.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={request.Requester.UserName}")" class="w-100 h-100 object-cover" />
                                             </div>
-                                            <div class="flex-grow-1 min-vw-0">
-                                                <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
-                                                    <p class="fw-bold text-white text-uppercase tracking-wider fst-italic m-0 mt-1" style="font-size: 0.7rem;">@notif.Title</p>
-                                                    <button onclick="markRead('@notif.Id', this)" class="btn btn-link p-0 text-aurora hover-text-white fw-bold text-uppercase tracking-widest fst-italic opacity-0 transition-opacity" style="font-size: 0.55rem;">RESOLVE</button>
-                                                </div>
-                                                <p class="text-muted fw-bold lh-base m-0 mb-3" style="font-size: 0.8rem;">@notif.Message</p>
-                                                <span class="text-muted fw-bold text-uppercase tracking-widest fst-italic d-block" style="font-size: 0.55rem; opacity: 0.7;">@notif.CreatedAt.ToString("MMM dd // HH:mm")</span>
+                                            <div class="flex-grow-1 min-w-0">
+                                                <p class="fw-bold text-white mb-0 text-truncate" style="font-size: 0.85rem;">@(request.Requester.FullName ?? request.Requester.UserName)</p>
+                                                <p class="text-muted small mb-0">Wants to connect</p>
+                                            </div>
+                                            <div class="d-flex gap-1">
+                                                <button onclick="handleRequest('@request.RequesterId', 'AcceptRequest')" class="btn btn-glass p-2 text-success hover-glow" title="Accept" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s var(--ease-snappy);">
+                                                    <span class="material-symbols-outlined fs-5">check</span>
+                                                </button>
+                                                <button onclick="handleRequest('@request.RequesterId', 'DeclineRequest')" class="btn btn-glass p-2 text-danger hover-glow" title="Decline" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s var(--ease-snappy);">
+                                                    <span class="material-symbols-outlined fs-5">close</span>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -173,26 +180,12 @@
                         else
                         {
                             <div class="p-5 text-center">
-                                <p class="fw-bold text-muted text-uppercase tracking-widest fst-italic m-0" style="font-size: 0.75rem;">Threat level: Minimal</p>
+                                <p class="fw-bold text-muted text-uppercase tracking-widest m-0" style="font-size: 0.65rem; opacity: 0.6;">No pending requests</p>
                             </div>
                         }
                     </div>
                 </div>
 
-                <!-- Mission Parameters: Tasks -->
-                <div class="d-flex flex-column gap-4">
-                    <h3 class="fs-4 fw-bold text-white tracking-tight d-flex align-items-center gap-3 m-0 fst-italic">
-                        <span class="rounded-circle" style="width: 8px; height: 8px; background: #818cf8;"></span>
-                        Mission Parameters
-                    </h3>
-                    <div class="glass-card p-5 text-center shadow-lg position-relative overflow-hidden group border-glass-strong" style="border-radius: 2.5rem;">
-                        <div class="position-absolute start-0 top-0 w-100 h-100 z-0" style="background: rgba(99, 102, 241, 0.05);"></div>
-                        <div class="rounded-4 d-flex align-items-center justify-content-center mx-auto mb-4 text-muted position-relative z-1 transition-transform border border-glass" style="width: 64px; height: 64px; background: rgba(255,255,255,0.05);">
-                            <span class="material-symbols-outlined fw-bold fst-italic fs-1" style="color: rgba(129, 140, 248, 0.5);">checklist</span>
-                        </div>
-                        <p class="fw-bold text-muted text-uppercase tracking-widest fst-italic lh-lg m-0 position-relative z-1" style="font-size: 0.65rem;">System scan complete.<br>All primary objectives met.</p>
-                    </div>
-                </div>
             </aside>
         </div>
     </div>
@@ -228,6 +221,33 @@
                 const response = await fetch('/Inbox/MarkAllAsRead', { method: 'POST' });
                 if(response.ok) location.reload();
             } catch (e) { console.error(e); }
+        }
+
+        async function handleRequest(userId, action) {
+            const btnRow = document.getElementById(`request-row-${userId}`);
+            if (btnRow) {
+                btnRow.style.opacity = '0.5';
+                btnRow.style.pointerEvents = 'none';
+                btnRow.style.transform = 'translateX(20px)';
+            }
+            try {
+                const resp = await fetch(`/Connections/${action}?userId=${userId}`, { method: 'POST' });
+                if (resp.ok) {
+                    if (btnRow) {
+                        btnRow.style.height = '0';
+                        btnRow.style.padding = '0';
+                        btnRow.style.margin = '0';
+                        btnRow.style.overflow = 'hidden';
+                        setTimeout(() => btnRow.remove(), 400);
+                    }
+                } else {
+                    if (btnRow) {
+                        btnRow.style.opacity = '1';
+                        btnRow.style.pointerEvents = 'all';
+                        btnRow.style.transform = 'translateX(0)';
+                    }
+                }
+            } catch(e) { console.error(e); }
         }
     </script>
 }

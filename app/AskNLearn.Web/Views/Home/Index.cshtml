@@ -64,20 +64,15 @@
         <!-- Personalized Filter Indicator -->
         <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom border-glass" style="border-width: 0.5px !important;">
             <div class="d-flex align-items-center gap-3">
-                <div class="badge rounded-pill px-3 py-1 d-flex align-items-center gap-2" style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.2);">
-                    <span class="material-symbols-outlined text-aurora fs-6">psychology</span>
-                    <span class="text-aurora small fw-black tracking-tight text-uppercase" style="font-size: 0.65rem;">TAILORED FOR YOUR FOCUS</span>
-                </div>
                 <!-- Sort Dropdown -->
                 <div class="dropdown">
                     <button class="btn btn-link p-0 text-muted text-decoration-none d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown">
                         <span class="material-symbols-outlined fs-5">sort</span>
-                        <span class="small fw-bold">Relevance</span>
+                        <span id="current-sort-label" class="small fw-bold">@(ViewBag.SortBy == "TopRated" ? "Top Rated" : "Latest Activity")</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-dark glass-card border-glass overflow-hidden shadow-lg">
-                        <li><a class="dropdown-item py-2 fw-bold active" href="#" style="font-size: 0.75rem;">Relevance</a></li>
-                        <li><a class="dropdown-item py-2 fw-bold" href="#" style="font-size: 0.75rem;">Latest Activity</a></li>
-                        <li><a class="dropdown-item py-2 fw-bold" href="#" style="font-size: 0.75rem;">Top Rated</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold @(ViewBag.SortBy == "Latest" ? "active" : "")" href="javascript:void(0)" onclick="changeFeedSort('Latest', 'Latest Activity')">Latest Activity</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold @(ViewBag.SortBy == "TopRated" ? "active" : "")" href="javascript:void(0)" onclick="changeFeedSort('TopRated', 'Top Rated')">Top Rated</a></li>
                     </ul>
                 </div>
             </div>
@@ -98,13 +93,12 @@
             <div class="spinner-border text-aurora" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <p class="text-muted mt-2 fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">Fetching more magic...</p>
         </div>
 
         <!-- Sentinel -->
         <div id="feed-sentinel" class="py-2"></div>
     </div> 
-</div>v>
+</div>
 
 @section Scripts {
     <script>
@@ -112,6 +106,7 @@
         let feedSkip = 10;
         let feedLoading = false;
         let feedAllLoaded = false;
+        let currentSort = '@(ViewBag.SortBy ?? "Latest")';
         
         const feedSentinel = document.getElementById('feed-sentinel');
         const feedContainer = document.getElementById('feed-container');
@@ -132,14 +127,13 @@
             feedSpinner.classList.remove('d-none');
 
             try {
-                const response = await fetch(`/Home/GetFeed?skip=${feedSkip}`);
+                const response = await fetch(`/Home/GetFeed?skip=${feedSkip}&sortBy=${currentSort}`);
                 if (response.ok) {
                     const html = await response.text();
                     
                     if (!html.trim()) {
                         feedAllLoaded = true;
-                        feedSpinner.innerHTML = '<p class="text-muted fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">You have reached the end of the universe.</p>';
-                    } else {
+                        feedSpinner.innerHTML = '';                    } else {
                         feedContainer.insertAdjacentHTML('beforeend', html);
                         feedSkip += 10;
                     }
@@ -150,6 +144,31 @@
                 feedLoading = false;
                 if (!feedAllLoaded) feedSpinner.classList.add('d-none');
             }
+        }
+
+        async function changeFeedSort(sort, label) {
+            currentSort = sort;
+            document.getElementById('current-sort-label').innerText = label;
+            
+            // Reset state
+            feedSkip = 0;
+            feedAllLoaded = false;
+            feedContainer.innerHTML = '';
+            feedSpinner.classList.remove('d-none');
+                <div class="spinner-border text-aurora" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>`;
+
+            await loadMorePosts();
+            
+            // Update URL
+            window.history.pushState({}, '', `/?sortBy=${sort}`);
+            
+            // Update active state in dropdown
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.innerText === label) item.classList.add('active');
+            });
         }
 
         // --- Connection Actions Logic (Home) ---

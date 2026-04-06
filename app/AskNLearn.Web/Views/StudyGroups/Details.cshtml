@@ -12,11 +12,11 @@
     <div class="d-flex flex-column h-100 bg-transparent animate-entrance w-100">
         <!-- Tabs for Channels / Members -->
         <div class="d-flex px-4 pt-4 pb-2 border-bottom" style="border-color: var(--border-glass) !important;">
-            <button onclick="switchSidebarView('channels')" id="btn-view-channels" class="btn btn-link flex-grow-1 py-2 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-aurora" style="font-size: 0.6rem; border-bottom: 2px solid var(--color-mint-bright) !important;">Channels</button>
-            <button onclick="switchSidebarView('members')" id="btn-view-members" class="btn btn-link flex-grow-1 py-2 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-muted hover-glow" style="font-size: 0.6rem; border-bottom: 2px solid transparent !important;">Members</button>
+            <button onclick="switchSidebarView('channels')" id="btn-view-channels" class="btn btn-link flex-grow-1 py-2 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-aurora sidebar-tab-btn" style="font-size: 0.6rem; border-bottom: 2px solid var(--color-mint-bright) !important;">Channels</button>
+            <button onclick="switchSidebarView('members')" id="btn-view-members" class="btn btn-link flex-grow-1 py-2 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-muted sidebar-tab-btn" style="font-size: 0.6rem; border-bottom: 2px solid transparent !important;">Members</button>
         </div>
 
-        <div class="flex-grow-1 overflow-hidden d-flex flex-column">
+        <div id="sidebar-view-container" class="flex-grow-1 overflow-hidden d-flex flex-column">
             <div id="sidebar-slider-track" class="sidebar-slider-track flex-grow-1">
                 <!-- Channels View -->
                 <div id="sidebar-view-channels" class="sidebar-view-pane p-4 custom-scrollbar overflow-y-auto d-flex flex-column gap-4">
@@ -70,90 +70,90 @@
                 </div>
 
                 <!-- Members View -->
-                <div id="sidebar-view-members" class="sidebar-view-pane p-4 custom-scrollbar overflow-y-auto d-flex flex-column gap-3">
-                    <div class="d-flex align-items-center justify-content-between px-2 mb-1">
-                        <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Members — @Model.MemberCount</h3>
-                        <button class="btn btn-link p-1 text-muted hover-glow text-decoration-none">
-                            <span class="material-symbols-outlined fs-6">person_add</span>
-                        </button>
+                <div id="sidebar-view-members" class="sidebar-view-pane d-flex flex-column overflow-hidden h-100">
+                    <div class="px-4 py-3 border-bottom flex-shrink-0" style="border-color: rgba(255,255,255,0.05) !important;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="fw-black text-uppercase tracking-widest text-muted" style="font-size: 0.6rem; letter-spacing: 1.5px;">Group Members</span>
+                            <span class="badge rounded-pill glass-card border-0 px-2 py-1 fw-bold text-aurora" style="font-size: 0.6rem; background: rgba(0,245,160,0.1);">@Model.MemberCount</span>
+                        </div>
                     </div>
-                    <div class="d-flex flex-column gap-2" id="members-list">
-                        @foreach (var member in Model.Members)
-                        {
-                            var isMe = member.Id == User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                            <div class="d-flex align-items-center gap-3 p-2 rounded-lg hover-glow transition-all" style="cursor: pointer; background: rgba(255,255,255,0.02);">
-                                <div class="position-relative">
-                                    <div class="avatar-xs rounded-lg d-flex flex-center @(member.IsOwner ? "text-aurora" : "text-muted") shadow-sm" style="background: @(member.IsOwner ? "rgba(0,245,160,0.1); border: 1px solid rgba(0,245,160,0.2);" : "rgba(255,255,255,0.05); border: 1px solid var(--border-glass);")">
-                                        <span class="material-symbols-outlined fs-6">account_circle</span>
+                    
+                    <div id="members-scroll-area" class="flex-grow-1 overflow-y-auto custom-scrollbar p-4 d-flex flex-column gap-2">
+                        <div id="members-items-container" class="d-flex flex-column gap-2">
+                            @foreach (var member in Model.TopMembers)
+                            {
+                                var isMe = member.UserId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                                var isOwner = member.UserId == Model.OwnerId;
+                                var avatarBg = isOwner 
+                                    ? "rgba(0,245,160,0.1); border:1px solid rgba(0,245,160,0.2);" 
+                                    : "rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);";
+                                
+                                <div class="member-card d-flex align-items-center gap-3 p-2 rounded-lg transition-all animate-entrance" 
+                                     style="background: rgba(255,255,255,0.02); min-height: 52px; cursor: pointer;">
+                                    <div class="position-relative">
+                                        <div class="avatar-xs rounded-lg d-flex flex-center @(isOwner ? "text-aurora" : "text-muted") shadow-sm" 
+                                             style="background:@avatarBg">
+                                            <span class="material-symbols-outlined fs-6">account_circle</span>
+                                        </div>
+                                        @if(isOwner) {
+                                            <div class="position-absolute d-flex flex-center shadow-sm" 
+                                                 style="top:-4px;right:-4px;width:14px;height:14px; background:#fbbf24;border:2px solid var(--bg-universe);border-radius:50%;">
+                                                <span class="material-symbols-outlined text-white fw-black" style="font-size:8px;">star</span>
+                                            </div>
+                                        }
                                     </div>
-                                    @if (member.IsOwner)
+                                    <div class="flex-grow-1 min-w-0">
+                                        <p class="fw-bold text-white text-truncate mb-0" style="font-size:0.75rem;">@(member.FullName ?? member.UserName ?? member.UserId)</p>
+                                        @if(isOwner) {
+                                            <span class="fw-black text-aurora text-uppercase px-1 rounded d-inline-block" style="font-size:0.5rem; background:rgba(0,245,160,0.1); letter-spacing: -0.2px;">Group Creator</span>
+                                        } else {
+                                            <span class="fw-bold text-muted text-uppercase" style="font-size:0.5rem; letter-spacing: 0.2px;">Member</span>
+                                        }
+                                    </div>
+
+                                    @if (!isMe)
                                     {
-                                        <div class="position-absolute d-flex flex-center shadow-sm" style="top: -4px; right: -4px; width: 14px; height: 14px; background: #fbbf24; border: 2px solid var(--bg-universe); border-radius: 50%;">
-                                            <span class="material-symbols-outlined text-white fw-black" style="font-size: 8px;">star</span>
+                                        <div class="d-flex align-items-center gap-1 border-start ps-2" style="border-color: rgba(255,255,255,0.05) !important;" id="member-actions-@member.UserId">
+                                            @switch (member.ConnectionStatus)
+                                            {
+                                                case "Accepted":
+                                                    <form asp-controller="Direct" asp-action="StartChat" method="post" class="mb-0">
+                                                        <input type="hidden" name="userId" value="@member.UserId" />
+                                                        <button type="submit" class="btn btn-link p-1 text-aurora hover-text-white text-decoration-none d-flex flex-center" title="Send Message">
+                                                            <span class="material-symbols-outlined fs-6">chat</span>
+                                                        </button>
+                                                    </form>
+                                                    break;
+                                                case "PendingSent":
+                                                    <button class="btn btn-link p-1 text-muted opacity-50 text-decoration-none d-flex flex-center cursor-default" title="Request Pending">
+                                                        <span class="material-symbols-outlined fs-6">hourglass_empty</span>
+                                                    </button>
+                                                    break;
+                                                case "PendingReceived":
+                                                    <button onclick="acceptConnection('@member.UserId')" class="btn btn-link p-1 text-success hover-text-white text-decoration-none d-flex flex-center" title="Accept Request">
+                                                        <span class="material-symbols-outlined fs-6">check_circle</span>
+                                                    </button>
+                                                    <button onclick="declineConnection('@member.UserId')" class="btn btn-link p-1 text-danger hover-text-white text-decoration-none d-flex flex-center" title="Decline">
+                                                        <span class="material-symbols-outlined fs-6">cancel</span>
+                                                    </button>
+                                                    break;
+                                                default:
+                                                    <button onclick="sendConnectionRequest('@member.UserId')" class="btn btn-link p-1 text-muted hover-text-white text-decoration-none d-flex flex-center" title="Connect">
+                                                        <span class="material-symbols-outlined fs-6">person_add</span>
+                                                    </button>
+                                                    break;
+                                            }
                                         </div>
                                     }
                                 </div>
-                                <div class="flex-grow-1 min-w-0">
-                                    <p class="fw-bold text-white text-truncate mb-0" style="font-size: 0.75rem;">
-                                        @(!string.IsNullOrEmpty(member.FullName) ? member.FullName : member.UserName)
-                                    </p>
-                                    @if (member.IsOwner)
-                                    {
-                                        <span class="fw-black text-aurora text-uppercase px-1 rounded d-inline-block" style="font-size: 0.5rem; letter-spacing: -0.5px; background: rgba(0,245,160,0.1);">Group Creator</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="fw-bold text-muted text-uppercase" style="font-size: 0.5rem; letter-spacing: 0.5px;">Member</span>
-                                    }
-                                </div>
-                                <!-- Connection Actions -->
-                                @if (!isMe)
-                                {
-                                    <div class="d-flex align-items-center gap-1 border-start ps-2" style="border-color: rgba(255,255,255,0.05) !important;" id="member-actions-@member.Id">
-                                        @switch (member.ConnectionStatus)
-                                        {
-                                            case ConnectionStatus.Accepted:
-                                                <form action="/Direct/StartChat" method="post" class="mb-0">
-                                                    <input type="hidden" name="userId" value="@member.Id" />
-                                                    <button type="submit" class="btn btn-link p-1 text-aurora hover-glow text-decoration-none d-flex flex-center" title="Send Message">
-                                                        <span class="material-symbols-outlined fs-6">chat</span>
-                                                    </button>
-                                                </form>
-                                                break;
-                                            case ConnectionStatus.PendingSent:
-                                                <button class="btn btn-link p-1 text-muted opacity-50 text-decoration-none d-flex flex-center cursor-default" title="Request Pending">
-                                                    <span class="material-symbols-outlined fs-6">hourglass_empty</span>
-                                                </button>
-                                                break;
-                                            case ConnectionStatus.PendingReceived:
-                                                <button onclick="acceptConnection('@member.Id')" class="btn btn-link p-1 text-success hover-glow text-decoration-none d-flex flex-center" title="Accept Request">
-                                                    <span class="material-symbols-outlined fs-6">check_circle</span>
-                                                </button>
-                                                <button onclick="declineConnection('@member.Id')" class="btn btn-link p-1 text-danger hover-glow text-decoration-none d-flex flex-center" title="Decline">
-                                                    <span class="material-symbols-outlined fs-6">cancel</span>
-                                                </button>
-                                                break;
-                                            default:
-                                                <button onclick="sendConnectionRequest('@member.Id')" class="btn btn-link p-1 text-muted hover-text-white hover-glow text-decoration-none d-flex flex-center" title="Connect">
-                                                    <span class="material-symbols-outlined fs-6">person_add</span>
-                                                </button>
-                                                break;
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        }
-                    </div>
-
-                    @if (Model.MemberCount > 20)
-                    {
-                        <!-- Spinner shown while loading -->
-                        <div id="members-load-spinner" class="d-none text-center py-2">
+                            }
+                        </div>
+                        
+                        <div id="members-load-spinner" class="@(Model.MemberCount <= 20 ? "d-none" : "") p-3 text-center">
                             <div class="spinner-border spinner-border-sm text-aurora" role="status"></div>
                         </div>
-                        <!-- Sentinel — IntersectionObserver triggers load when visible -->
                         <div id="members-sentinel" class="py-1"></div>
-                    }
+                    </div>
                 </div>
             </div>
         </div>
@@ -260,9 +260,39 @@
         width: 50%;
         flex-shrink: 0;
         height: 100%;
+        background: rgba(13, 17, 23, 0.4);
+        backdrop-filter: blur(10px);
+    }
+
+    .member-card {
+        transition: all 0.25s var(--ease-smooth);
+        border: 1px solid transparent;
+    }
+    .member-card:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+    .member-card:hover .avatar-xs {
+        transform: scale(1.05);
     }
     .view-members-active #sidebar-slider-track {
         transform: translateX(-50%);
+    }
+
+    /* Tab Button Hover */
+    .sidebar-tab-btn {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        opacity: 0.7;
+    }
+    .sidebar-tab-btn:hover {
+        opacity: 1;
+        transform: scale(1.05);
+        text-shadow: 0 0 12px rgba(0, 245, 160, 0.5);
+    }
+    .sidebar-tab-btn.text-aurora {
+        opacity: 1;
     }
 </style>
 
@@ -393,8 +423,125 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <!-- UI Navigation & Resilient UI Logic -->
     <script>
+        console.log("AskNLearn UI Logic Loading...");
+        window.switchSidebarView = (view) => {
+            const isChannels = view === 'channels';
+            const container = document.getElementById('sidebar-view-container');
+            if (container) {
+                container.classList.toggle('view-members-active', !isChannels);
+            }
+
+            const btnChannels = document.getElementById('btn-view-channels');
+            const btnMembers = document.getElementById('btn-view-members');
+
+            if (btnChannels && btnMembers) {
+                if (isChannels) {
+                    btnChannels.classList.remove('text-muted');
+                    btnChannels.classList.add('text-aurora');
+                    btnChannels.style.borderBottomColor = 'var(--color-mint-bright)';
+                    btnMembers.classList.remove('text-aurora');
+                    btnMembers.classList.add('text-muted');
+                    btnMembers.style.borderBottomColor = 'transparent';
+                } else {
+                    btnMembers.classList.remove('text-muted');
+                    btnMembers.classList.add('text-aurora');
+                    btnMembers.style.borderBottomColor = 'var(--color-mint-bright)';
+                    btnChannels.classList.remove('text-aurora');
+                    btnChannels.classList.add('text-muted');
+                    btnChannels.style.borderBottomColor = 'transparent';
+                    if (window.initMembersLazyLoad) window.initMembersLazyLoad();
+                }
+            }
+        };
+
+        window.openCreateChannelModal = (type) => {
+            const modal = document.getElementById('createChannelModal');
+            const label = document.getElementById('modalChannelTypeLabel');
+            const input = document.getElementById('modalChannelTypeInput');
+            if (modal && label && input) {
+                label.innerText = (type === 'Text' ? 'Text' : type === 'Voice' ? 'Voice' : 'Video') + ' Channel';
+                input.value = type === 'Text' ? '0' : type === 'Voice' ? '1' : '2';
+                modal.classList.remove('d-none');
+            }
+        };
+
+        window.closeCreateChannelModal = () => {
+            const modal = document.getElementById('createChannelModal');
+            if (modal) modal.classList.add('d-none');
+        };
+
+        window.switchPickerTab = (tab) => {
+            const isEmoji = tab === 'emoji';
+            const emojiCont = document.getElementById('emoji-picker-container');
+            const gifCont = document.getElementById('gif-picker-container');
+            const tabEmoji = document.getElementById('tab-emoji');
+            const tabGif = document.getElementById('tab-gif');
+
+            if (emojiCont && gifCont && tabEmoji && tabGif) {
+                if(isEmoji) {
+                    emojiCont.style.display = 'block';
+                    gifCont.style.display = 'none';
+                    tabEmoji.style.borderBottomColor = 'var(--color-emerald)';
+                    tabEmoji.classList.replace('text-muted', 'text-aurora');
+                    tabGif.style.borderBottomColor = 'transparent';
+                    tabGif.classList.replace('text-aurora', 'text-muted');
+                } else {
+                    emojiCont.style.display = 'none';
+                    gifCont.style.display = 'flex';
+                    tabGif.style.borderBottomColor = 'var(--color-emerald)';
+                    tabGif.classList.replace('text-muted', 'text-aurora');
+                    tabEmoji.style.borderBottomColor = 'transparent';
+                    tabEmoji.classList.replace('text-aurora', 'text-muted');
+                    if (window.searchGifs) window.searchGifs();
+                }
+            }
+        };
+        console.log("AskNLearn UI Logic Ready.");
+    </script>
+
+    <script>
+
+        // ── Initialization (DOM Dependent) ──────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const sendBtn = document.getElementById('send-btn');
+            const msgInput = document.getElementById('message-input');
+            if (sendBtn) sendBtn.onclick = () => { if (window.sendMessage) window.sendMessage(); };
+            if (msgInput) msgInput.onkeydown = (e) => { if (e.key === 'Enter' && window.sendMessage) window.sendMessage(); };
+
+            const emojiBtn = document.getElementById('emoji-btn');
+            const pickerPopup = document.getElementById('picker-popup');
+            if (emojiBtn && pickerPopup) {
+                emojiBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    pickerPopup.classList.toggle('d-none');
+                    if (!pickerPopup.classList.contains('d-none')) { 
+                        if (window.initEmojiPicker) window.initEmojiPicker(); 
+                        window.switchPickerTab('emoji'); 
+                    }
+                };
+            }
+
+            const gifSearch = document.getElementById('gif-search');
+            if (gifSearch) {
+                gifSearch.oninput = (e) => {
+                    clearTimeout(window.searchTimeout);
+                    window.searchTimeout = setTimeout(() => {
+                        if (window.searchGifs) window.searchGifs(e.target.value.trim() || 'trending');
+                    }, 500);
+                };
+            }
+
+            const dropZone = document.getElementById('drop-zone');
+            if (dropZone) {
+                window.ondragenter = (e) => { e.preventDefault(); dropZone.classList.remove('d-none'); dropZone.classList.add('d-flex'); };
+                dropZone.ondragleave = (e) => { if (e.relatedTarget === null || !dropZone.contains(e.relatedTarget)) { dropZone.classList.add('d-none'); dropZone.classList.remove('d-flex'); } };
+                dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.add('d-none'); dropZone.classList.remove('d-flex'); alert('Files detected.'); };
+            }
+        });
+    
+        // ── Communication & App Logic ──────────────────────────
         let currentVoiceChannelId = null;
         let currentTextChannelId = null;
         let connection = null;
@@ -783,155 +930,6 @@
             } catch (err) {}
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            startSignalR();
-            const input = document.getElementById('message-input');
-            const sendBtn = document.getElementById('send-btn');
-            if (sendBtn) sendBtn.onclick = sendMessage;
-            if (input) input.onkeydown = (e) => { if (e.key === 'Enter') sendMessage(); };
-        });
-
-        let isMuted = false;
-        function toggleMic() {
-            isMuted = !isMuted;
-            if (currentVoiceChannelId) connection.invoke("ToggleMute", currentVoiceChannelId, isMuted);
-            if (localStream) localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
-            
-            const micIcon = document.getElementById('micIcon');
-            const micButton = document.getElementById('micButton');
-            micIcon.innerText = isMuted ? 'mic_off' : 'mic';
-            
-            if(isMuted) {
-                micButton.classList.add('text-danger');
-                if (isSpeaking) {
-                    isSpeaking = false;
-                    updateVoiceUI(false);
-                    if (currentVoiceChannelId) connection.invoke("ToggleSpeaking", currentVoiceChannelId, false);
-                }
-            } else {
-                micButton.classList.remove('text-danger');
-            }
-            
-            const localMicIcon = document.getElementById('localMicOffIcon');
-            if (localMicIcon) {
-                if(isMuted) localMicIcon.classList.remove('d-none');
-                else localMicIcon.classList.add('d-none');
-            }
-        }
-
-        function openCreateChannelModal(type) {
-            const modal = document.getElementById('createChannelModal');
-            const label = document.getElementById('modalChannelTypeLabel');
-            const input = document.getElementById('modalChannelTypeInput');
-            label.innerText = (type === 'Text' ? 'Text' : type === 'Voice' ? 'Voice' : 'Video') + ' Channel';
-            input.value = type === 'Text' ? '0' : type === 'Voice' ? '1' : '2';
-            modal.classList.remove('d-none');
-        }
-
-        function closeCreateChannelModal() {
-            document.getElementById('createChannelModal').classList.add('d-none');
-        }
-
-        const emojiBtn = document.getElementById('emoji-btn');
-        const pickerPopup = document.getElementById('picker-popup');
-        const messageInput = document.getElementById('message-input');
-        const emojiContainer = document.getElementById('emoji-picker-container');
-        let picker = null;
-
-        async function initEmojiPicker() {
-            if (picker) return;
-            try {
-                if (!window.createPicker) {
-                    const picmoModule = await import('https://unpkg.com/picmo@latest/dist/index.js');
-                    window.createPicker = picmoModule.createPicker;
-                }
-                picker = window.createPicker({ rootElement: emojiContainer, theme: 'dark' });
-                picker.addEventListener('emoji:select', (selection) => { messageInput.value += selection.emoji; });
-            } catch (err) {}
-        }
-
-        emojiBtn.onclick = (e) => {
-            e.stopPropagation();
-            pickerPopup.classList.toggle('d-none');
-            if (!pickerPopup.classList.contains('d-none')) { initEmojiPicker(); switchPickerTab('emoji'); }
-        };
-
-        const GIPHY_API_KEY = 'dc6zaTOxFJmzC';
-        const gifResults = document.getElementById('gif-results');
-        async function searchGifs(query = 'trending') {
-            const url = `https://api.giphy.com/v1/gifs/${query === 'trending' ? 'trending' : 'search'}?api_key=${GIPHY_API_KEY}&limit=20${query !== 'trending' ? '&q=' + encodeURIComponent(query) : ''}`;
-            try {
-                const resp = await fetch(url);
-                const data = await resp.json();
-                renderGifs(data.data);
-            } catch (err) {}
-        }
-
-        function renderGifs(gifs) {
-            gifResults.innerHTML = '';
-            gifs.forEach(gif => {
-                const img = document.createElement('img');
-                img.src = gif.images.fixed_height_small.url;
-                img.className = 'w-100 object-cover rounded-3 pointer hover-glow transition-all';
-                img.style.height = '100px';
-                img.onclick = () => { if (currentTextChannelId) connection.invoke("SendMessage", currentTextChannelId, gif.images.original.url); pickerPopup.classList.add('d-none'); };
-                gifResults.appendChild(img);
-            });
-        }
-
-        document.getElementById('gif-search').oninput = (e) => {
-            clearTimeout(window.searchTimeout);
-            window.searchTimeout = setTimeout(() => searchGifs(e.target.value.trim() || 'trending'), 500);
-        };
-
-        window.switchPickerTab = (tab) => {
-            const isEmoji = tab === 'emoji';
-            if(isEmoji) {
-                document.getElementById('emoji-picker-container').style.display = 'block';
-                document.getElementById('gif-picker-container').style.display = 'none';
-                document.getElementById('tab-emoji').style.borderBottomColor = 'var(--color-emerald)';
-                document.getElementById('tab-emoji').classList.replace('text-muted', 'text-aurora');
-                document.getElementById('tab-gif').style.borderBottomColor = 'transparent';
-                document.getElementById('tab-gif').classList.replace('text-aurora', 'text-muted');
-            } else {
-                document.getElementById('emoji-picker-container').style.display = 'none';
-                document.getElementById('gif-picker-container').style.display = 'flex';
-                document.getElementById('tab-gif').style.borderBottomColor = 'var(--color-emerald)';
-                document.getElementById('tab-gif').classList.replace('text-muted', 'text-aurora');
-                document.getElementById('tab-emoji').style.borderBottomColor = 'transparent';
-                document.getElementById('tab-emoji').classList.replace('text-aurora', 'text-muted');
-                searchGifs();
-            }
-        };
-
-        const dropZone = document.getElementById('drop-zone');
-        window.ondragenter = (e) => { e.preventDefault(); dropZone.classList.remove('d-none'); dropZone.classList.add('d-flex'); };
-        dropZone.ondragleave = (e) => { if (e.relatedTarget === null || !dropZone.contains(e.relatedTarget)) { dropZone.classList.add('d-none'); dropZone.classList.remove('d-flex'); } };
-        dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.add('d-none'); dropZone.classList.remove('d-flex'); alert('Files detected.'); };
-
-        window.switchSidebarView = (view) => {
-            const isChannels = view === 'channels';
-            const container = document.querySelector('.flex-grow-1.overflow-hidden.d-flex.flex-column');
-            if (container) {
-                container.classList.toggle('view-members-active', !isChannels);
-            }
-
-            const btnChannels = document.getElementById('btn-view-channels');
-            const btnMembers = document.getElementById('btn-view-members');
-
-            if (isChannels) {
-                btnChannels.classList.replace('text-muted', 'text-aurora');
-                btnChannels.style.borderBottomColor = 'var(--color-mint-bright)';
-                btnMembers.classList.replace('text-aurora', 'text-muted');
-                btnMembers.style.borderBottomColor = 'transparent';
-            } else {
-                btnMembers.classList.replace('text-muted', 'text-aurora');
-                btnMembers.style.borderBottomColor = 'var(--color-mint-bright)';
-                btnChannels.classList.replace('text-aurora', 'text-muted');
-                btnChannels.style.borderBottomColor = 'transparent';
-                initMembersLazyLoad();
-            }
-        };
 
         // ── Progressive Members Load ──────────────────────────────
         const GROUP_ID = '@Model.Id';
@@ -1010,8 +1008,10 @@
             try {
                 const resp = await fetch(`/StudyGroups/LoadMoreMembers?groupId=${GROUP_ID}&skip=${membersSkip}&take=20`);
                 const data = await resp.json();
-                const list = document.getElementById('members-list');
-                data.members.forEach(m => list.insertAdjacentHTML('beforeend', buildMemberHtml(m)));
+                const container = document.getElementById('members-items-container');
+                if (container) {
+                    data.members.forEach(m => container.insertAdjacentHTML('beforeend', buildMemberHtml(m)));
+                }
                 membersSkip = data.nextSkip;
                 membersAllLoaded = !data.hasMore;
                 if (membersAllLoaded && membersObserver) {
@@ -1026,12 +1026,19 @@
         }
 
         function initMembersLazyLoad() {
-            if (membersAllLoaded || membersObserver) return;
+            if (membersAllLoaded || (membersObserver && document.getElementById('members-items-container')?.children.length > 20)) return;
             const sentinel = document.getElementById('members-sentinel');
-            if (!sentinel) return;
+            const scrollArea = document.getElementById('members-scroll-area');
+            if (!sentinel || !scrollArea) return;
+            
+            if (membersObserver) membersObserver.disconnect();
+            
             membersObserver = new IntersectionObserver(entries => {
                 if (entries[0].isIntersecting) loadMoreMembers();
-            }, { threshold: 0.1 });
+            }, { 
+                root: scrollArea,
+                threshold: 0.1 
+            });
             membersObserver.observe(sentinel);
         }
 

@@ -5,46 +5,45 @@
     ViewData["Title"] = "Create New Forum";
 }
 
-<div class="p-8 max-w-2xl mx-auto">
-    <div class="mb-8">
-        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Create New Forum</h2>
-        <p class="text-slate-500 dark:text-slate-400">Start a new community for students to collaborate and learn together.</p>
+<div class="container py-5" style="max-width: 800px;">
+    <div class="mb-5 animate-entrance">
+        <h2 class="display-6 fw-black text-white mb-2 tracking-tighter">Create New <span class="text-aurora">Forum</span></h2>
+        <p class="text-muted fw-medium">Start a new community for students to collaborate and learn together.</p>
     </div>
 
-    <form asp-action="Create" method="post" enctype="multipart/form-data" class="bg-surface-light dark:bg-surface-dark rounded-2xl p-8 border border-border-light dark:border-border-dark shadow-sm flex flex-col gap-6">
-        <div class="flex flex-col gap-2">
-            <label asp-for="Name" class="text-sm font-bold text-slate-700 dark:text-slate-300">Forum Name</label>
-            <input asp-for="Name" class="w-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" placeholder="e.g., Advanced Mathematics"/>
-            <span asp-validation-for="Name" class="text-red-500 text-xs"></span>
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="glass-card p-4 p-md-5 d-flex flex-column gap-4 animate-entrance shadow-lg" style="border-radius: 2rem;">
+        <div class="d-flex flex-column gap-2">
+            <label asp-for="Name" class="fw-black text-muted text-uppercase tracking-widest ms-1" style="font-size: 0.65rem;">Forum Name</label>
+            <input asp-for="Name" class="form-control form-control-glass py-3 px-4 fw-bold text-white" style="border-radius: 1rem;" placeholder="e.g., Advanced Mathematics"/>
+            <span asp-validation-for="Name" class="text-danger small fw-bold"></span>
         </div>
 
-        <div class="flex flex-col gap-2">
-            <label asp-for="Description" class="text-sm font-bold text-slate-700 dark:text-slate-300">Description</label>
-            <textarea asp-for="Description" rows="4" class="w-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" placeholder="What is this forum about?"></textarea>
-            <span asp-validation-for="Description" class="text-red-500 text-xs"></span>
+        <div class="d-flex flex-column gap-2">
+            <label asp-for="Description" class="fw-black text-muted text-uppercase tracking-widest ms-1" style="font-size: 0.65rem;">Description</label>
+            <textarea asp-for="Description" rows="4" class="form-control form-control-glass py-3 px-4 fw-medium text-white" style="border-radius: 1.25rem;" placeholder="What is this forum about?"></textarea>
+            <span asp-validation-for="Description" class="text-danger small fw-bold"></span>
         </div>
 
-        <div class="flex flex-col gap-2">
-            <label class="text-sm font-bold text-slate-700 dark:text-slate-300">Forum Banner / Image</label>
-            <div class="relative group">
-                <input type="file" asp-for="Image" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileName(this)" accept="image/*" />
-                <div class="w-full bg-white dark:bg-surface-dark border-2 border-dashed border-border-light dark:border-border-dark rounded-xl py-8 px-4 flex flex-col items-center justify-center gap-2 group-hover:border-primary transition-all">
-                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                        <span class="material-symbols-outlined">image</span>
+        <div class="d-flex flex-column gap-2">
+            <label class="fw-black text-muted text-uppercase tracking-widest ms-1" style="font-size: 0.65rem;">Forum Banner / Image</label>
+            <div class="position-relative group">
+                <input type="file" asp-for="Image" class="position-absolute inset-0 w-100 h-100 opacity-0 cursor-pointer z-3" onchange="updateFileName(this)" accept="image/*" />
+                <div class="w-100 glass-panel border-2 border-dashed d-flex flex-column align-items-center justify-content-center gap-2 py-5 px-4 transition-all hover-glow" style="border-radius: 1.5rem; border-color: var(--border-glass-strong) !important; background: rgba(255,255,255,0.02);">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-aurora mb-2 shadow-sm" style="width: 56px; height: 56px; background: rgba(0,245,160,0.1);">
+                        <span class="material-symbols-outlined fs-2">image</span>
                     </div>
-                    <p class="text-sm text-slate-700 dark:text-slate-300 font-medium">Click to upload forum image</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">JPG, PNG, WEBP (Landscape recommended)</p>
+                    <p class="text-white fw-bold mb-0">Click to upload forum image</p>
+                    <p class="text-muted small fw-medium mb-0">JPG, PNG, WEBP (Landscape recommended)</p>
                 </div>
             </div>
-            <div id="file-name-display" class="text-xs font-medium text-primary mt-1 hidden"></div>
+            <div id="file-name-display" class="text-aurora small fw-bold mt-2 d-none"></div>
         </div>
 
-
-        <div class="flex gap-4 mt-4">
-            <button type="submit" class="flex-1 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
+        <div class="d-flex gap-3 mt-4">
+            <button type="submit" class="btn btn-premium flex-grow-1 py-3 fw-black text-uppercase tracking-widest" style="font-size: 0.8rem;">
                 Create Forum
             </button>
-            <a asp-controller="Explore" asp-action="Index" class="flex-1 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-white/10 transition-all text-center">
+            <a asp-controller="Explore" asp-action="Index" class="btn btn-glass flex-grow-1 py-3 fw-black text-uppercase tracking-widest d-flex align-items-center justify-content-center" style="font-size: 0.8rem; border-radius: 1rem;">
                 Cancel
             </a>
         </div>
@@ -56,9 +55,9 @@
         const display = document.getElementById('file-name-display');
         if (input.files && input.files[0]) {
             display.textContent = 'Selected: ' + input.files[0].name;
-            display.classList.remove('hidden');
+            display.classList.remove('d-none');
         } else {
-            display.classList.add('hidden');
+            display.classList.add('d-none');
         }
     }
 </script>

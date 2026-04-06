@@ -92,17 +92,33 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-glass px-3 py-2 d-flex align-items-center justify-content-center">
+                    <button onclick="startCall(false)" class="btn btn-glass px-3 py-2 d-flex align-items-center justify-content-center" title="Voice Call">
                         <span class="material-symbols-outlined">call</span>
                     </button>
-                    <button class="btn btn-glass px-3 py-2 d-flex align-items-center justify-content-center">
+                    <button onclick="startCall(true)" class="btn btn-glass px-3 py-2 d-flex align-items-center justify-content-center" title="Video Call">
                         <span class="material-symbols-outlined">videocam</span>
                     </button>
+                    <!-- Call Controls (Hidden by default) -->
+                    <div id="call-controls" class="d-none d-flex align-items-center gap-2 ms-2">
+                        <button onclick="endCall()" class="btn btn-danger btn-glass px-3 py-2 d-flex align-items-center justify-content-center" title="End Call">
+                            <span class="material-symbols-outlined">call_end</span>
+                        </button>
+                    </div>
                     <button class="btn btn-glass px-3 py-2 d-flex align-items-center justify-content-center">
                         <span class="material-symbols-outlined">more_vert</span>
                     </button>
                 </div>
             </header>
+
+            <!-- Video Grid -->
+            <div id="videoGrid" class="d-none d-flex flex-wrap gap-3 p-3 border-bottom custom-scrollbar" style="background: rgba(0,0,0,0.2); border-color: var(--border-glass) !important; max-height: 200px; overflow-x: auto;">
+                <div id="localVideoContainer" class="d-none position-relative bg-black rounded-xl overflow-hidden border border-aurora shadow-lg flex-shrink-0" style="width: 200px; height: 150px;">
+                    <video id="localVideo" autoplay muted playsinline class="w-100 h-100 object-cover"></video>
+                    <div class="position-absolute bottom-0 start-0 m-2 px-2 py-0.5 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
+                        <span class="fw-bold text-white text-uppercase" style="font-size: 0.6rem;">You</span>
+                    </div>
+                </div>
+            </div>
 
             <!-- Messages List -->
             <div id="messages-container" class="flex-grow-1 overflow-y-auto p-4 p-md-5 d-flex flex-column gap-3 custom-scrollbar">
@@ -149,25 +165,193 @@
                 </div>
                 <h3 class="display-6 fw-bold text-white mb-3 tracking-tighter">Direct <span class="text-aurora">Messages</span></h3>
                 <p class="text-muted fs-5 mb-5" style="max-width: 400px;">Select a conversation from the sidebar to start chatting.</p>
-                <div class="d-flex gap-3">
-                    <div class="px-4 py-2 glass-card rounded-xl border border-glass d-flex align-items-center gap-2" style="font-size: 0.7rem;">
-                        <span class="rounded-circle bg-success" style="width: 6px; height: 6px;"></span>
-                        <span class="text-muted fw-bold text-uppercase tracking-widest">Secure Connection</span>
-                    </div>
-                    <div class="px-4 py-2 glass-card rounded-xl border border-glass d-flex align-items-center gap-2" style="font-size: 0.7rem;">
-                        <span class="rounded-circle bg-primary" style="width: 6px; height: 6px;"></span>
-                        <span class="text-muted fw-bold text-uppercase tracking-widest">History Synced</span>
-                    </div>
-                </div>
             </div>
         }
     </main>
 </div>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
         const msgList = document.getElementById('messages-container');
         if (msgList) msgList.scrollTop = msgList.scrollHeight;
+
+        // --- SignalR & WebRTC for DM Calls ---
+        let connection = null;
+        let localStream = null;
+        let currentConversationId = "@Model?.Id";
+        const peers = {};
+        const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+        let isVideoOn = false;
+        let isMuted = false;
+
+        async function startSignalR() {
+            if (!currentConversationId) return;
+
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("/communicationHub")
+                .withAutomaticReconnect()
+                .build();
+
+            connection.on("ReceiveSignal", async (signal, fromConnectionId) => {
+                const data = JSON.parse(signal);
+                let peer = peers[fromConnectionId];
+                if (data.sdp) {
+                    if (!peer) peer = await createPeerConnection(fromConnectionId, false);
+                    await peer.pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                    if (data.sdp.type === "offer") {
+                        const answer = await peer.pc.createAnswer();
+                        await peer.pc.setLocalDescription(answer);
+                        connection.invoke("SendSignal", JSON.stringify({ sdp: answer }), fromConnectionId);
+                    }
+                } else if (data.candidate) {
+                    if (peer) await peer.pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                }
+            });
+
+            connection.on("UserJoinedVoice", async (data) => {
+                if (data.channelId === currentConversationId) {
+                    await createPeerConnection(data.connectionId, true);
+                }
+            });
+
+            connection.on("UserLeftVoice", (connectionId) => {
+                if (peers[connectionId]) {
+                    peers[connectionId].pc.close();
+                    delete peers[connectionId];
+                    const audio = document.getElementById(`peer-audio-${connectionId}`);
+                    if (audio) audio.remove();
+                    const video = document.getElementById(`peer-video-container-${connectionId}`);
+                    if (video) video.remove();
+                    updateVideoGrid();
+                }
+            });
+
+            try {
+                await connection.start();
+                // Join the conversation group for signaling
+                await connection.invoke("JoinChannel", currentConversationId);
+            } catch (err) { console.error("SignalR Connection Error:", err); }
+        }
+
+        async function createPeerConnection(connectionId, isOffer) {
+            const pc = new RTCPeerConnection(iceServers);
+            peers[connectionId] = { pc };
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate) connection.invoke("SendSignal", JSON.stringify({ candidate: event.candidate }), connectionId);
+            };
+
+            pc.ontrack = (event) => {
+                if (event.track.kind === 'audio') {
+                    let audio = document.getElementById(`peer-audio-${connectionId}`);
+                    if (!audio) {
+                        audio = document.createElement('audio');
+                        audio.id = `peer-audio-${connectionId}`;
+                        audio.autoplay = true;
+                        document.body.appendChild(audio);
+                    }
+                    audio.srcObject = event.streams[0];
+                } else if (event.track.kind === 'video') {
+                    let container = document.getElementById(`peer-video-container-${connectionId}`);
+                    if (!container) {
+                        container = document.createElement('div');
+                        container.id = `peer-video-container-${connectionId}`;
+                        container.className = 'position-relative bg-black rounded-xl overflow-hidden border border-glass shadow-lg flex-shrink-0';
+                        container.style.width = '200px';
+                        container.style.height = '150px';
+                        container.innerHTML = `
+                            <video id="peer-video-${connectionId}" autoplay playsinline class="w-100 h-100 object-cover"></video>
+                            <div class="position-absolute bottom-0 start-0 m-2 px-2 py-0.5 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
+                                <span class="fw-bold text-white text-uppercase" style="font-size: 0.6rem;">Partner</span>
+                            </div>
+                        `;
+                        document.getElementById('videoGrid').appendChild(container);
+                    }
+                    const video = document.getElementById(`peer-video-${connectionId}`);
+                    video.srcObject = event.streams[0];
+                    updateVideoGrid();
+                }
+            };
+
+            if (localStream) localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+            if (isOffer) {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                connection.invoke("SendSignal", JSON.stringify({ sdp: offer }), connectionId);
+            }
+            return peers[connectionId];
+        }
+
+        async function startCall(withVideo = false) {
+            try {
+                if (localStream) {
+                    localStream.getTracks().forEach(t => t.stop());
+                }
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: withVideo });
+                isVideoOn = withVideo;
+                await connection.invoke("JoinVoice", currentConversationId);
+                
+                document.getElementById('call-controls').classList.remove('d-none');
+                updateVideoGrid();
+            } catch (err) { alert("Media access denied: " + err); }
+        }
+
+        async function endCall() {
+            if (connection) {
+                try {
+                    await connection.invoke("LeaveVoice", currentConversationId);
+                } catch (err) { console.error("Error leaving voice:", err); }
+            }
+            
+            if (localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+                localStream = null;
+            }
+            
+            isVideoOn = false; // Reset video state
+            isMuted = false;
+            
+            Object.keys(peers).forEach(id => {
+                if (peers[id].pc) peers[id].pc.close();
+                delete peers[id];
+                const audio = document.getElementById(`peer-audio-${id}`);
+                if (audio) audio.remove();
+                const video = document.getElementById(`peer-video-container-${id}`);
+                if (video) video.remove();
+            });
+
+            const localVideo = document.getElementById('localVideo');
+            if (localVideo) localVideo.srcObject = null;
+            
+            document.getElementById('call-controls').classList.add('d-none');
+            updateVideoGrid();
+        }
+
+        function updateVideoGrid() {
+            const grid = document.getElementById('videoGrid');
+            const hasPeers = Object.keys(peers).length > 0;
+            const showLocal = isVideoOn && localStream;
+
+            if (!showLocal && !hasPeers) {
+                grid.classList.add('d-none');
+                return;
+            }
+
+            grid.classList.remove('d-none');
+            const localContainer = document.getElementById('localVideoContainer');
+            if (showLocal) {
+                localContainer.classList.remove('d-none');
+                document.getElementById('localVideo').srcObject = localStream;
+            } else {
+                localContainer.classList.add('d-none');
+            }
+        }
+
+        if (currentConversationId) {
+            startSignalR();
+        }
     </script>
 }
 

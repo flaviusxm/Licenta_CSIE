@@ -5,47 +5,52 @@
     ViewData["Title"] = "Create Study Group";
 }
 
-<div class="p-8 max-w-2xl mx-auto pb-20">
-    <div class="mb-8">
-        <a asp-action="Index" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-primary transition-colors mb-4">
-            <span class="material-symbols-outlined text-sm mr-1">arrow_back</span>
+<div class="container py-5 mx-auto animate-entrance" style="max-width: 800px; padding-bottom: 5rem;">
+    <div class="mb-5">
+        <a asp-action="Index" class="d-inline-flex align-items-center text-decoration-none text-muted fw-bold hover-text-aurora transition-all mb-4" style="font-size: 0.8rem;">
+            <span class="material-symbols-outlined fs-6 me-1">arrow_back</span>
             Back to Groups
         </a>
-        <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Create Study Group</h2>
-        <p class="text-slate-500 dark:text-slate-400">Start a new community for focused learning.</p>
+        <h2 class="display-6 fw-black text-white mb-2 tracking-tighter">Create Study <span class="text-aurora">Group</span></h2>
+        <p class="text-muted fw-medium">Start a new community for focused learning.</p>
     </div>
 
-    <form asp-action="Create" method="post" class="space-y-6 bg-surface-light dark:bg-surface-dark p-8 rounded-2xl border border-border-light dark:border-border-dark shadow-sm">
-        <div class="space-y-2">
-            <label asp-for="Name" class="text-sm font-bold text-slate-700 dark:text-slate-300">Group Name</label>
-            <input asp-for="Name" class="w-full bg-white dark:bg-background-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" placeholder="e.g., Advanced Calculus Prep" />
-            <span asp-validation-for="Name" class="text-xs text-red-500"></span>
+    <form asp-action="Create" method="post" class="glass-card p-4 p-md-5 d-flex flex-column gap-4 shadow-lg animate-entrance" style="border-radius: 2rem;">
+        <div class="d-flex flex-column gap-2">
+            <label asp-for="Name" class="fw-black text-muted text-uppercase tracking-widest ms-1" style="font-size: 0.65rem;">Group Name</label>
+            <input asp-for="Name" class="form-control form-control-glass py-3 px-4 fw-bold text-white shadow-none" style="border-radius: 1rem;" placeholder="e.g., Advanced Calculus Prep" />
+            <span asp-validation-for="Name" class="text-danger small fw-bold"></span>
         </div>
 
-        <div class="space-y-2">
-            <label asp-for="SubjectArea" class="text-sm font-bold text-slate-700 dark:text-slate-300">Subject Area</label>
-            <input asp-for="SubjectArea" class="w-full bg-white dark:bg-background-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" placeholder="e.g., Mathematics, Computer Science" />
-            <span asp-validation-for="SubjectArea" class="text-xs text-red-500"></span>
+        <div class="d-flex flex-column gap-2">
+            <label asp-for="SubjectArea" class="fw-black text-muted text-uppercase tracking-widest ms-1" style="font-size: 0.65rem;">Subject Area</label>
+            <input asp-for="SubjectArea" class="form-control form-control-glass py-3 px-4 fw-bold text-white shadow-none" style="border-radius: 1rem;" placeholder="e.g., Mathematics, Computer Science" />
+            <span asp-validation-for="SubjectArea" class="text-danger small fw-bold"></span>
         </div>
 
-        <div class="space-y-2">
-            <label asp-for="Description" class="text-sm font-bold text-slate-700 dark:text-slate-300">Description</label>
-            <textarea asp-for="Description" rows="4" class="w-full bg-white dark:bg-background-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" placeholder="What is this group about?"></textarea>
-            <span asp-validation-for="Description" class="text-xs text-red-500"></span>
+        <div class="d-flex flex-column gap-2">
+            <label asp-for="Description" class="fw-black text-muted text-uppercase tracking-widest ms-1" style="font-size: 0.65rem;">Description</label>
+            <textarea asp-for="Description" rows="4" class="form-control form-control-glass py-3 px-4 fw-medium text-white shadow-none" style="border-radius: 1.25rem;" placeholder="What is this group about?"></textarea>
+            <span asp-validation-for="Description" class="text-danger small fw-bold"></span>
         </div>
 
-        <div class="flex items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-background-dark border border-border-light dark:border-border-dark">
-            <input asp-for="IsPublic" type="checkbox" class="size-5 rounded border-border-light dark:border-border-dark text-primary focus:ring-primary bg-white dark:bg-surface-dark" />
-            <div>
-                <label asp-for="IsPublic" class="text-sm font-bold text-slate-700 dark:text-slate-300">Make Public</label>
-                <p class="text-xs text-slate-500">Anyone can find and join this group.</p>
+        <div class="glass-panel p-4 d-flex align-items-center gap-3 transition-all hover-glow" style="border-radius: 1.25rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass) !important;">
+            <div class="form-check m-0 d-flex align-items-center p-0">
+                <input asp-for="IsPublic" type="checkbox" class="form-check-input bg-transparent border-glass text-aurora shadow-none" style="width: 24px; height: 24px; cursor: pointer;" />
+                <div class="ms-3">
+                    <label asp-for="IsPublic" class="fw-bold text-white mb-0" style="font-size: 0.9rem; cursor: pointer;">Make Public</label>
+                    <p class="text-muted small fw-medium mb-0">Anyone can find and join this group.</p>
+                </div>
             </div>
         </div>
 
-        <div class="pt-4">
-            <button type="submit" class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold transition-all text-slate-700 dark:text-white">
-                Create
+        <div class="pt-3 d-flex gap-3">
+            <button type="submit" class="btn btn-premium px-5 py-3 fw-black text-uppercase tracking-widest flex-grow-1" style="font-size: 0.8rem;">
+                Create Group
             </button>
+            <a asp-action="Index" class="btn btn-glass px-4 py-3 fw-black text-uppercase tracking-widest d-flex align-items-center justify-content-center" style="font-size: 0.8rem; border-radius: 1rem; width: 150px;">
+                Cancel
+            </a>
         </div>
     </form>
 </div>

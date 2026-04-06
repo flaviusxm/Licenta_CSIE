@@ -1,0 +1,104 @@
+@model AskNLearn.Web.Models.LeaderboardViewModel
+@using System.Security.Claims
+
+<!-- Ranking Table -->
+<div class="glass-card overflow-hidden shadow-lg border-glass-strong" style="border-radius: 2.5rem;">
+    <div class="table-responsive">
+        <table class="table table-borderless table-hover mb-0 align-middle text-white bg-transparent">
+            <thead style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-glass);">
+                <tr>
+                    <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0" style="border-top-left-radius: 2.5rem;">Rank</th>
+                    <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0">Student</th>
+                    <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0">Major</th>
+                    <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold text-end border-0" style="border-top-right-radius: 2.5rem;">Points</th>
+                </tr>
+            </thead>
+            <tbody style="border-top: none;">
+                @{ int rank = 4 + (Model.CurrentPage - 1) * 20; }
+                @if (!Model.RankingTable.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="py-5 text-center">
+                            <div class="d-flex flex-column align-items-center gap-3 py-4">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: rgba(52, 211, 153, 0.05); border: 1px solid rgba(52, 211, 153, 0.1);">
+                                    <span class="material-symbols-outlined text-aurora" style="font-size: 2.5rem;">groups</span>
+                                </div>
+                                <h5 class="text-white mt-3">Be the first to join the ranks!</h5>
+                                <p class="text-muted small max-w-sm mx-auto">Contribute to the community and earn reputation points to climb the global leaderboard.</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var user in Model.RankingTable)
+                    {
+                        var isCurrentUser = user.Id == User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                        if (isCurrentUser)
+                        {
+                            <tr class="transition-colors position-relative z-1 shadow-lg" style="background: rgba(52, 211, 153, 0.05); border-top: 1px solid rgba(52, 211, 153, 0.2); border-bottom: 1px solid rgba(52, 211, 153, 0.2);">
+                                <td class="py-4 px-4 px-md-5 fw-bold fs-5 text-aurora">#@rank</td>
+                                <td class="py-4 px-4 px-md-5">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="position-relative">
+                                            <img src="@(user.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={user.FullName}")" class="rounded-circle object-cover shadow-lg" style="width: 48px; height: 48px; background: rgba(255,255,255,0.05); border: 2px solid var(--color-mint-bright);" />
+                                            <div class="position-absolute rounded-circle border border-dark" style="bottom: -2px; right: -2px; width: 14px; height: 14px; background: var(--color-mint-bright); border-width: 2px !important;"></div>
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold fs-6 text-white text-truncate" style="max-width: 150px;">@user.FullName</span>
+                                            <span class="text-aurora fw-bold text-uppercase tracking-widest" style="font-size: 0.65rem;">YOU</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 px-md-5">
+                                    <span class="badge rounded-pill fw-bold text-uppercase tracking-wider" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.2); padding: 0.35rem 0.65rem; font-size: 0.65rem;">@(string.IsNullOrEmpty(user.Institution) ? "Student" : user.Institution)</span>
+                                </td>
+                                <td class="py-4 px-4 px-md-5 text-end fw-bold fs-5 text-aurora">@user.ReputationPoints</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr class="transition-colors hover-bg-glass" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td class="py-4 px-4 px-md-5 fw-bold text-muted">#@rank</td>
+                                <td class="py-4 px-4 px-md-5">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="@(user.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={user.FullName}")" class="rounded-circle object-cover border border-glass" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05);" />
+                                        <span class="fw-bold">@user.FullName</span>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 px-md-5">
+                                    <span class="badge rounded-pill fw-bold text-uppercase tracking-wider" style="background: rgba(20, 184, 166, 0.1); color: #2dd4bf; border: 1px solid rgba(20, 184, 166, 0.2); padding: 0.35rem 0.65rem; font-size: 0.65rem;">@(string.IsNullOrEmpty(user.Institution) ? "Student" : user.Institution)</span>
+                                </td>
+                                <td class="py-4 px-4 px-md-5 text-end fw-bold text-white">@user.ReputationPoints</td>
+                            </tr>
+                        }
+                        rank++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="px-5 py-4 d-flex justify-content-between align-items-center" style="border-top: 1px solid var(--border-glass); background: rgba(0,0,0,0.2);">
+        <div class="text-muted small">
+            Showing page <span class="text-white fw-bold">@Model.CurrentPage</span> of <span class="text-white fw-bold">@Model.TotalPages</span>
+        </div>
+        <div class="d-flex gap-2">
+            @if (Model.HasPreviousPage)
+            {
+                <a href="javascript:void(0)" onclick="loadLeaderboard(@(Model.CurrentPage - 1))"
+                   class="btn btn-glass-sm d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined fs-6">chevron_left</span>
+                    <span>Previous</span>
+                </a>
+            }
+            @if (Model.HasNextPage)
+            {
+                <a href="javascript:void(0)" onclick="loadLeaderboard(@(Model.CurrentPage + 1))"
+                   class="btn btn-premium-sm d-flex align-items-center gap-2">
+                    <span>Next</span>
+                    <span class="material-symbols-outlined fs-6">chevron_right</span>
+                </a>
+            }
+        </div>
+    </div>
+</div>

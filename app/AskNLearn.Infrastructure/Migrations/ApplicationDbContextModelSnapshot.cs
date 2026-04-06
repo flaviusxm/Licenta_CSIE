@@ -261,6 +261,8 @@ namespace AskNLearn.Infrastructure.Migrations
 
                     b.HasIndex("ReporterId");
 
+                    b.HasIndex("Status", "CreatedAt");
+
                     b.ToTable("Reports");
                 });
 
@@ -341,6 +343,8 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.HasIndex("ProcessedBy");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("Status", "SubmittedAt");
 
                     b.ToTable("VerificationRequests");
                 });
@@ -452,6 +456,8 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.HasIndex("PostId");
 
                     b.HasIndex("ReplyToMessageId");
+
+                    b.HasIndex("ModerationStatus", "CreatedAt");
 
                     b.ToTable("Messages");
                 });
@@ -650,6 +656,8 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.HasIndex("ChannelId");
 
                     b.HasIndex("CommunityId");
+
+                    b.HasIndex("ModerationStatus", "CreatedAt");
 
                     b.ToTable("Posts");
                 });

@@ -11,7 +11,16 @@ namespace AskNLearn.Web.Models
         public string CurrentUserLeague { get; set; } = "Bronze";
         public int PointsToNextLeague { get; set; }
         public string NextLeagueName { get; set; } = string.Empty;
-        public int ProgressToNextLeague { get; set; } // Percentage 0-100
+        public int ProgressToNextLeague { get; set; }
+
+        public int CurrentPage { get; set; } = 1;
+        public int TotalPages { get; set; }
+        public bool HasPreviousPage => CurrentPage > 1;
+        public bool HasNextPage => CurrentPage < TotalPages;
+
+        public string? SearchTerm { get; set; }
+        public string? Institution { get; set; }
+        public string? SortBy { get; set; } = "PointsDesc";
     }
 
     public static class LeaderboardExtensions
