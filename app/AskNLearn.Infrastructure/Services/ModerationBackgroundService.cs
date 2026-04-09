@@ -37,10 +37,10 @@ namespace AskNLearn.Infrastructure.Services
                     _logger.LogInformation("Processing moderation task for {Target} with Id {Id}.", task.Target, task.Id);
 
                     using var scope = _scopeFactory.CreateScope();
-                    var ollamaService = scope.ServiceProvider.GetRequiredService<IOllamaService>();
+                    var guardianClient = scope.ServiceProvider.GetRequiredService<IGuardianClient>();
                     var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
 
-                    var result = await ollamaService.AnalyzeContentAsync(task.Content, task.Title);
+                    var result = await guardianClient.ModerateTextAsync(task.Content, task.Title);
 
                     if (task.Target == ModerationTarget.Post)
                     {

@@ -1,4 +1,5 @@
 @using AskNLearn.Application.Features.StudyGroups.Queries
+@using AskNLearn.Application.Common.Models
 @using System.Security.Claims
 @model StudyGroupDto
 @{
@@ -116,7 +117,7 @@
                                         <div class="d-flex align-items-center gap-1 border-start ps-2" style="border-color: rgba(255,255,255,0.05) !important;" id="member-actions-@member.UserId">
                                             @switch (member.ConnectionStatus)
                                             {
-                                                case "Accepted":
+                                                case ConnectionStatus.Accepted:
                                                     <form asp-controller="Direct" asp-action="StartChat" method="post" class="mb-0">
                                                         <input type="hidden" name="userId" value="@member.UserId" />
                                                         <button type="submit" class="btn btn-link p-1 text-aurora hover-text-white text-decoration-none d-flex flex-center" title="Send Message">
@@ -124,12 +125,12 @@
                                                         </button>
                                                     </form>
                                                     break;
-                                                case "PendingSent":
+                                                case ConnectionStatus.PendingSent:
                                                     <button class="btn btn-link p-1 text-muted opacity-50 text-decoration-none d-flex flex-center cursor-default" title="Request Pending">
                                                         <span class="material-symbols-outlined fs-6">hourglass_empty</span>
                                                     </button>
                                                     break;
-                                                case "PendingReceived":
+                                                case ConnectionStatus.PendingReceived:
                                                     <button onclick="acceptConnection('@member.UserId')" class="btn btn-link p-1 text-success hover-text-white text-decoration-none d-flex flex-center" title="Accept Request">
                                                         <span class="material-symbols-outlined fs-6">check_circle</span>
                                                     </button>
@@ -547,6 +548,7 @@
         let connection = null;
         
         let localStream = null;
+        let isMuted = false;
         const peers = {}; 
         const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
@@ -846,6 +848,30 @@
                 document.getElementById('videoButton').classList.toggle('bg-primary-subtle', isVideoOn);
                 updateVideoGrid();
             } catch (err) { isVideoOn = false; }
+        }
+
+        function toggleMic() {
+            if (!localStream) return;
+            isMuted = !isMuted;
+            localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+            
+            const micIcon = document.getElementById('micIcon');
+            const micButton = document.getElementById('micButton');
+            const localMicOffIcon = document.getElementById('localMicOffIcon');
+
+            if (micIcon) micIcon.innerText = isMuted ? 'mic_off' : 'mic';
+            if (micButton) {
+                micButton.classList.toggle('text-danger', isMuted);
+                micButton.classList.toggle('bg-danger-subtle', isMuted);
+            }
+            if (localMicOffIcon) {
+                if (isMuted) localMicOffIcon.classList.remove('d-none');
+                else localMicOffIcon.classList.add('d-none');
+            }
+
+            if (currentVoiceChannelId) {
+                connection.invoke("ToggleMute", currentVoiceChannelId, isMuted);
+            }
         }
 
         async function leaveVoice() {

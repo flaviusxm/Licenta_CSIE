@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/app/">
+    <Project Path="app/AskNLearn.Application/AskNLearn.Application.csproj" />
+    <Project Path="app/AskNLearn.Domain/AskNLearn.Domain.csproj" />
+    <Project Path="app/AskNLearn.Infrastructure/AskNLearn.Infrastructure.csproj" />
+    <Project Path="app/AskNLearn.Web/AskNLearn.Web.csproj" />
+  </Folder>
+  <Project Path="GuardianService/GuardianService.csproj" />
+</Solution>

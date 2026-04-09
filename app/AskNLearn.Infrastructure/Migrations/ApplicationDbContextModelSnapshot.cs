@@ -133,7 +133,7 @@ namespace AskNLearn.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("AskNLearn.Domain.Entities.Core.AuditLog", b =>
@@ -1030,7 +1030,7 @@ namespace AskNLearn.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1055,7 +1055,7 @@ namespace AskNLearn.Infrastructure.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims", (string)null);
+                    b.ToTable("RoleClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -1080,7 +1080,7 @@ namespace AskNLearn.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims", (string)null);
+                    b.ToTable("UserClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -1104,7 +1104,7 @@ namespace AskNLearn.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable("UserLogins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -1119,7 +1119,7 @@ namespace AskNLearn.Infrastructure.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles", (string)null);
+                    b.ToTable("UserRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -1140,7 +1140,7 @@ namespace AskNLearn.Infrastructure.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
+                    b.ToTable("UserTokens", (string)null);
                 });
 
             modelBuilder.Entity("AskNLearn.Domain.Entities.Core.ApplicationUser", b =>
@@ -1164,15 +1164,15 @@ namespace AskNLearn.Infrastructure.Migrations
             modelBuilder.Entity("AskNLearn.Domain.Entities.Core.Friendship", b =>
                 {
                     b.HasOne("AskNLearn.Domain.Entities.Core.ApplicationUser", "Addressee")
-                        .WithMany()
+                        .WithMany("FriendshipsReceived")
                         .HasForeignKey("AddresseeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("AskNLearn.Domain.Entities.Core.ApplicationUser", "Requester")
-                        .WithMany()
+                        .WithMany("FriendshipsRequested")
                         .HasForeignKey("RequesterId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Addressee");
@@ -1585,6 +1585,13 @@ namespace AskNLearn.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("AskNLearn.Domain.Entities.Core.ApplicationUser", b =>
+                {
+                    b.Navigation("FriendshipsReceived");
+
+                    b.Navigation("FriendshipsRequested");
                 });
 
             modelBuilder.Entity("AskNLearn.Domain.Entities.Messaging.DirectConversation", b =>

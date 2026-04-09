@@ -12,6 +12,9 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.ComponentModel.DataAnnotations.Schema;
+using Npgsql;
+using NpgsqlTypes;
 
 namespace AskNLearn.Infrastructure.Persistance
 {
@@ -392,6 +395,65 @@ namespace AskNLearn.Infrastructure.Persistance
             Console.WriteLine($"[LoadSeeder]   {label}: {entities.Count:N0} rows in {sw.Elapsed.TotalSeconds:F2}s");
         }
 
+        private static async Task BulkInsertNpgsqlAsync<T>(
+            ApplicationDbContext ctx,
+            IReadOnlyList<T> entities,
+            string tableName,
+            string label) where T : class
+        {
+            if (entities.Count == 0) return;
+            var sw = Stopwatch.StartNew();
+
+            var connection = ctx.Database.GetDbConnection() as NpgsqlConnection;
+            if (connection == null)
+            {
+                // Fallback to EF if for some reason we can't get NpgsqlConnection
+                await BulkSaveAsync(ctx, entities, 1000, label + " (fallback)");
+                return;
+            }
+
+            if (connection.State != ConnectionState.Open) await connection.OpenAsync();
+
+            // Use CancellationToken with timeout for large bulk operations
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(20));
+            var token = cts.Token;
+
+            var props = typeof(T).GetProperties()
+                .Where(p => p.GetMethod != null && p.GetMethod.IsPublic)
+                .Where(p => p.SetMethod != null && p.SetMethod.IsPublic) // Must have public setter to be a DB column usually
+                .Where(p => !Attribute.IsDefined(p, typeof(NotMappedAttribute)))
+                .Where(p => !p.PropertyType.IsClass || p.PropertyType == typeof(string)) // Basic types only
+                .Where(p => !typeof(System.Collections.IEnumerable).IsAssignableFrom(p.PropertyType) || p.PropertyType == typeof(string)) // No collections
+                .ToArray();
+
+            var columnNames = string.Join(", ", props.Select(p => $"\"{p.Name}\""));
+            var copyCommand = $"COPY \"{tableName}\" ({columnNames}) FROM STDIN (FORMAT BINARY)";
+
+            using (var writer = await connection.BeginBinaryImportAsync(copyCommand, token))
+            {
+                foreach (var entity in entities)
+                {
+                    token.ThrowIfCancellationRequested();
+                    await writer.StartRowAsync(token);
+                    foreach (var prop in props)
+                    {
+                        var val = prop.GetValue(entity);
+                        
+                        // Handle Enums: Npgsql needs them as integers or specific types
+                        if (val != null && prop.PropertyType.IsEnum) 
+                            val = Convert.ChangeType(val, Enum.GetUnderlyingType(prop.PropertyType));
+                        else if (val != null && Nullable.GetUnderlyingType(prop.PropertyType)?.IsEnum == true)
+                            val = Convert.ChangeType(val, Enum.GetUnderlyingType(Nullable.GetUnderlyingType(prop.PropertyType)!));
+                        
+                        await writer.WriteAsync(val, token);
+                    }
+                }
+                await writer.CompleteAsync(token);
+            }
+
+            Console.WriteLine($"[LoadSeeder]   {label} (Npgsql Bulk): {entities.Count:N0} rows in {sw.Elapsed.TotalSeconds:F2}s");
+        }
+
         // ─── Fallback bulk save using EF (for non-SQL Server) ─────────────────
         private static async Task BulkSaveAsync<T>(
             ApplicationDbContext ctx,
@@ -422,14 +484,26 @@ namespace AskNLearn.Infrastructure.Persistance
             bool useSqlBulk = true) where T : class
         {
             if (entities.Count == 0) return;
-            if (profile == ScaleProfile.Enterprise && useSqlBulk && ctx.Database.ProviderName?.Contains("SqlServer") == true)
+            
+            var provider = ctx.Database.ProviderName;
+            
+            if (profile == ScaleProfile.Enterprise && useSqlBulk)
             {
-                await BulkInsertSqlAsync(ctx, entities, tableName, batchSize, label);
+                if (provider?.Contains("SqlServer") == true)
+                {
+                    await BulkInsertSqlAsync(ctx, entities, tableName, batchSize, label);
+                    return;
+                }
+                if (provider?.Contains("PostgreSQL") == true)
+                {
+                    Console.WriteLine($"[LoadSeeder] Using Npgsql Bulk Copy for {tableName}");
+                    await BulkInsertNpgsqlAsync(ctx, entities, tableName, label);
+                    return;
+                }
             }
-            else
-            {
-                await BulkSaveAsync(ctx, entities, batchSize, label);
-            }
+            
+            Console.WriteLine($"[LoadSeeder] Using EF Bulk Save for {tableName}");
+            await BulkSaveAsync(ctx, entities, batchSize, label);
         }
 
         // ─── Layer 1: Ranks ───────────────────────────────────────────────────
@@ -589,7 +663,7 @@ namespace AskNLearn.Infrastructure.Persistance
             var allBatches = await Task.WhenAll(userBatches);
             var bulk = allBatches.SelectMany(x => x).ToList();
 
-            await BulkInsertAsync(ctx, bulk, "AspNetUsers", cfg.BatchSize, "Users (bulk)", profile);
+            await BulkInsertAsync(ctx, bulk, "Users", cfg.BatchSize, "Users (bulk)", profile);
             users.AddRange(bulk);
 
             Console.WriteLine($"[LoadSeeder]   Users total: {users.Count:N0} in {sw.Elapsed.TotalSeconds:F1}s");
@@ -1143,7 +1217,7 @@ namespace AskNLearn.Infrastructure.Persistance
                     });
                 }
             }
-            await BulkInsertAsync(ctx, votes, "PostVotes", cfg.BatchSize * 2, "PostVotes", profile);
+            await BulkInsertAsync(ctx, votes, "PostVotes", cfg.BatchSize * 2, "PostVotes", profile, false);
         }
 
         private static async Task SeedPostViewsAsync(
@@ -1170,7 +1244,7 @@ namespace AskNLearn.Infrastructure.Persistance
                     });
                 }
             }
-            await BulkInsertAsync(ctx, views, "PostViews", cfg.BatchSize * 2, "PostViews", profile);
+            await BulkInsertAsync(ctx, views, "PostViews", cfg.BatchSize * 2, "PostViews", profile, false);
         }
 
         private static async Task SeedMessageReactionsAsync(

@@ -589,7 +589,7 @@ namespace AskNLearn.Infrastructure.Persistance
             var allBatches = await Task.WhenAll(userBatches);
             var bulk = allBatches.SelectMany(x => x).ToList();
 
-            await BulkInsertAsync(ctx, bulk, "AspNetUsers", cfg.BatchSize, "Users (bulk)", profile);
+            await BulkInsertAsync(ctx, bulk, "Users", cfg.BatchSize, "Users (bulk)", profile);
             users.AddRange(bulk);
 
             Console.WriteLine($"[LoadSeeder]   Users total: {users.Count:N0} in {sw.Elapsed.TotalSeconds:F1}s");

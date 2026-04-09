@@ -13,8 +13,11 @@ using AskNLearn.Infrastructure.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 
+var levelSwitch = new Serilog.Core.LoggingLevelSwitch();
+levelSwitch.MinimumLevel = LogEventLevel.Debug;
+
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.ControlledBy(levelSwitch)
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .Enrich.FromLogContext()
     .Enrich.WithMachineName()
@@ -56,37 +59,36 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
-if (args.Contains("seeddb"))
+if (args.Contains("drop-seed") || args.Contains("seeddb"))
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     
-    Console.WriteLine("Applying migrations...");
-    await dbContext.Database.MigrateAsync();
-    
-    Console.WriteLine("Seeding database...");
-    await LoadTestDatabaseSeeder.SeedAsync(dbContext, userManager, LoadTestDatabaseSeeder.ScaleProfile.Enterprise);
-    
-    Console.WriteLine("Database initialization complete!");
-    return;
-}
+    // Suppress logs during seeding
+    levelSwitch.MinimumLevel = LogEventLevel.Warning;
 
-if (args.Contains("drop-seed"))
-{
-    using var scope = app.Services.CreateScope();
-    var services = scope.ServiceProvider;
-    var dbContext = services.GetRequiredService<ApplicationDbContext>();
-    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-    
-    Console.WriteLine("Dropping database...");
-    await dbContext.Database.EnsureDeletedAsync();
+    if (args.Contains("drop-seed"))
+    {
+        Console.WriteLine("Force dropping database (terminating active connections)...");
+        try 
+        {
+            var dbName = dbContext.Database.GetDbConnection().Database;
+            await dbContext.Database.ExecuteSqlRawAsync(
+                $@"SELECT pg_terminate_backend(pg_stat_activity.pid) 
+                   FROM pg_stat_activity 
+                   WHERE pg_stat_activity.datname = '{dbName}' 
+                   AND pid <> pg_backend_pid();");
+        } catch { /* Ignore if it fails (e.g. not Postgres or no permissions) */ }
+
+        await dbContext.Database.EnsureDeletedAsync();
+    }
     
     Console.WriteLine("Applying migrations...");
     await dbContext.Database.MigrateAsync();
     
-    Console.WriteLine("Seeding database...");
+    Console.WriteLine("Seeding database (ENTERPRISE profile - this will take a while)...");
     await LoadTestDatabaseSeeder.SeedAsync(dbContext, userManager, LoadTestDatabaseSeeder.ScaleProfile.Enterprise);
     
     Console.WriteLine("Database initialization complete!");

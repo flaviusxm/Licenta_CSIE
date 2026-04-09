@@ -5,8 +5,8 @@ using AskNLearn.Domain.Entities.Gamification;
 using AskNLearn.Domain.Entities.Messaging;
 using AskNLearn.Domain.Entities.SocialFeed;
 using AskNLearn.Domain.Entities.StudyGroup;
-
 using AskNLearn.Application.Common.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace AskNLearn.Infrastructure.Persistance
 {
@@ -58,7 +58,44 @@ namespace AskNLearn.Infrastructure.Persistance
         {
             base.OnModelCreating(builder);
 
+            // ================================================================
+            // REDENUMIRE TABELE IDENTITY - elimină prefixul AspNet
+            // ================================================================
+            
+            // Tabela Users -> Users
+            builder.Entity<ApplicationUser>().ToTable("Users");
+            
+            // Tabela Roles -> Roles
+            builder.Entity<IdentityRole>().ToTable("Roles");
+            
+            // Tabela UserRoles -> UserRoles
+            builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
+            
+            // Tabela UserClaims -> UserClaims
+            builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims");
+            
+            // Tabela UserLogins -> UserLogins
+            builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
+            
+            // Tabela UserTokens -> UserTokens
+            builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens");
+            
+            // Tabela RoleClaims -> RoleClaims
+            builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
+
             // Indexes for Moderation performance
+            builder.Entity<Post>()
+                .HasIndex(p => new { p.ModerationStatus, p.CreatedAt });
+
+            builder.Entity<Message>()
+                .HasIndex(m => new { m.ModerationStatus, m.CreatedAt });
+
+            builder.Entity<Report>()
+                .HasIndex(r => new { r.Status, r.CreatedAt });
+
+            // Indexes for Verification performance
+            builder.Entity<VerificationRequest>()
+                .HasIndex(v => new { v.Status, v.SubmittedAt });
             builder.Entity<Post>()
                 .HasIndex(p => new { p.ModerationStatus, p.CreatedAt });
 

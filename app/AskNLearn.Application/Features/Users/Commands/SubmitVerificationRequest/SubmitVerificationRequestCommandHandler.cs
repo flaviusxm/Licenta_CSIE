@@ -11,10 +11,12 @@ namespace AskNLearn.Application.Features.Users.Commands.SubmitVerificationReques
     public class SubmitVerificationRequestCommandHandler : IRequestHandler<SubmitVerificationRequestCommand, List<string>>
     {
         private readonly IApplicationDbContext _context;
+        private readonly IGuardianClient _guardianClient;
 
-        public SubmitVerificationRequestCommandHandler(IApplicationDbContext context)
+        public SubmitVerificationRequestCommandHandler(IApplicationDbContext context, IGuardianClient guardianClient)
         {
             _context = context;
+            _guardianClient = guardianClient;
         }
 
         public async Task<List<string>> Handle(SubmitVerificationRequestCommand request, CancellationToken cancellationToken)
@@ -35,13 +37,16 @@ namespace AskNLearn.Application.Features.Users.Commands.SubmitVerificationReques
                 return errors;
             }
 
+            var (isValid, details, recommendation) = await _guardianClient.VerifyDocumentAsync(null, request.StudentIdUrl);
+
             var verificationRequest = new VerificationRequest
             {
                 UserId = request.UserId,
                 StudentIdUrl = request.StudentIdUrl,
                 CarnetUrl = request.CarnetUrl,
                 Status = Status.Pending,
-                SubmittedAt = System.DateTime.UtcNow
+                SubmittedAt = System.DateTime.UtcNow,
+                AdminNotes = $"[Guardian Analysis]: {recommendation} | Details: {details}"
             };
 
             _context.VerificationRequests.Add(verificationRequest);

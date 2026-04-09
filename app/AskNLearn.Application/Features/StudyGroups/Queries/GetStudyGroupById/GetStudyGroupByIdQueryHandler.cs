@@ -42,14 +42,14 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries.GetStudyGroupById
                         Topic = c.Topic,
                         Position = c.Position
                     }).ToList(),
-                    Members = x.Members
+                    TopMembers = x.Members
                         .Where(m => !m.IsBanned)
                         .OrderByDescending(m => m.UserId == x.OwnerId)
                         .ThenBy(m => m.User != null ? m.User.UserName : "")
                         .Take(20)
                         .Select(m => new MemberDto
                         {
-                            Id = m.UserId,
+                            UserId = m.UserId,
                             UserName = m.User != null ? m.User.UserName : m.UserId,
                             FullName = m.User != null ? m.User.FullName : null,
                             IsOwner = m.UserId == x.OwnerId,

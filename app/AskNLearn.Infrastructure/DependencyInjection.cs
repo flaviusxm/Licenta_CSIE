@@ -18,6 +18,7 @@ namespace AskNLearn.Infrastructure
             services.AddDbContext<ApplicationDbContext>(options =>options.UseNpgsql(connectionString,b => b.MigrationsAssembly("AskNLearn.Infrastructure")));
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
             
+            services.AddHttpClient<IGuardianClient, GuardianClient>();
             services.AddScoped<IFileService, LocalFileService>();
 
             return services;
