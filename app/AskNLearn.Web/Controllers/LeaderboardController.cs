@@ -45,8 +45,7 @@ public class LeaderboardController(ApplicationDbContext context, UserManager<App
 
         int totalUsers = await query.CountAsync();
         
-        // If not filtered and on page 1, we skip the top 3. Otherwise we show everything that matches the query.
-        var rankingTable = await query.Skip((isFiltered ? 0 : 3) + (page - 1) * pageSize).Take(pageSize).ToListAsync();
+        var rankingTable = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
         var currentUser = await userManager.GetUserAsync(User);
         int currentUserRank = 0;
@@ -66,7 +65,7 @@ public class LeaderboardController(ApplicationDbContext context, UserManager<App
             CurrentUserRank = currentUserRank,
             CurrentUserPoints = currentUserPoints,
             CurrentPage = page,
-            TotalPages = (int)Math.Ceiling(Math.Max(0, totalUsers - 3) / (double)pageSize),
+            TotalPages = (int)Math.Ceiling((double)totalUsers / pageSize),
             SearchTerm = searchTerm,
             Institution = institution,
             SortBy = sortBy ?? "PointsDesc"

@@ -12,9 +12,9 @@ namespace AskNLearn.Domain.Entities.SocialFeed
 
         [Required]
         [MaxLength(50)]
-        public string Name { get; set; } = null!; 
+        public string Name { get; set; } = null!;
 
-        public int UsageCount { get; set; } = 0; 
+        public int UsageCount { get; set; } = 0;
     }
 
     [PrimaryKey(nameof(PostId), nameof(TagId))]
@@ -24,11 +24,11 @@ namespace AskNLearn.Domain.Entities.SocialFeed
         public Guid PostId { get; set; }
 
         [ForeignKey(nameof(PostId))]
-        public required Post Post { get; set; }
+        public Post? Post { get; set; }   
 
         public Guid TagId { get; set; }
 
         [ForeignKey(nameof(TagId))]
-        public required Tag Tag { get; set; }
+        public Tag? Tag { get; set; }     
     }
 }

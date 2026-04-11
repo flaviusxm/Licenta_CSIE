@@ -37,5 +37,6 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
         public ConnectionStatus ConnectionStatus { get; set; } = ConnectionStatus.None;
         public string FlowState { get; set; } = "Stable";
         public bool IsOwnProfile { get; set; }
+        public bool EmailConfirmed { get; set; }
     }
 }

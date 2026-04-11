@@ -15,11 +15,18 @@ namespace AskNLearn.Infrastructure
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection") 
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            services.AddDbContext<ApplicationDbContext>(options =>options.UseNpgsql(connectionString,b => b.MigrationsAssembly("AskNLearn.Infrastructure")));
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString, b => 
+            {
+                b.MigrationsAssembly("AskNLearn.Infrastructure");
+                b.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+            }));
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
             
             services.AddHttpClient<IGuardianClient, GuardianClient>();
             services.AddScoped<IFileService, LocalFileService>();
+            services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddSingleton<IPresenceTracker, PresenceTracker>();
 
             return services;
         }

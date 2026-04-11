@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace AskNLearn.Web.Hubs
 {
-    public class CommunicationHub(IApplicationDbContext context) : Hub
+    public class CommunicationHub(IApplicationDbContext context, IPresenceTracker tracker) : Hub
     {
         public override async Task OnConnectedAsync()
         {
@@ -14,6 +14,11 @@ namespace AskNLearn.Web.Hubs
             if (!string.IsNullOrEmpty(userId))
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{userId}");
+                var isFirst = await tracker.UserConnected(userId, Context.ConnectionId);
+                if (isFirst)
+                {
+                    await Clients.Others.SendAsync("UserIsOnline", userId);
+                }
             }
             await base.OnConnectedAsync();
         }
@@ -24,6 +29,11 @@ namespace AskNLearn.Web.Hubs
             if (!string.IsNullOrEmpty(userId))
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user-{userId}");
+                var isLast = await tracker.UserDisconnected(userId, Context.ConnectionId);
+                if (isLast)
+                {
+                    await Clients.Others.SendAsync("UserIsOffline", userId);
+                }
             }
             await base.OnDisconnectedAsync(exception);
         }
@@ -95,9 +105,14 @@ namespace AskNLearn.Web.Hubs
         public async Task JoinVoice(Guid channelId)
         {
             var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return;
             var userName = Context.User?.Identity?.Name ?? "Unknown";
             
             await Groups.AddToGroupAsync(Context.ConnectionId, $"voice-{channelId}");
+            await tracker.JoinVoiceChannel(channelId, userId, Context.ConnectionId);
+
+            // Fetch existing users in the channel to notify the joiner
+            var existingUsers = await tracker.GetUsersInVoiceChannel(channelId);
             
             // Notify others in the voice channel
             await Clients.OthersInGroup($"voice-{channelId}").SendAsync("UserJoinedVoice", new
@@ -107,11 +122,25 @@ namespace AskNLearn.Web.Hubs
                 userName = userName,
                 channelId = channelId
             });
+
+            // Send existing users to the joiner (excluding self)
+            foreach (var user in existingUsers.Where(u => u.ConnectionId != Context.ConnectionId))
+            {
+                var dbUser = await context.Users.FirstOrDefaultAsync(u => u.Id == user.UserId);
+                await Clients.Caller.SendAsync("UserJoinedVoice", new
+                {
+                    connectionId = user.ConnectionId,
+                    userId = user.UserId,
+                    userName = dbUser?.UserName ?? "User",
+                    channelId = channelId
+                });
+            }
         }
 
         public async Task LeaveVoice(Guid channelId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"voice-{channelId}");
+            await tracker.LeaveVoiceChannel(channelId, Context.ConnectionId);
             await Clients.Group($"voice-{channelId}").SendAsync("UserLeftVoice", Context.ConnectionId);
         }
 

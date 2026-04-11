@@ -26,12 +26,14 @@ namespace AskNLearn.Web.Controllers
         private readonly IMediator _mediator;
         private readonly IApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IPresenceTracker _presenceTracker;
 
-        public StudyGroupsController(IMediator mediator, IApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public StudyGroupsController(IMediator mediator, IApplicationDbContext context, UserManager<ApplicationUser> userManager, IPresenceTracker presenceTracker)
         {
             _mediator = mediator;
             _context = context;
             _userManager = userManager;
+            _presenceTracker = presenceTracker;
         }
 
         [AllowAnonymous]
@@ -121,7 +123,7 @@ namespace AskNLearn.Web.Controllers
 
             if (group == null) return NotFound();
 
-            var members = await _context.StudyGroups
+            var memberData = await _context.StudyGroups
                 .Where(g => g.Id == groupId)
                 .SelectMany(g => g.Members)
                 .Where(m => !m.IsBanned)
@@ -131,17 +133,28 @@ namespace AskNLearn.Web.Controllers
                 .Take(take)
                 .Select(m => new
                 {
-                    id = m.UserId,
-                    userName = m.User != null ? m.User.UserName : m.UserId,
-                    fullName = m.User != null ? m.User.FullName : null,
-                    isOwner = m.UserId == group.OwnerId,
-                    connectionStatus = currentUserId == null ? "None" : 
-                        _context.Friendships.Any(f => f.RequesterId == currentUserId && f.AddresseeId == m.UserId && f.Status == FriendshipStatus.Accepted) || 
-                        _context.Friendships.Any(f => f.RequesterId == m.UserId && f.AddresseeId == currentUserId && f.Status == FriendshipStatus.Accepted) ? "Accepted" :
-                        _context.Friendships.Any(f => f.RequesterId == currentUserId && f.AddresseeId == m.UserId && f.Status == FriendshipStatus.Pending) ? "PendingSent" :
-                        _context.Friendships.Any(f => f.RequesterId == m.UserId && f.AddresseeId == currentUserId && f.Status == FriendshipStatus.Pending) ? "PendingReceived" : "None"
+                    m.UserId,
+                    UserName = m.User != null ? m.User.UserName : m.UserId,
+                    FullName = m.User != null ? m.User.FullName : null,
+                    IsOwner = m.UserId == group.OwnerId,
                 })
                 .ToListAsync();
+
+            var onlineUsers = await _presenceTracker.GetOnlineUsers();
+
+            var members = memberData.Select(m => new
+            {
+                id = m.UserId,
+                userName = m.UserName,
+                fullName = m.FullName,
+                isOwner = m.IsOwner,
+                isOnline = onlineUsers.Contains(m.UserId),
+                connectionStatus = currentUserId == null ? "None" : 
+                    _context.Friendships.Any(f => f.RequesterId == currentUserId && f.AddresseeId == m.UserId && f.Status == FriendshipStatus.Accepted) || 
+                    _context.Friendships.Any(f => f.RequesterId == m.UserId && f.AddresseeId == currentUserId && f.Status == FriendshipStatus.Accepted) ? "Accepted" :
+                    _context.Friendships.Any(f => f.RequesterId == currentUserId && f.AddresseeId == m.UserId && f.Status == FriendshipStatus.Pending) ? "PendingSent" :
+                    _context.Friendships.Any(f => f.RequesterId == m.UserId && f.AddresseeId == currentUserId && f.Status == FriendshipStatus.Pending) ? "PendingReceived" : "None"
+            }).ToList();
 
             var totalCount = await _context.StudyGroups
                 .Where(g => g.Id == groupId)

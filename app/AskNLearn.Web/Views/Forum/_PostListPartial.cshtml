@@ -72,11 +72,7 @@
                         </div>
                     }
 
-                    <span class="text-muted ms-auto" style="font-size: 0.75rem;">• @post.CreatedAt.ToString("MMM dd")</span>
-                    @if (post.IsSolved)
-                    {
-                        <span class="badge" style="background: rgba(0,245,160,0.1); color: var(--color-emerald); border: 1px solid rgba(0,245,160,0.2); font-size: 0.6rem; letter-spacing: 1px;">SOLVED</span>
-                    }
+                    <span class="text-muted ms-auto" style="font-size: 0.75rem;">• @post.CreatedAt.ToString("dd MMM yyyy")</span>
                 </div>
                 <h3 class="h4 fw-bold text-white mb-2 text-aurora-hover transition-all">@post.Title</h3>
                 <p class="text-muted mb-4 fs-6" style="line-height: 1.6;">@post.Content</p>

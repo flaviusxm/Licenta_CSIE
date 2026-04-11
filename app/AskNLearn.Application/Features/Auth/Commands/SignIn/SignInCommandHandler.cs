@@ -5,41 +5,57 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AskNLearn.Domain.Entities.Core;
+using AskNLearn.Application.Common.Interfaces;
 
 namespace AskNLearn.Application.Features.Auth.Commands.SignIn
 {
-    public class SignInCommandHandler : IRequestHandler<SignInCommand, List<string>>
+    public class SignInCommandHandler : IRequestHandler<SignInCommand, SignInResponse>
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IJwtService _jwtService;
 
-        public SignInCommandHandler(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+        public SignInCommandHandler(
+            SignInManager<ApplicationUser> signInManager, 
+            UserManager<ApplicationUser> userManager,
+            IJwtService jwtService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _jwtService = jwtService;
         }
 
-        public async Task<List<string>> Handle(SignInCommand request, CancellationToken cancellationToken)
+        public async Task<SignInResponse> Handle(SignInCommand request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                return new List<string> { "Invalid login attempt." };
+                return new SignInResponse { Errors = new List<string> { "Invalid login attempt." } };
             }
 
             var result = await _signInManager.PasswordSignInAsync(user, request.Password, request.RememberMe, lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
-                return new List<string>();
+                var token = _jwtService.GenerateToken(user);
+                return new SignInResponse 
+                { 
+                    Succeeded = true, 
+                    Token = token 
+                };
             }
             
             if (result.IsLockedOut)
             {
-                return new List<string> { "User account locked out." };
+                return new SignInResponse { IsLockedOut = true, Errors = new List<string> { "User account locked out." } };
             }
 
-            return new List<string> { "Invalid login attempt." };
+            if (result.IsNotAllowed)
+            {
+                return new SignInResponse { Errors = new List<string> { "Please confirm your email before logging in." } };
+            }
+
+            return new SignInResponse { Errors = new List<string> { "Invalid login attempt." } };
         }
     }
 }

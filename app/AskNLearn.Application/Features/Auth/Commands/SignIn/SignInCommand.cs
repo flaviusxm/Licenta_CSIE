@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AskNLearn.Application.Features.Auth.Commands.SignIn
 {
-    public class SignInCommand : IRequest<List<string>>
+    public class SignInCommand : IRequest<SignInResponse>
     {
         [Required(ErrorMessage = "Email address is required.")]
         [EmailAddress(ErrorMessage = "Please enter a valid email address.")]

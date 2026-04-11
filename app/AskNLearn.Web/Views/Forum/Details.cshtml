@@ -53,9 +53,12 @@
             <a asp-controller="Explore" asp-action="Index" class="btn btn-glass p-2 d-flex align-items-center justify-content-center" title="Back">
                 <span class="material-symbols-outlined fs-5">arrow_back</span>
             </a>
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-glass p-2 d-flex align-items-center justify-content-center" title="Settings">
-                <span class="material-symbols-outlined fs-5">settings</span>
-            </a>
+            @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.CreatorId)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-glass p-2 d-flex align-items-center justify-content-center" title="Settings">
+                    <span class="material-symbols-outlined fs-5">settings</span>
+                </a>
+            }
         </div>
     </div>
 

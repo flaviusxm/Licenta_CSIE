@@ -113,7 +113,8 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
                 HasPendingVerification = hasPendingVerification,
                 ConnectionStatus = connectionStatus,
                 FlowState = flowState,
-                IsOwnProfile = request.CurrentUserId == user.Id
+                IsOwnProfile = request.CurrentUserId == user.Id,
+                EmailConfirmed = user.EmailConfirmed
             };
         }
     }

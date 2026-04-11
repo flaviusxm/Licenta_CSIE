@@ -127,6 +127,55 @@ namespace AskNLearn.Infrastructure.Persistance
                     .HasForeignKey(f => f.AddresseeId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+            // ================================================================
+            // SQL SERVER CASCADE FIXES
+            // ================================================================
+
+            builder.Entity<GroupMembership>(entity =>
+            {
+                entity.HasOne(gm => gm.Group)
+                    .WithMany()
+                    .HasForeignKey(gm => gm.GroupId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<Channel>(entity =>
+            {
+                entity.HasOne(c => c.Group)
+                    .WithMany(g => g.Channels)
+                    .HasForeignKey(c => c.GroupId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<Post>(entity =>
+            {
+                entity.HasOne(p => p.Channel)
+                    .WithMany()
+                    .HasForeignKey(p => p.ChannelId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                
+                entity.HasOne(p => p.Author)
+                    .WithMany()
+                    .HasForeignKey(p => p.AuthorId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<Message>(entity =>
+            {
+                entity.HasOne(m => m.Author)
+                    .WithMany()
+                    .HasForeignKey(m => m.AuthorId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<Report>(entity =>
+            {
+                entity.HasOne(r => r.Reporter)
+                    .WithMany()
+                    .HasForeignKey(r => r.ReporterId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
         }
     }
 }

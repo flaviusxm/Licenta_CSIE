@@ -22,9 +22,13 @@
                         @(post.CommunityName.Length >= 2 ? post.CommunityName.Substring(0, 2).ToUpper() : post.CommunityName.ToUpper())
                     </div>
                     <div class="d-flex flex-column align-items-center py-2 px-1 rounded-pill" style="background: var(--glass-highlight); border: 1px solid var(--border-glass);">
-                        <span class="material-symbols-outlined text-muted" style="font-size: 1.25rem;">keyboard_arrow_up</span>
-                        <span class="text-white fw-black small my-1">@post.VoteCount</span>
-                        <span class="material-symbols-outlined text-muted" style="font-size: 1.25rem;">keyboard_arrow_down</span>
+                        <button onclick="votePostHome('@post.Id', '@post.CommunityId', 1)" class="btn btn-link p-0 text-muted hover-glow">
+                            <span class="material-symbols-outlined vote-icon-up-@post.Id" style="font-size: 1.25rem;">keyboard_arrow_up</span>
+                        </button>
+                        <span class="text-white fw-black small my-1 vote-count-@post.Id">@post.VoteCount</span>
+                        <button onclick="votePostHome('@post.Id', '@post.CommunityId', -1)" class="btn btn-link p-0 text-muted hover-glow">
+                            <span class="material-symbols-outlined vote-icon-down-@post.Id" style="font-size: 1.25rem;">keyboard_arrow_down</span>
+                        </button>
                     </div>
                 </div>
 
@@ -70,13 +74,8 @@
                                     </div>
                                 }
                             </div>
-                            @if (post.IsSolved)
-                            {
-                                <span class="badge" style="background: rgba(0,245,160,0.1); color: var(--color-emerald); border: 1px solid rgba(0,245,160,0.2); font-size: 0.6rem; letter-spacing: 1px;">SOLVED</span>
-                            }
+                            </div>
                         </div>
-                        <span class="text-muted small fw-bold opacity-75 flex-shrink-0">@timeAgo</span>
-                    </div>
 
                     <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId"
                        class="text-decoration-none d-block" style="scroll-margin-top: 80px;">
@@ -86,20 +85,19 @@
                         @post.Content
                     </p>
 
-                    <div class="d-flex align-items-center gap-4">
-                        <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
+                    <div class="d-flex align-items-center gap-4 mt-2">
+                        <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId" 
+                           class="d-flex align-items-center gap-1 text-muted fw-bold text-decoration-none hover-glow" style="font-size: 0.7rem;">
                             <span class="material-symbols-outlined fs-5">chat_bubble</span>
                             @post.CommentCount Comments
-                        </div>
+                        </a>
                         <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
                             <span class="material-symbols-outlined fs-5">visibility</span>
                             @post.ViewCount Views
                         </div>
-                        <div class="ms-auto">
-                            <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId"
-                               class="btn btn-glass-sm px-4 py-1 fw-bold" style="font-size: 0.75rem;">
-                                Open
-                            </a>
+                        <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
+                            <span class="material-symbols-outlined fs-5">calendar_month</span>
+                            @post.CreatedAt.ToString("dd MMM yyyy")
                         </div>
                     </div>
                 </div>

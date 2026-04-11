@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -27,5 +27,7 @@ namespace AskNLearn.Application.Features.Auth.Commands.SignUp
         [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
         [DataType(DataType.Password)]
         public string ConfirmPassword { get; set; }
+
+        public string? VerificationBaseUrl { get; set; }
     }
 }

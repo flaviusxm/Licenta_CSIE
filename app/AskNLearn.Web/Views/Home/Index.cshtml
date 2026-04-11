@@ -14,7 +14,7 @@
     }
 
     <div id="feed-content" class="d-flex flex-column gap-4 transition-all" style="animation: slide-up-fade 0.5s ease-out;">
-        @if (User.Identity.IsAuthenticated)
+        @if (User.Identity?.IsAuthenticated == true)
         {
             <!-- Performance Dashboard Header -->
             <div class="glass-card mb-4 overflow-hidden border-0 shadow-lg" style="background: var(--glass-surface); border: 1px solid var(--border-glass-strong) !important;">
@@ -155,6 +155,7 @@
             feedAllLoaded = false;
             feedContainer.innerHTML = '';
             feedSpinner.classList.remove('d-none');
+            feedSpinner.innerHTML = `
                 <div class="spinner-border text-aurora" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>`;
@@ -198,6 +199,38 @@
                     container.style.pointerEvents = 'all';
                 }
             } catch(e) { console.error(e); }
+        }
+
+        // --- Voting Logic (Home) ---
+        function votePostHome(postId, communityId, value) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+            
+            fetch(`/Forum/VotePost?postId=${postId}&communityId=${communityId}&value=${value}`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'RequestVerificationToken': token
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const countEl = document.querySelector(`.vote-count-${postId}`);
+                    if (countEl) {
+                        countEl.textContent = data.voteCount;
+                        countEl.classList.remove('text-mint', 'text-danger', 'text-white');
+                        countEl.classList.add(data.userVote === 1 ? 'text-mint' : data.userVote === -1 ? 'text-danger' : 'text-white');
+                    }
+                    
+                    const upIcon = document.querySelector(`.vote-icon-up-${postId}`);
+                    const downIcon = document.querySelector(`.vote-icon-down-${postId}`);
+                    
+                    if (upIcon) upIcon.style.color = data.userVote === 1 ? 'var(--color-mint-bright)' : '';
+                    if (downIcon) downIcon.style.color = data.userVote === -1 ? '#ef4444' : '';
+                }
+            })
+            .catch(e => console.error(e));
         }
 
         // --- Post Bookmarking Logic ---

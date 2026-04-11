@@ -8,6 +8,9 @@ using Serilog;
 using Serilog.Events;
 using AskNLearn.Application.Common.Interfaces;
 using AskNLearn.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,23 +42,45 @@ builder.Services.AddSingleton<IModerationQueue, ModerationQueue>();
 builder.Services.AddHostedService<ModerationBackgroundService>();
 
 
-builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => 
 {
-    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("DefaultConnection");
-    options.UseNpgsql(connectionString, b => b.MigrationsAssembly("AskNLearn.Infrastructure"));
-    options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-});
+    options.SignIn.RequireConfirmedAccount = true;
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddAuthentication(options =>
+{
+    // Removing fixed default schemes allows Identity cookies to be the default for MVC
+    // While still allowing JWT for specific API controllers when requested.
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!))
+    };
+});
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Auth/SignIn";
     options.AccessDeniedPath = "/Auth/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
 });
 
+builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -71,25 +96,22 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
 
     if (args.Contains("drop-seed"))
     {
-        Console.WriteLine("Force dropping database (terminating active connections)...");
+        Console.WriteLine("Force dropping database...");
         try 
         {
-            var dbName = dbContext.Database.GetDbConnection().Database;
-            await dbContext.Database.ExecuteSqlRawAsync(
-                $@"SELECT pg_terminate_backend(pg_stat_activity.pid) 
-                   FROM pg_stat_activity 
-                   WHERE pg_stat_activity.datname = '{dbName}' 
-                   AND pid <> pg_backend_pid();");
-        } catch { /* Ignore if it fails (e.g. not Postgres or no permissions) */ }
-
-        await dbContext.Database.EnsureDeletedAsync();
+            await dbContext.Database.EnsureDeletedAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Note: Database drop skipped or failed (it might not exist yet): {ex.Message}");
+        }
     }
     
     Console.WriteLine("Applying migrations...");
     await dbContext.Database.MigrateAsync();
     
     Console.WriteLine("Seeding database (ENTERPRISE profile - this will take a while)...");
-    await LoadTestDatabaseSeeder.SeedAsync(dbContext, userManager, LoadTestDatabaseSeeder.ScaleProfile.Enterprise);
+await LoadTestDatabaseSeeder.SeedAsync(dbContext, userManager);
     
     Console.WriteLine("Database initialization complete!");
     return;

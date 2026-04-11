@@ -95,7 +95,7 @@
 
         <!-- Center Feed -->
         <main class="flex-grow-1 h-100 position-relative w-100 @(ViewData["AppLayout"] as bool? == true ? "d-flex flex-column overflow-hidden" : "overflow-y-auto custom-scrollbar")">
-            @if (User.Identity.IsAuthenticated && ViewData["HideProfileCompletion"] as bool? != true)
+            @if (User.Identity?.IsAuthenticated == true && ViewData["HideProfileCompletion"] as bool? != true)
             {
                 <div class="p-4 p-md-5 pb-0">
                     @await Component.InvokeAsync("ProfileCompletion")

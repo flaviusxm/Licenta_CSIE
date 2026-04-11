@@ -60,18 +60,6 @@
                             <span class="material-symbols-outlined fs-6">shield_person</span> System Admin
                         </div>
                     }
-                    else if (Model.Role == "Moderator")
-                    { 
-                        <div class="badge rounded-pill d-flex align-items-center gap-2 fw-bold tracking-widest text-uppercase px-3 py-2 shadow-sm" style="background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2);">
-                            <span class="material-symbols-outlined fs-6">verified_user</span> Moderator
-                        </div>
-                    }
-                    else if (Model.IsVerified)
-                    {
-                        <div class="badge rounded-pill d-flex align-items-center gap-2 fw-bold tracking-widest text-uppercase px-3 py-2 shadow-sm" style="background: rgba(52, 211, 153, 0.1); color: var(--color-mint-bright); border: 1px solid rgba(52, 211, 153, 0.2);">
-                            <span class="material-symbols-outlined fs-6">check_decagram</span> Verified Student
-                        </div>
-                    }
                     @if (!Model.IsOwnProfile)
                     {
                         var status = Model.ConnectionStatus;
@@ -115,6 +103,64 @@
                     <div class="badge rounded-pill d-flex align-items-center gap-2 fw-bold tracking-widest text-uppercase px-3 py-2 shadow-sm text-muted" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
                         <span class="material-symbols-outlined fs-6">schedule</span>
                         Joined: @Model.CreatedAt.ToString("MMM yyyy")
+                    </div>
+                </div>
+
+                <!-- Account Progress Bar -->
+                <div class="mt-5 w-100">
+                    <div class="d-flex align-items-center gap-2 mb-3 ms-2">
+                        <span class="material-symbols-outlined text-aurora fs-6 fw-bold">verified_user</span>
+                        <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.65rem;">Account Progression</label>
+                    </div>
+                    <div class="position-relative px-4">
+                        <!-- Progress Line -->
+                        <div class="position-absolute" style="top: 15px; left: 10%; right: 10%; height: 2px; background: rgba(255,255,255,0.1); z-index: 1;">
+                            @{
+                                var progressWidth = "0%";
+                                if (Model.Role == "Moderator" || Model.Role == "Admin") progressWidth = "100%";
+                                else if (Model.IsVerified) progressWidth = "50%";
+                                else if (Model.EmailConfirmed) progressWidth = "0%";
+                            }
+                            <div class="h-100 bg-aurora transition-all shadow-glow" style="width: @progressWidth; box-shadow: 0 0 10px var(--color-mint-bright);"></div>
+                        </div>
+
+                        <div class="d-flex justify-content-between position-relative z-2">
+                            <!-- Step 1: Activated -->
+                            <div class="d-flex flex-column align-items-center gap-2" style="width: 80px;">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm transition-all" 
+                                     style="width: 32px; height: 32px; background: @(Model.EmailConfirmed ? "var(--color-mint-bright)" : "rgba(255,255,255,0.1)"); border: 2px solid @(Model.EmailConfirmed ? "var(--color-mint-bright)" : "rgba(255,255,255,0.2)");">
+                                    <span class="material-symbols-outlined text-universe fs-6 fw-bold">@(Model.EmailConfirmed ? "check" : "mail")</span>
+                                </div>
+                                <span class="text-uppercase tracking-widest fw-bold text-center @(Model.EmailConfirmed ? "text-aurora" : "text-muted")" style="font-size: 0.55rem;">Account<br>Activated</span>
+                            </div>
+
+                            <!-- Step 2: Verified -->
+                            <div class="d-flex flex-column align-items-center gap-2" style="width: 80px;">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm transition-all" 
+                                     style="width: 32px; height: 32px; background: @(Model.IsVerified ? "var(--color-mint-bright)" : "rgba(255,255,255,0.1)"); border: 2px solid @(Model.IsVerified ? "var(--color-mint-bright)" : "rgba(255,255,255,0.2)");">
+                                    <span class="material-symbols-outlined text-universe fs-6 fw-bold">@(Model.IsVerified ? "how_to_reg" : "id_card")</span>
+                                </div>
+                                <span class="text-uppercase tracking-widest fw-bold text-center @(Model.IsVerified ? "text-aurora" : "text-muted")" style="font-size: 0.55rem;">Identity<br>Verified</span>
+                            </div>
+
+                            <!-- Step 3: Moderator -->
+                            <div class="d-flex flex-column align-items-center gap-2" style="width: 80px;">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm transition-all" 
+                                     style="width: 32px; height: 32px; background: @(Model.Role == "Moderator" || Model.Role == "Admin" ? "var(--color-mint-bright)" : "rgba(255,255,255,0.1)"); border: 2px solid @(Model.Role == "Moderator" || Model.Role == "Admin" ? "var(--color-mint-bright)" : "rgba(255,255,255,0.2)");">
+                                    <span class="material-symbols-outlined text-universe fs-6 fw-bold">shield_person</span>
+                                </div>
+                                @if (Model.IsOwnProfile && Model.IsVerified && Model.Role == "Member")
+                                {
+                                    <a href="/Moderator/Apply" class="btn btn-premium p-0 text-center text-uppercase tracking-widest fw-bold" style="font-size: 0.55rem; width: 100%; height: auto; background: transparent; border: none; box-shadow: none;">
+                                        Apply for<br>Moderator
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-uppercase tracking-widest fw-bold text-center @(Model.Role == "Moderator" || Model.Role == "Admin" ? "text-aurora" : "text-muted")" style="font-size: 0.55rem;">Apply for<br>Moderator</span>
+                                }
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
