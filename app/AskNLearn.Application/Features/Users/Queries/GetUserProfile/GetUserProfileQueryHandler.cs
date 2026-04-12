@@ -78,15 +78,6 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
                 }
             }
 
-            // Flow State Logic
-            var last24hActivities = await _context.Messages.CountAsync(m => m.AuthorId == user.Id && m.CreatedAt > DateTime.UtcNow.AddDays(-1), cancellationToken);
-            var last48hActivities = await _context.Messages.CountAsync(m => m.AuthorId == user.Id && m.CreatedAt > DateTime.UtcNow.AddDays(-2), cancellationToken);
-            
-            string flowState = "Stable";
-            if (last24hActivities > 10) flowState = "Peaking";
-            else if (last24hActivities > 0 || last48hActivities > 0) flowState = "Active";
-            else if (user.LastActive < DateTime.UtcNow.AddDays(-7)) flowState = "Idle";
-
             return new UserProfileDto
             {
                 Id = user.Id,
@@ -112,7 +103,6 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
                 SocialLinks = user.SocialLinks,
                 HasPendingVerification = hasPendingVerification,
                 ConnectionStatus = connectionStatus,
-                FlowState = flowState,
                 IsOwnProfile = request.CurrentUserId == user.Id,
                 EmailConfirmed = user.EmailConfirmed
             };

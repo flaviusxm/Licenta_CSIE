@@ -71,12 +71,18 @@ namespace AskNLearn.Web.Controllers
             ViewBag.PendingVerifications = await _context.VerificationRequests.CountAsync(v => v.Status == Status.Pending);
             ViewBag.TotalCommunities = await _context.Communities.CountAsync();
             
-            // Flagged content statistics (AI + User Reports)
-            var flaggedPosts = await _context.Posts.CountAsync(p => p.ModerationStatus == ModerationStatus.Flagged || p.ModerationStatus == ModerationStatus.Pending);
-            var flaggedMessages = await _context.Messages.CountAsync(m => m.ModerationStatus == ModerationStatus.Flagged || m.ModerationStatus == ModerationStatus.Pending);
-            var pendingReports = await _context.Reports.CountAsync(r => r.Status == ReportStatus.Pending);
-            ViewBag.FlaggedContentCount = flaggedPosts + flaggedMessages;
-            ViewBag.PendingReportsCount = pendingReports;
+            // AI Moderation Granular Stats
+            ViewBag.AiApprovedCount = await _context.Posts.CountAsync(p => p.ModerationStatus == ModerationStatus.Approved) + 
+                                       await _context.Messages.CountAsync(m => m.ModerationStatus == ModerationStatus.Approved);
+            
+            ViewBag.AiFlaggedCount = await _context.Posts.CountAsync(p => p.ModerationStatus == ModerationStatus.Flagged) + 
+                                      await _context.Messages.CountAsync(m => m.ModerationStatus == ModerationStatus.Flagged);
+            
+            ViewBag.AiSuspectCount = await _context.Posts.CountAsync(p => p.ModerationStatus == ModerationStatus.AwaitingManualReview) + 
+                                      await _context.Messages.CountAsync(m => m.ModerationStatus == ModerationStatus.AwaitingManualReview);
+            
+            ViewBag.PendingReportsCount = await _context.Reports.CountAsync(r => r.Status == ReportStatus.Pending);
+
             
             return View();
         }
@@ -167,120 +173,79 @@ namespace AskNLearn.Web.Controllers
         {
             if (!await IsAdmin()) return Forbid();
 
-            var postsQuery = _context.Posts.AsNoTracking()
-                .Where(p => p.ModerationStatus == ModerationStatus.Flagged || p.ModerationStatus == ModerationStatus.Pending);
-            
-            var messagesQuery = _context.Messages.AsNoTracking()
-                .Where(m => m.ModerationStatus == ModerationStatus.Flagged || m.ModerationStatus == ModerationStatus.Pending);
+            var postsQuery = _context.Posts.AsNoTracking();
+            var messagesQuery = _context.Messages.AsNoTracking();
 
-            int totalCount = 0;
-            var combinedList = new System.Collections.Generic.List<dynamic>();
-
+            // Status filter logic
+            // If "ALL", we show Flagged, Pending, and Suspect
             if (filter == "ALL")
             {
-                // For "ALL", we need to sum counts
-                totalCount = await postsQuery.CountAsync() + await messagesQuery.CountAsync();
-                
-                // Fetch a bit from both to merge, but ideally we should have a more robust paging
-                // if they are huge. For now, fetch 'take' from both, merge and 'take' again.
-                // This handles the first few pages well.
-                var posts = await postsQuery
-                    .Include(p => p.Author)
-                    .Select(p => new { 
-                        Id = p.Id, 
-                        Title = p.Title, 
-                        Content = p.Content, 
-                        Author = p.Author.UserName, 
-                        CreatedAt = p.CreatedAt, 
-                        Type = "POST",
-                        Reason = p.ModerationReason,
-                        Status = p.ModerationStatus,
-                        ParentTitle = (string)null
-                    })
-                    .OrderByDescending(p => p.Status == ModerationStatus.Flagged)
-                    .ThenByDescending(p => p.CreatedAt)
-                    .Skip(skip).Take(take)
-                    .ToListAsync();
-
-                var messages = await messagesQuery
-                    .Include(m => m.Author)
-                    .Include(m => m.Post)
-                    .Select(m => new { 
-                        Id = m.Id, 
-                        Title = (string)null, 
-                        Content = m.Content, 
-                        Author = m.Author.UserName, 
-                        CreatedAt = m.CreatedAt, 
-                        Type = "COMMENT",
-                        Reason = m.ModerationReason,
-                        Status = m.ModerationStatus,
-                        ParentTitle = m.Post.Title
-                    })
-                    .OrderByDescending(m => m.Status == ModerationStatus.Flagged)
-                    .ThenByDescending(m => m.CreatedAt)
-                    .Skip(skip).Take(take)
-                    .ToListAsync();
-
-                combinedList.AddRange(posts);
-                combinedList.AddRange(messages);
+                postsQuery = postsQuery.Where(p => p.ModerationStatus != ModerationStatus.Approved);
+                messagesQuery = messagesQuery.Where(m => m.ModerationStatus != ModerationStatus.Approved);
             }
-            else if (filter == "POST")
+            else if (filter == "HISTORY")
             {
-                totalCount = await postsQuery.CountAsync();
-                var posts = await postsQuery
-                    .Include(p => p.Author)
-                    .Select(p => new { 
-                        Id = p.Id, 
-                        Title = p.Title, 
-                        Content = p.Content, 
-                        Author = p.Author.UserName, 
-                        CreatedAt = p.CreatedAt, 
-                        Type = "POST",
-                        Reason = p.ModerationReason,
-                        Status = p.ModerationStatus,
-                        ParentTitle = (string)null
-                    })
-                    .OrderByDescending(p => p.Status == ModerationStatus.Flagged)
-                    .ThenByDescending(p => p.CreatedAt)
-                    .Skip(skip).Take(take)
-                    .ToListAsync();
-                combinedList.AddRange(posts);
+                postsQuery = postsQuery.Where(p => p.ModerationStatus == ModerationStatus.Approved);
+                messagesQuery = messagesQuery.Where(m => m.ModerationStatus == ModerationStatus.Approved);
             }
-            else if (filter == "COMMENT")
+            else if (filter == "SUSPECT")
             {
-                totalCount = await messagesQuery.CountAsync();
-                var messages = await messagesQuery
-                    .Include(m => m.Author)
-                    .Include(m => m.Post)
-                    .Select(m => new { 
-                        Id = m.Id, 
-                        Title = (string)null, 
-                        Content = m.Content, 
-                        Author = m.Author.UserName, 
-                        CreatedAt = m.CreatedAt, 
-                        Type = "COMMENT",
-                        Reason = m.ModerationReason,
-                        Status = m.ModerationStatus,
-                        ParentTitle = m.Post.Title
-                    })
-                    .OrderByDescending(m => m.Status == ModerationStatus.Flagged)
-                    .ThenByDescending(m => m.CreatedAt)
-                    .Skip(skip).Take(take)
-                    .ToListAsync();
-                combinedList.AddRange(messages);
+                postsQuery = postsQuery.Where(p => p.ModerationStatus == ModerationStatus.AwaitingManualReview);
+                messagesQuery = messagesQuery.Where(m => m.ModerationStatus == ModerationStatus.AwaitingManualReview);
             }
 
+            int totalCount = await postsQuery.CountAsync() + await messagesQuery.CountAsync();
             Response.Headers["X-Total-Count"] = totalCount.ToString();
 
-            // Final sort and slice
-            var finalResult = combinedList
-                .OrderByDescending(x => (ModerationStatus)x.Status == ModerationStatus.Flagged)
+            var posts = await postsQuery
+                .Include(p => p.Author)
+                .Select(p => new { 
+                    Id = p.Id, 
+                    Title = p.Title, 
+                    Content = p.Content, 
+                    Author = p.Author.UserName, 
+                    CreatedAt = p.CreatedAt, 
+                    Type = "POST",
+                    Reason = p.ModerationReason,
+                    Status = p.ModerationStatus,
+                    ParentTitle = (string)null
+                })
+                .OrderByDescending(p => p.Status == ModerationStatus.AwaitingManualReview)
+                .ThenByDescending(p => p.Status == ModerationStatus.Flagged)
+                .ThenByDescending(p => p.CreatedAt)
+                .Skip(skip).Take(take)
+                .ToListAsync();
+
+            var messages = await messagesQuery
+                .Include(m => m.Author)
+                .Include(m => m.Post)
+                .Select(m => new { 
+                    Id = m.Id, 
+                    Title = (string)null, 
+                    Content = m.Content, 
+                    Author = m.Author.UserName, 
+                    CreatedAt = m.CreatedAt, 
+                    Type = "COMMENT",
+                    Reason = m.ModerationReason,
+                    Status = m.ModerationStatus,
+                    ParentTitle = m.Post.Title
+                })
+                .OrderByDescending(m => m.Status == ModerationStatus.AwaitingManualReview)
+                .ThenByDescending(m => m.Status == ModerationStatus.Flagged)
+                .ThenByDescending(m => m.CreatedAt)
+                .Skip(skip).Take(take)
+                .ToListAsync();
+
+            var combinedList = posts.Cast<dynamic>().Concat(messages.Cast<dynamic>())
+                .OrderByDescending(x => (ModerationStatus)x.Status == ModerationStatus.AwaitingManualReview)
+                .ThenByDescending(x => (ModerationStatus)x.Status == ModerationStatus.Flagged)
                 .ThenByDescending(x => (DateTime)x.CreatedAt)
                 .Take(take)
                 .ToList();
 
-            return PartialView("_AIReportsTable", finalResult);
+            return PartialView("_AIReportsTable", combinedList);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> LoadUserReports(int skip = 0, int take = 20, string filter = "ALL")

@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/app/">
+    <File Path="SeedAndDeploy.ps1" />
     <Project Path="app/AskNLearn.Application/AskNLearn.Application.csproj" />
     <Project Path="app/AskNLearn.Domain/AskNLearn.Domain.csproj" />
     <Project Path="app/AskNLearn.Infrastructure/AskNLearn.Infrastructure.csproj" />

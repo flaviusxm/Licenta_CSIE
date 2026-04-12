@@ -113,6 +113,14 @@
                     <input type="text" name="institution" value="@Model.Institution" class="form-control form-control-glass ps-5 py-2 fw-bold text-white" style="border-radius: 0.75rem; font-size: 0.85rem;" placeholder="University...">
                 </div>
             </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small fw-black text-uppercase tracking-widest ms-1 mb-2" style="font-size: 0.65rem;">Page Size</label>
+                <select name="pageSize" class="form-select form-select-glass py-2 fw-bold text-white shadow-sm" style="border-radius: 0.75rem; font-size: 0.85rem;" onchange="loadLeaderboard(1)">
+                    <option value="12" selected="@(Model.PageSize == 12)">12 / page</option>
+                    <option value="24" selected="@(Model.PageSize == 24)">24 / page</option>
+                    <option value="36" selected="@(Model.PageSize == 36)">36 / page</option>
+                </select>
+            </div>
             <div class="col-md-3">
                 <label class="form-label text-muted small fw-black text-uppercase tracking-widest ms-1 mb-2" style="font-size: 0.65rem;">Sort By</label>
                 <div class="position-relative">
@@ -140,8 +148,9 @@
         const searchTerm = document.querySelector('input[name="searchTerm"]').value;
         const institution = document.querySelector('input[name="institution"]').value;
         const sortBy = document.querySelector('select[name="sortBy"]').value;
+        const pageSize = document.querySelector('select[name="pageSize"]').value;
 
-        const url = `/Leaderboard?page=${page}&searchTerm=${encodeURIComponent(searchTerm)}&institution=${encodeURIComponent(institution)}&sortBy=${sortBy}`;
+        const url = `/Leaderboard?page=${page}&pageSize=${pageSize}&searchTerm=${encodeURIComponent(searchTerm)}&institution=${encodeURIComponent(institution)}&sortBy=${sortBy}`;
         
         const container = document.getElementById('leaderboard-data-container');
         if (container) {

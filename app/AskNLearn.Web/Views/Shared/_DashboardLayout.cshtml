@@ -61,7 +61,7 @@
                 
                 <!-- Profile Link -->
                 <a asp-controller="Profile" asp-action="Index" class="text-decoration-none">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center text-muted transition-colors hover-glow" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass-strong);">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-muted transition-all" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass-strong);" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='var(--color-mint-bright)';" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='var(--border-glass-strong)';">
                         <span class="material-symbols-outlined fs-5">person</span>
                     </div>
                 </a>
@@ -95,12 +95,7 @@
 
         <!-- Center Feed -->
         <main class="flex-grow-1 h-100 position-relative w-100 @(ViewData["AppLayout"] as bool? == true ? "d-flex flex-column overflow-hidden" : "overflow-y-auto custom-scrollbar")">
-            @if (User.Identity?.IsAuthenticated == true && ViewData["HideProfileCompletion"] as bool? != true)
-            {
-                <div class="p-4 p-md-5 pb-0">
-                    @await Component.InvokeAsync("ProfileCompletion")
-                </div>
-            }
+
             @RenderBody()
         </main>
     </div>

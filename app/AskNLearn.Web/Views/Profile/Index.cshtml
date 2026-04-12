@@ -2,408 +2,389 @@
 
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = Model.IsOwnProfile ? "My Profile" : $"{Model.FullName}'s Profile";
+    ViewData["Title"] = Model.FullName;
+    ViewData["HideProfileCompletion"] = true;
 }
 
-<div class="container py-5" style="max-width: 1200px;">
-    @if (Model.IsOwnProfile)
-    {
-        <form asp-action="Update" method="post" id="profileForm" class="d-flex flex-column gap-5">
-            <input type="hidden" name="FullName" value="@Model.FullName" />
-            <input type="hidden" name="AvatarUrl" value="@Model.AvatarUrl" />
+<div class="h-100 overflow-y-auto custom-scrollbar pt-4" style="background: var(--bg-universe);">
+    <div class="container pb-5 animate-entrance" style="max-width: 1100px;">
+        
+        <form asp-action="Update" method="post" id="linkedInForm" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
             <input type="hidden" name="SocialLinks" id="socialLinksHidden" value="@Model.SocialLinks" />
             <input type="hidden" name="Interests" id="interestsHidden" value="@Model.Interests" />
             
-            <partial name="_ProfileHeader" model="Model" />
-
-            <div class="px-3 px-md-5 d-flex flex-column gap-5 mt-4 hover-parent">
-                <!-- Bio Section -->
-                <div class="d-flex flex-column gap-3">
-                    <div class="d-flex align-items-center gap-2 ms-2">
-                        <span class="material-symbols-outlined text-aurora fs-5 fw-bold">edit_note</span>
-                        <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Biography</label>
+            <!-- TOP CARD: Identity & Banner -->
+            <div class="glass-card overflow-hidden mb-4 shadow-lg border-glass-strong" style="border-radius: 1.5rem;">
+                <div class="position-relative" style="height: 220px; background: url(&quot;@(Model.BannerUrl ?? "https://images.unsplash.com/photo-1557683316-973673baf926")&quot;) center/cover;">
+                    @if (Model.IsOwnProfile) {
+                        <input type="file" name="BannerFile" id="bannerUpload" class="d-none" onchange="syncChanges()" />
+                        <button type="button" class="btn btn-glass-sm position-absolute top-0 end-0 m-4 p-2 rounded-circle shadow-lg" title="Change Banner" onclick="document.getElementById('bannerUpload').click()">
+                            <span class="material-symbols-outlined fs-6">landscape</span>
+                        </button>
+                    }
+                </div>
+                
+                <div class="px-5 pb-5 position-relative">
+                    <div class="d-flex flex-column flex-md-row align-items-end gap-4" style="margin-top: -80px;">
+                        <div class="position-relative">
+                            <img src="@(Model.AvatarUrl ?? "https://api.dicebear.com/7.x/avataaars/svg?seed=" + Model.FullName)" 
+                                 class="rounded-circle border border-5 border-universe shadow-2xl bg-universe" 
+                                 style="width: 180px; height: 180px; object-fit: cover;" id="avatarPreview" />
+                            @if (Model.IsOwnProfile) {
+                                <input type="file" name="AvatarFile" id="avatarUpload" class="d-none" onchange="syncChanges()" />
+                                <button type="button" class="btn btn-aurora position-absolute bottom-0 end-0 p-3 rounded-circle shadow-lg mb-2 me-2 border-universe border-3" onclick="document.getElementById('avatarUpload').click()">
+                                    <span class="material-symbols-outlined fs-5">camera_enhance</span>
+                                </button>
+                            }
+                        </div>
+                        <div class="flex-grow-1 mb-3">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <h1 class="display-6 fw-black text-white m-0">@Model.FullName</h1>
+                                <span class="text-muted fw-black fs-4 opacity-50">#@(Model.Id.Length > 4 ? Model.Id.Substring(0, 4) : Model.Id)</span>
+                                @if (Model.IsVerified) {
+                                    <div class="text-aurora d-flex align-items-center gap-1" title="Verified Professional">
+                                        <span class="material-symbols-outlined fs-3">verified</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mt-2">
+                                <input type="text" name="Occupation" value="@Model.Occupation" 
+                                       class="editable-text-input fw-bold text-uppercase tracking-widest text-muted" 
+                                       placeholder="Add Occupation..." @(Model.IsOwnProfile ? "" : "readonly") style="font-size: 0.75rem;" />
+                                <span class="text-muted opacity-25">•</span>
+                                <input type="text" name="Institution" value="@Model.Institution" 
+                                       class="editable-text-input fw-bold text-uppercase tracking-widest text-muted" 
+                                       placeholder="Add Institution..." @(Model.IsOwnProfile ? "" : "readonly") style="font-size: 0.75rem;" />
+                            </div>
+                        </div>
+                        <div class="mb-3 d-none d-xl-flex flex-column align-items-end gap-2 text-end">
+                            <div class="badge rounded-pill bg-aurora-soft text-aurora fw-black text-uppercase tracking-widest px-4 py-2 border-glass" style="font-size: 0.65rem;">
+                                @Model.Role
+                            </div>
+                             <div class="text-muted small fw-bold text-uppercase tracking-widest opacity-50" style="font-size: 0.55rem;">
+                                Active since @Model.CreatedAt.ToString("MMM yyyy")
+                            </div>
+                        </div>
                     </div>
-                    <div class="position-relative">
-                        <textarea name="Bio" rows="4" placeholder="Tell us about your academic background and interests..." 
-                                  class="form-control form-control-glass w-100 shadow-lg" style="border-radius: 2rem; padding: 1.5rem; resize: none;">@Model.Bio</textarea>
+                </div>
+            </div>
+
+            <!-- MAIN GRID -->
+            <div class="row g-4">
+                <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+                    
+                    <!-- About / Bio -->
+                    <div class="glass-card p-5 shadow-lg border-glass" style="border-radius: 1.5rem;">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h3 class="fw-black text-white text-uppercase tracking-widest fs-xs m-0">About Summary</h3>
+                            @if(Model.IsOwnProfile) {
+                                <span class="material-symbols-outlined text-muted fs-6">edit_note</span>
+                            }
+                        </div>
+                        <textarea name="Bio" rows="6" class="form-control premium-textarea" 
+                                  placeholder="What defines you in the academic world? Share your goals and interests..." 
+                                  @(Model.IsOwnProfile ? "" : "readonly")>@Model.Bio</textarea>
+                    </div>
+
+                    <!-- Roadmap (The Step-by-Step Verification) -->
+                    <div class="glass-card p-5 shadow-lg border-glass" style="border-radius: 1.5rem;">
+                        <div class="d-flex align-items-center justify-content-between mb-5">
+                            <h3 class="fw-black text-white text-uppercase tracking-widest fs-xs m-0">Activation & Verification Journey</h3>
+                            <button type="button" class="btn btn-glass-sm rounded-pill px-3 py-1 fs-xs fw-bold text-uppercase">Learn More</button>
+                        </div>
+                        
+                        <div class="d-flex flex-column gap-5 position-relative">
+                             <div class="position-absolute h-100" style="left: 17px; top: 0; width: 2px; background: rgba(255,255,255,0.05);"></div>
+
+                            <!-- Activation -->
+                            <div class="d-flex gap-4 position-relative z-1">
+                                <div class="step-circle @(Model.EmailConfirmed ? "done" : "current")">
+                                    <span class="material-symbols-outlined fs-6">@(Model.EmailConfirmed ? "check" : "mail")</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="text-white fw-black mb-1 fs-6">EMAIL CONFIRMATION</h5>
+                                    <p class="text-muted small m-0 italic">Verify your @Model.Email to activate your account features.</p>
+                                </div>
+                                @if(Model.EmailConfirmed) {
+                                    <span class="badge bg-success-soft text-success rounded-pill px-3 py-1 align-self-start fw-black text-uppercase" style="font-size: 0.5rem;">Complete</span>
+                                }
+                            </div>
+                            
+                            <!-- Identity Verification -->
+                            <div class="d-flex gap-4 position-relative z-1">
+                                <div class="step-circle @(Model.IsVerified ? "done" : (Model.HasPendingVerification ? "current" : "todo"))">
+                                    <span class="material-symbols-outlined fs-6">@(Model.IsVerified ? "verified_user" : "id_card")</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <h5 class="text-white fw-black mb-1 fs-6">IDENTITY VALIDATION</h5>
+                                        @if(Model.IsVerified) {
+                                            <span class="badge bg-success-soft text-success rounded-pill px-3 py-1 fw-black text-uppercase" style="font-size: 0.5rem;">Verified Student</span>
+                                        } else if(Model.HasPendingVerification) {
+                                            <span class="badge bg-primary-soft text-primary rounded-pill px-3 py-1 fw-black text-uppercase" style="font-size: 0.5rem;">In Review</span>
+                                        }
+                                    </div>
+                                    
+                                    @if (!Model.IsVerified && !Model.HasPendingVerification && Model.IsOwnProfile) {
+                                        <div class="upload-zone p-4 rounded-4 mt-2">
+                                            <p class="text-muted text-uppercase tracking-widest fw-black mb-4" style="font-size: 0.6rem; opacity: 0.6;">Submit Credentials (PDF/JPG)</p>
+                                            <div class="row g-3">
+                                                <div class="col-12 col-md-6">
+                                                    <label class="premium-file-label">
+                                                        <span class="material-symbols-outlined">badge</span>
+                                                        Student ID Card
+                                                        <input type="file" name="studentId" />
+                                                    </label>
+                                                </div>
+                                                <div class="col-12 col-md-6">
+                                                    <label class="premium-file-label">
+                                                        <span class="material-symbols-outlined">menu_book</span>
+                                                        University Booklet
+                                                        <input type="file" name="carnet" />
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <button type="submit" formaction="/Profile/SubmitVerification" class="btn btn-aurora w-100 mt-4 py-3 fw-black text-uppercase tracking-widest fs-xs shadow-lg rounded-4">
+                                                Initiate Validation Sync
+                                            </button>
+                                        </div>
+                                    } else if (Model.HasPendingVerification && !Model.IsVerified) {
+                                         <div class="p-4 rounded-4 mt-2 bg-black bg-opacity-20 border border-glass animate-pulse">
+                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                                <p class="text-aurora small m-0 fw-bold italic">System Administrators are verifying your uploaded documents.</p>
+                                                <div class="spinner-grow text-aurora spinner-grow-sm" role="status"></div>
+                                            </div>
+                                            @if (Model.IsOwnProfile) {
+                                                <button type="submit" formaction="/Profile/CancelVerification" class="btn btn-link text-muted extra-small p-0 text-decoration-none text-uppercase tracking-tighter fw-black">
+                                                    Cancel Request & Re-upload
+                                                </button>
+                                            }
+                                         </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Mastery -->
+                            <div class="d-flex gap-4 position-relative z-1">
+                                <div class="step-circle @(Model.Level >= 5 ? "done" : "todo")">
+                                    <span class="material-symbols-outlined fs-6">military_tech</span>
+                                </div>
+                                <div>
+                                    <h5 class="text-white fw-black mb-1 fs-6">COMMUNITY MASTER @Model.Level/5</h5>
+                                    <p class="text-muted small m-0 italic">Reach level 5 through contributions to unlock premium badges.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Occupation & Institution Row -->
-                <div class="row g-4">
-                    <div class="col-12 col-md-6 d-flex flex-column gap-3">
-                        <div class="d-flex align-items-center gap-2 ms-2">
-                            <span class="material-symbols-outlined text-aurora fs-5 fw-bold">work</span>
-                            <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Current Occupation</label>
+                <!-- Right Column -->
+                <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+                    
+                    <!-- Stats / Analytics -->
+                    <div class="glass-card p-5 shadow-lg border-glass" style="border-radius: 1.5rem;">
+                        <h3 class="fw-black text-white text-uppercase tracking-widest fs-xs mb-4">Network Activity</h3>
+                        <div class="stats-entry mb-4">
+                            <span class="stats-val">@Model.ReputationPoints</span>
+                            <span class="stats-lbl">Reputation Points</span>
                         </div>
-                        <select name="Occupation" class="form-select form-control-glass w-100 text-uppercase tracking-widest fw-bold shadow-lg" style="border-radius: 1.5rem; padding: 1rem 1.5rem; font-size: 0.75rem;">
-                            <option value="">Select Occupation</option>
-                            <option value="Pupil" selected='@(Model.Occupation == "Pupil")'>Student (Pupil)</option>
-                            <option value="Student" selected='@(Model.Occupation == "Student")'>University Student</option>
-                            <option value="Teacher" selected='@(Model.Occupation == "Teacher")'>Teacher</option>
-                            <option value="Researcher" selected='@(Model.Occupation == "Researcher")'>Researcher</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-6 d-flex flex-column gap-3">
-                        <div class="d-flex align-items-center gap-2 ms-2">
-                            <span class="material-symbols-outlined text-aurora fs-5 fw-bold">account_balance</span>
-                            <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Institution</label>
-                        </div>
-                        <input type="text" name="Institution" value="@Model.Institution" placeholder="Enter institution name..." 
-                               class="form-control form-control-glass w-100 text-uppercase tracking-widest fw-bold shadow-lg" style="border-radius: 1.5rem; padding: 1rem 1.5rem; font-size: 0.75rem;" />
-                    </div>
-                </div>
-
-                <!-- Interests & Social Links -->
-                <div class="row g-5 mt-2 position-relative">
-                    <!-- Saving Indicator -->
-                    <div id="saveIndicator" class="position-fixed bottom-0 end-0 p-4 z-3 transition-all" style="transform: translateY(100%); opacity: 0;">
-                        <div class="glass-card px-4 py-2 d-flex align-items-center gap-3 shadow-lg border-glass" style="border-radius: 2rem; border-color: rgba(52, 211, 153, 0.5);">
-                            <div class="spinner-grow text-aurora shadow-sm" style="width: 1rem; height: 1rem; animation-duration: 1.5s;" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                        <div class="row g-3">
+                            <div class="col-4">
+                                <div class="mini-stat">
+                                    <span class="val">@Model.PostsCount</span>
+                                    <span class="lbl">POSTS</span>
+                                </div>
                             </div>
-                            <span id="saveText" class="text-white text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Saving changes...</span>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-xl-6 d-flex flex-column gap-4">
-                        <div class="d-flex align-items-center gap-3 ms-2">
-                             <div class="rounded-3 d-flex align-items-center justify-content-center text-aurora shadow-sm" style="width: 40px; height: 40px; background: rgba(52, 211, 153, 0.1);">
-                                <span class="material-symbols-outlined fs-5">psychology</span>
+                            <div class="col-4">
+                                <div class="mini-stat">
+                                    <span class="val">@Model.AnswersCount</span>
+                                    <span class="lbl">ANSWERS</span>
+                                </div>
                             </div>
-                            <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Academic Focus</h3>
-                        </div>
-                        <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-3" style="border-radius: 2rem; border: 1px solid var(--border-glass);">
-                            <div id="interestsContainer" class="d-flex flex-wrap gap-2 mb-3">
-                                @{
-                                    var categories = new[] { "Computer Science", "Economics", "Mathematics", "Law", "Medicine", "Engineering", "Arts", "Social Sciences", "Physics", "Chemistry" };
-                                    var userInterests = (Model.Interests ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()).ToList();
-                                }
-                                @foreach (var cat in categories)
-                                {
-                                    bool isActive = userInterests.Contains(cat);
-                                    <button type="button" onclick="toggleInterest(this, '@cat')" 
-                                            class="interest-pill btn btn-glass-sm px-3 py-1 rounded-pill transition-all @(isActive ? "active" : "")"
-                                            style="font-size: 0.75rem; @(isActive ? "background: rgba(52, 211, 153, 0.15); border-color: rgba(52, 211, 153, 0.5); color: var(--color-mint-bright) !important;" : "")">
-                                        <span class="text-uppercase tracking-widest fw-bold">#@cat</span>
-                                    </button>
-                                }
-                            </div>
-                            <div class="d-flex align-items-center gap-2 mt-auto pt-3 border-top border-glass opacity-75">
-                                <span class="material-symbols-outlined fs-6 text-muted">info</span>
-                                <span class="text-muted" style="font-size: 0.65rem;">Your feed will prioritize discussions from the selected domains.</span>
+                            <div class="col-4">
+                                <div class="mini-stat">
+                                    <span class="val">@Model.GroupsCount</span>
+                                    <span class="lbl">GROUPS</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-xl-6 d-flex flex-column gap-4">
-                        <div class="d-flex align-items-center gap-3 ms-2">
-                            <div class="rounded-3 d-flex align-items-center justify-content-center text-muted shadow-sm" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
-                                <span class="material-symbols-outlined fs-5">link</span>
-                            </div>
-                            <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Social Links</h3>
+                    <!-- Interests -->
+                    <div class="glass-card p-5 shadow-lg border-glass" style="border-radius: 1.5rem;">
+                        <h3 class="fw-black text-white text-uppercase tracking-widest fs-xs mb-4">Academic Domains</h3>
+                        <div class="d-flex flex-wrap gap-2">
+                             @{
+                                var tags = new[] { "Computer Science", "Economics", "Mathematics", "Law", "Medicine", "Engineering", "Arts", "Social Sciences", "Physics", "Chemistry" };
+                                var activeTags = (Model.Interests ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+                            }
+                            @foreach (var tag in tags) {
+                                bool active = activeTags.Contains(tag);
+                                <button type="button" onclick="toggleTag(this, &quot;@tag&quot;)" class="pro-chip @(active ? "active" : "")">
+                                    @tag
+                                </button>
+                            }
                         </div>
-                        <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-4" style="border-radius: 2rem; border: 2px dashed rgba(255,255,255,0.1); min-height: 220px;">
-                            <div id="socialLinksContainer" class="d-flex flex-column gap-2 mb-3"></div>
-                            <div class="d-flex gap-2 mt-auto">
-                                <input type="text" id="socialInput" placeholder="Add Content Link (URL)..." 
-                                       class="form-control form-control-glass flex-grow-1 text-uppercase tracking-widest fw-bold shadow-sm" style="border-radius: 1rem; padding: 0.75rem 1rem; font-size: 0.75rem;" />
-                                <button type="button" onclick="addSocialLink()" class="btn btn-premium d-flex align-items-center justify-content-center shadow-lg" style="width: 3rem; height: 3rem; border-radius: 1rem; padding: 0;">
-                                    <span class="material-symbols-outlined">add_link</span>
+                    </div>
+
+                    <!-- Social Connectivity -->
+                    <div class="glass-card p-5 shadow-lg border-glass" style="border-radius: 1.5rem;">
+                        <h3 class="fw-black text-white text-uppercase tracking-widest fs-xs mb-4">Public Presences</h3>
+                        <div id="socialListArea" class="d-flex flex-column gap-3 mb-4"></div>
+                        @if (Model.IsOwnProfile) {
+                            <div class="d-flex gap-2">
+                                <input type="text" id="socialInputBox" class="form-control premium-input-sm" placeholder="URL Link..." />
+                                <button type="button" onclick="addSocialLink()" class="btn btn-aurora rounded-3 px-3">
+                                    <span class="material-symbols-outlined fs-5">link</span>
                                 </button>
                             </div>
-                        </div>
+                        }
                     </div>
+
+                    @* Security & Footer *@
+                    @if (Model.IsOwnProfile) {
+                        <div class="glass-card p-5 shadow-lg border-glass">
+                             <h3 class="fw-black text-white text-uppercase tracking-widest fs-xs mb-4">Account Security</h3>
+                             <div class="d-grid gap-3">
+                                 <a href="/Identity/Account/Manage/ChangePassword" class="btn btn-glass-sm py-3 text-white fw-bold d-flex align-items-center justify-content-center gap-2" style="font-size: 0.65rem;">
+                                     <span class="material-symbols-outlined fs-5">lock_reset</span>
+                                     Change Password
+                                 </a>
+                                 
+                                 <button type="button" onclick="document.getElementById('logoutForm').submit()" class="btn btn-link text-muted text-hover-danger text-uppercase tracking-widest fw-black fs-xs text-decoration-none d-flex align-items-center justify-content-center gap-2 w-100">
+                                     <span class="material-symbols-outlined fs-6 align-middle">logout</span> Sign Out
+                                 </button>
+
+                             </div>
+                        </div>
+                    }
                 </div>
             </div>
         </form>
+    </div>
 
-        <!-- Security & Danger Zone (Only for owner) -->
-        <div class="glass-card mx-3 mx-md-5 mt-5 shadow-lg overflow-hidden d-flex flex-column border-glass-strong" style="border-radius: 2.5rem;">
-            <div class="p-4 p-md-5 d-flex flex-column flex-md-row align-items-center justify-content-between gap-4 border-bottom border-glass">
-                <div class="text-center text-md-start">
-                     <h4 class="fs-5 fw-bold text-white tracking-tight text-uppercase mb-2">Change password</h4>
-                     <p class="text-muted small m-0">Standard security procedures including password rotation.</p>
-                </div>
-                 <a href="/Identity/Account/Manage/ChangePassword" class="btn btn-glass px-4 py-2 text-white text-uppercase tracking-widest fw-bold">Update Password</a>
-            </div>
-            <div class="p-4 p-md-5 d-flex flex-column flex-md-row align-items-center justify-content-between gap-4" style="background: rgba(239, 68, 68, 0.05);">
-                <div class="text-center text-md-start">
-                     <h4 class="fs-5 fw-bold text-danger tracking-tight text-uppercase mb-2">Delete account</h4>
-                     <p class="small m-0" style="color: rgba(239, 68, 68, 0.8);">Permanently delete your account and all history.</p>
-                </div>
-                 <button onclick="return confirm('Initiate Protocol?')" class="btn btn-outline-danger px-4 py-2 text-uppercase tracking-widest fw-bold">Delete Account</button>
-            </div>
-        </div>
-        <div class="p-5 d-flex align-items-center justify-content-center">
-            <form asp-controller="Auth" asp-action="SignOut" method="post">
-                <button type="submit" class="btn btn-link text-muted text-hover-danger text-uppercase tracking-widest fw-bold d-flex align-items-center gap-2 text-decoration-none">
-                    <span class="material-symbols-outlined">power_settings_new</span> Sign Out
-                </button>
-            </form>
-        </div>
-    }
-    else
-    {
-        <!-- Read Only View for Other Users -->
-        <div class="d-flex flex-column gap-5">
-            <partial name="_ProfileHeader" model="Model" />
-
-            <div class="px-3 px-md-5 d-flex flex-column gap-5 mt-4">
-                <!-- Bio Section -->
-                <div class="d-flex flex-column gap-3">
-                    <div class="d-flex align-items-center gap-2 ms-2">
-                        <span class="material-symbols-outlined text-aurora fs-5 fw-bold">description</span>
-                        <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Biography</label>
-                    </div>
-                    <div class="glass-card p-4 shadow-lg" style="border-radius: 2rem; border: 1px solid var(--border-glass);">
-                        <p class="text-white m-0" style="font-size: 0.95rem; line-height: 1.6;">@(string.IsNullOrEmpty(Model.Bio) ? "This user hasn't added a bio yet." : Model.Bio)</p>
-                    </div>
-                </div>
-
-                <!-- Occupation & Institution Row -->
-                <div class="row g-4">
-                    <div class="col-12 col-md-6 d-flex flex-column gap-3">
-                        <div class="d-flex align-items-center gap-2 ms-2">
-                             <span class="material-symbols-outlined text-aurora fs-5 fw-bold">work</span>
-                             <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Occupation</label>
-                        </div>
-                        <div class="glass-card px-4 py-3 shadow-lg" style="border-radius: 1.5rem;">
-                            <span class="text-white text-uppercase tracking-widest fw-bold" style="font-size: 0.75rem;">@(Model.Occupation ?? "Not specified")</span>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 d-flex flex-column gap-3">
-                        <div class="d-flex align-items-center gap-2 ms-2">
-                             <span class="material-symbols-outlined text-aurora fs-5 fw-bold">account_balance</span>
-                             <label class="text-muted text-uppercase tracking-widest fw-bold" style="font-size: 0.7rem;">Institution</label>
-                        </div>
-                        <div class="glass-card px-4 py-3 shadow-lg" style="border-radius: 1.5rem;">
-                            <span class="text-white text-uppercase tracking-widest fw-bold" style="font-size: 0.75rem;">@(Model.Institution ?? "Not specified")</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Interests & Links -->
-                <div class="row g-5">
-                    <div class="col-12 col-xl-6 d-flex flex-column gap-4">
-                        <div class="d-flex align-items-center gap-3 ms-2">
-                             <div class="rounded-3 d-flex align-items-center justify-content-center text-aurora shadow-sm" style="width: 40px; height: 40px; background: rgba(52, 211, 153, 0.1);">
-                                <span class="material-symbols-outlined fs-5">psychology</span>
-                            </div>
-                            <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Academic Focus</h3>
-                        </div>
-                        <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-3" style="border-radius: 2rem; border: 1px solid var(--border-glass);">
-                             <div class="d-flex flex-wrap gap-2 mb-3">
-                                @{
-                                    var categories = new[] { "Computer Science", "Economics", "Mathematics", "Law", "Medicine", "Engineering", "Arts", "Social Sciences", "Physics", "Chemistry" };
-                                    var userInterests = (Model.Interests ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
-                                }
-                                @foreach (var cat in categories)
-                                {
-                                    if (userInterests.Contains(cat)) {
-                                        <div class="px-3 py-1 rounded-pill" style="font-size: 0.75rem; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); color: var(--color-mint-bright);">
-                                            <span class="text-uppercase tracking-widest fw-bold">#@cat</span>
-                                        </div>
-                                    }
-                                }
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-xl-6 d-flex flex-column gap-4">
-                         <div class="d-flex align-items-center gap-3 ms-2">
-                            <div class="rounded-3 d-flex align-items-center justify-content-center text-muted shadow-sm" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
-                                <span class="material-symbols-outlined fs-5">link</span>
-                            </div>
-                            <h3 class="text-white text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.85rem;">Social Links</h3>
-                        </div>
-                        <div class="glass-card h-100 p-4 shadow-lg d-flex flex-column gap-4" style="border-radius: 2rem; border: 1px solid var(--border-glass); min-height: 200px;">
-                             <div id="socialDisplay" class="d-flex align-items-center gap-3 flex-wrap"></div>
-                             @if (string.IsNullOrEmpty(Model.SocialLinks)) {
-                                 <div class="d-flex flex-column align-items-center justify-content-center h-100 opacity-25">
-                                    <span class="material-symbols-outlined fs-1">link_off</span>
-                                    <span class="text-uppercase tracking-widest fw-bold mt-2" style="font-size: 0.6rem;">No social presence</span>
-                                 </div>
-                             }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-
-    <!-- Shared Stats Hub (Visible in both modes) -->
-    <div class="row g-4 mt-5 px-3 px-md-5">
-        @if (Model.Role != "Admin") {
-            <div class="col-6 col-lg-3">
-                <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg border-glass-strong" style="border-radius: 2rem;">
-                    <div class="rounded-4 d-flex align-items-center justify-content-center text-warning" style="width: 56px; height: 56px; background: rgba(245, 158, 11, 0.1);">
-                        <span class="material-symbols-outlined fs-2">star</span>
-                    </div>
-                    <div class="text-center">
-                        <span class="fs-2 fw-bold text-white tracking-tight d-block mb-1">@Model.ReputationPoints</span>
-                        <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Reputation</p>
-                    </div>
-                </div>
-            </div>
-        }
-        <div class="col-6 col-lg-3">
-            <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg border-glass-strong" style="border-radius: 2rem;">
-                <div class="rounded-4 d-flex align-items-center justify-content-center text-info" style="width: 56px; height: 56px; background: rgba(56, 189, 248, 0.1);">
-                    <span class="material-symbols-outlined fs-2">folder</span>
-                </div>
-                <div class="text-center">
-                    <span class="fs-2 fw-bold text-white tracking-tight d-block mb-1">@Model.PostsCount</span>
-                    <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Posts</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg border-glass-strong" style="border-radius: 2rem;">
-                <div class="rounded-4 d-flex align-items-center justify-content-center text-aurora" style="width: 56px; height: 56px; background: rgba(52, 211, 153, 0.1);">
-                    <span class="material-symbols-outlined fs-2">terminal</span>
-                </div>
-                <div class="text-center">
-                    <span class="fs-2 fw-bold text-white tracking-tight d-block mb-1">@Model.AnswersCount</span>
-                    <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Answers</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="glass-card p-4 d-flex flex-column align-items-center gap-3 shadow-lg border-glass-strong" style="border-radius: 2rem;">
-                <div class="rounded-4 d-flex align-items-center justify-content-center text-danger" style="width: 56px; height: 56px; background: rgba(244, 63, 94, 0.1);">
-                    <span class="material-symbols-outlined fs-2">groups</span>
-                </div>
-                <div class="text-center">
-                    <span class="fs-2 fw-bold text-white tracking-tight d-block mb-1">@Model.GroupsCount</span>
-                    <p class="text-muted text-uppercase tracking-widest fw-bold m-0" style="font-size: 0.6rem;">Communities</p>
-                </div>
-            </div>
+    <!-- Background Sync HUD -->
+    <div id="syncBadge" class="position-fixed bottom-0 start-50 translate-middle-x mb-5 z-5 pointer-events-none transition-all" style="transform: translateY(100%) translateX(-50%); opacity: 0;">
+        <div class="glass-card px-4 py-3 d-flex align-items-center gap-3 border shadow-lg" style="border-radius: 2rem; border-color: rgba(52, 211, 153, 0.4);">
+             <div class="spinner-border text-aurora" style="width: 1rem; height: 1rem; border-width: 2px;"></div>
+             <span id="syncStatus" class="text-white fw-black text-uppercase fs-xs tracking-widest">Workspace Synced</span>
         </div>
     </div>
+
+    <form asp-controller="Auth" asp-action="SignOut" method="post" id="logoutForm" class="d-none"></form>
 </div>
+
+<style>
+    .editable-text-input { background: transparent; border: none; color: inherit; padding: 2px 5px; border-radius: 4px; border: 1px solid transparent; transition: all 0.3s ease; }
+    .editable-text-input:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1); }
+    .editable-text-input:focus { background: rgba(255,255,255,0.05); border-color: var(--color-mint-bright); outline: none; color: white; }
+
+    .premium-textarea { background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: 1.25rem; color: white; padding: 1.5rem; font-size: 0.95rem; line-height: 1.6; transition: all 0.3s ease; }
+    .premium-textarea:focus { background: rgba(255,255,255,0.05); border-color: var(--color-mint-bright); outline: none; }
+
+    .step-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 5; transition: all 0.4s ease; border: 2px solid var(--border-glass-strong); background: var(--bg-universe); }
+    .step-circle.done { background: var(--color-mint-bright); border-color: var(--color-mint-bright); color: var(--bg-universe); box-shadow: 0 0 20px rgba(52, 211, 153, 0.4); }
+    .step-circle.current { border-color: var(--color-mint-bright); color: var(--color-mint-bright); box-shadow: 0 0 10px rgba(52, 211, 153, 0.2); }
+    .step-circle.todo { color: #444; }
+
+    .upload-zone { background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.05); }
+    .premium-file-label { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 1.25rem; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; }
+    .premium-file-label:hover { background: rgba(255,255,255,0.05); color: white; }
+    .premium-file-label input { display: none; }
+
+    .stats-val { display: block; font-size: 2.5rem; font-weight: 900; color: white; line-height: 1; }
+    .stats-lbl { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); }
+    .mini-stat { text-align: center; padding: 1rem 0; background: rgba(255,255,255,0.02); border-radius: 1rem; border: 1px solid var(--border-glass); }
+    .mini-stat .val { display: block; font-size: 1.2rem; font-weight: 900; color: white; }
+    .mini-stat .lbl { font-size: 0.5rem; font-weight: 800; color: var(--text-muted); letter-spacing: 1px; }
+
+    .pro-chip { background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); color: var(--text-muted); padding: 0.6rem 1.2rem; border-radius: 1rem; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; transition: all 0.3s ease; }
+    .pro-chip.active { background: rgba(52, 211, 153, 0.1); border-color: var(--color-mint-bright); color: var(--color-mint-bright); box-shadow: 0 4px 15px rgba(52, 211, 153, 0.1); }
+    
+    .premium-input-sm { background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 0.75rem; color: white; padding: 0.5rem 1rem; font-size: 0.8rem; }
+    .bg-danger-soft { background: rgba(239, 68, 68, 0.03); }
+    .border-danger-thin { border: 1px solid rgba(239, 68, 68, 0.1) !important; }
+</style>
 
 @section Scripts {
 <script>
-    // --- Shared Logic ---
-    const socialLinksHidden = document.getElementById('socialLinksHidden');
-    const socialLinksContainer = document.getElementById('socialLinksContainer');
-    const socialDisplay = document.getElementById('socialDisplay');
-    const socialInput = document.getElementById('socialInput');
-    let links = (socialLinksHidden ? socialLinksHidden.value : "@(Model.SocialLinks ?? "")").split(';').filter(x => x.trim() !== '');
+    const interestsHidden = document.getElementById('interestsHidden');
+    let tags = interestsHidden.value ? interestsHidden.value.split(',').filter(x => x.trim() !== '') : [];
+    let saveDelay;
 
-    function renderSocialUI() {
-        if (socialLinksContainer) socialLinksContainer.innerHTML = '';
-        if (socialDisplay) socialDisplay.innerHTML = '';
-        
-        links.forEach(url => {
-            if (socialLinksContainer && @(Model.IsOwnProfile ? "true" : "false")) {
-                const item = document.createElement('div');
-                item.className = 'd-flex align-items-center justify-content-between p-3 hover-bg-glass transition-colors shadow-sm';
-                item.style.background = 'rgba(255,255,255,0.05)';
-                item.style.border = '1px solid var(--border-glass)';
-                item.style.borderRadius = '1rem';
-                item.innerHTML = `<span class="text-truncate text-muted fw-bold text-uppercase tracking-widest flex-grow-1 me-2" style="font-size: 0.65rem;">${url}</span>
-                                <button type="button" onclick="removeLink('${url}')" class="btn btn-link p-0 text-danger text-decoration-none text-uppercase tracking-widest fw-bold" style="font-size: 0.6rem;">Remove</button>`;
-                socialLinksContainer.appendChild(item);
-            }
+    function toggleTag(btn, val) {
+        @if (!Model.IsOwnProfile) { <text>return;</text> }
+        if (tags.includes(val)) {
+            tags = tags.filter(t => t !== val);
+            btn.classList.remove('active');
+        } else {
+            tags.push(val);
+            btn.classList.add('active');
+        }
+        interestsHidden.value = tags.join(',');
+        syncChanges();
+    }
 
-            if (socialDisplay) {
-                const badge = document.createElement('a');
-                badge.href = url.startsWith('http') ? url : 'https://' + url;
-                badge.target = '_blank';
-                badge.className = 'btn btn-glass d-flex align-items-center justify-content-center text-muted hover-text-white transition-colors shadow-sm p-0';
-                badge.style.width = '42px';
-                badge.style.height = '42px';
-                badge.style.borderRadius = '1rem';
-                badge.innerHTML = `<span class="material-symbols-outlined fs-5">${getIconForUrl(url)}</span>`;
-                socialDisplay.appendChild(badge);
-            }
+    // Socials
+    const socialsHidden = document.getElementById('socialLinksHidden');
+    const socialListView = document.getElementById('socialListArea');
+    let links = socialsHidden.value.split(';').filter(x => x.trim() !== '');
+
+    function renderLinks() {
+        socialListView.innerHTML = '';
+        links.forEach((l, i) => {
+            const row = document.createElement('div');
+            row.className = 'd-flex align-items-center justify-content-between p-3 rounded-4 shadow-sm';
+            row.style.background = 'rgba(255,255,255,0.02)';
+            row.style.border = '1px solid var(--border-glass-strong)';
+            row.innerHTML = `<span class="text-truncate text-muted small fw-bold text-uppercase flex-grow-1 ps-2">${l}</span>
+                           <button type="button" onclick="removeSocialLink(${i})" class="btn btn-link text-danger text-decoration-none fw-black fs-xs p-0 ms-2">DEL</button>`;
+            socialListView.appendChild(row);
         });
     }
 
-    function getIconForUrl(url) {
-        if (url.includes('github.com')) return 'code';
-        if (url.includes('linkedin.com')) return 'work';
-        if (url.includes('discord')) return 'forum';
-        return 'language';
+    function addSocialLink() {
+        const inp = document.getElementById('socialInputBox');
+        const v = inp.value.trim();
+        if (v && !links.includes(v)) { links.push(v); inp.value = ''; updateSocialSync(); }
+    }
+    function removeSocialLink(i) { links.splice(i, 1); updateSocialSync(); }
+    function updateSocialSync() { socialsHidden.value = links.join(';'); renderLinks(); syncChanges(); }
+
+    function syncChanges() {
+        @if (!Model.IsOwnProfile) { <text>return;</text> }
+        clearTimeout(saveDelay);
+        saveDelay = setTimeout(executeSync, 2000);
     }
 
-    async function handleProfileAction(userId, action) {
-        const btnRow = document.getElementById(`connection-actions-${userId}`);
-        if (btnRow) btnRow.style.opacity = '0.5';
+    async function executeSync() {
+        const hud = document.getElementById('syncBadge');
+        const status = document.getElementById('syncStatus');
+        status.innerText = 'Synchronizing Workspace...';
+        hud.style.opacity = '1'; hud.style.transform = 'translateY(0) translateX(-50%)';
+        
+        const f = document.getElementById('linkedInForm');
+        const fd = new FormData(f);
+        fd.delete('studentId'); fd.delete('carnet');
+
         try {
-            const resp = await fetch(`/Connections/${action}?userId=${userId}`, { method: 'POST' });
-            if (resp.ok) location.reload();
-            else if (btnRow) btnRow.style.opacity = '1';
+            const res = await fetch(f.action, { method: 'POST', body: fd });
+            if (res.ok) {
+                status.innerText = 'Cloud Sync Complete';
+                setTimeout(() => { hud.style.opacity = '0'; hud.style.transform = 'translateY(100%) translateX(-50%)'; }, 1500);
+            }
         } catch(e) { console.error(e); }
     }
 
-    @if (Model.IsOwnProfile)
-    {
+    @if (Model.IsOwnProfile) {
         <text>
-        const interestsHidden = document.getElementById('interestsHidden');
-        let interests = interestsHidden.value ? interestsHidden.value.split(',').filter(x => x.trim() !== '') : [];
-        let autoSaveTimeout;
-
-        function updateInterests() { 
-            interestsHidden.value = interests.join(',');
-            triggerAutoSave();
-        }
-
-        function toggleInterest(btn, value) {
-            if (interests.includes(value)) {
-                interests = interests.filter(i => i !== value);
-                btn.classList.remove('active');
-                btn.style.background = ''; btn.style.borderColor = ''; btn.style.color = '';
-            } else {
-                interests.push(value);
-                btn.classList.add('active');
-                btn.style.background = 'rgba(52, 211, 153, 0.15)'; btn.style.borderColor = 'rgba(52, 211, 153, 0.5)'; btn.style.color = 'var(--color-mint-bright)';
-            }
-            updateInterests();
-        }
-
-        function updateLinks() {
-            socialLinksHidden.value = links.join(';');
-            renderSocialUI();
-            triggerAutoSave();
-        }
-
-        function addSocialLink() {
-            const url = socialInput.value.trim();
-            if (!url) return;
-            if (!links.includes(url)) { links.push(url); updateLinks(); socialInput.value = ''; }
-        }
-
-        function removeLink(url) { links = links.filter(l => l !== url); updateLinks(); }
-
-        function triggerAutoSave() {
-            clearTimeout(autoSaveTimeout);
-            autoSaveTimeout = setTimeout(performSave, 1500);
-        }
-
-        async function performSave() {
-            const indicator = document.getElementById('saveIndicator');
-            const saveText = document.getElementById('saveText');
-            saveText.innerText = 'Saving changes...';
-            indicator.style.opacity = '1';
-            indicator.style.transform = 'translateY(0)';
-            
-            const form = document.getElementById('profileForm');
-            const formData = new FormData(form);
-            try {
-                const response = await fetch(form.action, { method: 'POST', body: formData });
-                if (response.ok) {
-                    saveText.innerText = 'Changes saved';
-                    setTimeout(() => { indicator.style.opacity = '0'; indicator.style.transform = 'translateY(100%)'; }, 2000);
-                }
-            } catch (err) { console.error(err); }
-        }
-
-        document.getElementById('profileForm').addEventListener('input', triggerAutoSave);
+        document.getElementById('linkedInForm').addEventListener('input', (e) => {
+            if (e.target.type !== 'file') syncChanges();
+        });
         </text>
     }
 
-    renderSocialUI();
+    renderLinks();
 </script>
 }

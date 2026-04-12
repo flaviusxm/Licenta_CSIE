@@ -10,86 +10,14 @@
     
     <div class="d-flex flex-column gap-5 position-relative z-1">
         <!-- Header Section -->
-        <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-4">
+        <div class="d-flex align-items-center justify-content-between mb-2">
             <div>
-                <h2 class="display-5 fw-bold text-white tracking-tight mb-3 lh-1">
-                    Inbox
-                </h2>
+                <h2 class="display-5 fw-bold text-white tracking-tight mb-1">Inbox</h2>
+                <p class="text-muted fw-bold text-uppercase tracking-widest mb-0" style="font-size: 0.7rem;">Manage your communications and network</p>
             </div>
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-                <button onclick="markAllInboxRead()" class="btn btn-glass px-4 py-3 fw-bold text-uppercase tracking-widest shadow-lg" style="font-size: 0.75rem; border-radius: 1rem;">
-                    Mark All Read
-                </button>
-                <button class="btn btn-premium px-4 py-3 fw-bold text-uppercase tracking-widest shadow-lg" style="font-size: 0.75rem;">
-                    Settings
-                </button>
-            </div>
-        </div>
-
-        <!-- High-End Stats Grid -->
-        <div class="row g-4">
-            <!-- Unread Messages -->
-            <div class="col-12 col-md-4 col-lg-3">
-                <div class="glass-card p-4 position-relative overflow-hidden group transition-all hover-glow shadow-lg border-glass-strong" style="border-radius: 2rem; transition: all 0.5s var(--ease-smooth);">
-                    <div class="position-absolute rounded-circle" style="top: -1.5rem; right: -1.5rem; width: 8rem; height: 8rem; background: rgba(52, 211, 153, 0.1); filter: blur(20px);"></div>
-                    <div class="d-flex align-items-center gap-4 position-relative z-1">
-                        <div class="rounded-4 d-flex align-items-center justify-content-center text-aurora shadow-sm flex-shrink-0 transition-transform" style="width: 54px; height: 54px; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); transition: transform 0.4s var(--ease-snappy);">
-                            <span class="material-symbols-outlined fs-2 fw-bold">mail</span>
-                        </div>
-                        <div>
-                            <p class="text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.6rem;">Messages</p>
-                            <h4 class="h3 fw-bold text-white lh-1 m-0">@Model.RecentMessages.Count(c => c.IsUnread)</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Connection Requests -->
-            <div class="col-12 col-md-4 col-lg-3">
-                <div class="glass-card p-4 position-relative overflow-hidden group transition-all hover-glow shadow-lg border-glass-strong" style="border-radius: 2rem; transition: all 0.5s var(--ease-smooth);">
-                    <div class="position-absolute rounded-circle" style="top: -1.5rem; right: -1.5rem; width: 8rem; height: 8rem; background: rgba(56, 189, 248, 0.1); filter: blur(20px);"></div>
-                    <div class="d-flex align-items-center gap-4 position-relative z-1">
-                        <div class="rounded-4 d-flex align-items-center justify-content-center text-info shadow-sm flex-shrink-0 transition-transform" style="width: 54px; height: 54px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); transition: transform 0.4s var(--ease-snappy);">
-                            <span class="material-symbols-outlined fs-2 fw-bold">person_add</span>
-                        </div>
-                        <div>
-                            <p class="text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.6rem;">Connections</p>
-                            <h4 class="h3 fw-bold text-white lh-1 m-0">@Model.TotalConnections</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Reputation -->
-            <div class="col-12 col-md-4 col-lg-3">
-                <div class="glass-card p-4 position-relative overflow-hidden group transition-all hover-glow shadow-lg border-glass-strong" style="border-radius: 2rem; transition: all 0.5s var(--ease-smooth);">
-                    <div class="position-absolute rounded-circle" style="top: -1.5rem; right: -1.5rem; width: 8rem; height: 8rem; background: rgba(168, 85, 247, 0.1); filter: blur(20px);"></div>
-                    <div class="d-flex align-items-center gap-4 position-relative z-1">
-                        @{
-                            var flowColor = Model.FlowState switch {
-                                "Peaking" => "#f472b6",
-                                "Active" => "#34d399",
-                                "Idle" => "#94a3b8",
-                                _ => "#a855f7"
-                            };
-                            var flowIcon = Model.FlowState switch {
-                                "Peaking" => "bolt",
-                                "Active" => "waves",
-                                "Idle" => "bedtime",
-                                _ => "insights"
-                            };
-                        }
-                        <div class="rounded-4 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0 transition-transform" style="width: 54px; height: 54px; background: @(flowColor)1a; border: 1px solid @(flowColor)33; color: @flowColor; transition: transform 0.4s var(--ease-snappy);">
-                            <span class="material-symbols-outlined fs-2 fw-bold">@flowIcon</span>
-                        </div>
-                        <div>
-                            <p class="text-muted fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.6rem;">Flow State</p>
-                            <h4 class="h3 fw-bold text-white lh-1 m-0">@Model.FlowState</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <button onclick="markAllInboxRead()" class="btn btn-glass px-4 py-3 fw-bold text-uppercase tracking-widest shadow-lg" style="font-size: 0.7rem; border-radius: 1rem;">
+                Mark All Read
+            </button>
         </div>
 
         <!-- Main Workspace Grid -->

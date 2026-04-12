@@ -42,6 +42,12 @@
                     Approved
                 </span>
             }
+            else if (item.Status == AskNLearn.Domain.Entities.Core.ModerationStatus.AwaitingManualReview)
+            {
+                 <span class="badge rounded-pill bg-opacity-10 bg-warning text-warning border border-warning border-opacity-25 px-3 py-2 fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">
+                    Suspect
+                </span>
+            }
             else
             {
                 <span class="badge rounded-pill bg-opacity-10 bg-info text-info border border-info border-opacity-25 px-3 py-2 fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">

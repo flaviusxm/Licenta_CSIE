@@ -35,7 +35,6 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
         public string? SocialLinks { get; set; }
         public bool HasPendingVerification { get; set; }
         public ConnectionStatus ConnectionStatus { get; set; } = ConnectionStatus.None;
-        public string FlowState { get; set; } = "Stable";
         public bool IsOwnProfile { get; set; }
         public bool EmailConfirmed { get; set; }
     }

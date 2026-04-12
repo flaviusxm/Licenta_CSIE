@@ -199,7 +199,6 @@
                     <button onclick="toggleCamera()" id="videoButton" class="btn btn-link p-1 text-muted hover-glow text-decoration-none rounded-lg d-flex align-items-center justify-content-center" title="Toggle Camera" style="width: 32px; height: 32px;">
                         <span id="videoIcon" class="material-symbols-outlined fs-6">videocam_off</span>
                     </button>
-                    </button>
                     @if (ViewBag.CurrentUserId == Model.OwnerId)
                     {
                         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-link p-1 text-muted hover-glow text-decoration-none rounded-lg d-flex align-items-center justify-content-center" title="Group Settings" style="width: 32px; height: 32px;">
@@ -245,7 +244,7 @@
         .channel-item:hover {
             background: rgba(255,255,255,0.07) !important;
             color: white !important;
-            transform: translateX(6px) scale(1.02);
+            transform: translateX(4px);
         }
     .channel-item:hover::before { opacity: 1; }
     .channel-item:hover .channel-icon { color: var(--color-aurora) !important; }
@@ -276,7 +275,6 @@
     }
     .member-card:hover {
         background: rgba(255, 255, 255, 0.05) !important;
-        transform: translateY(-1px);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         border-color: rgba(255, 255, 255, 0.05);
     }
@@ -389,7 +387,8 @@
                 </div>
 
                 <div id="input-container" class="glass-card d-flex align-items-center gap-3 p-2 px-4 shadow-lg transition-all" style="border-radius: 2rem;">
-                    <button id="attachment-btn" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center">
+                    <input type="file" id="chat-attachment-input" class="d-none" multiple onchange="handleChatAttachment(this)" />
+                    <button id="attachment-btn" onclick="document.getElementById('chat-attachment-input').click()" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center">
                         <span class="material-symbols-outlined fs-4">add_circle</span>
                     </button>
                     <input type="text" id="message-input" placeholder="Message to @Model.Name..." class="form-control bg-transparent border-0 text-white shadow-none ps-0" style="font-size: 0.95rem;">
@@ -447,7 +446,7 @@
 </div>
 
 @section Scripts {
-    <!-- UI Navigation & Resilient UI Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
     <script>
         console.log("AskNLearn UI Logic Loading...");
         window.switchSidebarView = (view) => {
@@ -571,6 +570,35 @@
                  if (currentVoiceChannelId) leaveVoice();
             });
         });
+
+        // --- Interaction Handlers ---
+        window.initEmojiPicker = () => {
+            const container = document.getElementById('emoji-picker-container');
+            if (container && !container.hasChildNodes()) {
+                const picker = new EmojiMart.Picker({
+                    onEmojiSelect: (emoji) => {
+                        const input = document.getElementById('message-input');
+                        if (input) {
+                            input.value += emoji.native;
+                            document.getElementById('picker-popup').classList.add('d-none');
+                            input.focus();
+                        }
+                    },
+                    theme: 'dark',
+                    set: 'native',
+                    skinTonePosition: 'none',
+                    previewPosition: 'none'
+                });
+                container.appendChild(picker);
+            }
+        };
+
+        window.handleChatAttachment = (input) => {
+            if (input.files.length > 0) {
+                // For now, just show a preview or alert. In a real app, we'd upload.
+                alert(`${input.files.length} files attached. Features coming soon: Cloud upload.`);
+            }
+        };
     
         // ── Communication & App Logic ──────────────────────────
         let currentVoiceChannelId = null;

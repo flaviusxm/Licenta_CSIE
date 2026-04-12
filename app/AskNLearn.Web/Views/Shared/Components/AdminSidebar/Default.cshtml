@@ -1,0 +1,48 @@
+<div class="p-4 flex-grow-1 overflow-y-auto custom-scrollbar">
+    <div class="d-flex flex-column gap-1">
+        <a href="/Admin" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+            <span class="material-symbols-outlined fs-5">dashboard</span>
+            <span>Dashboard Overview</span>
+        </a>
+        
+        <a href="/Admin/Verifications" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "Verifications" ? "active" : "")">
+            <span class="material-symbols-outlined fs-5">verified_user</span>
+            <div class="d-flex align-items-center justify-content-between flex-grow-1">
+                <span>Verification Queue</span>
+                @if (ViewBag.PendingVerifications > 0)
+                {
+                    <span class="glass-badge glass-badge-aurora">@ViewBag.PendingVerifications</span>
+                }
+            </div>
+        </a>
+
+        <a href="/Admin/Moderation" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "Moderation" ? "active" : "")">
+            <span class="material-symbols-outlined fs-5">security</span>
+            <div class="d-flex align-items-center justify-content-between flex-grow-1">
+                <span>AI Moderation</span>
+                @if (ViewBag.FlaggedContentCount > 0)
+                {
+                    <span class="glass-badge glass-badge-danger">@ViewBag.FlaggedContentCount</span>
+                }
+            </div>
+        </a>
+
+        <a href="/Admin/Moderation#user-reports" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition">
+            <span class="material-symbols-outlined fs-5">flag</span>
+            <div class="d-flex align-items-center justify-content-between flex-grow-1">
+                <span>User Reports</span>
+                @if (ViewBag.PendingReportsCount > 0)
+                {
+                    <span class="glass-badge glass-badge-warning">@ViewBag.PendingReportsCount</span>
+                }
+            </div>
+        </a>
+        
+        <div class="my-4 border-top border-glass opacity-10"></div>
+        
+        <a href="/" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition mb-4 text-aurora-hover">
+            <span class="material-symbols-outlined fs-5">arrow_back</span>
+            <span>Exit Admin View</span>
+        </a>
+    </div>
+</div>

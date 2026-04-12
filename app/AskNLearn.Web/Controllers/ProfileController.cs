@@ -6,6 +6,8 @@ using System.Security.Claims;
 
 using AskNLearn.Application.Common.Interfaces;
 using AskNLearn.Application.Features.Users.Commands.SubmitVerificationRequest;
+using Microsoft.EntityFrameworkCore;
+using AskNLearn.Domain.Entities.Core;
 
 namespace AskNLearn.Web.Controllers
 {
@@ -77,7 +79,7 @@ namespace AskNLearn.Web.Controllers
             if (studentId == null || carnet == null)
             {
                 TempData["Error"] = "Both Student ID and Carnet are required.";
-                return RedirectToAction("Verification");
+                return RedirectToAction("Index");
             }
 
             var studentIdUrl = await _fileService.UploadFileAsync(studentId.OpenReadStream(), studentId.FileName, "verifications");
@@ -101,8 +103,29 @@ namespace AskNLearn.Web.Controllers
                 TempData["Success"] = "Verification request submitted successfully.";
             }
 
-            return RedirectToAction("Verification");
+            return RedirectToAction("Index");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CancelVerification()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return RedirectToAction("SignIn", "Auth");
+
+            var dbContext = HttpContext.RequestServices.GetRequiredService<IApplicationDbContext>();
+            var request = await dbContext.VerificationRequests
+                .FirstOrDefaultAsync(v => v.UserId == userId && v.Status == Status.Pending);
+
+            if (request != null)
+            {
+                dbContext.VerificationRequests.Remove(request);
+                await dbContext.SaveChangesAsync(default);
+                TempData["Success"] = "Verification request cancelled.";
+            }
+
+            return RedirectToAction("Index");
+        }
+
         [HttpPost]
         public async Task<IActionResult> Update(AskNLearn.Application.Features.Users.Commands.UpdateUserProfile.UpdateUserProfileCommand command)
         {

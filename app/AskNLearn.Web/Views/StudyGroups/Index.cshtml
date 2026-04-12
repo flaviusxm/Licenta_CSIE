@@ -25,15 +25,10 @@
 
     <!-- Search & Filters -->
     <div class="mb-5">
-        <form method="get" asp-action="Index" class="d-flex flex-column flex-md-row gap-3">
-            <div class="position-relative flex-grow-1">
-                <span class="material-symbols-outlined position-absolute top-50 translate-middle-y text-muted" style="left: 1.5rem;">search</span>
-                <input name="searchTerm" class="form-control form-control-glass w-100 h-100 shadow-lg text-uppercase fw-bold tracking-wider fs-6" style="padding: 1rem 1.5rem 1rem 3.5rem; border-radius: 1rem;" placeholder="Search Groups..." type="text" value="@Context.Request.Query["searchTerm"]"/>
-            </div>
-            <button type="submit" class="btn btn-glass px-5 py-3 text-uppercase fw-bold tracking-wider shadow-lg" style="border-radius: 1rem;">
-                Search
-            </button>
-        </form>
+        <div class="position-relative flex-grow-1">
+            <span class="material-symbols-outlined position-absolute top-50 translate-middle-y text-muted" style="left: 1.5rem;">search</span>
+            <input id="groups-search" class="form-control form-control-glass w-100 h-100 shadow-lg text-uppercase fw-bold tracking-wider fs-6" style="padding: 1rem 1.5rem 1rem 3.5rem; border-radius: 1rem;" placeholder="Search Groups..." type="text" value="@Context.Request.Query["searchTerm"]" oninput="debounceGroupsSearch()"/>
+        </div>
     </div>
 
     <!-- Group List -->
@@ -58,11 +53,12 @@
         let groupsSkip = 8;
         let groupsLoading = false;
         let groupsAllLoaded = false;
-        const searchTerm = '@Context.Request.Query["searchTerm"]';
+        let groupsSearchTimeout;
         
         const groupsSentinel = document.getElementById('groups-sentinel');
         const groupsContainer = document.getElementById('groups-container');
         const groupsSpinner = document.getElementById('groups-load-spinner');
+        const groupsSearchInput = document.getElementById('groups-search');
 
         const groupsObserver = new IntersectionObserver(async (entries) => {
             if (entries[0].isIntersecting && !groupsLoading && !groupsAllLoaded) {
@@ -74,19 +70,36 @@
             groupsObserver.observe(groupsSentinel);
         }
 
+        function debounceGroupsSearch() {
+            clearTimeout(groupsSearchTimeout);
+            groupsSearchTimeout = setTimeout(performGroupsSearch, 400);
+        }
+
+        async function performGroupsSearch() {
+            groupsSkip = 0;
+            groupsAllLoaded = false;
+            groupsContainer.innerHTML = '';
+            groupsSpinner.classList.remove('d-none');
+            await loadMoreGroups();
+        }
+
         async function loadMoreGroups() {
+            if (groupsLoading) return;
             groupsLoading = true;
             groupsSpinner.classList.remove('d-none');
 
+            const currentSearch = groupsSearchInput.value.trim();
             try {
-                const url = `/StudyGroups/GetGroups?skip=${groupsSkip}${searchTerm ? '&searchTerm=' + encodeURIComponent(searchTerm) : ''}`;
+                const url = `/StudyGroups/GetGroups?skip=${groupsSkip}${currentSearch ? '&searchTerm=' + encodeURIComponent(currentSearch) : ''}`;
                 const response = await fetch(url);
                 if (response.ok) {
                     const html = await response.text();
                     
                     if (!html.trim()) {
                         groupsAllLoaded = true;
-                        groupsSpinner.innerHTML = '<p class="text-muted fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">All study groups have been synchronized.</p>';
+                        if (groupsSkip === 0) {
+                            groupsContainer.innerHTML = `<div class="col-12 text-center py-5 opacity-50"><span class="material-symbols-outlined display-4 mb-3">group_off</span><p class="fw-bold text-uppercase tracking-widest" style="font-size: 0.8rem;">No groups found for "${currentSearch}"</p></div>`;
+                        }
                     } else {
                         groupsContainer.insertAdjacentHTML('beforeend', html);
                         groupsSkip += 8;
@@ -96,7 +109,7 @@
                 console.error('Error loading more groups:', error);
             } finally {
                 groupsLoading = false;
-                if (!groupsAllLoaded) groupsSpinner.classList.add('d-none');
+                groupsSpinner.classList.add('d-none');
             }
         }
 

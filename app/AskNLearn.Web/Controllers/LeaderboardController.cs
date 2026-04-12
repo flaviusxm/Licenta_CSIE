@@ -9,10 +9,9 @@ namespace AskNLearn.Web.Controllers;
 
 public class LeaderboardController(ApplicationDbContext context, UserManager<ApplicationUser> userManager) : Controller
 {
-    public async Task<IActionResult> Index(int page = 1, string? searchTerm = null, string? institution = null, string? sortBy = "PointsDesc")
+    public async Task<IActionResult> Index(int page = 1, int pageSize = 12, string? searchTerm = null, string? institution = null, string? sortBy = "PointsDesc")
     {
         ViewData["ActivePage"] = "Leaderboard";
-        int pageSize = 20;
 
         var globalTopQuery = context.Users
             .Where(u => u.Role != Role.Admin)
@@ -68,7 +67,8 @@ public class LeaderboardController(ApplicationDbContext context, UserManager<App
             TotalPages = (int)Math.Ceiling((double)totalUsers / pageSize),
             SearchTerm = searchTerm,
             Institution = institution,
-            SortBy = sortBy ?? "PointsDesc"
+            SortBy = sortBy ?? "PointsDesc",
+            PageSize = pageSize
         };
 
         if (currentUser != null)

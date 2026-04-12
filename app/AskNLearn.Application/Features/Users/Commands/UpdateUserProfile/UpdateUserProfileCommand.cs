@@ -14,5 +14,7 @@ namespace AskNLearn.Application.Features.Users.Commands.UpdateUserProfile
         public string? Interests { get; set; }
         public string? BannerUrl { get; set; }
         public string? SocialLinks { get; set; }
+        public Microsoft.AspNetCore.Http.IFormFile? AvatarFile { get; set; }
+        public Microsoft.AspNetCore.Http.IFormFile? BannerFile { get; set; }
     }
 }

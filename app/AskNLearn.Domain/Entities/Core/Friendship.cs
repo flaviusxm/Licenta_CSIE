@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +8,8 @@ namespace AskNLearn.Domain.Entities.Core
     {
         Pending,
         Accepted,
-        Blocked
+        Blocked,
+        Declined
     }
     [PrimaryKey(nameof(RequesterId), nameof(AddresseeId))]
     [Table("Friendships")]

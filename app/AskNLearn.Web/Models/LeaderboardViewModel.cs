@@ -21,6 +21,7 @@ namespace AskNLearn.Web.Models
         public string? SearchTerm { get; set; }
         public string? Institution { get; set; }
         public string? SortBy { get; set; } = "PointsDesc";
+        public int PageSize { get; set; } = 12;
     }
 
     public static class LeaderboardExtensions

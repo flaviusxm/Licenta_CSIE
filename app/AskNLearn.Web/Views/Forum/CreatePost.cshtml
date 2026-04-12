@@ -5,53 +5,58 @@
     ViewData["Title"] = "Create New Post";
 }
 
-<div class="p-8 max-w-3xl mx-auto">
-    <div class="mb-8">
-        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Create New Post</h2>
-        <p class="text-slate-500 dark:text-slate-400">Share your thoughts, questions, or resources with the community.</p>
-    </div>
-
-    <form asp-action="CreatePost" method="post" enctype="multipart/form-data" class="bg-surface-light dark:bg-surface-dark rounded-2xl p-8 border border-border-light dark:border-border-dark shadow-sm flex flex-col gap-6">
-        <input type="hidden" asp-for="CommunityId" />
-        
-        <div class="flex flex-col gap-2">
-            <label asp-for="Title" class="text-sm font-bold text-slate-700 dark:text-slate-300">Title</label>
-            <input asp-for="Title" class="w-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" placeholder="What's on your mind?"/>
-            <span asp-validation-for="Title" class="text-red-500 text-xs"></span>
+<div class="container py-5 max-w-4xl">
+    <div class="d-flex flex-column gap-5 animate-entrance">
+        <!-- Header -->
+        <div>
+            <h2 class="display-5 fw-bold text-white tracking-tight mb-2">Create New Post</h2>
+            <p class="text-muted fw-bold text-uppercase tracking-widest fs-xs mb-0">Share your thoughts, questions, or resources with the community.</p>
         </div>
 
-        <div class="flex flex-col gap-2">
-            <label asp-for="Content" class="text-sm font-bold text-slate-700 dark:text-slate-300">Content</label>
-            <textarea asp-for="Content" rows="8" class="w-full bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-slate-900 dark:text-white" placeholder="Provide more details..."></textarea>
-            <span asp-validation-for="Content" class="text-red-500 text-xs"></span>
-        </div>
-
-        <div class="flex flex-col gap-2">
-            <label class="text-sm font-bold text-slate-700 dark:text-slate-300">Attachments</label>
-            <div class="relative group">
-                <input type="file" name="Attachments" id="file-upload" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="updateFileList(this)" />
-                <div class="w-full bg-white dark:bg-surface-dark border-2 border-dashed border-border-light dark:border-border-dark rounded-xl py-8 px-4 flex flex-col items-center justify-center gap-2 group-hover:border-primary transition-all">
-                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                        </svg>
-                    </div>
-                    <p class="text-sm text-slate-700 dark:text-slate-300 font-medium">Click or drag files here to upload</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">PDF, DOCX, JPG, PNG up to 10MB each</p>
+        <div class="glass-card p-4 p-md-5 shadow-lg border-glass-strong" style="border-radius: 2rem;">
+            <form asp-action="CreatePost" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-4">
+                <input type="hidden" asp-for="CommunityId" />
+                
+                <div class="form-group gap-2 d-flex flex-column">
+                    <label asp-for="Title" class="text-muted fw-bold text-uppercase tracking-widest" style="font-size: 0.7rem;">Post Title</label>
+                    <input asp-for="Title" class="form-control glass-input py-3 px-4 shadow-sm" placeholder="What's on your mind?" style="border-radius: 1rem;"/>
+                    <span asp-validation-for="Title" class="text-danger small fw-bold"></span>
                 </div>
-            </div>
-            <div id="file-list" class="flex flex-wrap gap-2 mt-2"></div>
-        </div>
 
-        <div class="flex gap-4 mt-4">
-            <button type="submit" class="flex-1 bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
-                Publish Post
-            </button>
-            <a asp-action="Details" asp-route-id="@Model.CommunityId" class="flex-1 border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-300 py-3 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-surface-dark transition-all text-center">
-                Cancel
-            </a>
+                <div class="form-group gap-2 d-flex flex-column">
+                    <label asp-for="Content" class="text-muted fw-bold text-uppercase tracking-widest" style="font-size: 0.7rem;">Description</label>
+                    <textarea asp-for="Content" rows="8" class="form-control glass-input py-3 px-4 shadow-sm" placeholder="Provide more details..." style="border-radius: 1.25rem;"></textarea>
+                    <span asp-validation-for="Content" class="text-danger small fw-bold"></span>
+                </div>
+
+                <div class="form-group gap-2 d-flex flex-column">
+                    <label class="text-muted fw-bold text-uppercase tracking-widest" style="font-size: 0.7rem;">Attachments</label>
+                    <div class="position-relative group" id="drop-zone" style="min-height: 160px;">
+                        <input type="file" name="Attachments" id="file-upload" multiple class="position-absolute inset-0 w-100 h-100 opacity-0 cursor-pointer z-3" onchange="updateFileList(this)" />
+                        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center gap-3 transition-all border-dashed border-2 border-glass rounded-4 bg-glass-hover" style="min-height: 160px; pointer-events: none;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center bg-glass border-glass-strong" style="width: 56px; height: 56px;">
+                                <span class="material-symbols-outlined fs-2 text-aurora">cloud_upload</span>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-white fw-bold mb-1">Click or drag files here to upload</p>
+                                <p class="text-muted small fw-medium mb-0">PDF, DOCX, JPG, PNG up to 10MB each</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="file-list" class="d-flex flex-wrap gap-2 mt-2"></div>
+                </div>
+
+                <div class="d-flex gap-3 mt-4">
+                    <button type="submit" class="btn btn-premium flex-grow-1 py-3 fw-bold text-uppercase tracking-widest shadow-lg">
+                        Publish Post
+                    </button>
+                    <a asp-controller="Forum" asp-action="Details" asp-route-id="@Model.CommunityId" class="btn btn-glass px-5 py-3 fw-bold text-uppercase tracking-widest" style="border-radius: 1rem;">
+                        Cancel
+                    </a>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 
 <script>
@@ -62,16 +67,18 @@
         if (input.files.length > 0) {
             Array.from(input.files).forEach(file => {
                 const badge = document.createElement('div');
-                badge.className = 'flex items-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium border border-border-light dark:border-border-dark';
+                badge.className = 'glass-card px-3 py-2 d-flex align-items-center gap-2 border-glass-strong animate-entrance';
+                badge.style.borderRadius = '0.75rem';
+                badge.style.fontSize = '0.75rem';
                 
-                let icon = '';
-                if (file.type.includes('image')) {
-                    icon = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
-                } else {
-                    icon = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>';
-                }
+                let icon = 'description';
+                if (file.type.includes('image')) icon = 'image';
+                if (file.type.includes('pdf')) icon = 'picture_as_pdf';
                 
-                badge.innerHTML = `${icon}<span>${file.name}</span>`;
+                badge.innerHTML = `
+                    <span class="material-symbols-outlined fs-6 text-aurora">${icon}</span>
+                    <span class="text-white fw-medium">${file.name}</span>
+                `;
                 fileList.appendChild(badge);
             });
         }

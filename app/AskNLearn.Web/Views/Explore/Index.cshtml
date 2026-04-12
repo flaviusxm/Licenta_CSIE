@@ -23,10 +23,10 @@
 
     <!-- Search & Filters -->
     <div class="mb-5 position-relative">
-        <form method="get" asp-action="Index" class="position-relative">
+        <div class="position-relative">
             <span class="material-symbols-outlined position-absolute top-50 translate-middle-y text-muted" style="left: 1.5rem;">search</span>
-            <input name="searchTerm" class="form-control form-control-glass w-100 shadow-lg" style="padding: 1rem 1.5rem 1rem 3.5rem; border-radius: 1.5rem;" placeholder="Search for a specific forum..." type="text" value="@Context.Request.Query["searchTerm"]"/>
-        </form>
+            <input id="explore-search" class="form-control form-control-glass w-100 shadow-lg" style="padding: 1rem 1.5rem 1rem 3.5rem; border-radius: 1.5rem;" placeholder="Search for a specific forum..." type="text" value="@Context.Request.Query["searchTerm"]" oninput="debounceSearch()"/>
+        </div>
     </div>
 
     <!-- Forum List -->
@@ -50,11 +50,12 @@
         let communitiesSkip = 12;
         let communitiesLoading = false;
         let communitiesAllLoaded = false;
-        const searchTerm = '@Context.Request.Query["searchTerm"]';
+        let searchTimeout;
         
         const sentinel = document.getElementById('communities-sentinel');
         const container = document.getElementById('communities-container');
         const spinner = document.getElementById('communities-load-spinner');
+        const searchInput = document.getElementById('explore-search');
 
         const observer = new IntersectionObserver(async (entries) => {
             if (entries[0].isIntersecting && !communitiesLoading && !communitiesAllLoaded) {
@@ -66,19 +67,37 @@
             observer.observe(sentinel);
         }
 
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 400);
+        }
+
+        async function performSearch() {
+            communitiesSkip = 0;
+            communitiesAllLoaded = false;
+            container.innerHTML = '';
+            spinner.classList.remove('d-none');
+            await loadMoreCommunities();
+        }
+
         async function loadMoreCommunities() {
+            if (communitiesLoading) return;
             communitiesLoading = true;
             spinner.classList.remove('d-none');
 
+            const currentSearch = searchInput.value.trim();
             try {
-                const url = `/Explore/GetCommunities?skip=${communitiesSkip}${searchTerm ? '&searchTerm=' + encodeURIComponent(searchTerm) : ''}`;
+                const url = `/Explore/GetCommunities?skip=${communitiesSkip}${currentSearch ? '&searchTerm=' + encodeURIComponent(currentSearch) : ''}`;
                 const response = await fetch(url);
                 if (response.ok) {
                     const html = await response.text();
                     
                     if (!html.trim()) {
                         communitiesAllLoaded = true;
-                        spinner.innerHTML = '';                    } else {
+                        if (communitiesSkip === 0) {
+                             container.innerHTML = `<div class="col-12 text-center py-5 opacity-50"><span class="material-symbols-outlined display-4 mb-3">search_off</span><p class="fw-bold">No forums found matching "${currentSearch}"</p></div>`;
+                        }
+                    } else {
                         container.insertAdjacentHTML('beforeend', html);
                         communitiesSkip += 12;
                     }
@@ -87,7 +106,7 @@
                 console.error('Error loading more communities:', error);
             } finally {
                 communitiesLoading = false;
-                if (!communitiesAllLoaded) spinner.classList.add('d-none');
+                spinner.classList.add('d-none');
             }
         }
     </script>

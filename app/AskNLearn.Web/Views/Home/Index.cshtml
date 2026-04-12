@@ -256,5 +256,50 @@
                 }
             });
         });
+
+        // --- Lazy Comments (Home) ---
+        const commentsLoaded = {};
+        const commentsOpen = {};
+        async function toggleLazyComments(postId, commId) {
+            const container = document.getElementById(`comments-${postId}`);
+            if (!container) return;
+
+            const isCurrentlyHidden = container.classList.contains('d-none');
+            const toggleIcon = document.querySelector(`.toggle-icon-${postId}`);
+
+            if (!isCurrentlyHidden) {
+                container.classList.add('d-none');
+                commentsOpen[postId] = false;
+                return;
+            }
+
+            container.classList.remove('d-none');
+            commentsOpen[postId] = true;
+
+            if (!commentsLoaded[postId]) {
+                commentsLoaded[postId] = true;
+                try {
+                    const response = await fetch(`/Forum/GetPostComments?postId=${postId}&communityId=${commId}`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if (!response.ok) throw new Error('Error loading comments');
+                    const html = await response.text();
+                    container.innerHTML = html;
+                } catch (err) {
+                    console.error('Error loading comments:', err);
+                    container.innerHTML = '<p class="text-danger p-3 mb-0">Failed to load comments.</p>';
+                    commentsLoaded[postId] = false;
+                }
+            }
+        }
     </script>
+    <style>
+        @@keyframes slide-down {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-down {
+            animation: slide-down 0.3s ease-out;
+        }
+    </style>
 }

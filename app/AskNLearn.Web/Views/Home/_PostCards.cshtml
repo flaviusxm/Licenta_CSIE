@@ -85,19 +85,29 @@
                         @post.Content
                     </p>
 
-                    <div class="d-flex align-items-center gap-4 mt-2">
-                        <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId" 
-                           class="d-flex align-items-center gap-1 text-muted fw-bold text-decoration-none hover-glow" style="font-size: 0.7rem;">
-                            <span class="material-symbols-outlined fs-5">chat_bubble</span>
-                            @post.CommentCount Comments
-                        </a>
-                        <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
-                            <span class="material-symbols-outlined fs-5">visibility</span>
-                            @post.ViewCount Views
+                    <div class="d-flex flex-column gap-3 mt-2">
+                        <div class="d-flex align-items-center gap-4 mt-2 pb-3 border-bottom" style="border-color: var(--border-glass) !important;">
+                            <div onclick="toggleLazyComments('@post.Id', '@post.CommunityId')" 
+                               class="d-flex align-items-center gap-1 text-muted fw-bold text-decoration-none hover-glow" style="font-size: 0.7rem; cursor: pointer;">
+                                <span class="material-symbols-outlined fs-5 toggle-icon-@post.Id">chat_bubble</span>
+                                <span>@post.CommentCount Comments</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
+                                <span class="material-symbols-outlined fs-5">visibility</span>
+                                @post.ViewCount Views
+                            </div>
+                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
+                                <span class="material-symbols-outlined fs-5">calendar_month</span>
+                                @post.CreatedAt.ToString("dd MMM yyyy")
+                            </div>
                         </div>
-                        <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
-                            <span class="material-symbols-outlined fs-5">calendar_month</span>
-                            @post.CreatedAt.ToString("dd MMM yyyy")
+
+                        <!-- Comments Section: lazy loaded -->
+                        <div id="comments-@post.Id" class="d-none animate-slide-down mt-2">
+                            <div class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm text-aurora" role="status"></div>
+                                <p class="text-muted mt-2 mb-0" style="font-size:0.8rem;">Loading comments...</p>
+                            </div>
                         </div>
                     </div>
                 </div>

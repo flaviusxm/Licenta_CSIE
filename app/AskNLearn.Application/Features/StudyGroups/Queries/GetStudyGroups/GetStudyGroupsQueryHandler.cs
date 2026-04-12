@@ -24,7 +24,7 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries.GetStudyGroups
 
             if (request.OnlyPublic)
             {
-                query = query.Where(x => x.IsPublic);
+                query = query.Where(x => x.IsPublic || (request.CurrentUserId != null && x.Members.Any(m => m.UserId == request.CurrentUserId)));
             }
 
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
