@@ -125,7 +125,7 @@
                     var authorName = message.Author?.FullName ?? message.Author?.UserName ?? "User";
                     var authorAvatar = message.Author?.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={message.Author?.UserName}";
                     
-                    <div class="d-flex w-100 @(isMine ? "justify-content-end" : "justify-content-start") animate-slide-up">
+                    <div class="d-flex w-100 @(isMine ? "justify-content-end" : "justify-content-start") animate-slide-up group">
                         <div class="d-flex @(isMine ? "flex-row-reverse" : "") gap-3 align-items-end" style="max-width: 85%;">
                             @if (!isMine) {
                                 <img src="@authorAvatar" class="avatar-sm rounded-lg shadow-sm border" style="border-color: var(--border-glass) !important;"/>
@@ -135,11 +135,21 @@
                                     <span class="fw-bold text-muted" style="font-size: 0.65rem;">@authorName</span>
                                     <span class="fw-bold text-muted" style="font-size: 0.6rem;">@message.CreatedAt.ToString("HH:mm")</span>
                                 </div>
-                                <div class="p-3 shadow-lg" style="border-radius: 1.5rem; @(isMine ? "background: var(--gradient-aurora); color: var(--bg-universe); border-top-right-radius: 0.25rem;" : "background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: white; border-top-left-radius: 0.25rem; backdrop-filter: blur(10px);")">
-                                    @if (message.Content.StartsWith("http") && (message.Content.Contains("giphy.com") || message.Content.Contains("tenor.com"))) {
-                                        <img src="@message.Content" class="img-fluid rounded-3" style="max-width: 250px;" />
-                                    } else {
-                                        <p class="mb-0 fw-medium" style="font-size: 0.9rem; line-height: 1.5;">@message.Content</p>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="p-3 shadow-lg" style="border-radius: 1.5rem; @(isMine ? "background: var(--gradient-aurora); color: var(--bg-universe); border-top-right-radius: 0.25rem;" : "background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: white; border-top-left-radius: 0.25rem; backdrop-filter: blur(10px);")">
+                                        @if (message.Content.StartsWith("http") && (message.Content.Contains("giphy.com") || message.Content.Contains("tenor.com"))) {
+                                            <img src="@message.Content" class="img-fluid rounded-3" style="max-width: 250px;" />
+                                        } else {
+                                            <p class="mb-0 fw-medium" style="font-size: 0.9rem; line-height: 1.5;">@message.Content</p>
+                                        }
+                                    </div>
+                                    @if (!isMine) {
+                                        <button onclick="openReportModal('@message.Id', 'MESSAGE')" 
+                                                class="btn btn-link p-1 text-muted hover-text-danger text-decoration-none transition-all opacity-0 group-hover-opacity-100" 
+                                                title="Report message"
+                                                style="font-size: 0.6rem;">
+                                            <span class="material-symbols-outlined fs-6">report</span>
+                                        </button>
                                     }
                                 </div>
                             </div>
@@ -443,7 +453,7 @@
         }
 
         function handleDMAttachment(input) {
-            if (input.files.length > 0) alert(`${input.files.length} files attached.`);
+            if (input.files.length > 0) window.Notify.success(`${input.files.length} files attached.`);
         }
 
         async function createPeerConnection(connectionId, isOffer) {
@@ -507,7 +517,7 @@
                 
                 document.getElementById('call-controls').classList.remove('d-none');
                 updateVideoGrid();
-            } catch (err) { alert("Media access denied: " + err); }
+            } catch (err) { window.Notify.error("Media access denied: " + err); }
         }
 
         async function endCall() {

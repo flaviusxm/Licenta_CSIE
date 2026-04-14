@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
 
 namespace AskNLearn.Application.Features.Users.Commands.SubmitVerificationRequest
 {
@@ -39,15 +40,30 @@ namespace AskNLearn.Application.Features.Users.Commands.SubmitVerificationReques
 
             var (isValid, details, recommendation) = await _guardianClient.VerifyDocumentAsync(null, request.StudentIdUrl);
 
+            // Autonomous Moderation: Auto-approve if AI is 100% confident
+            bool autoApproved = isValid && recommendation.Contains("Approved", StringComparison.OrdinalIgnoreCase);
+
             var verificationRequest = new VerificationRequest
             {
                 UserId = request.UserId,
                 StudentIdUrl = request.StudentIdUrl,
                 CarnetUrl = request.CarnetUrl,
-                Status = Status.Pending,
-                SubmittedAt = System.DateTime.UtcNow,
-                AdminNotes = $"[Guardian Analysis]: {recommendation} | Details: {details}"
+                Status = autoApproved ? Status.Approved : Status.Pending,
+                SubmittedAt = DateTime.UtcNow,
+                AdminNotes = $"[Guardian Analysis]: {recommendation} | Details: {details}",
+                ProcessedAt = autoApproved ? DateTime.UtcNow : null,
+                ProcessedBy = autoApproved ? "SYSTEM_AI" : null
             };
+
+            if (autoApproved)
+            {
+                var user = await _context.Users.FindAsync(request.UserId);
+                if (user != null)
+                {
+                    user.IsVerified = true;
+                    user.VerificationStatus = UserVerificationStatus.IdentityVerified;
+                }
+            }
 
             _context.VerificationRequests.Add(verificationRequest);
             await _context.SaveChangesAsync(cancellationToken);

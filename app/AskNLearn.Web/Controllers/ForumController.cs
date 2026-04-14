@@ -32,12 +32,16 @@ namespace AskNLearn.Web.Controllers
         private readonly IMediator _mediator;
         private readonly ILogger<ForumController> _logger;
         private readonly UserManager<AskNLearn.Domain.Entities.Core.ApplicationUser> _userManager;
+        private readonly AskNLearn.Application.Common.Interfaces.IApplicationDbContext _context;
+        private readonly AskNLearn.Application.Common.Interfaces.IModerationQueue _moderationQueue;
 
-        public ForumController(IMediator mediator, ILogger<ForumController> logger, UserManager<AskNLearn.Domain.Entities.Core.ApplicationUser> userManager)
+        public ForumController(IMediator mediator, ILogger<ForumController> logger, UserManager<AskNLearn.Domain.Entities.Core.ApplicationUser> userManager, AskNLearn.Application.Common.Interfaces.IApplicationDbContext context, AskNLearn.Application.Common.Interfaces.IModerationQueue moderationQueue)
         {
             _mediator = mediator;
             _logger = logger;
             _userManager = userManager;
+            _context = context;
+            _moderationQueue = moderationQueue;
         }
 
         [AllowAnonymous]
@@ -375,6 +379,74 @@ namespace AskNLearn.Web.Controllers
             var community = await _mediator.Send(new GetCommunityByIdQuery { Id = id, CurrentUserId = userId });
             if (community == null) return NotFound();
             return PartialView("_CommunityHoverCard", community);
+        }
+        [HttpPost]
+        public async Task<IActionResult> ReportPost(Guid id, AskNLearn.Domain.Entities.Core.ReportReason reason, string description)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null) return NotFound();
+
+            var report = new AskNLearn.Domain.Entities.Core.Report
+            {
+                ReporterId = userId,
+                ReportedPostId = id,
+                Reason = reason,
+                Description = description ?? "No description provided",
+                CreatedAt = DateTime.UtcNow,
+                Status = AskNLearn.Domain.Entities.Core.ReportStatus.Pending
+            };
+
+            _context.Reports.Add(report);
+            await _context.SaveChangesAsync(default);
+
+            // Enqueue for AI Re-evaluation
+            _moderationQueue.Enqueue(new AskNLearn.Application.Common.Interfaces.ModerationTask
+            {
+                Id = report.Id, // We use ReportId so Background service knows it's a manual report
+                Content = post.Content,
+                Title = post.Title,
+                Target = AskNLearn.Application.Common.Interfaces.ModerationTarget.Report,
+                Reason = reason
+            });
+
+            return Ok(new { message = "Post reported successfully. Guardian AI is analyzing." });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ReportComment(Guid id, AskNLearn.Domain.Entities.Core.ReportReason reason, string description)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var message = await _context.Messages.FindAsync(id);
+            if (message == null) return NotFound();
+
+            var report = new AskNLearn.Domain.Entities.Core.Report
+            {
+                ReporterId = userId,
+                ReportedMessageId = id,
+                Reason = reason,
+                Description = description ?? "No description provided",
+                CreatedAt = DateTime.UtcNow,
+                Status = AskNLearn.Domain.Entities.Core.ReportStatus.Pending
+            };
+
+            _context.Reports.Add(report);
+            await _context.SaveChangesAsync(default);
+
+            // Enqueue for AI Re-evaluation
+            _moderationQueue.Enqueue(new AskNLearn.Application.Common.Interfaces.ModerationTask
+            {
+                Id = report.Id,
+                Content = message.Content ?? string.Empty,
+                Target = AskNLearn.Application.Common.Interfaces.ModerationTarget.Report,
+                Reason = reason
+            });
+
+            return Ok(new { message = "Comment reported successfully. Guardian AI is analyzing." });
         }
     }
 }

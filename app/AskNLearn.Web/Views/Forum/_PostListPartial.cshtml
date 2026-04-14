@@ -111,6 +111,14 @@
                                 <span class="material-symbols-outlined fs-5">visibility</span>
                                 <span>@post.ViewCount Views</span>
                             </div>
+                            
+                            <button onclick="openReportModal('@post.Id', 'POST')" 
+                                    class="p-0 border-0 bg-transparent text-muted hover-text-danger d-flex align-items-center gap-1 transition-all" 
+                                    style="font-size: 0.8rem;"
+                                    title="Report this post">
+                                <span class="material-symbols-outlined fs-5">report</span>
+                                <span>Report</span>
+                            </button>
                         </div>
 
                         <!-- Delete: doar autorul postarii sau creatorul forumului -->

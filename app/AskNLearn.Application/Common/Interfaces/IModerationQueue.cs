@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using AskNLearn.Domain.Entities.Core;
 
 namespace AskNLearn.Application.Common.Interfaces
 {
@@ -16,11 +17,14 @@ namespace AskNLearn.Application.Common.Interfaces
         public string Content { get; set; } = null!;
         public string? Title { get; set; }
         public ModerationTarget Target { get; set; }
+        public ReportReason? Reason { get; set; }
     }
 
     public enum ModerationTarget
     {
         Post,
-        Comment
+        Comment,
+        Message,
+        Report
     }
 }

@@ -100,6 +100,16 @@ html, body {
     background: rgba(10, 24, 18, 0.6);
 }
 
+/* --- Group Hover Utilities --- */
+.group:hover .group-hover-opacity-100 {
+    opacity: 1 !important;
+}
+.group-hover-opacity-100 {
+    opacity: 0;
+    transition: opacity 0.2s var(--ease-smooth);
+    pointer-events: auto;
+}
+
 .glass-nav {
     background: var(--glass-nav);
     backdrop-filter: blur(var(--blur-heavy));

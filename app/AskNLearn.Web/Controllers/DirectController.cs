@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AskNLearn.Web.Controllers
 {
     [Authorize]
-    public class DirectController(ApplicationDbContext context, UserManager<ApplicationUser> userManager) : Controller
+    public class DirectController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, AskNLearn.Application.Common.Interfaces.IModerationQueue moderationQueue) : Controller
     {
         public async Task<IActionResult> Index(Guid? id)
         {
@@ -118,6 +118,40 @@ namespace AskNLearn.Web.Controllers
             }
 
             return RedirectToAction(nameof(Index), new { id = conversation.Id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ReportMessage(Guid id, AskNLearn.Domain.Entities.Core.ReportReason reason, string description)
+        {
+            var userId = userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var message = await context.Messages.FindAsync(id);
+            if (message == null) return NotFound();
+
+            var report = new AskNLearn.Domain.Entities.Core.Report
+            {
+                ReporterId = userId!,
+                ReportedMessageId = id,
+                Reason = reason,
+                Description = description ?? "No description provided",
+                CreatedAt = DateTime.UtcNow,
+                Status = AskNLearn.Domain.Entities.Core.ReportStatus.Pending
+            };
+
+            context.Reports.Add(report);
+            await context.SaveChangesAsync();
+
+            // Enqueue for AI Re-evaluation
+            moderationQueue.Enqueue(new AskNLearn.Application.Common.Interfaces.ModerationTask
+            {
+                Id = report.Id,
+                Content = message.Content ?? string.Empty,
+                Target = AskNLearn.Application.Common.Interfaces.ModerationTarget.Report,
+                Reason = reason
+            });
+
+            return Ok(new { message = "Message reported successfully. Guardian AI is analyzing." });
         }
 
         public IActionResult Messages() => RedirectToAction("Index");

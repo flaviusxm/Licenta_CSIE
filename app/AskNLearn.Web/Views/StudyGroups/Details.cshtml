@@ -809,7 +809,7 @@
 
         // ── Voice / Video Controls ──────────────────────────────────────────────
         async function joinVoice(id, name) {
-            if (!IS_MEMBER) { alert("Join the group to use voice channels."); return; }
+            if (!IS_MEMBER) { window.Notify.warning("Join the group to use voice channels."); return; }
             await ensureConnection();
             if (currentVoiceChannelId === id) return;
             if (currentVoiceChannelId) await leaveVoice();
@@ -840,7 +840,7 @@
                     `;
                     container.insertAdjacentHTML('beforeend', userHtml);
                 }
-            } catch (err) { alert("Microphone access denied."); }
+            } catch (err) { window.Notify.error("Microphone access denied."); }
         }
 
         async function leaveVoice() {
@@ -881,7 +881,7 @@
 
         // ── Channel & Message Logic ───────────────────────────────────────────────
         async function joinTextChannel(id, name) {
-            if (!IS_MEMBER) { alert("Join the group to view messages."); return; }
+            if (!IS_MEMBER) { window.Notify.warning("Join the group to view messages."); return; }
             await ensureConnection();
             if (currentTextChannelId === id) return;
             if (currentTextChannelId) await connection.invoke("LeaveChannel", currentTextChannelId);
@@ -943,7 +943,7 @@
         }
 
         window.sendMessage = async function() {
-            if (!IS_MEMBER) { alert("Join group to send messages."); return; }
+            if (!IS_MEMBER) { window.Notify.warning("Join group to send messages."); return; }
             const input = document.getElementById('message-input');
             const content = input.value.trim();
             if (!content || !currentTextChannelId) return;
@@ -967,11 +967,11 @@
                 if (resp.ok) {
                     location.reload(true); // Force fresh reload
                 } else {
-                    alert("Failed to join group.");
+                    window.Notify.error("Failed to join group.");
                     if(btn) { btn.disabled = false; btn.innerText = 'JOIN STUDY GROUP'; }
                 }
             } catch (e) { 
-                alert("Connection error.");
+                window.Notify.error("Connection error. Check your internet.");
                 if(btn) { btn.disabled = false; btn.innerText = 'JOIN STUDY GROUP'; }
             }
         }

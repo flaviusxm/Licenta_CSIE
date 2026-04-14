@@ -37,8 +37,14 @@
                             </div>
                         }
 
-                        <!-- Reply Button -->
-                        <button onclick="toggleReplyForm('@comment.Id')" class="btn btn-link p-0 text-aurora fw-bold text-decoration-none" style="font-size: 0.7rem;">Reply</button>
+                        <!-- Comment Actions -->
+                        <div class="d-flex align-items-center gap-3">
+                            <button onclick="toggleReplyForm('@comment.Id')" class="btn btn-link p-0 text-aurora fw-bold text-decoration-none" style="font-size: 0.7rem;">Reply</button>
+                            <button onclick="openReportModal('@comment.Id', 'COMMENT')" class="btn btn-link p-0 text-muted hover-text-danger text-decoration-none d-flex align-items-center gap-1" style="font-size: 0.7rem;" title="Report this comment">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">report</span>
+                                Report
+                            </button>
+                        </div>
 
                         <!-- Reply Form (Hidden) -->
                         <div id="reply-form-@comment.Id" class="d-none mt-3">
@@ -100,7 +106,7 @@
                                 // Scroll a bit to see new comment? Optional.
                             }
                         } else {
-                            alert("Failed to post comment. Please try again.");
+                            window.Notify.error("Failed to post comment. Please try again.");
                         }
                     } catch (err) {
                         console.error(err);

@@ -138,38 +138,68 @@ namespace AskNLearn.Infrastructure.Persistance
             userRoles.Add(new IdentityUserRole<string> { UserId = admin.Id, RoleId = adminRole.Id });
 
             // Moderatori
-            var moderator = new ApplicationUser
+            for (int i = 1; i <= 10; i++)
             {
-                Id = Guid.NewGuid().ToString(),
-                UserName = "moderator@asknlearn.com",
-                Email = "moderator@asknlearn.com",
-                NormalizedEmail = "MODERATOR@ASKNLEARN.COM",
-                NormalizedUserName = "MODERATOR@ASKNLEARN.COM",
-                FullName = "Community Moderator",
-                EmailConfirmed = true,
-                IsVerified = true,
-                VerificationStatus = UserVerificationStatus.IdentityVerified,
-                Role = Role.Moderator,
-                ReputationPoints = 3000,
-                CreatedAt = DateTime.UtcNow.AddMonths(-10),
-                PasswordHash = hash,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                ConcurrencyStamp = Guid.NewGuid().ToString(),
-                AvatarUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=moderator"
-            };
-            users.Add(moderator);
-            userRoles.Add(new IdentityUserRole<string> { UserId = moderator.Id, RoleId = modRole.Id });
+                var mod = new ApplicationUser
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    UserName = $"moderator{i}@asknlearn.com",
+                    Email = $"moderator{i}@asknlearn.com",
+                    NormalizedEmail = $"MODERATOR{i}@ASKNLEARN.COM",
+                    NormalizedUserName = $"MODERATOR{i}@ASKNLEARN.COM",
+                    FullName = $"Community Moderator {i}",
+                    EmailConfirmed = true,
+                    IsVerified = true,
+                    VerificationStatus = UserVerificationStatus.IdentityVerified,
+                    Role = Role.Moderator,
+                    ReputationPoints = 3000,
+                    CreatedAt = DateTime.UtcNow.AddMonths(-10),
+                    PasswordHash = hash,
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    ConcurrencyStamp = Guid.NewGuid().ToString(),
+                    AvatarUrl = $"https://api.dicebear.com/7.x/avataaars/svg?seed=moderator{i}"
+                };
+                users.Add(mod);
+                userRoles.Add(new IdentityUserRole<string> { UserId = mod.Id, RoleId = modRole.Id });
+            }
 
-            // Utilizatori verificați cu email confirmat
-            string[] firstNames = { "Alex", "Maria", "Andrei", "Elena", "Mihai", "Ioana", "Cristian", "Ana", "Vlad", "Diana" };
-            string[] lastNames = { "Popescu", "Ionescu", "Dumitrescu", "Stanescu", "Gheorghiu", "Radu", "Marin", "Tudor" };
-            for (int i = 0; i < 30; i++)
+            // Alți Admini (total 5)
+            for (int i = 2; i <= 5; i++)
+            {
+                var adm = new ApplicationUser
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    UserName = $"admin{i}@asknlearn.com",
+                    Email = $"admin{i}@asknlearn.com",
+                    NormalizedEmail = $"ADMIN{i}@ASKNLEARN.COM",
+                    NormalizedUserName = $"ADMIN{i}@ASKNLEARN.COM",
+                    FullName = $"System Administrator {i}",
+                    EmailConfirmed = true,
+                    IsVerified = true,
+                    VerificationStatus = UserVerificationStatus.IdentityVerified,
+                    Role = Role.Admin,
+                    PasswordHash = hash,
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    ConcurrencyStamp = Guid.NewGuid().ToString(),
+                    AvatarUrl = $"https://api.dicebear.com/7.x/avataaars/svg?seed=admin{i}"
+                };
+                users.Add(adm);
+                userRoles.Add(new IdentityUserRole<string> { UserId = adm.Id, RoleId = adminRole.Id });
+            }
+
+            // Utilizatori verificați cu email confirmat (100 total)
+            string[] firstNames = { "Alex", "Maria", "Andrei", "Elena", "Mihai", "Ioana", "Cristian", "Ana", "Vlad", "Diana", "Stefan", "Laura", "Gabriel", "Andreea", "Matei" };
+            string[] lastNames = { "Popescu", "Ionescu", "Dumitrescu", "Stanescu", "Gheorghiu", "Radu", "Marin", "Tudor", "Stoica", "Rusu", "Costin", "Munteanu" };
+            for (int i = 0; i < 100; i++)
             {
                 var fn = firstNames[Rng.Next(firstNames.Length)];
                 var ln = lastNames[Rng.Next(lastNames.Length)];
                 var email = $"{fn.ToLower()}.{ln.ToLower()}{i}@stud.ase.ro";
-                var emailConfirmed = Rng.NextDouble() > 0.2; // 80% confirmed
-                var isVerified = emailConfirmed && Rng.NextDouble() > 0.5; // 50% din cei confirmați sunt verificați
+                
+                // Userii sunt în general confirmați pentru ușurință la testare, dar unii sunt unverified (unconfirmed email)
+                var emailConfirmed = i > 10; // Primii 10 sunt "neconfirmați" pentru testare failure
+                var isVerified = emailConfirmed && i % 3 == 0; // 33% sunt verified (student ID)
+                
                 var u = new ApplicationUser
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -183,7 +213,7 @@ namespace AskNLearn.Infrastructure.Persistance
                     VerificationStatus = isVerified ? UserVerificationStatus.IdentityVerified : (emailConfirmed ? UserVerificationStatus.EmailVerified : UserVerificationStatus.NotVerified),
                     Role = Role.Member,
                     ReputationPoints = Rng.Next(50, 2000),
-                    CreatedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 300)),
+                    CreatedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 400)),
                     PasswordHash = hash,
                     SecurityStamp = Guid.NewGuid().ToString(),
                     ConcurrencyStamp = Guid.NewGuid().ToString(),
@@ -206,7 +236,7 @@ namespace AskNLearn.Infrastructure.Persistance
             var seen = new HashSet<string>();
             foreach (var u in users)
             {
-                int friendCount = Rng.Next(3, 10);
+                int friendCount = Rng.Next(10, 30); // Toți au mulți prieteni
                 for (int i = 0; i < friendCount; i++)
                 {
                     var other = users[Rng.Next(users.Count)];
@@ -253,7 +283,7 @@ namespace AskNLearn.Infrastructure.Persistance
             var posts = new List<Post>();
             foreach (var comm in communities)
             {
-                int postCount = Rng.Next(10, 25);
+                int postCount = Rng.Next(30, 60); // Mai multe postări
                 for (int i = 0; i < postCount; i++)
                 {
                     var author = users[Rng.Next(users.Count)];
@@ -262,25 +292,49 @@ namespace AskNLearn.Infrastructure.Persistance
                         Id = Guid.NewGuid(),
                         CommunityId = comm.Id,
                         AuthorId = author.Id,
-                        Title = $"Discussion #{i+1} in {comm.Name}",
-                        Content = $"This is a sample discussion about {comm.Name}. Please share your thoughts!",
-                        CreatedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 90)),
+                        Title = $"Thread: {topics[communities.IndexOf(comm)]} discussion #{i+1}",
+                        Content = $"Let's talk about {topics[communities.IndexOf(comm)]}. Does anyone have advice on this?",
+                        CreatedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 120)),
                         ModerationStatus = ModerationStatus.Approved,
-                        ViewCount = Rng.Next(10, 500)
+                        ViewCount = Rng.Next(50, 2000)
                     };
                     posts.Add(post);
                 }
             }
             await BulkInsertAsync(ctx, posts, "Posts", "Posts");
+
+            // SEED COMMENTS (Messages linked to posts)
+            var comments = new List<Message>();
+            string[] commentTexts = { "Great point!", "I disagree, here is why...", "Thanks for sharing!", "Does this work for everyone?", "Interesting perspective.", "Can you explain more?" };
+            foreach (var p in posts.Take(posts.Count / 2)) // Punem comentarii la jumătate din postări
+            {
+                int commentCount = Rng.Next(5, 15);
+                for (int i = 0; i < commentCount; i++)
+                {
+                    var author = users[Rng.Next(users.Count)];
+                    comments.Add(new Message
+                    {
+                        Id = Guid.NewGuid(),
+                        PostId = p.Id,
+                        AuthorId = author.Id,
+                        Content = commentTexts[Rng.Next(commentTexts.Length)],
+                        CreatedAt = p.CreatedAt.AddHours(Rng.Next(1, 48)),
+                        ModerationStatus = ModerationStatus.Approved
+                    });
+                }
+            }
+            await BulkInsertAsync(ctx, comments, "PostComments", "Messages");
+            
             return posts;
         }
 
         private static async Task<List<StudyGroup>> SeedStudyGroupsAsync(ApplicationDbContext ctx, List<ApplicationUser> users)
         {
             var groups = new List<StudyGroup>();
-            string[] subjects = { "Calculus", "Algorithms", "Databases", "Networking", "AI", "Web Development" };
-            for (int i = 0; i < 6; i++)
+            string[] subjects = { "Calculus I", "Data Structures", "Macroeconomics", "Distributed Systems", "Machine Learning", "Mobile Apps", "UI/UX Design", "Game Theory", "Cloud Computing" };
+            for (int i = 0; i < 20; i++) // 20 groups
             {
+                var sub = subjects[Rng.Next(subjects.Length)];
                 var owner = users[Rng.Next(users.Count)];
                 var isPublic = Rng.NextDouble() > 0.3;
                 groups.Add(new StudyGroup
@@ -304,9 +358,11 @@ namespace AskNLearn.Infrastructure.Persistance
             var channels = new List<Channel>();
             foreach (var g in groups)
             {
-                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "general", Type = ChannelType.Text, Position = 0 });
-                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "random", Type = ChannelType.Text, Position = 1 });
-                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "Voice Chat", Type = ChannelType.Voice, Position = 2 });
+                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "announcements", Type = ChannelType.Text, Position = 0 });
+                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "general", Type = ChannelType.Text, Position = 1 });
+                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "resources-links", Type = ChannelType.Text, Position = 2 });
+                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "Voice Study", Type = ChannelType.Voice, Position = 3 });
+                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "Live Session", Type = ChannelType.Video, Position = 4 });
             }
             await BulkInsertAsync(ctx, channels, "Channels", "Channels");
             return channels;
@@ -369,7 +425,7 @@ namespace AskNLearn.Infrastructure.Persistance
 
             foreach (var ch in channels.Where(c => c.Type == ChannelType.Text))
             {
-                int msgCount = Rng.Next(10, 30);
+                int msgCount = Rng.Next(50, 150); // Mult mai multe mesaje pentru scroll
                 for (int i = 0; i < msgCount; i++)
                 {
                     var author = users[Rng.Next(users.Count)];
@@ -408,7 +464,7 @@ namespace AskNLearn.Infrastructure.Persistance
                 participants.Add(new DirectConversationParticipant { ConversationId = convId, UserId = f.AddresseeId });
 
                 // Mesaje
-                int msgCount = Rng.Next(5, 20);
+                int msgCount = Rng.Next(40, 100); // Conversații lungi
                 for (int i = 0; i < msgCount; i++)
                 {
                     var author = i % 2 == 0 ? f.RequesterId : f.AddresseeId;
