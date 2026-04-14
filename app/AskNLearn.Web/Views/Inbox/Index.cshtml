@@ -73,6 +73,27 @@
 
             <!-- Peripheral Hub -->
             <aside class="col-12 col-xl-4 d-flex flex-column gap-5">
+                <!-- Network Highlights -->
+                <div class="d-flex flex-column gap-4 animate-entrance delay-200">
+                    <div class="d-flex align-items-center justify-content-between px-2">
+                        <h3 class="fw-bold text-white fs-4 tracking-tight m-0 d-flex align-items-center gap-2">
+                            Network Highlights
+                        </h3>
+                    </div>
+                    <div class="glass-card p-4 shadow-lg border-glass-strong position-relative overflow-hidden" style="border-radius: 2.5rem;">
+                        <div class="position-absolute top-0 end-0 m-n3 opacity-10" style="font-size: 8rem; color: var(--color-mint-bright);">
+                            <span class="material-symbols-outlined">groups</span>
+                        </div>
+                        <div class="position-relative z-1">
+                            <h4 class="h1 fw-black text-aurora mb-0">@Model.TotalConnections</h4>
+                            <p class="text-muted fw-bold text-uppercase tracking-widest small mb-4">Study Connections</p>
+                            <a asp-action="Connections" class="btn btn-premium w-100 py-3 fw-bold text-uppercase tracking-widest" style="font-size: 0.7rem; letter-spacing: 1px;">
+                                View All Connections
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Pending Connections -->
                 <div class="d-flex flex-column gap-4">
                         Friend Requests

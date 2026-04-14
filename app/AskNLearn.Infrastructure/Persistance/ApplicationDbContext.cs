@@ -135,7 +135,7 @@ namespace AskNLearn.Infrastructure.Persistance
             builder.Entity<GroupMembership>(entity =>
             {
                 entity.HasOne(gm => gm.Group)
-                    .WithMany()
+                    .WithMany(g => g.Members)
                     .HasForeignKey(gm => gm.GroupId)
                     .OnDelete(DeleteBehavior.Restrict);
             });

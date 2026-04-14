@@ -73,11 +73,14 @@ namespace AskNLearn.Web.Hubs
 
             var message = new Message
             {
-                ChannelId = channelId,
                 Content = content,
                 AuthorId = userId,
                 CreatedAt = DateTime.UtcNow
             };
+
+            var isChannel = await context.Channels.AnyAsync(c => c.Id == channelId);
+            if (isChannel) message.ChannelId = channelId;
+            else message.ConversationId = channelId;
 
             context.Messages.Add(message);
             await context.SaveChangesAsync(default);
@@ -87,7 +90,8 @@ namespace AskNLearn.Web.Hubs
             await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", new
             {
                 id = message.Id,
-                channelId = channelId,
+                channelId = isChannel ? channelId : (Guid?)null,
+                conversationId = !isChannel ? channelId : (Guid?)null,
                 content = message.Content,
                 authorId = userId,
                 authorName = user?.FullName ?? user?.UserName ?? "Unknown",

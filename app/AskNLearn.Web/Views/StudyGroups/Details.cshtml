@@ -24,7 +24,7 @@
                     <div>
                         <div class="d-flex align-items-center justify-content-between px-2 mb-3">
                             <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Text Channels</h3>
-                            @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                            @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value || User.IsInRole("Admin") || User.IsInRole("Moderator"))
                             {
                                 <button onclick="openCreateChannelModal('Text')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
                                     <span class="material-symbols-outlined fs-6">add</span>
@@ -46,7 +46,7 @@
                     <div>
                         <div class="d-flex align-items-center justify-content-between px-2 mb-3">
                             <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Voice Channels</h3>
-                            @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                            @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value || User.IsInRole("Admin") || User.IsInRole("Moderator"))
                             {
                                 <button onclick="openCreateChannelModal('Voice')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
                                     <span class="material-symbols-outlined fs-6">add</span>
@@ -73,8 +73,7 @@
                 <div id="sidebar-view-members" class="sidebar-view-pane d-flex flex-column overflow-hidden h-100">
                     <div class="px-4 py-3 border-bottom flex-shrink-0" style="border-color: rgba(255,255,255,0.05) !important;">
                         <div class="d-flex align-items-center justify-content-between">
-                            <span class="fw-black text-uppercase tracking-widest text-muted" style="font-size: 0.6rem; letter-spacing: 1.5px;">Group Members</span>
-                            <span class="badge rounded-pill glass-card border-0 px-2 py-1 fw-bold text-aurora" style="font-size: 0.6rem; background: rgba(0,245,160,0.1);">@Model.MemberCount</span>
+                            <span class="badge rounded-pill glass-card border-0 px-2 py-1 fw-bold text-aurora" style="font-size: 0.65rem; background: rgba(0,245,160,0.1);">@Model.MemberCount MEMBERS</span>
                         </div>
                     </div>
                     
@@ -88,15 +87,26 @@
                                     ? "rgba(0,245,160,0.1); border:1px solid rgba(0,245,160,0.2);" 
                                     : "rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);";
                                 
-                                <div class="member-card d-flex align-items-center gap-3 p-2 rounded-lg transition-all animate-entrance" 
+                                <div class="member-card d-flex align-items-center gap-3 p-2 rounded-lg transition-all animate-entrance hover-card-trigger" 
+                                     data-hover-type="user" data-hover-id="@member.UserId"
                                      style="background: rgba(255,255,255,0.02); min-height: 52px; cursor: pointer;">
                                     <div class="position-relative">
-                                        <div class="avatar-xs rounded-lg d-flex flex-center @(isOwner ? "text-aurora" : "text-muted") shadow-sm" 
-                                             style="background:@avatarBg">
-                                            <span class="material-symbols-outlined fs-6">account_circle</span>
-                                        </div>
+                                        @if (!string.IsNullOrEmpty(member.AvatarUrl))
+                                        {
+                                            <div class="avatar-xs rounded-lg overflow-hidden border shadow-sm" style="background:@avatarBg">
+                                                <img src="@member.AvatarUrl" class="w-100 h-100 object-cover" />
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="avatar-xs rounded-lg d-flex flex-center @(isOwner ? "text-aurora" : "text-muted") shadow-sm" 
+                                                 style="background:@avatarBg">
+                                                <span class="material-symbols-outlined fs-6">account_circle</span>
+                                            </div>
+                                        }
                                         @{
-                                            var isOnline = await PresenceTracker.IsUserOnline(member.UserId);
+                                            var onlineUsers = ViewBag.OnlineUsers as string[] ?? new string[0];
+                                            var isOnline = onlineUsers.Contains(member.UserId);
                                         }
                                         <div id="status-dot-@member.UserId" class="position-absolute rounded-circle border border-dark status-dot @(isOnline ? "online" : "offline")" 
                                              style="bottom: -2px; right: -2px; width: 10px; height: 10px; z-index: 2;"></div>
@@ -121,30 +131,27 @@
                                         <div class="d-flex align-items-center gap-1 border-start ps-2" style="border-color: rgba(255,255,255,0.05) !important;" id="member-actions-@member.UserId">
                                             @switch (member.ConnectionStatus)
                                             {
-                                                case ConnectionStatus.Accepted:
+                                                case AskNLearn.Application.Common.Models.ConnectionStatus.Accepted:
                                                     <form asp-controller="Direct" asp-action="StartChat" method="post" class="mb-0">
                                                         <input type="hidden" name="userId" value="@member.UserId" />
-                                                        <button type="submit" class="btn btn-link p-1 text-aurora hover-text-white text-decoration-none d-flex flex-center" title="Send Message">
+                                                        <button type="submit" class="btn btn-link p-1 text-aurora hover-text-white text-decoration-none d-flex flex-center shadow-none" title="Send Message">
                                                             <span class="material-symbols-outlined fs-6">chat</span>
                                                         </button>
                                                     </form>
                                                     break;
-                                                case ConnectionStatus.PendingSent:
-                                                    <button class="btn btn-link p-1 text-muted opacity-50 text-decoration-none d-flex flex-center cursor-default" title="Request Pending">
+                                                case AskNLearn.Application.Common.Models.ConnectionStatus.PendingSent:
+                                                    <button class="btn btn-link p-1 text-muted opacity-50 text-decoration-none d-flex flex-center cursor-default shadow-none" title="Request Pending">
                                                         <span class="material-symbols-outlined fs-6">hourglass_empty</span>
                                                     </button>
                                                     break;
-                                                case ConnectionStatus.PendingReceived:
-                                                    <button onclick="acceptConnection('@member.UserId')" class="btn btn-link p-1 text-success hover-text-white text-decoration-none d-flex flex-center" title="Accept Request">
+                                                case AskNLearn.Application.Common.Models.ConnectionStatus.PendingReceived:
+                                                    <button onclick="acceptConnection('@member.UserId')" class="btn btn-link p-1 text-success hover-text-white text-decoration-none d-flex flex-center shadow-none" title="Accept Request">
                                                         <span class="material-symbols-outlined fs-6">check_circle</span>
-                                                    </button>
-                                                    <button onclick="declineConnection('@member.UserId')" class="btn btn-link p-1 text-danger hover-text-white text-decoration-none d-flex flex-center" title="Decline">
-                                                        <span class="material-symbols-outlined fs-6">cancel</span>
                                                     </button>
                                                     break;
                                                 default:
-                                                    <button onclick="sendConnectionRequest('@member.UserId')" class="btn btn-link p-1 text-muted hover-text-white text-decoration-none d-flex flex-center" title="Connect">
-                                                        <span class="material-symbols-outlined fs-6">person_add</span>
+                                                    <button onclick="sendConnectionRequest('@member.UserId')" class="btn btn-link p-1 text-muted hover-text-white text-decoration-none d-flex flex-center shadow-none" title="Connect">
+                                                        <span class="material-symbols-outlined fs-6">add</span>
                                                     </button>
                                                     break;
                                             }
@@ -181,30 +188,36 @@
                 </div>
             </div>
 
-            <!-- Profile & Group Settings -->
-            <div class="p-3 d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-2 p-1 rounded-3 flex-grow-1 hover-glow" style="cursor: pointer; background: rgba(255,255,255,0.02);">
-                    <div class="position-relative">
-                        <div id="voiceAvatar" class="avatar-sm rounded-circle d-flex flex-center text-aurora fw-black shadow" style="background: rgba(0,245,160,0.1); border: 1px solid var(--color-emerald); font-size: 0.65rem;">
-                             @(User.Identity?.Name?[0] ?? '?')
+            <!-- Discord-style Profile & Settings Footer -->
+            <div class="user-panel-discord p-2">
+                <div class="d-flex align-items-center justify-content-between discord-bg-dark p-2 rounded-lg">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1 min-w-0 user-clickable-zone px-1 py-1 rounded-3">
+                        <div class="position-relative flex-shrink-0">
+                            <div class="discord-avatar">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=@User.Identity?.Name" alt="avatar" class="rounded-circle w-100 h-100" />
+                                <div class="discord-status-dot online"></div>
+                            </div>
                         </div>
-                        <div class="position-absolute rounded-circle" style="bottom: -2px; right: -2px; width: 12px; height: 12px; background: var(--color-emerald); border: 2px solid var(--bg-universe);"></div>
+                        <div class="flex-grow-1 min-w-0 d-flex flex-column lh-tight">
+                            <span class="fw-bold text-white text-truncate discord-username">@(User.Identity?.Name?.Split('@')[0] ?? "User")</span>
+                            <div class="d-flex align-items-center gap-1 opacity-75">
+                                <span class="material-symbols-outlined text-aurora" style="font-size: 0.8rem;">smart_toy</span>
+                                <span class="text-white fw-bold" style="font-size: 0.65rem;">27</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex-grow-1 min-w-0">
-                         <p class="fw-bold text-white text-truncate mb-0" style="font-size: 0.75rem;">@(User.Identity?.Name ?? "User")</p>
-                         <p class="fw-semibold text-muted text-uppercase mb-0 tracking-normal" style="font-size: 0.6rem;">Online</p>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center gap-1 ms-2">
-                    <button onclick="toggleCamera()" id="videoButton" class="btn btn-link p-1 text-muted hover-glow text-decoration-none rounded-lg d-flex align-items-center justify-content-center" title="Toggle Camera" style="width: 32px; height: 32px;">
-                        <span id="videoIcon" class="material-symbols-outlined fs-6">videocam_off</span>
-                    </button>
-                    @if (ViewBag.CurrentUserId == Model.OwnerId)
-                    {
-                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-link p-1 text-muted hover-glow text-decoration-none rounded-lg d-flex align-items-center justify-content-center" title="Group Settings" style="width: 32px; height: 32px;">
-                            <span class="material-symbols-outlined fs-6">settings</span>
+                    
+                    <div class="d-flex align-items-center gap-0">
+                        <button onclick="toggleMic()" id="micButton" class="btn btn-icon-discord" title="Mute">
+                            <span id="micIcon" class="material-symbols-outlined">mic</span>
+                        </button>
+                        <button onclick="toggleDeafen()" id="deafenButton" class="btn btn-icon-discord" title="Deafen">
+                            <span id="deafenIcon" class="material-symbols-outlined">headphones</span>
+                        </button>
+                        <a asp-controller="Profile" asp-action="Index" class="btn btn-icon-discord" title="User Settings">
+                            <span class="material-symbols-outlined">settings</span>
                         </a>
-                    }
+                    </div>
                 </div>
             </div>
         </div>
@@ -265,8 +278,7 @@
         width: 50%;
         flex-shrink: 0;
         height: 100%;
-        background: rgba(13, 17, 23, 0.4);
-        backdrop-filter: blur(10px);
+        background: transparent !important;
     }
 
     .member-card {
@@ -316,6 +328,70 @@
     .status-dot.offline {
         background-color: var(--color-status-offline) !important;
     }
+
+    /* Discord User Panel Styles */
+    .user-panel-discord {
+        background: rgba(0, 0, 0, 0.2);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .discord-bg-dark {
+        background: rgba(30, 31, 34, 0.6);
+        transition: background 0.2s ease;
+    }
+    .user-clickable-zone:hover {
+        background: rgba(255, 255, 255, 0.05);
+        cursor: pointer;
+    }
+    .discord-avatar {
+        width: 32px;
+        height: 32px;
+        background: #313338;
+        border-radius: 50%;
+        position: relative;
+    }
+    .discord-status-dot {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid #232428;
+    }
+    .discord-username {
+        font-size: 0.85rem;
+        letter-spacing: -0.2px;
+    }
+    .btn-icon-discord {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #b5bac1;
+        border-radius: 4px;
+        border: none;
+        background: transparent;
+        transition: all 0.2s ease;
+    }
+    .btn-icon-discord:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #dbdee1;
+    }
+    .btn-icon-discord .material-symbols-outlined {
+        font-size: 1.25rem;
+    }
+    .discord-muted {
+        color: #f23f42 !important;
+    }
+    .btn-icon-discord.discord-muted:hover {
+        background: rgba(242, 63, 66, 0.1) !important;
+    }
+    .discord-status-dot.online {
+        background-color: #23a55a !important;
+        box-shadow: 0 0 0 2px #2b2d31;
+    }
 </style>
 
 
@@ -357,9 +433,17 @@
                     <h2 class="display-5 fw-black text-white mb-4 tracking-tighter position-relative z-1">
                         Welcome to <span class="text-aurora text-uppercase" style="font-style: italic;">@Model.Name</span>
                     </h2>
-                    <p class="fs-5 text-muted fw-medium mx-auto position-relative z-1" style="max-width: 600px;">
+                    <p class="fs-5 text-muted fw-medium mx-auto mb-5 position-relative z-1" style="max-width: 600px;">
                         @(string.IsNullOrEmpty(Model.Description) ? "This is the start of your learning journey. Collaborate, study, and grow together!" : Model.Description)
                     </p>
+                    @if (!Model.IsMember)
+                    {
+                        <div class="position-relative z-1">
+                            <button onclick="joinGroup('@Model.Id')" id="main-join-btn" class="btn btn-premium btn-lg px-5 py-3 rounded-pill fw-black text-uppercase tracking-widest shadow-lg animate-pulse">
+                                JOIN STUDY GROUP
+                            </button>
+                        </div>
+                    }
                 </section>
                 <hr class="w-100 border-top" style="border-color: var(--border-glass) !important;" />
             </div>
@@ -368,11 +452,14 @@
         <!-- Quick Input Bar -->
         <div class="p-4 position-absolute bottom-0 start-0 end-0 pointer-events-none" style="background: linear-gradient(to top, var(--bg-universe) 40%, transparent);">
             <div class="mx-auto w-100 pointer-events-auto position-relative" style="max-width: 800px;">
-                <!-- Emoji/GIF Picker Popup -->
-                <div id="picker-popup" class="d-none position-absolute bottom-100 start-0 mb-3 glass-card flex-column overflow-hidden animate-entrance" style="width: 320px; height: 380px; z-index: 1050; display: flex;">
+                <div id="picker-popup" class="d-none position-absolute bottom-100 start-0 mb-3 glass-card flex-column overflow-hidden animate-entrance" style="width: 320px; height: 380px; z-index: 1050;">
                     <div class="d-flex border-bottom" style="border-color: var(--border-glass) !important;">
-                        <button onclick="switchPickerTab('emoji')" id="tab-emoji" class="btn btn-link flex-grow-1 py-3 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-aurora" style="font-size: 0.65rem; border-bottom: 2px solid var(--color-emerald) !important;">Emojis</button>
-                        <button onclick="switchPickerTab('gif')" id="tab-gif" class="btn btn-link flex-grow-1 py-3 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-muted hover-glow" style="font-size: 0.65rem; border-bottom: 2px solid transparent !important;">GIFs</button>
+                        <button onclick="switchPickerTab('emoji')" id="tab-emoji" class="btn btn-link flex-grow-1 py-3 px-0 rounded-0 text-decoration-none d-flex flex-center" style="border-bottom: 2px solid var(--color-emerald) !important;">
+                            <span class="material-symbols-outlined text-aurora">mood</span>
+                        </button>
+                        <button onclick="switchPickerTab('gif')" id="tab-gif" class="btn btn-link flex-grow-1 py-3 px-0 rounded-0 text-decoration-none d-flex flex-center" style="border-bottom: 2px solid transparent !important;">
+                            <span class="material-symbols-outlined text-muted hover-glow">gif_box</span>
+                        </button>
                     </div>
                     <div id="emoji-picker-container" class="flex-grow-1 overflow-hidden"></div>
                     <div id="gif-picker-container" class="d-none flex-grow-1 flex-column p-3 overflow-hidden" style="display: flex;">
@@ -385,19 +472,18 @@
                         </div>
                     </div>
                 </div>
-
-                <div id="input-container" class="glass-card d-flex align-items-center gap-3 p-2 px-4 shadow-lg transition-all" style="border-radius: 2rem;">
-                    <input type="file" id="chat-attachment-input" class="d-none" multiple onchange="handleChatAttachment(this)" />
-                    <button id="attachment-btn" onclick="document.getElementById('chat-attachment-input').click()" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center">
-                        <span class="material-symbols-outlined fs-4">add_circle</span>
-                    </button>
-                    <input type="text" id="message-input" placeholder="Message to @Model.Name..." class="form-control bg-transparent border-0 text-white shadow-none ps-0" style="font-size: 0.95rem;">
-                    <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div id="input-container" class="glass-card d-flex align-items-center flex-grow-1 gap-3 p-2 px-4 shadow-lg transition-all" style="border-radius: 2rem; background: rgba(255,255,255,0.03) !important; border-color: var(--border-glass) !important;">
+                        <input type="file" id="chat-attachment-input" class="d-none" multiple onchange="handleChatAttachment(this)" />
+                        <button id="attachment-btn" onclick="document.getElementById('chat-attachment-input').click()" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center">
+                            <span class="material-symbols-outlined fs-4">add_circle</span>
+                        </button>
+                        <input type="text" id="message-input" placeholder="Message to @Model.Name..." class="form-control bg-transparent border-0 text-white shadow-none ps-0" style="font-size: 0.95rem;">
                         <button id="emoji-btn" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center">
                             <span class="material-symbols-outlined fs-4">mood</span>
                         </button>
-                        <button id="send-btn" class="btn btn-premium d-flex align-items-center justify-content-center rounded-pill px-4" style="height: 40px; font-size: 0.75rem;">SEND</button>
                     </div>
+                    <button id="send-btn" onclick="sendMessage()" class="btn btn-premium d-flex align-items-center justify-content-center rounded-pill px-4" style="height: 52px; min-width: 100px; font-size: 0.85rem; font-weight: 800; letter-spacing: 1px;">SEND</button>
                 </div>
             </div>
         </div>
@@ -525,13 +611,21 @@
     </script>
 
     <script>
+        const GROUP_ID = '@Model.Id';
+        const IS_MEMBER = @(Model.IsMember ? "true" : "false");
+        const CURRENT_USER_ID = '@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value';
+        
+        let activeChannelId = null;
+        let membersSkip = 20;
+        let membersLoading = false;
+        let membersAllLoaded = @(Model.MemberCount <= 20 ? "true" : "false");
+        let membersObserver = null;
 
-        // ── Initialization (DOM Dependent) ──────────────────────────
         document.addEventListener('DOMContentLoaded', () => {
+            // UI Setup
             const sendBtn = document.getElementById('send-btn');
             const msgInput = document.getElementById('message-input');
-            if (sendBtn) sendBtn.onclick = () => { if (window.sendMessage) window.sendMessage(); };
-            if (msgInput) msgInput.onkeydown = (e) => { if (e.key === 'Enter' && window.sendMessage) window.sendMessage(); };
+            if (msgInput) msgInput.onkeydown = (e) => { if (e.key === 'Enter') window.sendMessage(); };
 
             const emojiBtn = document.getElementById('emoji-btn');
             const pickerPopup = document.getElementById('picker-popup');
@@ -556,20 +650,31 @@
                 };
             }
 
-            const dropZone = document.getElementById('drop-zone');
-            if (dropZone) {
-                window.ondragenter = (e) => { e.preventDefault(); dropZone.classList.remove('d-none'); dropZone.classList.add('d-flex'); };
-                dropZone.ondragleave = (e) => { if (e.relatedTarget === null || !dropZone.contains(e.relatedTarget)) { dropZone.classList.add('d-none'); dropZone.classList.remove('d-flex'); } };
-                dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.add('d-none'); dropZone.classList.remove('d-flex'); alert('Files detected.'); };
-            }
-
-            // JOIN SIGNALR
-            if (window.startSignalR) window.startSignalR();
+            // SignalR Start
+            setupStudyGroupHandlers();
 
             window.addEventListener('beforeunload', () => {
                  if (currentVoiceChannelId) leaveVoice();
             });
+
+            // Auto-scroll to messages if already joining
+            const firstChannel = document.querySelector('.channel-item[onclick*="joinTextChannel"]');
+            if (firstChannel) firstChannel.click();
         });
+
+        async function joinGroup(id) {
+            const btn = document.getElementById('main-join-btn');
+            if(btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Joining...';
+            }
+            const resp = await fetch(`/StudyGroups/Join/${id}`, { method: 'POST' });
+            if (resp.ok) {
+                location.reload();
+            } else {
+                if(btn) { btn.disabled = false; btn.innerText = 'JOIN STUDY GROUP'; }
+            }
+        }
 
         // --- Interaction Handlers ---
         window.initEmojiPicker = () => {
@@ -603,10 +708,10 @@
         // ── Communication & App Logic ──────────────────────────
         let currentVoiceChannelId = null;
         let currentTextChannelId = null;
-        let connection = null;
         
         let localStream = null;
         let isMuted = false;
+        let isDeafened = false;
         const peers = {}; 
         const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
@@ -684,11 +789,8 @@
             }
         }
 
-        async function startSignalR() {
-            connection = new signalR.HubConnectionBuilder()
-                .withUrl("/communicationHub")
-                .withAutomaticReconnect()
-                .build();
+        function setupStudyGroupHandlers() {
+            if (!window.connection) return;
 
             connection.on("ReceiveMessage", (message) => {
                 if (currentTextChannelId === message.channelId) {
@@ -775,18 +877,16 @@
                 }
             });
 
-            try {
-                await connection.start();
-                const initialChannelId = "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Id";
-                if (initialChannelId) joinTextChannel(initialChannelId, "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Name");
-            } catch (err) { console.error("SignalR Error:", err); }
+            const initialChannelId = "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Id";
+            if (initialChannelId) joinTextChannel(initialChannelId, "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Name");
         }
 
         async function createPeerConnection(connectionId, isOffer) {
+            if (!window.connection) return;
             const pc = new RTCPeerConnection(iceServers);
             peers[connectionId] = { pc };
             pc.onicecandidate = (event) => {
-                if (event.candidate) connection.invoke("SendSignal", JSON.stringify({ candidate: event.candidate }), connectionId);
+                if (event.candidate) window.connection.invoke("SendSignal", JSON.stringify({ candidate: event.candidate }), connectionId);
             };
             pc.ontrack = (event) => {
                 if (event.track.kind === 'audio') {
@@ -824,16 +924,16 @@
             if (isOffer) {
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
-                connection.invoke("SendSignal", JSON.stringify({ sdp: offer }), connectionId);
+                window.connection.invoke("SendSignal", JSON.stringify({ sdp: offer }), connectionId);
             }
             return peers[connectionId];
         }
 
         async function joinTextChannel(id, name) {
-            if (currentTextChannelId === id) return;
-            if (currentTextChannelId) await connection.invoke("LeaveChannel", currentTextChannelId);
+            if (currentTextChannelId === id || !window.connection) return;
+            if (currentTextChannelId) await window.connection.invoke("LeaveChannel", currentTextChannelId);
             currentTextChannelId = id;
-            await connection.invoke("JoinChannel", id);
+            await window.connection.invoke("JoinChannel", id);
             
             document.getElementById('message-input').placeholder = `Message to #${name}...`;
             const welcome = document.querySelector('section.py-5');
@@ -849,24 +949,43 @@
                 list.className = 'd-flex flex-column gap-4 pb-5 mb-5';
                 container.appendChild(list);
             }
+            
             list.innerHTML = `
-                <div class="py-5 text-center opacity-50 animate-entrance">
-                    <div class="rounded-circle d-flex flex-center mx-auto mb-4" style="width: 64px; height: 64px; background: rgba(0,245,160,0.1); color: var(--color-emerald);">
-                        <span class="material-symbols-outlined fs-2">chat_bubble</span>
-                    </div>
-                    <p class="fw-bold text-uppercase tracking-widest text-aurora mb-2" style="font-size: 0.65rem;">Connected to #${name}</p>
-                    <p class="fw-medium text-muted mb-0" style="font-size: 0.75rem;">Start a conversation with your group members.</p>
+                <div class="py-5 text-center opacity-75 animate-entrance">
+                    <div class="spinner-border text-aurora mb-3" role="status"></div>
+                    <p class="text-muted small fw-bold text-uppercase tracking-widest">Loading history for #${name}...</p>
                 </div>
             `;
+
+            try {
+                const response = await fetch(`/StudyGroups/GetChannelMessages?channelId=${id}`);
+                const messages = await response.json();
+                list.innerHTML = '';
+                if (messages.length === 0) {
+                     list.innerHTML = `
+                        <div class="py-5 text-center opacity-50 animate-entrance">
+                            <div class="rounded-circle d-flex flex-center mx-auto mb-4" style="width: 64px; height: 64px; background: rgba(0,245,160,0.1); color: var(--color-emerald);">
+                                <span class="material-symbols-outlined fs-2">chat_bubble</span>
+                            </div>
+                            <p class="fw-bold text-uppercase tracking-widest text-aurora mb-2" style="font-size: 0.65rem;">Welcome to #${name}</p>
+                            <p class="fw-medium text-muted mb-0" style="font-size: 0.75rem;">This is the start of the #${name} channel.</p>
+                        </div>
+                    `;
+                } else {
+                    messages.forEach(msg => appendMessage(msg));
+                }
+            } catch (err) {
+                list.innerHTML = '<p class="text-danger text-center py-5">Error loading messages.</p>';
+            }
         }
 
         async function joinVoice(id, name) {
-            if (currentVoiceChannelId === id) return;
+            if (currentVoiceChannelId === id || !window.connection) return;
             if (currentVoiceChannelId) await leaveVoice();
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 currentVoiceChannelId = id;
-                await connection.invoke("JoinVoice", id);
+                await window.connection.invoke("JoinVoice", id);
 
                 document.getElementById('voiceStatusPanel').classList.remove('d-none');
                 document.getElementById('connectedChannelName').innerText = name;
@@ -936,7 +1055,7 @@
             if (micIcon) micIcon.innerText = isMuted ? 'mic_off' : 'mic';
             if (micButton) {
                 micButton.classList.toggle('text-danger', isMuted);
-                micButton.classList.toggle('bg-danger-subtle', isMuted);
+                micButton.classList.toggle('discord-muted', isMuted);
             }
             if (localMicOffIcon) {
                 if (isMuted) localMicOffIcon.classList.remove('d-none');
@@ -946,6 +1065,22 @@
             if (currentVoiceChannelId) {
                 connection.invoke("ToggleMute", currentVoiceChannelId, isMuted);
             }
+        }
+
+        function toggleDeafen() {
+            isDeafened = !isDeafened;
+            const icon = document.getElementById('deafenIcon');
+            const btn = document.getElementById('deafenButton');
+            
+            if (icon) icon.innerText = isDeafened ? 'headphones_off' : 'headphones';
+            if (btn) {
+                btn.classList.toggle('text-danger', isDeafened);
+                btn.classList.toggle('discord-muted', isDeafened);
+            }
+            
+            // Audio policy: deafen implies mute usually in Discord-like flow
+            if (isDeafened && !isMuted) toggleMic();
+            else if (!isDeafened && isMuted) toggleMic(); // toggle back
         }
 
         async function leaveVoice() {
@@ -1019,26 +1154,20 @@
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
-        async function sendMessage() {
+        window.sendMessage = async function() {
             const input = document.getElementById('message-input');
             const content = input.value.trim();
             if (!content || !currentTextChannelId) return;
             try {
-                await connection.invoke("SendMessage", currentTextChannelId, content);
+                if (!window.connection || window.connection.state !== "Connected") return;
+                await window.connection.invoke("SendMessage", currentTextChannelId, content);
                 input.value = '';
                 input.focus();
-            } catch (err) {}
+            } catch (err) { console.error("SignalR Send Error:", err); }
         }
 
 
         // ── Progressive Members Load ──────────────────────────────
-        const GROUP_ID = '@Model.Id';
-        const CURRENT_USER_ID = '@User.FindFirst(ClaimTypes.NameIdentifier)?.Value';
-        let membersSkip = 20;
-        let membersLoading = false;
-        let membersAllLoaded = @(Model.MemberCount <= 20 ? "true" : "false");
-        let membersObserver = null;
-
         function buildMemberHtml(m) {
             const name = m.fullName || m.userName || m.id;
             const isMe = m.id === CURRENT_USER_ID;

@@ -14,16 +14,10 @@
 
 @section Sidebar {
     <div class="d-flex flex-column h-100 w-100 bg-transparent animate-entrance">
-        <div class="p-4 border-bottom" style="border-color: var(--border-glass) !important;">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <h2 class="h4 fw-bold text-white mb-0 tracking-tighter">
-                    Direct <span class="text-aurora">Messages</span>
-                </h2>
-                <div class="rounded-circle bg-success shadow-sm" style="width: 8px; height: 8px;"></div>
-            </div>
-            <div class="position-relative">
-                <span class="material-symbols-outlined position-absolute start-0 top-50 translate-middle-y ms-3 text-muted">search</span>
-                <input type="text" placeholder="Search..." class="form-control form-control-glass ps-5 py-2" style="font-size: 0.85rem;" />
+        <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-center" style="border-color: var(--border-glass) !important; min-height: 80px;">
+            <div class="position-relative w-100">
+                <span class="material-symbols-outlined position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" style="font-size: 1rem;">search</span>
+                <input type="text" placeholder="Search direct messages..." class="form-control form-control-glass ps-5 py-2" style="font-size: 0.85rem; border-radius: 1rem;" />
             </div>
         </div>
 
@@ -67,6 +61,7 @@
                 </div>
             }
         </div>
+
     </div>
 }
 
@@ -77,8 +72,8 @@
         {
             var otherParticipant = Model.Participants.FirstOrDefault(p => p.UserId != currentUserId);
 
-            <!-- Chat Header -->
-            <header class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom position-relative z-index-3" style="min-height: 80px; border-color: var(--border-glass) !important; background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(20px);">
+            <!-- Chat Header (Fixed Transparency) -->
+            <header class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom position-relative z-index-3" style="min-height: 80px; border-color: var(--border-glass) !important; background: rgba(15, 23, 42, 0.05); backdrop-filter: blur(10px);">
                 <div class="d-flex align-items-center gap-3">
                     <div class="avatar-md rounded-xl overflow-hidden border border-aurora shadow-lg">
                         <img src="@(otherParticipant?.User?.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={otherParticipant?.User?.UserName}")" class="w-100 h-100 object-cover" alt="User Avatar" />
@@ -98,15 +93,11 @@
                     <button onclick="startCall(true)" class="btn btn-glass px-3 py-2 d-flex align-items-center justify-content-center" title="Video Call">
                         <span class="material-symbols-outlined">videocam</span>
                     </button>
-                    <!-- Call Controls (Hidden by default) -->
                     <div id="call-controls" class="d-none d-flex align-items-center gap-2 ms-2">
                         <button onclick="endCall()" class="btn btn-danger btn-glass px-3 py-2 d-flex align-items-center justify-content-center" title="End Call">
                             <span class="material-symbols-outlined">call_end</span>
                         </button>
                     </div>
-                    <button class="btn btn-glass px-3 py-2 d-flex align-items-center justify-content-center">
-                        <span class="material-symbols-outlined">more_vert</span>
-                    </button>
                 </div>
             </header>
 
@@ -121,35 +112,63 @@
             </div>
 
             <!-- Messages List -->
-            <div id="messages-container" class="flex-grow-1 overflow-y-auto p-4 p-md-5 d-flex flex-column gap-3 custom-scrollbar">
+            <div id="messages-container" class="flex-grow-1 overflow-y-auto p-4 p-md-5 d-flex flex-column gap-4 custom-scrollbar">
                 @foreach (var message in Model.Messages.OrderBy(m => m.CreatedAt))
                 {
                     bool isMine = message.AuthorId == currentUserId;
-                    <div class="d-flex @(isMine ? "justify-content-end" : "justify-content-start") animate-slide-up">
-                        <div class="d-flex flex-column @(isMine ? "align-items-end" : "align-items-start")" style="max-width: 75%;">
-                            <div class="px-4 py-3 rounded-xl shadow-sm position-relative @(isMine ? "bg-aurora text-dark fw-bold rounded-top-end-0" : "glass-card text-white rounded-top-start-0 border-glass")" style="font-size: 0.9rem;">
-                                @message.Content
+                    var authorName = message.Author?.FullName ?? message.Author?.UserName ?? "User";
+                    var authorAvatar = message.Author?.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={message.Author?.UserName}";
+                    
+                    <div class="d-flex w-100 @(isMine ? "justify-content-end" : "justify-content-start") animate-slide-up">
+                        <div class="d-flex @(isMine ? "flex-row-reverse" : "") gap-3 align-items-end" style="max-width: 85%;">
+                            @if (!isMine) {
+                                <img src="@authorAvatar" class="avatar-sm rounded-lg shadow-sm border" style="border-color: var(--border-glass) !important;"/>
+                            }
+                            <div class="d-flex flex-column gap-1 @(isMine ? "align-items-end" : "align-items-start")">
+                                <div class="d-flex align-items-center gap-2 px-1">
+                                    <span class="fw-black text-muted text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">@authorName</span>
+                                    <span class="fw-bold text-muted" style="font-size: 0.55rem;">@message.CreatedAt.ToString("HH:mm")</span>
+                                </div>
+                                <div class="p-3 shadow-lg" style="border-radius: 1.5rem; @(isMine ? "background: var(--gradient-aurora); color: var(--bg-universe); border-top-right-radius: 0.25rem;" : "background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: white; border-top-left-radius: 0.25rem; backdrop-filter: blur(10px);")">
+                                    @if (message.Content.StartsWith("http") && (message.Content.Contains("giphy.com") || message.Content.Contains("tenor.com"))) {
+                                        <img src="@message.Content" class="img-fluid rounded-3" style="max-width: 250px;" />
+                                    } else {
+                                        <p class="mb-0 fw-medium" style="font-size: 0.9rem; line-height: 1.5;">@message.Content</p>
+                                    }
+                                </div>
                             </div>
-                            <span class="text-muted mt-2 mx-2 opacity-75 fw-bold" style="font-size: 0.65rem;">@message.CreatedAt.ToString("HH:mm")</span>
                         </div>
                     </div>
                 }
             </div>
 
-            <!-- Chat Input -->
-            <footer class="p-4 border-top" style="border-color: var(--border-glass) !important; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px);">
-                <div class="container-fluid p-0">
-                    <div class="glass-card p-2 d-flex align-items-center gap-2" style="border-radius: 2rem; background: rgba(255,255,255,0.03);">
-                        <button class="btn btn-link text-muted p-2 hover-glow text-decoration-none flex-shrink-0">
-                            <span class="material-symbols-outlined">add_circle</span>
-                        </button>
-                        <input type="text" placeholder="Write a message..." class="form-control border-0 bg-transparent text-white shadow-none ps-0 min-w-0" style="font-size: 0.9rem;" />
-                        <button class="btn btn-link text-muted p-2 hover-glow text-decoration-none flex-shrink-0">
-                            <span class="material-symbols-outlined">sentiment_satisfied</span>
-                        </button>
-                        <button class="btn btn-premium d-flex align-items-center justify-content-center p-0 flex-shrink-0" style="width: 48px; height: 48px; border-radius: 1.25rem;">
-                            <span class="material-symbols-outlined" style="font-size: 1.5rem;">send</span>
-                        </button>
+            <!-- Chat Input (Standardized with Study Groups - Centered & Glassy) -->
+            <footer class="p-4 bg-transparent border-0">
+                <div class="mx-auto w-100 position-relative" style="max-width: 800px;">
+                    <!-- Picker Popup -->
+                    <div id="picker-popup" class="d-none position-absolute bottom-100 start-0 mb-3 glass-card flex-column overflow-hidden animate-entrance" style="width: 320px; height: 380px; z-index: 1050;">
+                        <div id="emoji-picker-container" class="flex-grow-1 overflow-hidden"></div>
+                        <div id="gif-picker-container" class="d-none flex-grow-1 flex-column p-3 overflow-hidden" style="display: flex;">
+                             <div class="position-relative mb-3">
+                                <input type="text" id="gif-search" placeholder="Search Giphy..." class="form-control form-control-glass ps-5 text-white" style="font-size: 0.8rem; border-radius: 0.75rem;">
+                                <span class="material-symbols-outlined position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 1rem;">search</span>
+                             </div>
+                             <div id="gif-results" class="flex-grow-1 overflow-y-auto d-grid custom-scrollbar gap-2" style="grid-template-columns: 1fr 1fr;"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3">
+                        <div id="input-container" class="glass-card d-flex align-items-center flex-grow-1 gap-3 p-2 px-4 shadow-lg transition-all" style="border-radius: 2rem; border-color: var(--border-glass) !important; background: rgba(255,255,255,0.03) !important; backdrop-filter: blur(10px);">
+                            <input type="file" id="dm-attachment-input" class="d-none" multiple onchange="handleDMAttachment(this)" />
+                            <button onclick="document.getElementById('dm-attachment-input').click()" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center shadow-none">
+                                <span class="material-symbols-outlined fs-4">add_circle</span>
+                            </button>
+                            <input type="text" id="message-input" placeholder="Write a message..." class="form-control border-0 bg-transparent text-white shadow-none ps-0 min-w-0" style="font-size: 0.95rem;" />
+                            <button id="emoji-btn" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex flex-center shadow-none">
+                                <span class="material-symbols-outlined fs-4">mood</span>
+                            </button>
+                        </div>
+                        <button id="send-btn" onclick="sendMessage()" class="btn btn-premium d-flex align-items-center justify-content-center rounded-pill px-4" style="height: 52px; min-width: 100px; font-size: 0.85rem; font-weight: 800; letter-spacing: 1px;">SEND</button>
                     </div>
                 </div>
             </footer>
@@ -171,29 +190,38 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
     <script>
         const msgList = document.getElementById('messages-container');
         if (msgList) msgList.scrollTop = msgList.scrollHeight;
 
-        // --- SignalR & WebRTC for DM Calls ---
-        let connection = null;
         let localStream = null;
         let currentConversationId = "@Model?.Id";
+        let currentUserId = "@currentUserId";
         const peers = {};
         const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
         let isVideoOn = false;
         let isMuted = false;
 
-        async function startSignalR() {
-            if (!currentConversationId) return;
+        function setupSignalRHandlers() {
+            if (!currentConversationId || !window.connection) return;
 
-            connection = new signalR.HubConnectionBuilder()
-                .withUrl("/communicationHub")
-                .withAutomaticReconnect()
-                .build();
+            // Remove old handlers to prevent memory leaks and duplicates
+            window.connection.off("ReceiveMessage");
+            window.connection.off("ReceiveSignal");
+            window.connection.off("UserJoinedVoice");
+            window.connection.off("UserLeftVoice");
 
-            connection.on("ReceiveSignal", async (signal, fromConnectionId) => {
+            window.connection.on("ReceiveMessage", (message) => {
+                const incomingConvId = (message.conversationId || message.channelId || "").toString().toLowerCase();
+                const activeConvId = currentConversationId.toLowerCase();
+                
+                if (incomingConvId === activeConvId) {
+                    appendMessage(message);
+                }
+            });
+
+            window.connection.on("ReceiveSignal", async (signal, fromConnectionId) => {
                 const data = JSON.parse(signal);
                 let peer = peers[fromConnectionId];
                 if (data.sdp) {
@@ -202,20 +230,20 @@
                     if (data.sdp.type === "offer") {
                         const answer = await peer.pc.createAnswer();
                         await peer.pc.setLocalDescription(answer);
-                        connection.invoke("SendSignal", JSON.stringify({ sdp: answer }), fromConnectionId);
+                        window.connection.invoke("SendSignal", JSON.stringify({ sdp: answer }), fromConnectionId);
                     }
                 } else if (data.candidate) {
                     if (peer) await peer.pc.addIceCandidate(new RTCIceCandidate(data.candidate));
                 }
             });
 
-            connection.on("UserJoinedVoice", async (data) => {
+            window.connection.on("UserJoinedVoice", async (data) => {
                 if (data.channelId === currentConversationId) {
                     await createPeerConnection(data.connectionId, true);
                 }
             });
 
-            connection.on("UserLeftVoice", (connectionId) => {
+            window.connection.on("UserLeftVoice", (connectionId) => {
                 if (peers[connectionId]) {
                     peers[connectionId].pc.close();
                     delete peers[connectionId];
@@ -227,11 +255,136 @@
                 }
             });
 
+            // Join the conversation group
+            if(window.connection.state === signalR.HubConnectionState.Connected) {
+                window.connection.invoke("JoinChannel", currentConversationId);
+            } else {
+                window.connection.onreconnected(() => window.connection.invoke("JoinChannel", currentConversationId));
+            }
+        }
+
+        function appendMessage(msg) {
+            const container = document.getElementById('messages-container');
+            if (!container) return;
+            const isMine = msg.authorId === currentUserId;
+            
+            const msgHtml = `
+                <div class="d-flex w-100 ${isMine ? 'justify-content-end' : 'justify-content-start'} animate-slide-up">
+                    <div class="d-flex ${isMine ? 'flex-row-reverse' : ''} gap-3 align-items-end" style="max-width: 85%;">
+                        ${!isMine ? `<img src="${msg.authorAvatar}" class="avatar-sm rounded-lg shadow-sm border" style="border-color: var(--border-glass) !important;"/>` : ''}
+                        <div class="d-flex flex-column gap-1 ${isMine ? 'align-items-end' : 'align-items-start'}">
+                            <div class="d-flex align-items-center gap-2 px-1">
+                                <span class="fw-black text-muted text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">${msg.authorName}</span>
+                                <span class="fw-bold text-muted" style="font-size: 0.55rem;">${msg.createdAt}</span>
+                            </div>
+                            <div class="p-3 shadow-lg" style="border-radius: 1.5rem; ${isMine ? 'background: var(--gradient-aurora); color: var(--bg-universe); border-top-right-radius: 0.25rem;' : 'background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: white; border-top-left-radius: 0.25rem; backdrop-filter: blur(10px);'}">
+                                ${msg.content.startsWith('http') && (msg.content.includes('giphy.com') || msg.content.includes('tenor.com')) ? `<img src="${msg.content}" class="img-fluid rounded-3" style="max-width: 250px;" />` : `<p class="mb-0 fw-medium" style="font-size: 0.9rem; line-height: 1.5;">${msg.content}</p>`}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', msgHtml);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        window.sendMessage = async function() {
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+            if (!content || !window.connection) return;
+            
             try {
-                await connection.start();
-                // Join the conversation group for signaling
-                await connection.invoke("JoinChannel", currentConversationId);
-            } catch (err) { console.error("SignalR Connection Error:", err); }
+                // Use the global connection from _Layout or site.js
+                await window.connection.invoke("SendMessage", "@Model?.Id", content);
+                input.value = '';
+                input.focus();
+            } catch (err) { 
+                console.error("SignalR Send Error:", err);
+                // Fallback focus
+                input.focus();
+            }
+        }
+
+        // --- Interaction Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+             const input = document.getElementById('message-input');
+             if (input) {
+                 input.onkeydown = (e) => { if (e.key === 'Enter') sendMessage(); };
+             }
+
+             const emojiBtn = document.getElementById('emoji-btn');
+             const pickerPopup = document.getElementById('picker-popup');
+             if (emojiBtn && pickerPopup) {
+                 emojiBtn.onclick = (e) => {
+                     e.stopPropagation();
+                     pickerPopup.classList.toggle('d-none');
+                     if (!pickerPopup.classList.contains('d-none')) initDMEmojiPicker();
+                 };
+             }
+             
+             const gifSearch = document.getElementById('gif-search');
+             if (gifSearch) {
+                 gifSearch.oninput = (e) => {
+                     clearTimeout(window.dmGifTimeout);
+                     window.dmGifTimeout = setTimeout(() => searchDMGifs(e.target.value), 500);
+                 };
+             }
+
+             if (currentConversationId) setupSignalRHandlers();
+        });
+
+        function initDMEmojiPicker() {
+            const container = document.getElementById('emoji-picker-container');
+            if (container && !container.hasChildNodes()) {
+                const picker = new EmojiMart.Picker({
+                    onEmojiSelect: (emoji) => {
+                        const input = document.getElementById('message-input');
+                        input.value += emoji.native;
+                        document.getElementById('picker-popup').classList.add('d-none');
+                        input.focus();
+                    },
+                    theme: 'dark', set: 'native',
+                    icons: 'outline',
+                    skinTonePosition: 'none',
+                    previewPosition: 'none'
+                });
+                container.appendChild(picker);
+            }
+        }
+
+        function switchPickerTab(tab) {
+             const emojiS = document.getElementById('emoji-picker-container');
+             const gifS = document.getElementById('gif-picker-container');
+             const tabE = document.getElementById('tab-emoji');
+             const tabG = document.getElementById('tab-gif');
+             if (tab === 'emoji') {
+                 emojiS.classList.remove('d-none'); gifS.classList.add('d-none');
+                 tabE.style.borderBottomColor = 'var(--color-emerald)'; tabG.style.borderBottomColor = 'transparent';
+             } else {
+                 emojiS.classList.add('d-none'); gifS.classList.remove('d-none');
+                 tabG.style.borderBottomColor = 'var(--color-emerald)'; tabE.style.borderBottomColor = 'transparent';
+                 searchDMGifs();
+             }
+        }
+
+        async function searchDMGifs(q = 'trending') {
+            const results = document.getElementById('gif-results');
+            results.innerHTML = '<div class="spinner-border text-aurora mx-auto"></div>';
+            try {
+                const resp = await fetch(`https://api.giphy.com/v1/gifs/${q === 'trending' ? 'trending' : 'search'}?api_key=dc6zaTOxFJmzC&q=${q}&limit=10`);
+                const data = await resp.json();
+                results.innerHTML = data.data.map(g => `<img src="${g.images.fixed_height_small.url}" onclick="sendGif('${g.images.fixed_height.url}')" class="rounded cursor-pointer hover-glow w-100" />`).join('');
+            } catch(e) { results.innerHTML = 'Error'; }
+        }
+
+        function sendGif(url) {
+            document.getElementById('message-input').value = url;
+            sendMessage();
+            document.getElementById('picker-popup').classList.add('d-none');
+        }
+
+        function handleDMAttachment(input) {
+            if (input.files.length > 0) alert(`${input.files.length} files attached.`);
         }
 
         async function createPeerConnection(connectionId, isOffer) {

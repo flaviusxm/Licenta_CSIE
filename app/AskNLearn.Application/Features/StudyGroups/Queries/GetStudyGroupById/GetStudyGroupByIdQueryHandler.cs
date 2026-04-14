@@ -45,20 +45,20 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries.GetStudyGroupById
                     TopMembers = x.Members
                         .Where(m => !m.IsBanned)
                         .OrderByDescending(m => m.UserId == x.OwnerId)
-                        .ThenBy(m => m.User != null ? m.User.UserName : "")
-                        .Take(20)
+                        .ThenBy(m => m.User.UserName)
                         .Select(m => new MemberDto
                         {
                             UserId = m.UserId,
-                            UserName = m.User != null ? m.User.UserName : m.UserId,
-                            FullName = m.User != null ? m.User.FullName : null,
+                            UserName = m.User.UserName ?? m.UserId,
+                            FullName = m.User.FullName,
+                            AvatarUrl = m.User.AvatarUrl,
                             IsOwner = m.UserId == x.OwnerId,
                             ConnectionStatus = request.CurrentUserId == null ? ConnectionStatus.None : 
                                 _context.Friendships.Any(f => (f.RequesterId == request.CurrentUserId && f.AddresseeId == m.UserId && f.Status == FriendshipStatus.Accepted) || 
                                                              (f.RequesterId == m.UserId && f.AddresseeId == request.CurrentUserId && f.Status == FriendshipStatus.Accepted)) ? ConnectionStatus.Accepted :
                                 _context.Friendships.Any(f => f.RequesterId == request.CurrentUserId && f.AddresseeId == m.UserId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingSent :
                                 _context.Friendships.Any(f => f.RequesterId == m.UserId && f.AddresseeId == request.CurrentUserId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingReceived : ConnectionStatus.None
-                        }).ToList()
+                        }).Take(20).ToList()
                 })
                 .FirstOrDefaultAsync(cancellationToken);
         }

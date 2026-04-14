@@ -79,8 +79,15 @@
         </table>
     </div>
     <div class="px-5 py-4 d-flex justify-content-between align-items-center" style="border-top: 1px solid var(--border-glass); background: rgba(0,0,0,0.2);">
-        <div class="text-muted small">
-            Showing page <span class="text-white fw-bold">@Model.CurrentPage</span> of <span class="text-white fw-bold">@Model.TotalPages</span>
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-muted small">
+                Showing page <span class="text-white fw-bold">@Model.CurrentPage</span> of <span class="text-white fw-bold">@Model.TotalPages</span>
+            </div>
+            <select class="form-select form-select-glass py-1 px-2 fw-bold text-white shadow-sm" style="border-radius: 0.5rem; font-size: 0.7rem; width: auto;" onchange="loadLeaderboard(1, this.value)">
+                <option value="12" selected="@(Model.PageSize == 12)">12 / page</option>
+                <option value="24" selected="@(Model.PageSize == 24)">24 / page</option>
+                <option value="36" selected="@(Model.PageSize == 36)">36 / page</option>
+            </select>
         </div>
         <div class="d-flex gap-2">
             @if (Model.HasPreviousPage)

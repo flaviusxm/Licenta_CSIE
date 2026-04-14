@@ -46,10 +46,6 @@
 
         <!-- Actions -->
         <div class="d-flex align-items-center gap-2 position-relative z-1">
-            <a asp-action="CreatePost" asp-route-communityId="@Model.Id" class="btn btn-premium d-flex align-items-center gap-2">
-                <span class="material-symbols-outlined fs-5">add</span>
-                Post
-            </a>
             <a asp-controller="Explore" asp-action="Index" class="btn btn-glass p-2 d-flex align-items-center justify-content-center" title="Back">
                 <span class="material-symbols-outlined fs-5">arrow_back</span>
             </a>
@@ -71,20 +67,114 @@
                 <span class="text-muted" style="font-size: 0.8rem;">@totalPostCount posts total</span>
             }
         </div>
-
         @if (!posts.Any())
         {
-            <div class="glass-card text-center py-5">
+            <!-- Quick Post Interaction -->
+            <div id="quick-post-container" class="animate-entrance">
+                <div class="glass-card p-4 mb-4" onclick="toggleInlinePost(true)" style="cursor: pointer;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-md rounded-circle bg-glass d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                            <span class="material-symbols-outlined text-aurora">person</span>
+                        </div>
+                        <div class="flex-grow-1 bg-white bg-opacity-5 rounded-pill px-4 py-2 text-muted border border-glass hover-bg-glass transition-all" style="font-size: 0.9rem;">
+                            Start a discussion in @Model.Name...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="no-posts-placeholder" class="glass-card text-center py-5">
                 <span class="material-symbols-outlined display-1 text-muted mb-4 opacity-50">post_add</span>
                 <p class="text-white fw-bold fs-5 mb-1">No posts yet in this community.</p>
                 <p class="text-muted mb-4">Be the first to share something!</p>
-                <a asp-action="CreatePost" asp-route-communityId="@Model.Id" class="btn btn-premium d-inline-flex align-items-center gap-2 px-4 py-2">
-                    Start a Discussion
-                </a>
+                <button onclick="toggleInlinePost(true)" class="btn btn-premium d-inline-flex align-items-center gap-2 px-4 py-2">
+                    Post Now
+                </button>
             </div>
         }
         else
         {
+            <!-- Modern Inline Post Interaction -->
+            <div id="quick-post-container" class="animate-entrance">
+                <div class="glass-card p-4 mb-4 overflow-hidden position-relative" onclick="toggleInlinePost(true)" style="cursor: pointer;">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 bg-gradient-aurora opacity-5" style="pointer-events: none;"></div>
+                    <div class="d-flex align-items-center gap-3 position-relative z-1">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-md rounded-xl bg-premium d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; box-shadow: 0 0 15px rgba(0,245,160,0.3);">
+                                <span class="material-symbols-outlined text-white">edit_square</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h4 class="h6 fw-bold text-white mb-1">Share something with the community</h4>
+                            <p class="text-muted small mb-0">What's on your mind? Click here to start a new discussion...</p>
+                        </div>
+                        <button class="btn btn-premium px-4 rounded-pill d-none d-md-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined fs-5">add</span>
+                            POST
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Hidden Inline Form -->
+        <div id="inline-post-form" class="d-none animate-entrance mb-5">
+            <div class="glass-card p-4 p-md-5 shadow-2xl border-aurora position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100 h-1 bg-gradient-aurora"></div>
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h3 class="h4 fw-bold text-white m-0">Create New Discussion</h3>
+                    <button onclick="toggleInlinePost(false)" class="btn btn-glass p-2 rounded-circle">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                
+                <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="CommunityId" value="@Model.Id" />
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-black text-uppercase tracking-widest" style="font-size: 0.6rem;">Discussion Title</label>
+                        <input type="text" name="Title" class="form-control form-control-glass py-3 px-4 fw-bold text-white fs-5" placeholder="Give your post a clear, descriptive title..." required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-black text-uppercase tracking-widest" style="font-size: 0.6rem;">Content</label>
+                        <textarea name="Content" class="form-control form-control-glass p-4 text-white" rows="6" placeholder="What would you like to discuss? Use markdown for better formatting..." required></textarea>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-glass p-3 rounded-xl" title="Add Image">
+                                <span class="material-symbols-outlined fs-5">image</span>
+                            </button>
+                            <button type="button" class="btn btn-glass p-3 rounded-xl" title="Add Link">
+                                <span class="material-symbols-outlined fs-5">link</span>
+                            </button>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <button type="button" onclick="toggleInlinePost(false)" class="btn btn-glass px-4 py-2 fw-bold text-uppercase tracking-widest" style="font-size: 0.7rem;">Cancel</button>
+                            <button type="submit" class="btn btn-premium px-5 py-3 fw-bold text-uppercase tracking-widest shadow-lg">Publish Discussion</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function toggleInlinePost(show) {
+                const container = document.getElementById('quick-post-container');
+                const form = document.getElementById('inline-post-form');
+                const placeholder = document.getElementById('no-posts-placeholder');
+                
+                if (show) {
+                    if (container) container.classList.add('d-none');
+                    if (placeholder) placeholder.classList.add('d-none');
+                    form.classList.remove('d-none');
+                    form.querySelector('input[name="Title"]').focus();
+                } else {
+                    if (container) container.classList.remove('d-none');
+                    if (placeholder) placeholder.classList.remove('d-none');
+                    form.classList.add('d-none');
+                }
+            }
+        </script>
+
             <!-- Posts Container — AJAX will append here -->
             <div id="posts-container" class="d-flex flex-column gap-4">
                 @{

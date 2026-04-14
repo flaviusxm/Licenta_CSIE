@@ -1,0 +1,74 @@
+@using AskNLearn.Domain.Entities.Core
+@model IEnumerable<ApplicationUser>
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "My Connections";
+}
+
+<div class="container-fluid py-5" style="max-width: 1000px;">
+    <div class="glass-card p-4 p-md-5 mb-5 animate-entrance">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h1 class="display-6 fw-bold text-white tracking-tighter mb-2">My Connections</h1>
+                <p class="text-muted fs-6 mb-0">Manage your learning network and study buddies.</p>
+            </div>
+            <div class="badge rounded-pill glass-card border-0 px-3 py-2 fw-bold text-aurora" style="font-size: 0.9rem; background: rgba(0,245,160,0.1);">
+                @Model.Count() Connections
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <span class="material-symbols-outlined display-1 text-muted mb-4 opacity-50">person_search</span>
+                <p class="text-white fw-bold fs-5 mb-1">No connections yet.</p>
+                <p class="text-muted mb-4">Start exploring communities to find people with shared interests!</p>
+                <a asp-controller="Explore" asp-action="Index" class="btn btn-premium px-4 py-2">Find Study Buddies</a>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var user in Model)
+                {
+                    <div class="col-md-6 col-lg-4 animate-entrance">
+                        <div class="glass-card p-3 d-flex align-items-center gap-3 hover-glow transition-all" style="border: 1px solid var(--border-glass);">
+                            <div class="position-relative">
+                                <img src="@(user.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={user.UserName}")" 
+                                     class="rounded-xl object-cover" style="width: 60px; height: 60px; border: 1px solid var(--border-glass);" />
+                                <div class="position-absolute rounded-circle border border-dark" style="bottom: 0; right: 0; width: 14px; height: 14px; background: #64748b;"></div>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <h3 class="h6 fw-bold text-white mb-0 text-truncate">@(user.FullName ?? user.UserName)</h3>
+                                <p class="small text-muted mb-1 text-truncate">@user.Email</p>
+                                <div class="d-flex align-items-center gap-1">
+                                    <span class="fw-black text-aurora text-uppercase px-1 rounded" style="font-size: 0.5rem; background: rgba(0,245,160,0.1);">@user.Role</span>
+                                    <span class="text-muted" style="font-size: 0.5rem;">• @user.ReputationPoints RP</span>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column gap-1">
+                                <form asp-controller="Direct" asp-action="StartChat" method="post" class="mb-0">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <button type="submit" class="btn btn-glass p-2 d-flex flex-center" title="Send Message">
+                                        <span class="material-symbols-outlined fs-5">chat</span>
+                                    </button>
+                                </form>
+                                <a asp-controller="Profile" asp-action="Index" asp-route-id="@user.Id" class="btn btn-glass p-2 d-flex flex-center" title="View Profile">
+                                    <span class="material-symbols-outlined fs-5">person</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .hover-glow:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        border-color: var(--color-mint-bright) !important;
+    }
+</style>

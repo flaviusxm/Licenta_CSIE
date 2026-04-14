@@ -35,47 +35,25 @@
                 <div class="flex-grow-1 min-w-0">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId"
-                               class="text-aurora fw-bold text-decoration-none" style="font-size: 0.75rem;">
-                                @post.CommunityName
-                            </a>
+                            <div class="position-relative">
+                                <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId"
+                                   class="text-aurora fw-bold text-decoration-none hover-card-trigger" 
+                                   data-hover-type="community" data-hover-id="@post.CommunityId" style="font-size: 0.75rem;">
+                                    @post.CommunityName
+                                </a>
+                            </div>
                             <span class="text-muted opacity-50 small">•</span>
                             <div class="d-flex align-items-center gap-2">
-                                <span class="text-muted small">@post.AuthorName</span>
-                                @if (ViewBag.CurrentUserId != post.AuthorId && ViewBag.CurrentUserId != null)
-                                {
-                                    <div id="author-actions-home-@post.Id-@post.AuthorId" class="d-flex align-items-center">
-                                        @switch (post.AuthorConnectionStatus)
-                                        {
-                                            case ConnectionStatus.Accepted:
-                                                <form action="/Direct/StartChat" method="post" class="m-0 p-0">
-                                                    <input type="hidden" name="userId" value="@post.AuthorId" />
-                                                    <button type="submit" class="btn btn-link p-0 text-aurora hover-glow text-decoration-none d-flex flex-center" title="Send Message" style="transition: transform 0.4s var(--ease-snappy);">
-                                                        <span class="material-symbols-outlined" style="font-size: 16px;">chat</span>
-                                                    </button>
-                                                </form>
-                                                break;
-                                            case ConnectionStatus.PendingSent:
-                                                <span class="text-muted opacity-50 d-flex flex-center" title="Request Pending">
-                                                    <span class="material-symbols-outlined" style="font-size: 16px;">hourglass_empty</span>
-                                                </span>
-                                                break;
-                                            case ConnectionStatus.PendingReceived:
-                                                <button onclick="handleConnectionHome('@post.AuthorId', 'AcceptRequest', this)" class="btn btn-link p-0 text-success hover-glow text-decoration-none d-flex flex-center" title="Accept Connection" style="transition: transform 0.4s var(--ease-snappy);">
-                                                    <span class="material-symbols-outlined" style="font-size: 17px;">check_circle</span>
-                                                </button>
-                                                break;
-                                            default:
-                                                <button onclick="handleConnectionHome('@post.AuthorId', 'SendRequest', this)" class="btn btn-link p-0 text-muted hover-text-white hover-glow text-decoration-none d-flex flex-center" title="Connect" style="transition: transform 0.4s var(--ease-snappy);">
-                                                    <span class="material-symbols-outlined" style="font-size: 17px;">person_add</span>
-                                                </button>
-                                                break;
-                                        }
-                                    </div>
-                                }
-                            </div>
+                                <div class="position-relative">
+                                    <a asp-controller="Profile" asp-action="Index" asp-route-id="@post.AuthorId" 
+                                       class="text-muted small fw-bold text-decoration-none hover-text-white transition-colors hover-card-trigger"
+                                       data-hover-type="user" data-hover-id="@post.AuthorId">
+                                        @post.AuthorName
+                                    </a>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
                     <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId"
                        class="text-decoration-none d-block" style="scroll-margin-top: 80px;">

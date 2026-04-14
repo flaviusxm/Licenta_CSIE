@@ -53,17 +53,15 @@
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <!-- Inbox -->
-                <a asp-controller="Inbox" asp-action="Index" class="btn btn-link text-muted hover-text-white p-2 rounded-circle transition-all d-flex align-items-center justify-content-center text-decoration-none hover-bg-glass">
+                <a asp-controller="Inbox" asp-action="Index" class="nav-link-premium border-0 p-0 rounded-circle transition-all d-flex align-items-center justify-content-center text-decoration-none" style="width: 40px; height: 40px;">
                     <span class="material-symbols-outlined fs-5">all_inbox</span>
                 </a>
 
-                <div class="mx-2" style="width: 1px; height: 24px; background: var(--border-glass-strong);"></div>
+                <div class="mx-1" style="width: 1px; height: 16px; background: var(--border-glass-strong);"></div>
                 
                 <!-- Profile Link -->
-                <a asp-controller="Profile" asp-action="Index" class="text-decoration-none">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center text-muted transition-all" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass-strong);" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='var(--color-mint-bright)';" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='var(--border-glass-strong)';">
-                        <span class="material-symbols-outlined fs-5">person</span>
-                    </div>
+                <a asp-controller="Profile" asp-action="Index" class="nav-link-premium border-0 p-0 rounded-circle transition-all d-flex align-items-center justify-content-center text-decoration-none" style="width: 40px; height: 40px;">
+                    <span class="material-symbols-outlined fs-5">person</span>
                 </a>
             }
             else

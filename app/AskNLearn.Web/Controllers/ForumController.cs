@@ -182,7 +182,19 @@ namespace AskNLearn.Web.Controllers
                 }
 
                 command.AuthorId = userId;
-                await _mediator.Send(command);
+                var resultId = await _mediator.Send(command);
+
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest" || 
+                    Request.Headers["Accept"].ToString().Contains("application/json"))
+                {
+                    var comments = await _mediator.Send(new GetPostCommentsQuery 
+                    { 
+                        PostId = command.PostId, 
+                        CommunityId = command.CommunityId ?? Guid.Empty, 
+                        CurrentUserId = userId 
+                    });
+                    return PartialView("_PostCommentsPartial", comments);
+                }
 
                 return RedirectToAction(nameof(Details), new { id = command.CommunityId });
             }
@@ -335,6 +347,14 @@ namespace AskNLearn.Web.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             await _mediator.Send(new TogglePostSolvedCommand { Id = id, UserId = userId });
             return RedirectToAction(nameof(Details), new { id = communityId });
+        }
+        [AllowAnonymous]
+        public async Task<IActionResult> GetHoverCard(Guid id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var community = await _mediator.Send(new GetCommunityByIdQuery { Id = id, CurrentUserId = userId });
+            if (community == null) return NotFound();
+            return PartialView("_CommunityHoverCard", community);
         }
     }
 }

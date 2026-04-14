@@ -157,5 +157,12 @@ namespace AskNLearn.Web.Controllers
 
             return RedirectToAction("Index");
         }
+        [AllowAnonymous]
+        public async Task<IActionResult> GetHoverCard(string id)
+        {
+            var profile = await _mediator.Send(new GetUserProfileQuery { UserId = id });
+            if (profile == null) return NotFound();
+            return PartialView("_UserHoverCard", profile);
+        }
     }
 }

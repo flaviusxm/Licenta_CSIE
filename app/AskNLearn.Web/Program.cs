@@ -101,8 +101,14 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
 
         try
         {
-            // Dezactivează foreign keys
-            await dbContext.Database.ExecuteSqlRawAsync("EXEC sp_MSforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
+            // Verificăm dacă suntem pe SQL Server sau PostgreSQL pentru sintaxa de ștergere
+            bool isSqlServer = dbContext.Database.IsSqlServer();
+            
+            if (isSqlServer)
+            {
+                // Dezactivează foreign keys pentru SQL Server
+                await dbContext.Database.ExecuteSqlRawAsync("EXEC sp_MSforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
+            }
 
             // Șterge datele din tabele în ordinea corectă (copii înainte de părinți)
             var tables = new[]
@@ -112,7 +118,7 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
                 "PostAttachments", "Posts", "LearningResources", "Events", "GroupInvites", "GroupMemberships",
                 "Channels", "ChannelCategories", "GroupRoles", "StudyGroups", "Friendships", "CommunityMemberships",
                 "Communities", "StoredFiles", "VerificationRequests", "UserRoles", "UserClaims", "UserLogins",
-                "UserTokens", "RoleClaims", "Roles", "Users", "UserRanks", "Tags", "__EFMigrationsHistory"
+                "UserTokens", "RoleClaims", "Roles", "Users", "UserRanks", "Tags"
             };
 
             foreach (var table in tables)
@@ -131,8 +137,11 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
                 }
             }
 
-            // Reactivează foreign keys
-            await dbContext.Database.ExecuteSqlRawAsync("EXEC sp_MSforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'");
+            if (isSqlServer)
+            {
+                // Reactivează foreign keys pentru SQL Server
+                await dbContext.Database.ExecuteSqlRawAsync("EXEC sp_MSforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'");
+            }
 
             Console.WriteLine("═══════════════════════════════════════════════════════════════════");
             Console.WriteLine("  TOATE DATELE AU FOST ȘTERSE!");

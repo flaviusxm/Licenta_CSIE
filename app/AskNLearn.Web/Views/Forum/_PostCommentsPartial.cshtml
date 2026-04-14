@@ -42,7 +42,8 @@
 
                         <!-- Reply Form (Hidden) -->
                         <div id="reply-form-@comment.Id" class="d-none mt-3">
-                            <form asp-controller="Forum" asp-action="AddComment" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-2">
+                            <form asp-controller="Forum" asp-action="AddComment" method="post" enctype="multipart/form-data" 
+                                  onsubmit="submitCommentAsync(event, this)" class="d-flex flex-column gap-2">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="PostId" value="@Model.PostId" />
                                 <input type="hidden" name="CommunityId" value="@Model.CommunityId" />
@@ -69,11 +70,61 @@
             </div>
         }
     }
+
+    async Task RenderGlobalScripts() {
+        <script>
+            if (typeof window.submitCommentAsync === 'undefined') {
+                window.submitCommentAsync = async function(e, form) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const postId = formData.get('PostId');
+                    const container = document.getElementById(`comments-${postId}`);
+                    
+                    // Show small loading state
+                    const btn = form.querySelector('button[type="submit"]');
+                    const originalContent = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+
+                        if (response.ok) {
+                            const html = await response.text();
+                            if (container) {
+                                container.innerHTML = html;
+                                // Scroll a bit to see new comment? Optional.
+                            }
+                        } else {
+                            alert("Failed to post comment. Please try again.");
+                        }
+                    } catch (err) {
+                        console.error(err);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                    }
+                };
+
+                window.updateFileName = function(input) {
+                    const nameSpan = input.closest('div').querySelector('.file-name');
+                    if (nameSpan && input.files.length > 0) {
+                        nameSpan.textContent = input.files[0].name;
+                    }
+                };
+            }
+        </script>
+    }
 }
 
 <div class="p-4 rounded-xl" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass);">
     <!-- Comment Input Form -->
-    <form asp-controller="Forum" asp-action="AddComment" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-3 mb-4">
+    <form asp-controller="Forum" asp-action="AddComment" method="post" enctype="multipart/form-data" 
+          onsubmit="submitCommentAsync(event, this)" class="d-flex flex-column gap-3 mb-4">
         @Html.AntiForgeryToken()
         <input type="hidden" name="PostId" value="@Model.PostId" />
         <input type="hidden" name="CommunityId" value="@Model.CommunityId" />
@@ -106,3 +157,5 @@
         <p class="text-muted text-center py-3 mb-0" style="font-size: 0.85rem;">No comments yet. Be the first!</p>
     }
 </div>
+
+@{ await RenderGlobalScripts(); }

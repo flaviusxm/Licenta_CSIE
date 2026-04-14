@@ -111,5 +111,21 @@ namespace AskNLearn.Web.Controllers
             await context.SaveChangesAsync();
             return Ok();
         }
+
+        public async Task<IActionResult> Connections()
+        {
+            ViewData["ActivePage"] = "Connections";
+            var userId = userManager.GetUserId(User);
+            if (userId == null) return Unauthorized();
+
+            var friends = await context.Friendships
+                .Include(f => f.Requester)
+                .Include(f => f.Addressee)
+                .Where(f => (f.RequesterId == userId || f.AddresseeId == userId) && f.Status == FriendshipStatus.Accepted)
+                .Select(f => f.RequesterId == userId ? f.Addressee : f.Requester)
+                .ToListAsync();
+
+            return View(friends);
+        }
     }
 }

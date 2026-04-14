@@ -105,6 +105,8 @@ namespace AskNLearn.Web.Controllers
             var studyGroup = await _mediator.Send(new AskNLearn.Application.Features.StudyGroups.Queries.GetStudyGroupById.GetStudyGroupByIdQuery { Id = id, CurrentUserId = currentUserId });
             if (studyGroup == null) return NotFound();
 
+            ViewBag.OnlineUsers = await _presenceTracker.GetOnlineUsers();
+
             return View(studyGroup);
         }
 
@@ -249,6 +251,28 @@ namespace AskNLearn.Web.Controllers
         {
             var result = await _mediator.Send(new DeleteChannelCommand { Id = id });
             return RedirectToAction(nameof(Edit), new { id = groupId });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetChannelMessages(Guid channelId)
+        {
+            var messages = await _context.Messages
+                .Include(m => m.Author)
+                .Where(m => m.ChannelId == channelId)
+                .OrderBy(m => m.CreatedAt)
+                .Select(m => new
+                {
+                    id = m.Id,
+                    content = m.Content,
+                    authorName = m.Author != null ? m.Author.FullName ?? m.Author.UserName : "System",
+                    authorAvatar = m.Author != null ? m.Author.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={m.Author.UserName}" : "https://api.dicebear.com/7.x/avataaars/svg?seed=System",
+                    authorId = m.AuthorId,
+                    createdAt = m.CreatedAt.ToString("g"),
+                    channelId = m.ChannelId
+                })
+                .ToListAsync();
+
+            return Json(messages);
         }
     }
 }

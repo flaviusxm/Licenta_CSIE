@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 /* ==========================================
    Midnight Slate Theme – site.css
    Applies to AskNLearn.Web (all pages)
@@ -7,9 +9,10 @@
    Base HTML & Body
 ----------------------------- */
 html {
-    font-size: 14px;
+    font-size: 16px;
     position: relative;
     min-height: 100%;
+    -webkit-font-smoothing: antialiased;
 }
 
 @media (min-width: 768px) {
@@ -19,11 +22,18 @@ html {
 }
 
 body {
-    margin: 0; /* remove default margin */
-    background-color: #0f172a; /* Midnight Slate */
-    color: #e5e7eb; /* soft white text */
-    font-family: "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    background-color: #0d121f; /* Deeper midnight */
+    color: #e2e8f0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     line-height: 1.6;
+    letter-spacing: -0.011em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: #ffffff;
 }
 
 /* -----------------------------

@@ -1,0 +1,43 @@
+@using AskNLearn.Application.Features.Communities.Queries.GetCommunities
+@model CommunityDto
+
+<div class="hover-card-inner p-3">
+    <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="avatar-lg rounded-xl flex-shrink-0 d-flex flex-center shadow-lg border border-glass" 
+             style="width: 52px; height: 52px; background: rgba(0,217,245,0.08); color: var(--color-aurora);">
+            <span class="fw-black" style="font-size: 1.2rem;">
+                @(Model.Name.Length >= 1 ? Model.Name.Substring(0, 1).ToUpper() : "?")
+            </span>
+        </div>
+        <div class="flex-grow-1 min-w-0">
+            <h4 class="fw-black text-white mb-0 text-truncate" style="font-size: 0.95rem;">@Model.Name</h4>
+            <div class="d-flex align-items-center gap-1.5 mt-0.5">
+                <span class="badge bg-aurora-glass text-aurora px-1.5 py-0.5 rounded fw-black text-uppercase" style="font-size: 0.55rem;">Public HUB</span>
+                <span class="text-muted" style="font-size: 0.65rem;">• @Model.PostCount Posts</span>
+            </div>
+        </div>
+    </div>
+
+    <p class="text-muted mb-3" style="font-size: 0.8rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+        @Model.Description
+    </p>
+
+    <div class="glass-panel p-2.5 rounded-lg mb-3" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass);">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-muted fs-6">groups</span>
+                <span class="text-white fw-bold" style="font-size: 0.75rem;">@Model.MemberCount Members</span>
+            </div>
+            @if(Model.IsMember) {
+                <span class="badge bg-mint-glass text-mint px-2 py-0.5 rounded-pill fw-bold" style="font-size: 0.6rem;">Member</span>
+            }
+        </div>
+    </div>
+
+    <div class="mt-2">
+        <a href="/Forum/Details/@Model.Id" class="btn btn-premium-sm w-100 py-2 fw-black text-uppercase tracking-widest d-flex flex-center gap-2" style="font-size: 0.65rem;">
+            Enter Community
+            <span class="material-symbols-outlined" style="font-size: 12px;">login</span>
+        </a>
+    </div>
+</div>

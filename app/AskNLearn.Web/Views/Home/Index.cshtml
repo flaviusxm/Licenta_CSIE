@@ -16,30 +16,6 @@
     <div id="feed-content" class="d-flex flex-column gap-4 transition-all" style="animation: slide-up-fade 0.5s ease-out;">
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <!-- Performance Dashboard Header -->
-            <div class="glass-card mb-4 overflow-hidden border-0 shadow-lg" style="background: var(--glass-surface); border: 1px solid var(--border-glass-strong) !important;">
-                <div class="p-4 p-md-5 d-flex flex-column flex-md-row align-items-center justify-content-between gap-4 position-relative">
-                    <div class="position-absolute translate-middle-y" style="top: 0; right: 10%; width: 400px; height: 400px; background: var(--color-mint-bright); filter: blur(150px); opacity: 0.05;"></div>
-                    <div class="z-1">
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            <span class="badge bg-aurora-glass text-aurora px-3 py-1 fw-black text-uppercase tracking-widest" style="font-size: 0.6rem;">Academic Performance</span>
-                            <span class="text-muted small fw-bold">Active Streak: 5 Days</span>
-                        </div>
-                        <h2 class="display-6 fw-black text-white mb-2 tracking-tight">Focus & <span class="text-aurora">Flow.</span></h2>
-                        <p class="text-muted fw-medium mb-0" style="max-width: 450px;">Your academic journey is accelerating. You have <span class="text-white fw-bold">2 upcoming exams</span> and <span class="text-white fw-bold">3 pending project milestones</span> this week.</p>
-                    </div>
-                    <div class="d-flex flex-column gap-2 z-1" style="min-width: 200px;">
-                        <div class="glass-panel p-3 d-flex align-items-center justify-content-between mb-2" style="background: rgba(255,255,255,0.03);">
-                            <div>
-                                <p class="text-muted fw-bold m-0" style="font-size: 0.6rem; letter-spacing: 1px;">STUDY SCORE</p>
-                                <p class="text-white fw-black m-0 fs-4">840</p>
-                            </div>
-                            <span class="material-symbols-outlined text-aurora fs-2">trending_up</span>
-                        </div>
-                        <button class="btn btn-premium w-100 py-2.5 fw-black text-uppercase tracking-widest" style="font-size: 0.7rem;">Analytics Dashboard</button>
-                    </div>
-                </div>
-            </div>
         }
         else
         {
@@ -301,5 +277,95 @@
         .animate-slide-down {
             animation: slide-down 0.3s ease-out;
         }
+
+        /* Hover Card Styles */
+        .premium-hover-card {
+            position: absolute;
+            z-index: 1060;
+            width: 280px;
+            background: rgba(17, 24, 39, 0.8) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .premium-hover-card.active {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+
+        .hover-card-trigger:hover {
+            color: var(--color-mint-bright) !important;
+        }
     </style>
+    
+    <!-- Hover Card Template -->
+    <div id="global-hover-card" class="premium-hover-card rounded-xl overflow-hidden">
+        <div id="hover-card-content">
+            <!-- Dynamic Content -->
+        </div>
+    </div>
+
+    <script>
+        // --- Hover Card Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initHoverCards();
+        });
+
+        function initHoverCards() {
+            const card = document.getElementById('global-hover-card');
+            const triggers = document.querySelectorAll('.hover-card-trigger');
+            let hideTimeout;
+
+            triggers.forEach(trigger => {
+                trigger.addEventListener('mouseenter', async () => {
+                    clearTimeout(hideTimeout);
+                    const type = trigger.dataset.hoverType;
+                    const id = trigger.dataset.hoverId;
+                    
+                    // Initial Position
+                    const rect = trigger.getBoundingClientRect();
+                    card.style.top = `${window.scrollY + rect.bottom + 10}px`;
+                    card.style.left = `${rect.left}px`;
+                    
+                    // Load Content
+                    card.querySelector('#hover-card-content').innerHTML = `
+                        <div class="p-4 text-center">
+                            <div class="spinner-border spinner-border-sm text-aurora"></div>
+                        </div>
+                    `;
+                    card.classList.add('active');
+
+                    try {
+                        const url = type === 'user' ? `/Profile/GetHoverCard/${id}` : `/Forum/GetHoverCard/${id}`;
+                        const resp = await fetch(url);
+                        if (resp.ok) {
+                            const html = await resp.text();
+                            card.querySelector('#hover-card-content').innerHTML = html;
+                        }
+                    } catch (e) { console.error(e); }
+                });
+
+                trigger.addEventListener('mouseleave', () => {
+                    hideTimeout = setTimeout(() => {
+                        card.classList.remove('active');
+                    }, 300);
+                });
+            });
+
+            card.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+            card.addEventListener('mouseleave', () => {
+                hideTimeout = setTimeout(() => {
+                    card.classList.remove('active');
+                }, 300);
+            });
+        }
+    </script>
 }

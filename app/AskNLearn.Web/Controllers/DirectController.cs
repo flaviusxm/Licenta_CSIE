@@ -51,6 +51,7 @@ namespace AskNLearn.Web.Controllers
                     .Include(c => c.Participants)
                         .ThenInclude(p => p.User)
                     .Include(c => c.Messages.OrderBy(m => m.CreatedAt))
+                        .ThenInclude(m => m.Author)
                     .FirstOrDefaultAsync(c => c.Id == id.Value && c.Participants.Any(p => p.UserId == user.Id));
 
                 if (selectedConversation != null)
