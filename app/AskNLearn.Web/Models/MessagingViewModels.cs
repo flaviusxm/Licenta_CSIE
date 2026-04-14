@@ -11,6 +11,7 @@ namespace AskNLearn.Web.Models
         public string LastMessageContent { get; set; } = string.Empty;
         public DateTime LastMessageAt { get; set; }
         public bool IsUnread { get; set; }
+        public int UnreadCount { get; set; }
     }
 
     public class DirectMessagesDropdownViewModel

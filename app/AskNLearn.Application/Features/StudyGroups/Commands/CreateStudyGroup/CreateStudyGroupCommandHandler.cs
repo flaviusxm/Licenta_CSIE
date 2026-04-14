@@ -18,9 +18,10 @@ namespace AskNLearn.Application.Features.StudyGroups.Commands.CreateStudyGroup
 
         public async Task<Guid> Handle(CreateStudyGroupCommand request, CancellationToken cancellationToken)
         {
+            var studyGroupId = Guid.NewGuid();
             var studyGroup = new StudyGroup
             {
-                Id = Guid.NewGuid(),
+                Id = studyGroupId,
                 Name = request.Name,
                 Description = request.Description,
                 SubjectArea = request.SubjectArea,
@@ -29,7 +30,22 @@ namespace AskNLearn.Application.Features.StudyGroups.Commands.CreateStudyGroup
                 CreatedAt = DateTime.UtcNow
             };
 
+            // Initialize default roles for the group
+            var adminRole = new GroupRole { Id = Guid.NewGuid(), GroupId = studyGroupId, Name = "Admin", Permissions = "ALL" };
+            var memberRole = new GroupRole { Id = Guid.NewGuid(), GroupId = studyGroupId, Name = "Member", Permissions = "READ,WRITE" };
+
+            // Automatically add creator as the first member with Admin role
+            var creatorMembership = new GroupMembership
+            {
+                GroupId = studyGroupId,
+                UserId = request.OwnerId,
+                GroupRoleId = adminRole.Id,
+                JoinedAt = DateTime.UtcNow
+            };
+
             await _context.StudyGroups.AddAsync(studyGroup, cancellationToken);
+            await _context.GroupRoles.AddRangeAsync(new[] { adminRole, memberRole }, cancellationToken);
+            await _context.GroupMemberships.AddAsync(creatorMembership, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             return studyGroup.Id;

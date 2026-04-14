@@ -32,12 +32,18 @@ builder.Host.UseSerilog();
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
-builder.Services.AddSignalR();
+
+// SignalR cu WebSockets forțat și erori detaliate
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+});
 
 // AI & Moderation Services
 builder.Services.AddHttpClient<IOllamaService, OllamaService>();
 builder.Services.AddSingleton<IModerationQueue, ModerationQueue>();
 builder.Services.AddHostedService<ModerationBackgroundService>();
+builder.Services.AddHostedService<EmailConfirmationCleanupService>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -53,8 +59,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 builder.Services.AddAuthentication(options =>
 {
-    // Removing fixed default schemes allows Identity cookies to be the default for MVC
-    // While still allowing JWT for specific API controllers when requested.
 })
 .AddJwtBearer(options =>
 {
@@ -77,6 +81,13 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("EmailConfirmed", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c => c.Type == "EmailConfirmed" && c.Value == "true")));
+});
+
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
@@ -90,7 +101,6 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
-    // Suppress logs during seeding
     levelSwitch.MinimumLevel = LogEventLevel.Warning;
 
     if (args.Contains("drop-seed"))
@@ -101,16 +111,13 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
 
         try
         {
-            // Verificăm dacă suntem pe SQL Server sau PostgreSQL pentru sintaxa de ștergere
             bool isSqlServer = dbContext.Database.IsSqlServer();
             
             if (isSqlServer)
             {
-                // Dezactivează foreign keys pentru SQL Server
                 await dbContext.Database.ExecuteSqlRawAsync("EXEC sp_MSforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
             }
 
-            // Șterge datele din tabele în ordinea corectă (copii înainte de părinți)
             var tables = new[]
             {
                 "AuditLogs", "Reports", "Notifications", "MessageReactions", "MessageAttachments", "Messages",
@@ -131,7 +138,6 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
                 }
                 catch (Exception ex)
                 {
-                    // Ignorăm erorile - tabelul poate să nu existe
                     if (!ex.Message.Contains("Invalid object name"))
                         Console.WriteLine($"  ⚠ {table}: {ex.Message.Substring(0, Math.Min(50, ex.Message.Length))}");
                 }
@@ -139,7 +145,6 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
 
             if (isSqlServer)
             {
-                // Reactivează foreign keys pentru SQL Server
                 await dbContext.Database.ExecuteSqlRawAsync("EXEC sp_MSforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'");
             }
 
@@ -223,10 +228,31 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseWebSockets();
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Middleware pentru email neverificat – blochează accesul în afara paginilor de auth
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true)
+    {
+        var userManager = context.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = await userManager.GetUserAsync(context.User);
+        if (user != null && !user.EmailConfirmed)
+        {
+            var path = context.Request.Path.Value?.ToLower() ?? "";
+            if (!path.StartsWith("/auth") && !path.StartsWith("/lib") && !path.StartsWith("/css") && !path.StartsWith("/js") && !path.StartsWith("/images") && !path.StartsWith("/uploads"))
+            {
+                context.Response.Redirect("/Auth/VerifyEmailNotice");
+                return;
+            }
+        }
+    }
+    await next();
+});
 
 app.MapHub<AskNLearn.Web.Hubs.CommunicationHub>("/communicationHub");
 

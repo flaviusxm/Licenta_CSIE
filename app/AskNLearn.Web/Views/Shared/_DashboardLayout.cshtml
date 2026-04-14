@@ -6,24 +6,39 @@
     <title>@ViewData["Title"] - AskNLearn</title>
     
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <link href="~/css/theme.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="dark-mesh-bg d-flex flex-column vh-100 overflow-hidden">
+<body class="dark-mesh-bg d-flex flex-column vh-100 overflow-hidden" style="font-family: 'Inter', sans-serif;">
 
     <!-- Ambient Aurora Orbs -->
     <div class="aurora-orb aurora-orb-cyan position-fixed"></div>
     <div class="aurora-orb aurora-orb-purple position-fixed"></div>
     <div class="aurora-orb aurora-orb-blue position-fixed"></div>
 
+    <!-- Banner de avertizare pentru email neverificat -->
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        var userManager = Context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<AskNLearn.Domain.Entities.Core.ApplicationUser>>();
+        var user = await userManager.GetUserAsync(User);
+        if (user != null && !user.EmailConfirmed)
+        {
+            <div class="alert alert-warning rounded-0 mb-0 py-3 text-center fw-bold border-0 shadow-sm" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24; border-bottom: 2px solid #f59e0b !important;">
+                <span class="material-symbols-outlined align-middle me-2">warning</span>
+                Your email is not verified. Please check your inbox or <a asp-controller="Auth" asp-action="VerifyEmailNotice" class="alert-link text-white fw-black text-decoration-underline">resend verification</a>.
+                <span class="material-symbols-outlined align-middle ms-2">warning</span>
+            </div>
+        }
+    }
+
     <!-- Top Navigation Bar -->
     <header class="glass-nav position-relative z-3 w-100 px-4 d-flex align-items-center justify-content-between" style="height: 80px; flex-shrink: 0;">
         <!-- Logo Area -->
         <div class="d-flex align-items-center" style="width: 250px;">
             <a asp-controller="Home" asp-action="Index" class="d-flex align-items-center gap-2 text-decoration-none">
-                <h1 class="fs-4 fw-bold tracking-tight text-white mb-0">
+                <h1 class="fs-4 fw-bold text-white mb-0">
                     Ask<span class="text-aurora">N</span>Learn
                 </h1>
             </a>
@@ -93,7 +108,6 @@
 
         <!-- Center Feed -->
         <main class="flex-grow-1 h-100 position-relative w-100 @(ViewData["AppLayout"] as bool? == true ? "d-flex flex-column overflow-hidden" : "overflow-y-auto custom-scrollbar")">
-
             @RenderBody()
         </main>
     </div>
@@ -106,21 +120,50 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     
     <script>
-        // --- SignalR Real-time Hub ---
-        const connection = new signalR.HubConnectionBuilder()
+        // --- SignalR Real-time Hub (Global, robust) ---
+        window.connection = new signalR.HubConnectionBuilder()
             .withUrl("/communicationHub")
-            .withAutomaticReconnect()
+            .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+            .configureLogging(signalR.LogLevel.Information)
             .build();
 
-        connection.on("ReceiveConnectionRequest", (data) => {
+        window.signalRReady = false;
+        window.startSignalR = async function() {
+            if (window.connection.state === signalR.HubConnectionState.Disconnected) {
+                try {
+                    await window.connection.start();
+                    console.log("SignalR Connected.");
+                    window.signalRReady = true;
+                    if (window.onSignalRConnected) window.onSignalRConnected();
+                } catch (err) {
+                    console.error("SignalR Connection Error: ", err);
+                    setTimeout(window.startSignalR, 5000);
+                }
+            }
+        };
+
+        window.connection.onreconnected(() => {
+            console.log("SignalR Reconnected.");
+            window.signalRReady = true;
+            if (window.onSignalRReconnected) window.onSignalRReconnected();
+        });
+
+        window.connection.onclose(() => {
+            window.signalRReady = false;
+            console.log("SignalR Disconnected.");
+        });
+
+        // Pornim conexiunea imediat
+        window.startSignalR();
+
+        // Handleri comuni pentru notificări
+        window.connection.on("ReceiveConnectionRequest", (data) => {
             showToast(data.message, "person_add", "var(--color-mint-bright)");
         });
 
-        connection.on("ReceiveConnectionAccepted", (data) => {
+        window.connection.on("ReceiveConnectionAccepted", (data) => {
             showToast(data.message, "check_circle", "var(--color-mint-bright)");
         });
-
-        connection.start().catch(err => console.error("SignalR Error:", err));
 
         // --- Premium Apple-style Toast System ---
         function showToast(message, icon, color) {

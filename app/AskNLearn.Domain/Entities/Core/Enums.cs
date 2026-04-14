@@ -22,4 +22,12 @@ namespace AskNLearn.Domain.Entities.Core
         Flagged,
         AwaitingManualReview
     }
+
+    public enum UserVerificationStatus
+    {
+        NotVerified,
+        EmailVerified,
+        IdentityVerified,
+        Rejected
+    }
 }

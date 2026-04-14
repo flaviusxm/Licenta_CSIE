@@ -9,7 +9,8 @@
 }
 
 @section Sidebar {
-    <div class="d-flex flex-column h-100 bg-transparent animate-entrance w-100">
+    <div class="position-relative h-100 w-100">
+        <div class="blur-content d-flex flex-column h-100 bg-transparent animate-entrance w-100">
         <!-- Tabs for Channels / Members -->
         <div class="d-flex px-4 pt-4 pb-2 border-bottom" style="border-color: var(--border-glass) !important;">
             <button onclick="switchSidebarView('channels')" id="btn-view-channels" class="btn btn-link flex-grow-1 py-2 px-0 rounded-0 text-decoration-none fw-black text-uppercase tracking-widest text-aurora sidebar-tab-btn" style="font-size: 0.6rem; border-bottom: 2px solid var(--color-mint-bright) !important;">Channels</button>
@@ -24,9 +25,9 @@
                     <div>
                         <div class="d-flex align-items-center justify-content-between px-2 mb-3">
                             <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Text Channels</h3>
-                            @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value || User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                            @if (Model.IsMember)
                             {
-                                <button onclick="openCreateChannelModal('Text')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
+                                <button onclick="openCreateChannelModal('Text')" class="btn btn-link p-1 text-muted hover-aurora text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
                                     <span class="material-symbols-outlined fs-6">add</span>
                                 </button>
                             }
@@ -34,10 +35,19 @@
                         <div class="d-flex flex-column gap-1">
                             @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text))
                             {
-                                <a href="javascript:void(0)" onclick="joinTextChannel('@channel.Id', '@channel.Name')" class="channel-item text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold" style="font-size: 0.85rem;">
-                                    <span class="fs-5 fw-bold text-aurora opacity-75">#</span>
-                                    <span class="text-truncate">@channel.Name</span>
-                                </a>
+                                <div class="d-flex align-items-center justify-content-between group-channel-wrapper">
+                                    <a href="javascript:void(0)" onclick="joinTextChannel('@channel.Id', '@channel.Name')" class="channel-item flex-grow-1 text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold" style="font-size: 0.85rem;">
+                                        <span class="fs-5 fw-bold text-aurora opacity-75">#</span>
+                                        <span class="text-truncate">@channel.Name</span>
+                                    </a>
+                                    @if(Model.IsMember) {
+                                        <form asp-action="DeleteChannel" asp-route-id="@channel.Id" asp-route-groupId="@Model.Id" method="post" onsubmit="return confirm('Delete this channel?');" class="m-0 pe-2 delete-channel-form d-none">
+                                            <button type="submit" class="btn btn-link p-1 text-muted hover-text-danger text-decoration-none d-flex flex-center">
+                                                <span class="material-symbols-outlined fs-6" style="font-size: 14px;">delete</span>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
                             }
                         </div>
                     </div>
@@ -46,9 +56,9 @@
                     <div>
                         <div class="d-flex align-items-center justify-content-between px-2 mb-3">
                             <h3 class="text-muted fw-black text-uppercase m-0" style="font-size: 0.65rem; letter-spacing: 2px;">Voice Channels</h3>
-                            @if (Model.OwnerId == User.FindFirst(ClaimTypes.NameIdentifier)?.Value || User.IsInRole("Admin") || User.IsInRole("Moderator"))
+                            @if (Model.IsMember)
                             {
-                                <button onclick="openCreateChannelModal('Voice')" class="btn btn-link p-1 text-muted hover-glow text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
+                                <button onclick="openCreateChannelModal('Voice')" class="btn btn-link p-1 text-muted hover-aurora text-decoration-none d-flex align-items-center justify-content-center lh-1 p-0">
                                     <span class="material-symbols-outlined fs-6">add</span>
                                 </button>
                             }
@@ -56,12 +66,21 @@
                         <div class="d-flex flex-column gap-1" id="voiceChannelList">
                             @foreach (var channel in Model.Channels.Where(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Voice || c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video))
                             {
-                                <div>
-                                    <button onclick="joinVoice('@channel.Id', '@channel.Name')"
-                                            class="channel-item w-100 btn btn-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold" style="font-size: 0.85rem;">
-                                        <span class="material-symbols-outlined fs-6 opacity-75">@(channel.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video ? "videocam" : "volume_up")</span>
-                                        <span class="text-truncate">@channel.Name</span>
-                                    </button>
+                                <div class="group-channel-wrapper">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <button onclick="joinVoice('@channel.Id', '@channel.Name')"
+                                                class="channel-item flex-grow-1 btn btn-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded-lg text-muted fw-bold" style="font-size: 0.85rem;">
+                                            <span class="material-symbols-outlined fs-6 opacity-75">@(channel.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Video ? "videocam" : "volume_up")</span>
+                                            <span class="text-truncate">@channel.Name</span>
+                                        </button>
+                                        @if(Model.IsMember) {
+                                            <form asp-action="DeleteChannel" asp-route-id="@channel.Id" asp-route-groupId="@Model.Id" method="post" onsubmit="return confirm('Delete this channel?');" class="m-0 pe-2 delete-channel-form d-none">
+                                                <button type="submit" class="btn btn-link p-1 text-muted hover-text-danger text-decoration-none d-flex flex-center">
+                                                    <span class="material-symbols-outlined fs-6" style="font-size: 14px;">delete</span>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
                                     <div id="users-@channel.Id" class="d-none d-flex flex-column gap-1 ps-5 pe-2 py-1"></div>
                                 </div>
                             }
@@ -120,15 +139,21 @@
                                     <div class="flex-grow-1 min-w-0">
                                         <p class="fw-bold text-white text-truncate mb-0" style="font-size:0.75rem;">@(member.FullName ?? member.UserName ?? member.UserId)</p>
                                         @if(isOwner) {
-                                            <span class="fw-black text-aurora text-uppercase px-1 rounded d-inline-block" style="font-size:0.5rem; background:rgba(0,245,160,0.1); letter-spacing: -0.2px;">Group Creator</span>
+                                            <span class="badge bg-aurora-glass text-aurora rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.7rem;">Owner</span>
                                         } else {
-                                            <span class="fw-bold text-muted text-uppercase" style="font-size:0.5rem; letter-spacing: 0.2px;">Member</span>
+                                            <span class="fw-bold text-muted" style="font-size:0.7rem;" id="role-badge-@member.UserId">@member.RoleName</span>
                                         }
                                     </div>
 
                                     @if (!isMe)
                                     {
                                         <div class="d-flex align-items-center gap-1 border-start ps-2" style="border-color: rgba(255,255,255,0.05) !important;" id="member-actions-@member.UserId">
+                                            @if (Model.OwnerId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value && member.RoleName == "Member")
+                                            {
+                                                <button onclick="promoteMember('@member.UserId')" class="btn btn-link p-1 text-warning hover-glow text-decoration-none d-flex flex-center shadow-none" title="Promote to Admin">
+                                                    <span class="material-symbols-outlined fs-6">shield_person</span>
+                                                </button>
+                                            }
                                             @switch (member.ConnectionStatus)
                                             {
                                                 case AskNLearn.Application.Common.Models.ConnectionStatus.Accepted:
@@ -178,7 +203,7 @@
                     <div class="d-flex flex-column gap-1">
                         <div class="d-flex align-items-center gap-1">
                              <span class="material-symbols-outlined text-aurora fw-bold" style="font-size: 0.8rem;">wifi</span>
-                            <span class="text-aurora fw-bold text-uppercase tracking-wider" style="font-size: 0.6rem;">Voice Connected</span>
+                            <span class="text-aurora fw-bold" style="font-size: 0.7rem;">Voice Connected</span>
                         </div>
                         <p id="connectedChannelName" class="text-white fw-bold mb-0 text-truncate" style="font-size: 0.75rem; max-width: 120px;">Channel Name</p>
                     </div>
@@ -221,6 +246,15 @@
                 </div>
             </div>
         </div>
+        </div>
+        @if (!Model.IsMember)
+        {
+            <div class="blur-overlay d-flex flex-column gap-3 p-4 text-center">
+                <span class="material-symbols-outlined text-white display-1">lock</span>
+                <h4 class="text-white fw-bold">Join to reveal content</h4>
+                <button onclick="joinGroup()" class="btn btn-premium px-5 py-3">Join Study Group</button>
+            </div>
+        }
     </div>
 }
 
@@ -382,6 +416,17 @@
     .btn-icon-discord .material-symbols-outlined {
         font-size: 1.25rem;
     }
+
+    /* Channel Management Hover */
+    .group-channel-wrapper:hover .delete-channel-form {
+        display: flex !important;
+        animation: fadeIn 0.2s ease-out;
+    }
+    
+    .hover-aurora:hover {
+        color: var(--color-mint-bright) !important;
+        transform: scale(1.1);
+    }
     .discord-muted {
         color: #f23f42 !important;
     }
@@ -391,6 +436,20 @@
     .discord-status-dot.online {
         background-color: #23a55a !important;
         box-shadow: 0 0 0 2px #2b2d31;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@keyframes animate-entrance {
+        0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .animate-entrance {
+        animation: animate-entrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 </style>
 
@@ -404,10 +463,12 @@
     </div>
 </div>
 
-<!-- Unified Video Grid (Moved inside main) -->
+<!-- Ambient Glow -->
+<div class="position-absolute top-0 start-50 translate-middle-x rounded-circle opacity-10" style="width: 800px; height: 400px; background: radial-gradient(circle, var(--color-mint-bright) 0%, transparent 70%); filter: blur(100px); pointer-events: none;"></div>
 
 <!-- Main Content Area -->
 <div class="d-flex flex-column flex-md-row h-100 flex-grow-1 overflow-hidden w-100 position-relative bg-transparent">
+    <div class="blur-content d-flex flex-column flex-md-row h-100 flex-grow-1 overflow-hidden w-100 position-relative bg-transparent">
     <!-- Center Feed -->
     <main class="d-flex flex-column flex-grow-1 min-w-0 position-relative">
         <!-- Video Strip -->
@@ -415,7 +476,7 @@
             <div id="localVideoContainer" class="d-none position-relative bg-black rounded-lg overflow-hidden border shadow-lg flex-shrink-0 animate-entrance" style="width: 240px; height: 148px; border-color: var(--border-glass) !important;">
                 <video id="localVideo" autoplay muted playsinline class="w-100 h-100 object-cover"></video>
                 <div class="position-absolute bottom-0 start-0 m-2 px-2 py-0.5 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
-                    <span class="fw-black text-white text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">You</span>
+                    <span class="fw-black text-white" style="font-size: 0.6rem;">You</span>
                 </div>
             </div>
         </div>
@@ -423,15 +484,17 @@
         <div class="flex-grow-1 overflow-y-auto p-4 p-md-5 custom-scrollbar">
             <div class="mx-auto" style="max-width: 800px;">
                 <!-- Welcome Section -->
-                <section class="py-5 text-center position-relative">
+                @if (!Model.IsMember && !User.IsInRole("Admin") && !User.IsInRole("Moderator"))
+                {
+                <section class="py-5 text-center position-relative mb-5" id="welcome-hero">
                     <div class="position-absolute start-50 top-50 translate-middle rounded-circle" style="width: 200px; height: 200px; background: var(--gradient-aurora); filter: blur(60px); opacity: 0.15;"></div>
                     <div class="d-flex align-items-center justify-content-center mx-auto mb-4 position-relative z-1">
                         <div class="rounded-lg d-flex align-items-center justify-content-center shadow-lg transition-transform" style="width: 80px; height: 80px; background: var(--gradient-aurora); color: var(--bg-universe); transform: rotate(5deg);">
                             <span class="material-symbols-outlined fw-bold" style="font-size: 2.5rem;">auto_awesome</span>
                         </div>
                     </div>
-                    <h2 class="display-5 fw-black text-white mb-4 tracking-tighter position-relative z-1">
-                        Welcome to <span class="text-aurora text-uppercase" style="font-style: italic;">@Model.Name</span>
+                    <h2 class="display-5 fw-black text-white mb-4 position-relative z-1">
+                        Welcome to <span class="text-aurora" style="font-style: italic;">@Model.Name</span>
                     </h2>
                     <p class="fs-5 text-muted fw-medium mx-auto mb-5 position-relative z-1" style="max-width: 600px;">
                         @(string.IsNullOrEmpty(Model.Description) ? "This is the start of your learning journey. Collaborate, study, and grow together!" : Model.Description)
@@ -439,12 +502,13 @@
                     @if (!Model.IsMember)
                     {
                         <div class="position-relative z-1">
-                            <button onclick="joinGroup('@Model.Id')" id="main-join-btn" class="btn btn-premium btn-lg px-5 py-3 rounded-pill fw-black text-uppercase tracking-widest shadow-lg animate-pulse">
+                            <button onclick="joinGroup('@Model.Id')" id="main-join-btn" class="btn btn-premium btn-lg px-5 py-3 rounded-pill fw-black shadow-lg animate-pulse">
                                 JOIN STUDY GROUP
                             </button>
                         </div>
                     }
                 </section>
+                }
                 <hr class="w-100 border-top" style="border-color: var(--border-glass) !important;" />
             </div>
         </div>
@@ -483,11 +547,20 @@
                             <span class="material-symbols-outlined fs-4">mood</span>
                         </button>
                     </div>
-                    <button id="send-btn" onclick="sendMessage()" class="btn btn-premium d-flex align-items-center justify-content-center rounded-pill px-4" style="height: 52px; min-width: 100px; font-size: 0.85rem; font-weight: 800; letter-spacing: 1px;">SEND</button>
+                    <button id="send-btn" onclick="sendMessage()" class="btn btn-premium d-flex align-items-center justify-content-center rounded-pill px-4" style="height: 52px; min-width: 100px; font-size: 0.85rem; font-weight: 800;">SEND</button>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+    @if (!Model.IsMember && !User.IsInRole("Admin") && !User.IsInRole("Moderator"))
+    {
+        <div class="blur-overlay d-flex flex-column gap-3 p-4 text-center">
+            <span class="material-symbols-outlined text-white display-1">lock</span>
+            <h4 class="text-white fw-bold" style="font-size: 1.5rem;">Join to participate</h4>
+            <p class="text-muted mb-4">You need to be a member to see messages and use voice channels.</p>
+            <button onclick="joinGroup('@Model.Id')" class="btn btn-premium px-5 py-3 rounded-pill shadow-lg animate-pulse">Join Study Group</button>
+        </div>
+    }
 </div>
 
 <!-- Modal: Create Channel -->
@@ -496,7 +569,7 @@
     <div class="glass-card position-relative z-1 w-100 animate-entrance" style="max-width: 500px; padding: 2.5rem;">
         <div class="d-flex align-items-center justify-content-between mb-4">
             <div>
-                <h2 class="h3 fw-black text-white tracking-tighter mb-1">Create <span id="modalChannelTypeLabel" class="text-aurora">Channel</span></h2>
+                <h2 class="h3 fw-black text-white mb-1">Create <span id="modalChannelTypeLabel" class="text-aurora">Channel</span></h2>
                 <p class="small fw-medium text-muted mb-0">Setup a new space for collaboration.</p>
             </div>
             <button onclick="closeCreateChannelModal()" class="btn btn-link p-2 text-muted hover-text-danger d-flex flex-center rounded-lg bg-dark border-0">
@@ -509,7 +582,7 @@
             <input type="hidden" name="Type" id="modalChannelTypeInput" value="0" />
 
             <div class="d-flex flex-column gap-2">
-                <label class="fw-black text-muted text-uppercase tracking-widest ms-1" style="font-size: 0.65rem;">Channel Name</label>
+                <label class="fw-bold text-muted ms-1" style="font-size: 0.7rem;">Channel Name</label>
                 <div class="position-relative">
                     <span class="position-absolute top-50 translate-middle-y fw-bold text-muted transition-colors" style="left: 1rem; font-size: 1.25rem;">#</span>
                     <input type="text" name="Name" required placeholder="new-channel" 
@@ -518,14 +591,14 @@
             </div>
 
             <div class="d-flex flex-column gap-2">
-                <label class="fw-black text-muted text-uppercase tracking-widest ms-1" style="font-size: 0.65rem;">Topic (Optional)</label>
+                <label class="fw-bold text-muted ms-1" style="font-size: 0.7rem;">Topic (Optional)</label>
                 <textarea name="Topic" rows="2" placeholder="What is this channel about?" 
                           class="form-control form-control-glass w-100 fw-medium text-white p-3" style="border-radius: 1rem;"></textarea>
             </div>
 
             <div class="d-flex gap-3 mt-2">
-                <button type="button" onclick="closeCreateChannelModal()" class="btn btn-glass flex-grow-1 fw-black text-uppercase py-3" style="font-size: 0.75rem; letter-spacing: 1px;">Cancel</button>
-                <button type="submit" class="btn btn-premium flex-grow-1 fw-black text-uppercase py-3" style="font-size: 0.75rem; letter-spacing: 1px; flex: 2;">Create Channel</button>
+                <button type="button" onclick="closeCreateChannelModal()" class="btn btn-glass flex-grow-1 fw-bold py-3" style="font-size: 0.85rem;">Cancel</button>
+                <button type="submit" class="btn btn-premium flex-grow-1 fw-bold py-3" style="font-size: 0.85rem; flex: 2;">Create Channel</button>
             </div>
         </form>
     </div>
@@ -534,261 +607,119 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
     <script>
-        console.log("AskNLearn UI Logic Loading...");
-        window.switchSidebarView = (view) => {
-            const isChannels = view === 'channels';
-            const container = document.getElementById('sidebar-view-container');
-            if (container) {
-                container.classList.toggle('view-members-active', !isChannels);
-            }
+        // ── State & Constants ──────────────────────────────────────────────────
+        const GROUP_ID = '@Model.Id';
+        const CURRENT_USER_ID = '@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value';
+        const IS_OWNER = @Json.Serialize(Model.OwnerId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+        
+        // Final access check: Member OR Admin OR Moderator
+        const IS_MEMBER = @( (Model.IsMember || User.IsInRole("Admin") || User.IsInRole("Moderator")) ? "true" : "false" );
 
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auto-select first channel if member and no channel selected (Welcome hidden)
+            if (IS_MEMBER) {
+                const firstChannel = document.querySelector('.group-channel-wrapper');
+                if (firstChannel) {
+                    console.log("[UI] Auto-selecting first channel for member...");
+                    firstChannel.click();
+                }
+            }
+        });
+
+        function switchSidebarView(view) {
+            const container = document.getElementById('sidebar-view-container');
             const btnChannels = document.getElementById('btn-view-channels');
             const btnMembers = document.getElementById('btn-view-members');
 
-            if (btnChannels && btnMembers) {
-                if (isChannels) {
-                    btnChannels.classList.remove('text-muted');
-                    btnChannels.classList.add('text-aurora');
-                    btnChannels.style.borderBottomColor = 'var(--color-mint-bright)';
-                    btnMembers.classList.remove('text-aurora');
-                    btnMembers.classList.add('text-muted');
-                    btnMembers.style.borderBottomColor = 'transparent';
-                } else {
-                    btnMembers.classList.remove('text-muted');
-                    btnMembers.classList.add('text-aurora');
-                    btnMembers.style.borderBottomColor = 'var(--color-mint-bright)';
-                    btnChannels.classList.remove('text-aurora');
-                    btnChannels.classList.add('text-muted');
-                    btnChannels.style.borderBottomColor = 'transparent';
-                    if (window.initMembersLazyLoad) window.initMembersLazyLoad();
-                }
-            }
-        };
+            if (view === 'members') {
+                container.classList.add('view-members-active');
+                
+                // Update Buttons
+                btnMembers.classList.add('text-aurora');
+                btnMembers.classList.remove('text-muted');
+                btnMembers.style.borderBottom = '2px solid var(--color-mint-bright) !important';
+                
+                btnChannels.classList.remove('text-aurora');
+                btnChannels.classList.add('text-muted');
+                btnChannels.style.borderBottom = '2px solid transparent !important';
 
-        window.openCreateChannelModal = (type) => {
+                // Initialize members lazy load if needed
+                initMembersLazyLoad();
+            } else {
+                container.classList.remove('view-members-active');
+                
+                // Update Buttons
+                btnChannels.classList.add('text-aurora');
+                btnChannels.classList.remove('text-muted');
+                btnChannels.style.borderBottom = '2px solid var(--color-mint-bright) !important';
+                
+                btnMembers.classList.remove('text-aurora');
+                btnMembers.classList.add('text-muted');
+                btnMembers.style.borderBottom = '2px solid transparent !important';
+            }
+        }
+
+        function openCreateChannelModal(type) {
             const modal = document.getElementById('createChannelModal');
-            const label = document.getElementById('modalChannelTypeLabel');
-            const input = document.getElementById('modalChannelTypeInput');
-            if (modal && label && input) {
-                label.innerText = (type === 'Text' ? 'Text' : type === 'Voice' ? 'Voice' : 'Video') + ' Channel';
-                input.value = type === 'Text' ? '0' : type === 'Voice' ? '1' : '2';
+            const typeLabel = document.getElementById('modalChannelTypeLabel');
+            const typeInput = document.getElementById('modalChannelTypeInput');
+            
+            if (typeLabel) typeLabel.innerText = type;
+            if (typeInput) typeInput.value = (type === 'Text') ? 0 : 1;
+            
+            if (modal) {
                 modal.classList.remove('d-none');
+                modal.classList.add('animate-entrance');
             }
-        };
+        }
 
-        window.closeCreateChannelModal = () => {
+        function closeCreateChannelModal() {
             const modal = document.getElementById('createChannelModal');
             if (modal) modal.classList.add('d-none');
-        };
+        }
 
-        window.switchPickerTab = (tab) => {
-            const isEmoji = tab === 'emoji';
-            const emojiCont = document.getElementById('emoji-picker-container');
-            const gifCont = document.getElementById('gif-picker-container');
-            const tabEmoji = document.getElementById('tab-emoji');
-            const tabGif = document.getElementById('tab-gif');
+        let currentTextChannelId = null;
+        let currentVoiceChannelId = null;
+        let localStream = null;
+        let isMuted = false;
+        let isVideoOn = false;
+        let isDeafened = false;
+        const peers = {};
+        const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-            if (emojiCont && gifCont && tabEmoji && tabGif) {
-                if(isEmoji) {
-                    emojiCont.style.display = 'block';
-                    gifCont.style.display = 'none';
-                    tabEmoji.style.borderBottomColor = 'var(--color-emerald)';
-                    tabEmoji.classList.replace('text-muted', 'text-aurora');
-                    tabGif.style.borderBottomColor = 'transparent';
-                    tabGif.classList.replace('text-aurora', 'text-muted');
-                } else {
-                    emojiCont.style.display = 'none';
-                    gifCont.style.display = 'flex';
-                    tabGif.style.borderBottomColor = 'var(--color-emerald)';
-                    tabGif.classList.replace('text-muted', 'text-aurora');
-                    tabEmoji.style.borderBottomColor = 'transparent';
-                    tabEmoji.classList.replace('text-aurora', 'text-muted');
-                    if (window.searchGifs) window.searchGifs();
-                }
-            }
-        };
-        console.log("AskNLearn UI Logic Ready.");
-    </script>
-
-    <script>
-        const GROUP_ID = '@Model.Id';
-        const IS_MEMBER = @(Model.IsMember ? "true" : "false");
-        const CURRENT_USER_ID = '@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value';
-        
-        let activeChannelId = null;
+        // Members lazy load state
         let membersSkip = 20;
         let membersLoading = false;
         let membersAllLoaded = @(Model.MemberCount <= 20 ? "true" : "false");
         let membersObserver = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // UI Setup
-            const sendBtn = document.getElementById('send-btn');
-            const msgInput = document.getElementById('message-input');
-            if (msgInput) msgInput.onkeydown = (e) => { if (e.key === 'Enter') window.sendMessage(); };
-
-            const emojiBtn = document.getElementById('emoji-btn');
-            const pickerPopup = document.getElementById('picker-popup');
-            if (emojiBtn && pickerPopup) {
-                emojiBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    pickerPopup.classList.toggle('d-none');
-                    if (!pickerPopup.classList.contains('d-none')) { 
-                        if (window.initEmojiPicker) window.initEmojiPicker(); 
-                        window.switchPickerTab('emoji'); 
-                    }
-                };
-            }
-
-            const gifSearch = document.getElementById('gif-search');
-            if (gifSearch) {
-                gifSearch.oninput = (e) => {
-                    clearTimeout(window.searchTimeout);
-                    window.searchTimeout = setTimeout(() => {
-                        if (window.searchGifs) window.searchGifs(e.target.value.trim() || 'trending');
-                    }, 500);
-                };
-            }
-
-            // SignalR Start
+        // ── SignalR Lifecycle ──────────────────────────────────────────────────
+        window.onSignalRConnected = () => {
             setupStudyGroupHandlers();
-
-            window.addEventListener('beforeunload', () => {
-                 if (currentVoiceChannelId) leaveVoice();
-            });
-
-            // Auto-scroll to messages if already joining
-            const firstChannel = document.querySelector('.channel-item[onclick*="joinTextChannel"]');
-            if (firstChannel) firstChannel.click();
-        });
-
-        async function joinGroup(id) {
-            const btn = document.getElementById('main-join-btn');
-            if(btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Joining...';
+            if (!IS_MEMBER) {
+                document.querySelectorAll('.blur-content').forEach(el => el.classList.add('blur-active'));
             }
-            const resp = await fetch(`/StudyGroups/Join/${id}`, { method: 'POST' });
-            if (resp.ok) {
-                location.reload();
-            } else {
-                if(btn) { btn.disabled = false; btn.innerText = 'JOIN STUDY GROUP'; }
-            }
-        }
+        };
 
-        // --- Interaction Handlers ---
-        window.initEmojiPicker = () => {
-            const container = document.getElementById('emoji-picker-container');
-            if (container && !container.hasChildNodes()) {
-                const picker = new EmojiMart.Picker({
-                    onEmojiSelect: (emoji) => {
-                        const input = document.getElementById('message-input');
-                        if (input) {
-                            input.value += emoji.native;
-                            document.getElementById('picker-popup').classList.add('d-none');
-                            input.focus();
-                        }
-                    },
-                    theme: 'dark',
-                    set: 'native',
-                    skinTonePosition: 'none',
-                    previewPosition: 'none'
+        window.onSignalRReconnected = () => {
+            if (currentTextChannelId) connection.invoke("JoinChannel", currentTextChannelId);
+            if (currentVoiceChannelId) connection.invoke("JoinVoice", currentVoiceChannelId);
+        };
+
+        async function ensureConnection() {
+            if (!window.signalRReady) {
+                await new Promise(resolve => {
+                    const check = setInterval(() => {
+                        if (window.signalRReady) { clearInterval(check); resolve(); }
+                    }, 100);
                 });
-                container.appendChild(picker);
             }
-        };
-
-        window.handleChatAttachment = (input) => {
-            if (input.files.length > 0) {
-                // For now, just show a preview or alert. In a real app, we'd upload.
-                alert(`${input.files.length} files attached. Features coming soon: Cloud upload.`);
-            }
-        };
-    
-        // ── Communication & App Logic ──────────────────────────
-        let currentVoiceChannelId = null;
-        let currentTextChannelId = null;
-        
-        let localStream = null;
-        let isMuted = false;
-        let isDeafened = false;
-        const peers = {}; 
-        const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-
-        // Voice Activity Detection
-        let audioContext = null;
-        let analyser = null;
-        let microphone = null;
-        let javascriptNode = null;
-        let isSpeaking = false;
-
-        function startVoiceActivityDetection(stream) {
-            try {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioContext.createAnalyser();
-                microphone = audioContext.createMediaStreamSource(stream);
-                javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
-
-                analyser.smoothingTimeConstant = 0.8;
-                analyser.fftSize = 1024;
-
-                microphone.connect(analyser);
-                analyser.connect(javascriptNode);
-                javascriptNode.connect(audioContext.destination);
-
-                javascriptNode.onaudioprocess = () => {
-                    const array = new Uint8Array(analyser.frequencyBinCount);
-                    analyser.getByteFrequencyData(array);
-                    let values = 0;
-                    const length = array.length;
-                    for (let i = 0; i < length; i++) {
-                        values += (array[i]);
-                    }
-                    const average = values / length;
-                    
-                    const threshold = 20; // Adjust sensitivity
-                    const speaking = average > threshold && !isMuted;
-                    
-                    if (speaking !== isSpeaking) {
-                        isSpeaking = speaking;
-                        updateVoiceUI(isSpeaking);
-                        // Optional: Broadcast to others via SignalR
-                        if (currentVoiceChannelId) {
-                            connection.invoke("ToggleSpeaking", currentVoiceChannelId, isSpeaking);
-                        }
-                    }
-                };
-            } catch (e) {
-                console.error("Voice detection error:", e);
+            if (connection.state !== signalR.HubConnectionState.Connected) {
+                await window.startSignalR();
             }
         }
 
-        function stopVoiceActivityDetection() {
-            if (javascriptNode) {
-                javascriptNode.onaudioprocess = null;
-                javascriptNode.disconnect();
-            }
-            if (analyser) analyser.disconnect();
-            if (microphone) microphone.disconnect();
-            if (audioContext) audioContext.close();
-            
-            isSpeaking = false;
-            updateVoiceUI(false);
-        }
-
-        function updateVoiceUI(speaking) {
-            const avatar = document.getElementById('voiceAvatar');
-            const localAvatarList = document.getElementById('localVoiceAvatar');
-            
-            if (speaking) {
-                if (avatar) avatar.classList.add('voice-talking');
-                if (localAvatarList) localAvatarList.classList.add('voice-talking');
-            } else {
-                if (avatar) avatar.classList.remove('voice-talking');
-                if (localAvatarList) localAvatarList.classList.remove('voice-talking');
-            }
-        }
-
+        // ── SignalR Handlers ───────────────────────────────────────────────────
         function setupStudyGroupHandlers() {
             if (!window.connection) return;
 
@@ -798,77 +729,47 @@
                 }
             });
 
-            connection.on("UserIsOnline", (userId) => {
-                const dot = document.getElementById(`status-dot-${userId}`);
-                if (dot) {
-                    dot.classList.remove('offline');
-                    dot.classList.add('online');
-                }
-            });
-
-            connection.on("UserIsOffline", (userId) => {
-                const dot = document.getElementById(`status-dot-${userId}`);
-                if (dot) {
-                    dot.classList.remove('online');
-                    dot.classList.add('offline');
-                }
-            });
-
             connection.on("UserJoinedVoice", async (data) => {
                 const container = document.getElementById(`users-${data.channelId}`);
                 if (container && !document.getElementById(`user-indicator-${data.connectionId}`)) {
                     container.classList.remove('d-none');
                     const userHtml = `
-                        <div id="user-indicator-${data.connectionId}" class="d-flex align-items-center gap-2 py-1 animate-entrance">
+                        <div id="user-indicator-${data.connectionId}" class="d-flex align-items-center gap-2 py-1 animate-entrance px-2">
                             <div class="position-relative">
                                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${data.userName}" class="avatar-xs rounded-lg object-cover" />
-                                <div id="micOffIcon" class="d-none position-absolute d-flex flex-center bg-danger rounded-circle border border-dark shadow-sm" style="bottom: -4px; right: -4px; width: 14px; height: 14px;">
+                                <div id="micOffIcon-${data.connectionId}" class="d-none position-absolute d-flex flex-center bg-danger rounded-circle border border-dark shadow-sm" style="bottom: -4px; right: -4px; width: 14px; height: 14px;">
                                     <span class="material-symbols-outlined text-white fw-black" style="font-size: 8px;">mic_off</span>
                                 </div>
                             </div>
-                            <span class="fw-bold text-muted transition-colors hover-glow" style="font-size: 0.65rem;">${data.userName}</span>
+                            <span class="fw-bold text-muted" style="font-size: 0.65rem;">${data.userName}</span>
                         </div>
                     `;
                     container.insertAdjacentHTML('beforeend', userHtml);
                 }
-                if (currentVoiceChannelId) await createPeerConnection(data.connectionId, true);
+                if (currentVoiceChannelId && data.connectionId !== connection.connectionId) {
+                    await createPeerConnection(data.connectionId, true);
+                }
             });
 
             connection.on("UserLeftVoice", (connectionId) => {
                 if (peers[connectionId]) {
                     peers[connectionId].pc.close();
                     delete peers[connectionId];
-                    const el = document.getElementById(`peer-audio-${connectionId}`);
-                    if (el) el.remove();
-                    const uiEl = document.getElementById(`user-indicator-${connectionId}`);
-                    if (uiEl) uiEl.remove();
                 }
+                const el = document.getElementById(`peer-audio-${connectionId}`);
+                if (el) el.remove();
+                const uiEl = document.getElementById(`user-indicator-${connectionId}`);
+                if (uiEl) uiEl.remove();
             });
 
-            connection.on("ReceiveSignal", async (signal, fromConnectionId) => {
-                const data = JSON.parse(signal);
-                let peer = peers[fromConnectionId];
-                if (data.sdp) {
-                    if (!peer) peer = await createPeerConnection(fromConnectionId, false);
-                    await peer.pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
-                    if (data.sdp.type === "offer") {
-                        const answer = await peer.pc.createAnswer();
-                        await peer.pc.setLocalDescription(answer);
-                        connection.invoke("SendSignal", JSON.stringify({ sdp: answer }), fromConnectionId);
-                    }
-                } else if (data.candidate) {
-                    if (peer) await peer.pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-                }
-            });
-
-            connection.on("UserMuteChanged", (connectionId, isMuted) => {
-                const icon = document.querySelector(`#user-indicator-${connectionId} #micOffIcon`);
+            connection.on("UserMuteChanged", (connectionId, muted) => {
+                const icon = document.getElementById(`micOffIcon-${connectionId}`);
                 if (icon) {
-                    if (isMuted) icon.classList.remove('d-none');
+                    if (muted) icon.classList.remove('d-none');
                     else icon.classList.add('d-none');
                 }
             });
-
+            
             connection.on("UserSpeakingChanged", (connectionId, speaking) => {
                 const avatar = document.querySelector(`#user-indicator-${connectionId} img`);
                 if (avatar) {
@@ -876,17 +777,14 @@
                     else avatar.classList.remove('voice-talking');
                 }
             });
-
-            const initialChannelId = "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Id";
-            if (initialChannelId) joinTextChannel(initialChannelId, "@Model.Channels.FirstOrDefault(c => c.Type == AskNLearn.Application.Features.StudyGroups.Queries.ChannelType.Text)?.Name");
         }
 
+        // ── WebRTC ─────────────────────────────────────────────────────────────
         async function createPeerConnection(connectionId, isOffer) {
-            if (!window.connection) return;
             const pc = new RTCPeerConnection(iceServers);
             peers[connectionId] = { pc };
             pc.onicecandidate = (event) => {
-                if (event.candidate) window.connection.invoke("SendSignal", JSON.stringify({ candidate: event.candidate }), connectionId);
+                if (event.candidate) connection.invoke("SendSignal", JSON.stringify({ candidate: event.candidate }), connectionId);
             };
             pc.ontrack = (event) => {
                 if (event.track.kind === 'audio') {
@@ -898,104 +796,37 @@
                         document.body.appendChild(audio);
                     }
                     audio.srcObject = event.streams[0];
-                } else if (event.track.kind === 'video') {
-                    let container = document.getElementById(`peer-video-container-${connectionId}`);
-                    if (!container) {
-                        container = document.createElement('div');
-                        container.id = `peer-video-container-${connectionId}`;
-                        container.className = 'position-relative bg-black rounded-lg overflow-hidden border shadow-lg flex-shrink-0 animate-entrance';
-                        container.style.width = '240px';
-                        container.style.height = '148px';
-                        container.style.borderColor = 'var(--border-glass)';
-                        container.innerHTML = `
-                            <video id="peer-video-${connectionId}" autoplay playsinline class="w-100 h-100 object-cover"></video>
-                            <div class="position-absolute bottom-0 start-0 m-2 px-2 py-0.5 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
-                                <span id="peer-name-${connectionId}" class="fw-black text-white text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">Peer</span>
-                            </div>
-                        `;
-                        document.getElementById('videoGrid').appendChild(container);
-                    }
-                    const video = document.getElementById(`peer-video-${connectionId}`);
-                    video.srcObject = event.streams[0];
-                    updateVideoGrid();
                 }
             };
             if (localStream) localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
             if (isOffer) {
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
-                window.connection.invoke("SendSignal", JSON.stringify({ sdp: offer }), connectionId);
+                connection.invoke("SendSignal", JSON.stringify({ sdp: offer }), connectionId);
             }
             return peers[connectionId];
         }
 
-        async function joinTextChannel(id, name) {
-            if (currentTextChannelId === id || !window.connection) return;
-            if (currentTextChannelId) await window.connection.invoke("LeaveChannel", currentTextChannelId);
-            currentTextChannelId = id;
-            await window.connection.invoke("JoinChannel", id);
-            
-            document.getElementById('message-input').placeholder = `Message to #${name}...`;
-            const welcome = document.querySelector('section.py-5');
-            if (welcome) welcome.classList.add('d-none');
-            const hr = document.querySelector('hr.border-top');
-            if (hr) hr.classList.add('d-none');
-            
-            let list = document.getElementById('message-list');
-            if (!list) {
-                const container = document.querySelector('main .mx-auto');
-                list = document.createElement('div');
-                list.id = 'message-list';
-                list.className = 'd-flex flex-column gap-4 pb-5 mb-5';
-                container.appendChild(list);
-            }
-            
-            list.innerHTML = `
-                <div class="py-5 text-center opacity-75 animate-entrance">
-                    <div class="spinner-border text-aurora mb-3" role="status"></div>
-                    <p class="text-muted small fw-bold text-uppercase tracking-widest">Loading history for #${name}...</p>
-                </div>
-            `;
-
-            try {
-                const response = await fetch(`/StudyGroups/GetChannelMessages?channelId=${id}`);
-                const messages = await response.json();
-                list.innerHTML = '';
-                if (messages.length === 0) {
-                     list.innerHTML = `
-                        <div class="py-5 text-center opacity-50 animate-entrance">
-                            <div class="rounded-circle d-flex flex-center mx-auto mb-4" style="width: 64px; height: 64px; background: rgba(0,245,160,0.1); color: var(--color-emerald);">
-                                <span class="material-symbols-outlined fs-2">chat_bubble</span>
-                            </div>
-                            <p class="fw-bold text-uppercase tracking-widest text-aurora mb-2" style="font-size: 0.65rem;">Welcome to #${name}</p>
-                            <p class="fw-medium text-muted mb-0" style="font-size: 0.75rem;">This is the start of the #${name} channel.</p>
-                        </div>
-                    `;
-                } else {
-                    messages.forEach(msg => appendMessage(msg));
-                }
-            } catch (err) {
-                list.innerHTML = '<p class="text-danger text-center py-5">Error loading messages.</p>';
-            }
-        }
-
+        // ── Voice / Video Controls ──────────────────────────────────────────────
         async function joinVoice(id, name) {
-            if (currentVoiceChannelId === id || !window.connection) return;
+            if (!IS_MEMBER) { alert("Join the group to use voice channels."); return; }
+            await ensureConnection();
+            if (currentVoiceChannelId === id) return;
             if (currentVoiceChannelId) await leaveVoice();
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 currentVoiceChannelId = id;
-                await window.connection.invoke("JoinVoice", id);
-
+                await connection.invoke("JoinVoice", id);
                 document.getElementById('voiceStatusPanel').classList.remove('d-none');
                 document.getElementById('connectedChannelName').innerText = name;
                 
+                // Local indicator for voice panel
                 const container = document.getElementById(`users-${id}`);
                 if (container) {
                     container.classList.remove('d-none');
                     const myUserName = "@(User.Identity?.Name ?? "User")";
                     const userHtml = `
-                        <div id="user-indicator-local" class="d-flex align-items-center gap-2 py-1 animate-entrance">
+                        <div id="user-indicator-local" class="d-flex align-items-center gap-2 py-1 animate-entrance px-2">
                             <div class="position-relative">
                                 <div id="localVoiceAvatar" class="avatar-xs rounded-circle d-flex flex-center text-primary fw-bold text-uppercase transition-all" style="background: rgba(0,245,160,0.2); font-size: 10px; border: 1px solid var(--color-emerald);">
                                     ${myUserName.charAt(0)}
@@ -1009,78 +840,7 @@
                     `;
                     container.insertAdjacentHTML('beforeend', userHtml);
                 }
-                startVoiceActivityDetection(localStream);
             } catch (err) { alert("Microphone access denied."); }
-        }
-
-        let isVideoOn = false;
-        async function toggleCamera() {
-            if (!currentVoiceChannelId) return;
-            isVideoOn = !isVideoOn;
-            try {
-                if (isVideoOn) {
-                    const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    const videoTrack = videoStream.getVideoTracks()[0];
-                    localStream.addTrack(videoTrack);
-                    Object.entries(peers).forEach(async ([connId, p]) => {
-                        p.pc.addTrack(videoTrack, localStream);
-                        const offer = await p.pc.createOffer();
-                        await p.pc.setLocalDescription(offer);
-                        connection.invoke("SendSignal", JSON.stringify({ sdp: offer }), connId);
-                    });
-                } else {
-                    const videoTrack = localStream.getVideoTracks()[0];
-                    if (videoTrack) {
-                        videoTrack.stop();
-                        localStream.removeTrack(videoTrack);
-                    }
-                }
-                connection.invoke("ToggleVideo", currentVoiceChannelId, isVideoOn);
-                document.getElementById('videoIcon').innerText = isVideoOn ? 'videocam' : 'videocam_off';
-                document.getElementById('videoButton').classList.toggle('text-aurora', isVideoOn);
-                document.getElementById('videoButton').classList.toggle('bg-primary-subtle', isVideoOn);
-                updateVideoGrid();
-            } catch (err) { isVideoOn = false; }
-        }
-
-        function toggleMic() {
-            if (!localStream) return;
-            isMuted = !isMuted;
-            localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
-            
-            const micIcon = document.getElementById('micIcon');
-            const micButton = document.getElementById('micButton');
-            const localMicOffIcon = document.getElementById('localMicOffIcon');
-
-            if (micIcon) micIcon.innerText = isMuted ? 'mic_off' : 'mic';
-            if (micButton) {
-                micButton.classList.toggle('text-danger', isMuted);
-                micButton.classList.toggle('discord-muted', isMuted);
-            }
-            if (localMicOffIcon) {
-                if (isMuted) localMicOffIcon.classList.remove('d-none');
-                else localMicOffIcon.classList.add('d-none');
-            }
-
-            if (currentVoiceChannelId) {
-                connection.invoke("ToggleMute", currentVoiceChannelId, isMuted);
-            }
-        }
-
-        function toggleDeafen() {
-            isDeafened = !isDeafened;
-            const icon = document.getElementById('deafenIcon');
-            const btn = document.getElementById('deafenButton');
-            
-            if (icon) icon.innerText = isDeafened ? 'headphones_off' : 'headphones';
-            if (btn) {
-                btn.classList.toggle('text-danger', isDeafened);
-                btn.classList.toggle('discord-muted', isDeafened);
-            }
-            
-            // Audio policy: deafen implies mute usually in Discord-like flow
-            if (isDeafened && !isMuted) toggleMic();
-            else if (!isDeafened && isMuted) toggleMic(); // toggle back
         }
 
         async function leaveVoice() {
@@ -1088,167 +848,160 @@
             await connection.invoke("LeaveVoice", currentVoiceChannelId);
             Object.keys(peers).forEach(id => {
                 peers[id].pc.close();
-                const el = document.getElementById(`peer-audio-${id}`);
-                if (el) el.remove();
+                delete peers[id];
             });
             if (localStream) {
                 localStream.getTracks().forEach(t => t.stop());
                 localStream = null;
             }
-            stopVoiceActivityDetection();
             const myIndicator = document.getElementById('user-indicator-local');
             if (myIndicator) myIndicator.remove();
-            const container = document.getElementById(`users-${currentVoiceChannelId}`);
-            if (container && container.children.length === 0) container.classList.add('d-none');
             document.getElementById('voiceStatusPanel').classList.add('d-none');
             currentVoiceChannelId = null;
         }
 
-        function updateVideoGrid() {
-            const grid = document.getElementById('videoGrid');
-            const containers = grid.querySelectorAll('div[id$="-container"]');
-            const count = containers.length + (isVideoOn ? 1 : 0);
+        function toggleMic() {
+            if (!localStream) return;
+            isMuted = !isMuted;
+            localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+            document.getElementById('micIcon').innerText = isMuted ? 'mic_off' : 'mic';
+            document.getElementById('micButton').classList.toggle('text-danger', isMuted);
+            const localMicOff = document.getElementById('localMicOffIcon');
+            if (localMicOff) localMicOff.classList.toggle('d-none', !isMuted);
+            if (currentVoiceChannelId) connection.invoke("ToggleMute", currentVoiceChannelId, isMuted);
+        }
+
+        function toggleDeafen() {
+            isDeafened = !isDeafened;
+            document.getElementById('deafenIcon').innerText = isDeafened ? 'headphones_off' : 'headphones';
+            document.getElementById('deafenButton').classList.toggle('text-danger', isDeafened);
+            if (isDeafened && !isMuted) toggleMic();
+            else if (!isDeafened && isMuted) toggleMic();
+        }
+
+        // ── Channel & Message Logic ───────────────────────────────────────────────
+        async function joinTextChannel(id, name) {
+            if (!IS_MEMBER) { alert("Join the group to view messages."); return; }
+            await ensureConnection();
+            if (currentTextChannelId === id) return;
+            if (currentTextChannelId) await connection.invoke("LeaveChannel", currentTextChannelId);
+            currentTextChannelId = id;
+            await connection.invoke("JoinChannel", id);
             
-            if (count === 0) {
-                grid.classList.add('d-none');
-                grid.classList.remove('d-flex');
-                return;
-            }
+            document.getElementById('message-input').placeholder = `Message to #${name}...`;
             
-            grid.classList.remove('d-none');
-            grid.classList.add('d-flex');
-            
-            if (isVideoOn) document.getElementById('localVideoContainer').classList.remove('d-none');
-            else document.getElementById('localVideoContainer').classList.add('d-none');
-            
-            const localVideo = document.getElementById('localVideo');
-            if (isVideoOn && localStream && localStream.getVideoTracks().length > 0) {
-                localVideo.srcObject = new MediaStream([localStream.getVideoTracks()[0]]);
-            } else {
-                localVideo.srcObject = null;
+            // UI Active State
+            document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active-channel'));
+            const activeEl = document.querySelector(`.channel-item[onclick*="${id}"]`);
+            if (activeEl) activeEl.classList.add('active-channel');
+
+            // Toggle Welcome visibility
+            const welcome = document.querySelector('section.py-5');
+            const hr = document.querySelector('hr.border-top');
+            if (welcome) welcome.classList.add('d-none');
+            if (hr) hr.classList.add('d-none');
+
+            // Load and display messages
+            const container = document.getElementById('messages-container');
+            if (container) {
+                container.innerHTML = `<div class="py-5 text-center opacity-75"><div class="spinner-border text-aurora mb-3"></div><p class="text-muted small fw-bold">Loading history...</p></div>`;
+                try {
+                    const resp = await fetch(`/StudyGroups/GetChannelMessages?channelId=${id}`);
+                    const messages = await resp.json();
+                    container.innerHTML = '';
+                    if (messages.length === 0) {
+                        container.innerHTML = `<div class="py-5 text-center opacity-50"><p class="text-aurora fw-bold">Welcome to #${name}</p></div>`;
+                    } else {
+                        messages.forEach(appendMessage);
+                    }
+                    container.scrollTop = container.scrollHeight;
+                } catch (e) { container.innerHTML = '<p class="text-danger text-center py-5">Error loading history.</p>'; }
             }
         }
 
         function appendMessage(msg) {
-            let list = document.getElementById('message-list');
-            if (!list) return;
-            const isMine = msg.authorId === "@User.FindFirst(ClaimTypes.NameIdentifier)?.Value";
-            
+            const container = document.getElementById('messages-container');
+            if (!container) return;
+            const isMine = msg.authorId === CURRENT_USER_ID;
             const msgHtml = `
-                <div class="d-flex w-100 ${isMine ? 'justify-content-end' : 'justify-content-start'} animate-entrance">
-                    <div class="d-flex ${isMine ? 'flex-row-reverse' : ''} gap-3 align-items-end" style="max-width: 85%;">
-                        ${!isMine ? `<img src="${msg.authorAvatar}" class="avatar-sm rounded-lg shadow-sm border" style="border-color: var(--border-glass) !important;"/>` : ''}
-                        <div class="d-flex flex-column gap-1 ${isMine ? 'align-items-end' : 'align-items-start'}">
-                            <div class="d-flex align-items-center gap-2 px-1">
-                                <span class="fw-black text-muted text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">${msg.authorName}</span>
-                                <span class="fw-bold text-muted" style="font-size: 0.55rem;">${msg.createdAt}</span>
-                            </div>
-                            <div class="p-3 shadow-lg" style="border-radius: 1.5rem; ${isMine ? 'background: var(--gradient-aurora); color: var(--bg-universe); border-top-right-radius: 0.25rem;' : 'background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: white; border-top-left-radius: 0.25rem; backdrop-filter: blur(10px);'}">
-                                ${msg.content.startsWith('http') && msg.content.includes('giphy.com') ? `<img src="${msg.content}" class="img-fluid rounded-3" style="max-width: 250px;" />` : `<p class="mb-0 fw-medium" style="font-size: 0.9rem; line-height: 1.5;">${msg.content}</p>`}
-                            </div>
+                <div class="d-flex w-100 ${isMine ? 'justify-content-end' : 'justify-content-start'} animate-entrance mb-4">
+                    <div class="d-flex ${isMine ? 'flex-row-reverse' : ''} gap-3" style="max-width: 80%;">
+                        <img src="${msg.authorAvatar}" class="avatar-sm rounded-lg shadow-sm border" style="border-color: var(--border-glass) !important;"/>
+                        <div class="d-flex flex-column ${isMine ? 'align-items-end' : ''}">
+                             <div class="d-flex align-items-center gap-2 mb-1 px-1">
+                                <span class="fw-bold text-muted" style="font-size: 0.6rem;">${msg.authorName}</span>
+                                <span class="text-muted" style="font-size: 0.55rem;">${msg.createdAt}</span>
+                             </div>
+                             <div class="p-3 shadow-lg" style="border-radius: 1rem; ${isMine ? 'background: var(--gradient-aurora); color: var(--bg-universe);' : 'background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: white;'}">
+                                ${msg.content.startsWith('http') ? `<img src="${msg.content}" class="img-fluid rounded" />` : `<p class="mb-0" style="font-size: 0.9rem;">${msg.content}</p>`}
+                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-            list.insertAdjacentHTML('beforeend', msgHtml);
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                </div>`;
+            container.insertAdjacentHTML('beforeend', msgHtml);
+            container.scrollTop = container.scrollHeight;
         }
 
         window.sendMessage = async function() {
+            if (!IS_MEMBER) { alert("Join group to send messages."); return; }
             const input = document.getElementById('message-input');
             const content = input.value.trim();
             if (!content || !currentTextChannelId) return;
+            await ensureConnection();
             try {
-                if (!window.connection || window.connection.state !== "Connected") return;
-                await window.connection.invoke("SendMessage", currentTextChannelId, content);
+                await connection.invoke("SendMessage", currentTextChannelId, content);
                 input.value = '';
                 input.focus();
             } catch (err) { console.error("SignalR Send Error:", err); }
         }
 
+        // ── Join Group Logic ───────────────────────────────────────────────────────
+        window.joinGroup = async function(id = GROUP_ID) {
+            const btn = document.getElementById('main-join-btn') || event?.currentTarget;
+            if(btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Joining...';
+            }
+            try {
+                const resp = await fetch(`/StudyGroups/Join/${id}`, { method: 'POST' });
+                if (resp.ok) {
+                    location.reload(true); // Force fresh reload
+                } else {
+                    alert("Failed to join group.");
+                    if(btn) { btn.disabled = false; btn.innerText = 'JOIN STUDY GROUP'; }
+                }
+            } catch (e) { 
+                alert("Connection error.");
+                if(btn) { btn.disabled = false; btn.innerText = 'JOIN STUDY GROUP'; }
+            }
+        }
 
-        // ── Progressive Members Load ──────────────────────────────
+        // ── Member Management ──────────────────────────────────────────────────────
         function buildMemberHtml(m) {
             const name = m.fullName || m.userName || m.id;
             const isMe = m.id === CURRENT_USER_ID;
-            const avatarBg = m.isOwner
-                ? 'rgba(0,245,160,0.1); border:1px solid rgba(0,245,160,0.2);'
-                : 'rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);';
-            const starBadge = m.isOwner ? `
-                <div class="position-absolute d-flex flex-center shadow-sm"
-                     style="top:-4px;right:-4px;width:14px;height:14px;
-                            background:#fbbf24;border:2px solid var(--bg-universe);border-radius:50%;">
-                    <span class="material-symbols-outlined text-white fw-black" style="font-size:8px;">star</span>
-                </div>` : '';
-            const roleBadge = m.isOwner
-                ? `<span class="fw-black text-aurora text-uppercase px-1 rounded" style="font-size:0.5rem;background:rgba(0,245,160,0.1);">Group Creator</span>`
-                : `<span class="fw-bold text-muted text-uppercase" style="font-size:0.5rem;">Member</span>`;
-
-            let actionHtml = '';
-            if (!isMe) {
-                let innerAction = '';
-                switch (m.connectionStatus) {
-                    case 'Accepted':
-                        innerAction = `
-                            <form action="/Direct/StartChat" method="post" class="mb-0">
-                                <input type="hidden" name="userId" value="${m.id}" />
-                                <button type="submit" class="btn btn-link p-1 text-aurora hover-glow text-decoration-none d-flex flex-center" title="Send Message">
-                                    <span class="material-symbols-outlined fs-6">chat</span>
-                                </button>
-                            </form>`;
-                        break;
-                    case 'PendingSent':
-                        innerAction = `<button class="btn btn-link p-1 text-muted opacity-50 text-decoration-none d-flex flex-center cursor-default" title="Request Pending"><span class="material-symbols-outlined fs-6">hourglass_empty</span></button>`;
-                        break;
-                    case 'PendingReceived':
-                        innerAction = `
-                            <button onclick="acceptConnection('${m.id}')" class="btn btn-link p-1 text-success hover-glow text-decoration-none d-flex flex-center" title="Accept Request"><span class="material-symbols-outlined fs-6">check_circle</span></button>
-                            <button onclick="declineConnection('${m.id}')" class="btn btn-link p-1 text-danger hover-glow text-decoration-none d-flex flex-center" title="Decline"><span class="material-symbols-outlined fs-6">cancel</span></button>`;
-                        break;
-                    default:
-                        innerAction = `<button onclick="sendConnectionRequest('${m.id}')" class="btn btn-link p-1 text-muted hover-text-white hover-glow text-decoration-none d-flex flex-center" title="Connect"><span class="material-symbols-outlined fs-6">person_add</span></button>`;
-                        break;
-                }
-                actionHtml = `<div class="d-flex align-items-center gap-1 border-start ps-2" style="border-color: rgba(255,255,255,0.05) !important;" id="member-actions-${m.id}">${innerAction}</div>`;
-            }
-
-            return `
-                <div class="d-flex align-items-center gap-3 p-2 rounded-lg hover-glow transition-all animate-entrance"
-                     style="cursor:pointer;background:rgba(255,255,255,0.02);">
-                    <div class="position-relative">
-                        <div class="avatar-xs rounded-lg d-flex flex-center ${m.isOwner ? 'text-aurora' : 'text-muted'} shadow-sm"
-                             style="background:${avatarBg}">
-                            <span class="material-symbols-outlined fs-6">account_circle</span>
-                        </div>
-                        <div id="status-dot-${m.id}" class="position-absolute rounded-circle border border-dark status-dot ${m.isOnline ? 'online' : 'offline'}" 
-                             style="bottom: -2px; right: -2px; width: 10px; height: 10px; z-index: 2;"></div>
-                        ${starBadge}
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="fw-bold text-white text-truncate mb-0" style="font-size:0.75rem;">${name}</p>
-                        ${roleBadge}
-                    </div>
-                    ${actionHtml}
-                </div>`;
+            return `<div class="d-flex align-items-center gap-3 p-2 rounded-lg hover-glow transition-all" style="background:rgba(255,255,255,0.02);">
+                <div class="position-relative">
+                    <div class="avatar-xs rounded-lg d-flex flex-center bg-glass text-muted"><span class="material-symbols-outlined fs-6">account_circle</span></div>
+                    <div id="status-dot-${m.id}" class="position-absolute rounded-circle border border-dark status-dot offline" style="bottom:-2px;right:-2px;width:10px;height:10px;"></div>
+                </div>
+                <div class="flex-grow-1 min-w-0">
+                    <p class="fw-bold text-white text-truncate mb-0" style="font-size:0.75rem;">${name}</p>
+                    <span class="fw-bold text-muted" style="font-size:0.7rem;">${m.roleName || 'Member'}</span>
+                </div>
+            </div>`;
         }
 
         async function loadMoreMembers() {
             if (membersLoading || membersAllLoaded) return;
             membersLoading = true;
-            const spinner = document.getElementById('members-load-spinner');
-            if (spinner) spinner.classList.remove('d-none');
             try {
                 const resp = await fetch(`/StudyGroups/LoadMoreMembers?groupId=${GROUP_ID}&skip=${membersSkip}&take=20`);
                 const data = await resp.json();
                 const container = document.getElementById('members-items-container');
-                if (container) {
-                    data.members.forEach(m => container.insertAdjacentHTML('beforeend', buildMemberHtml(m)));
-                }
+                if (container) data.members.forEach(m => container.insertAdjacentHTML('beforeend', buildMemberHtml(m)));
                 membersSkip = data.nextSkip;
                 membersAllLoaded = !data.hasMore;
-                if (membersAllLoaded && membersObserver) {
-                    const sentinel = document.getElementById('members-sentinel');
-                    if (sentinel) membersObserver.unobserve(sentinel);
                 }
             } catch(e) { console.error('Members load error:', e); }
             finally {
@@ -1304,6 +1057,25 @@
                     <button onclick="sendConnectionRequest('${userId}')" class="btn btn-link p-1 text-muted hover-text-white hover-glow text-decoration-none d-flex flex-center" title="Connect">
                         <span class="material-symbols-outlined fs-6">person_add</span>
                     </button>`;
+            }
+        }
+        async function promoteMember(userId) {
+            if (!confirm('Are you sure you want to promote this member to Admin?')) return;
+            const resp = await fetch(`/StudyGroups/PromoteMember?groupId=${GROUP_ID}&userId=${userId}`, { method: 'POST' });
+            if (resp.ok) {
+                showToast('Success', 'Member promoted to Admin', 'success');
+                const badge = document.getElementById(`role-badge-${userId}`);
+                if (badge) {
+                    badge.innerText = 'Admin';
+                    badge.classList.remove('text-muted');
+                    badge.classList.add('text-warning');
+                }
+                // Try to remove the button
+                if (event && event.currentTarget) {
+                    event.currentTarget.remove();
+                }
+            } else {
+                showToast('Error', 'Failed to promote member', 'error');
             }
         }
     </script>

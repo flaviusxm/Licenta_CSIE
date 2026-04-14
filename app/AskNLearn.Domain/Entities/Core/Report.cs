@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using AskNLearn.Domain.Entities.SocialFeed;
 using AskNLearn.Domain.Entities.Messaging;
+using AskNLearn.Domain.Entities.StudyGroup;
 
 namespace AskNLearn.Domain.Entities.Core
 {
@@ -15,6 +16,7 @@ namespace AskNLearn.Domain.Entities.Core
         
         public Guid? ReportedPostId { get; set; }
         public Guid? ReportedMessageId { get; set; }
+        public Guid? ReportedResourceId { get; set; }
         
         public ReportReason Reason { get; set; }
         
@@ -33,5 +35,8 @@ namespace AskNLearn.Domain.Entities.Core
         
         [ForeignKey(nameof(ReportedMessageId))]
         public Message? ReportedMessage { get; set; }
+
+        [ForeignKey(nameof(ReportedResourceId))]
+        public LearningResource? ReportedResource { get; set; }
     }
 }

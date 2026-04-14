@@ -53,14 +53,14 @@
                     <div id="join-container-@group.Id">
                         @if (group.IsMember)
                         {
-                            <a asp-action="Details" asp-route-id="@group.Id" class="btn btn-premium d-flex align-items-center justify-content-center gap-2 fw-bold text-uppercase tracking-wider py-2 px-3 shadow-lg transition-transform hover-scale" style="font-size: 0.65rem; border-radius: 0.75rem;">
-                                Enter <span class="material-symbols-outlined" style="font-size: 0.9rem;">arrow_forward</span>
+                            <a asp-action="Details" asp-route-id="@group.Id" class="btn btn-premium d-flex align-items-center justify-content-center gap-2 fw-bold py-2 px-3 shadow-lg transition-transform hover-scale" style="font-size: 0.8rem; border-radius: 0.75rem;">
+                                Enter <span class="material-symbols-outlined" style="font-size: 0.95rem;">arrow_forward</span>
                             </a>
                         }
                         else
                         {
-                            <button onclick="joinGroup('@group.Id', this)" class="btn btn-premium d-flex align-items-center justify-content-center gap-2 fw-bold text-uppercase tracking-wider py-2 px-3 shadow-lg transition-transform hover-scale" style="font-size: 0.65rem; border-radius: 0.75rem;">
-                                Join <span class="material-symbols-outlined" style="font-size: 0.9rem;">person_add</span>
+                            <button onclick="joinGroup('@group.Id', this)" class="btn btn-premium d-flex align-items-center justify-content-center gap-2 fw-bold py-2 px-3 shadow-lg transition-transform hover-scale" style="font-size: 0.8rem; border-radius: 0.75rem;">
+                                Join <span class="material-symbols-outlined" style="font-size: 0.95rem;">person_add</span>
                             </button>
                         }
                     </div>

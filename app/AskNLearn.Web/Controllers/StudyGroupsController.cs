@@ -71,13 +71,19 @@ namespace AskNLearn.Web.Controllers
             var userId = _userManager.GetUserId(User);
             if (userId == null) return Unauthorized();
 
+            // 1. Verify group existence to prevent FK conflict crash
+            var groupExists = await _context.StudyGroups.AnyAsync(g => g.Id == id);
+            if (!groupExists) return NotFound();
+
             var alreadyMember = await _context.GroupMemberships.AnyAsync(m => m.GroupId == id && m.UserId == userId);
             if (alreadyMember) return Ok();
 
+            // 2. Locate or create "Member" role
             var memberRole = await _context.GroupRoles.FirstOrDefaultAsync(r => r.GroupId == id && r.Name == "Member");
             
             if (memberRole == null)
             {
+                // Safety fallback: if roles weren't created during group creation (legacy data or race condition)
                 var adminRole = new GroupRole { Id = Guid.NewGuid(), GroupId = id, Name = "Admin", Permissions = "ALL" };
                 memberRole = new GroupRole { Id = Guid.NewGuid(), GroupId = id, Name = "Member", Permissions = "READ,WRITE" };
                 _context.GroupRoles.AddRange(adminRole, memberRole);
@@ -139,6 +145,8 @@ namespace AskNLearn.Web.Controllers
                     UserName = m.User != null ? m.User.UserName : m.UserId,
                     FullName = m.User != null ? m.User.FullName : null,
                     IsOwner = m.UserId == group.OwnerId,
+                    RoleName = m.Role.Name,
+                    AvatarUrl = m.User != null ? m.User.AvatarUrl : null
                 })
                 .ToListAsync();
 
@@ -150,6 +158,8 @@ namespace AskNLearn.Web.Controllers
                 userName = m.UserName,
                 fullName = m.FullName,
                 isOwner = m.IsOwner,
+                roleName = m.RoleName,
+                avatarUrl = m.AvatarUrl,
                 isOnline = onlineUsers.Contains(m.UserId),
                 connectionStatus = currentUserId == null ? "None" : 
                     _context.Friendships.Any(f => f.RequesterId == currentUserId && f.AddresseeId == m.UserId && f.Status == FriendshipStatus.Accepted) || 
@@ -169,6 +179,31 @@ namespace AskNLearn.Web.Controllers
                 hasMore = skip + take < totalCount,
                 nextSkip = skip + take
             });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PromoteMember(Guid groupId, string userId)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+            
+            // 1. Verify group exists and current user is the owner
+            var group = await _context.StudyGroups.FirstOrDefaultAsync(g => g.Id == groupId);
+            if (group == null) return NotFound();
+            if (group.OwnerId != currentUserId) return Forbid();
+
+            // 2. Fetch the "Admin" role for this group
+            var adminRole = await _context.GroupRoles.FirstOrDefaultAsync(r => r.GroupId == groupId && r.Name == "Admin");
+            if (adminRole == null) return BadRequest("Admin role not found for this group.");
+
+            // 3. Find target membership
+            var membership = await _context.GroupMemberships.FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == userId);
+            if (membership == null) return NotFound("Member not found.");
+
+            // 4. Update role
+            membership.GroupRoleId = adminRole.Id;
+            await _context.SaveChangesAsync(default);
+
+            return Ok();
         }
 
         public IActionResult Create()
@@ -242,6 +277,10 @@ namespace AskNLearn.Web.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            var userId = _userManager.GetUserId(User);
+            var isMember = await _context.GroupMemberships.AnyAsync(m => m.GroupId == command.GroupId && m.UserId == userId);
+            if (!isMember) return Forbid();
+
             var channelId = await _mediator.Send(command);
             return RedirectToAction(nameof(Details), new { id = command.GroupId });
         }
@@ -249,8 +288,12 @@ namespace AskNLearn.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteChannel(Guid id, Guid groupId)
         {
+            var userId = _userManager.GetUserId(User);
+            var isMember = await _context.GroupMemberships.AnyAsync(m => m.GroupId == groupId && m.UserId == userId);
+            if (!isMember) return Forbid();
+
             var result = await _mediator.Send(new DeleteChannelCommand { Id = id });
-            return RedirectToAction(nameof(Edit), new { id = groupId });
+            return RedirectToAction(nameof(Details), new { id = groupId });
         }
 
         [HttpGet]

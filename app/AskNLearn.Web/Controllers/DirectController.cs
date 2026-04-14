@@ -28,8 +28,15 @@ namespace AskNLearn.Web.Controllers
 
             var conversationList = conversations.Select(c => {
                 var otherParticipant = c.Participants.FirstOrDefault(p => p.UserId != user.Id);
-                var lastMessage = c.Messages.FirstOrDefault();
                 var userParticipant = c.Participants.FirstOrDefault(p => p.UserId == user.Id);
+                var lastMessage = c.Messages.OrderByDescending(m => m.CreatedAt).FirstOrDefault();
+                
+                // Fetch unread count from database for this conversation
+                var unreadCount = context.Messages.Count(m => 
+                    m.ConversationId == c.Id && 
+                    m.AuthorId != user.Id && 
+                    (userParticipant == null || userParticipant.LastReadMessageId == null || 
+                     m.CreatedAt > (context.Messages.Where(lm => lm.Id == userParticipant.LastReadMessageId).Select(lm => lm.CreatedAt).FirstOrDefault())));
 
                 return new ConversationPreviewViewModel
                 {
@@ -39,7 +46,8 @@ namespace AskNLearn.Web.Controllers
                     OtherUserAvatar = otherParticipant?.User?.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={otherParticipant?.User?.UserName ?? "User"}",
                     LastMessageContent = lastMessage?.Content ?? "No messages yet",
                     LastMessageAt = lastMessage?.CreatedAt ?? c.CreatedAt,
-                    IsUnread = lastMessage != null && userParticipant?.LastReadMessageId != lastMessage.Id && lastMessage.AuthorId != user.Id
+                    IsUnread = unreadCount > 0,
+                    UnreadCount = unreadCount
                 };
             }).ToList();
 

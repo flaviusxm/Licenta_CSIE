@@ -45,10 +45,26 @@ public class ResourcesController : Controller
         }
 
         [HttpPost]
-        public async Task<IActionResult> Report(Guid id, string reason)
+        public async Task<IActionResult> Report(Guid id, string reason, string description)
         {
-            // Simple report logic
-            return Ok(new { message = "Report submitted" });
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var report = new Report
+            {
+                Id = Guid.NewGuid(),
+                ReporterId = userId,
+                ReportedResourceId = id,
+                Reason = Enum.Parse<ReportReason>(reason),
+                Description = description ?? "No description provided",
+                Status = ReportStatus.Pending,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Reports.Add(report);
+            await _context.SaveChangesAsync(default);
+
+            return Ok(new { message = "Report submitted successfully" });
         }
 
         [HttpPost]

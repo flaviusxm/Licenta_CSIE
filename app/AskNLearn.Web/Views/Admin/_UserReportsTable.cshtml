@@ -27,6 +27,11 @@
                     <span class="badge bg-opacity-10 bg-info text-info border border-info border-opacity-25 px-2 py-1 small self-start mb-1" style="font-size: 0.55rem; width: fit-content;">COMMENT</span>
                     <p class="text-white mb-0" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">"@report.ReportedMessage?.Content"</p>
                 }
+                else if (report.ReportedResourceId.HasValue)
+                {
+                    <span class="badge bg-opacity-10 bg-info text-info border border-info border-opacity-25 px-2 py-1 small self-start mb-1" style="font-size: 0.55rem; width: fit-content; background: rgba(0, 245, 160, 0.1) !important; color: var(--color-mint-bright) !important; border-color: rgba(0, 245, 160, 0.2) !important;">RESOURCE</span>
+                    <p class="text-white mb-0 fw-bold">@report.ReportedResource?.Title</p>
+                }
             </div>
         </td>
         <td class="py-4 px-4">

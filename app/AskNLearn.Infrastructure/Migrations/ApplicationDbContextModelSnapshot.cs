@@ -122,6 +122,9 @@ namespace AskNLearn.Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<int>("VerificationStatus")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CurrentRankId");
@@ -247,6 +250,9 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.Property<Guid?>("ReportedPostId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ReportedResourceId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ReporterId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -259,6 +265,8 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.HasIndex("ReportedMessageId");
 
                     b.HasIndex("ReportedPostId");
+
+                    b.HasIndex("ReportedResourceId");
 
                     b.HasIndex("ReporterId");
 
@@ -880,14 +888,9 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.Property<DateTime>("JoinedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("StudyGroupId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("GroupId", "UserId");
 
                     b.HasIndex("GroupRoleId");
-
-                    b.HasIndex("StudyGroupId");
 
                     b.HasIndex("UserId");
 
@@ -1204,6 +1207,10 @@ namespace AskNLearn.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("ReportedPostId");
 
+                    b.HasOne("AskNLearn.Domain.Entities.StudyGroup.LearningResource", "ReportedResource")
+                        .WithMany()
+                        .HasForeignKey("ReportedResourceId");
+
                     b.HasOne("AskNLearn.Domain.Entities.Core.ApplicationUser", "Reporter")
                         .WithMany()
                         .HasForeignKey("ReporterId")
@@ -1213,6 +1220,8 @@ namespace AskNLearn.Infrastructure.Migrations
                     b.Navigation("ReportedMessage");
 
                     b.Navigation("ReportedPost");
+
+                    b.Navigation("ReportedResource");
 
                     b.Navigation("Reporter");
                 });
@@ -1479,7 +1488,7 @@ namespace AskNLearn.Infrastructure.Migrations
             modelBuilder.Entity("AskNLearn.Domain.Entities.StudyGroup.GroupMembership", b =>
                 {
                     b.HasOne("AskNLearn.Domain.Entities.StudyGroup.StudyGroup", "Group")
-                        .WithMany()
+                        .WithMany("Members")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1489,10 +1498,6 @@ namespace AskNLearn.Infrastructure.Migrations
                         .HasForeignKey("GroupRoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("AskNLearn.Domain.Entities.StudyGroup.StudyGroup", null)
-                        .WithMany("Members")
-                        .HasForeignKey("StudyGroupId");
 
                     b.HasOne("AskNLearn.Domain.Entities.Core.ApplicationUser", "User")
                         .WithMany()

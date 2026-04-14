@@ -47,7 +47,7 @@
 html, body {
     background-color: var(--bg-universe);
     color: var(--text-pure);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
@@ -178,7 +178,7 @@ html, body {
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-weight: 800;
+    font-weight: 700;
 }
 
 .text-nebula {
@@ -186,19 +186,20 @@ html, body {
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-weight: 800;
+    font-weight: 700;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    letter-spacing: -0.02em;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.01em;
 }
 
 /* --- Standardized Page Headers --- */
 .page-header-title {
     font-size: 2.5rem; /* Bootstrap display-6 equivalent roughly */
-    font-weight: 800;
+    font-weight: 700;
     color: var(--text-pure);
-    letter-spacing: -0.025em;
+    letter-spacing: -0.02em;
     margin-bottom: 0.5rem;
 }
 
@@ -237,15 +238,14 @@ h1, h2, h3, h4, h5, h6 {
 .btn-premium {
     background: var(--gradient-aurora);
     color: #020806 !important;
-    font-weight: 800;
+    font-weight: 600;
     border: none;
     padding: 0.75rem 1.75rem;
     border-radius: 2rem; 
     box-shadow: 0 8px 20px rgba(52, 211, 153, 0.2);
     transition: all 0.4s var(--ease-apple);
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
     font-size: 0.9rem;
-    text-transform: uppercase;
 }
 
 .btn-premium:hover {
@@ -299,10 +299,9 @@ h1, h2, h3, h4, h5, h6 {
     background: var(--gradient-aurora);
     border: none;
     color: var(--bg-universe);
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    font-size: 0.75rem;
     padding: 0.6rem 1.75rem;
     border-radius: 2rem;
     box-shadow: var(--shadow-glow);
@@ -319,10 +318,9 @@ h1, h2, h3, h4, h5, h6 {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-glass-strong);
     color: var(--text-muted);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    font-size: 0.75rem;
     padding: 0.6rem 1.75rem;
     border-radius: 2rem;
     transition: all 0.3s ease;
@@ -339,10 +337,9 @@ h1, h2, h3, h4, h5, h6 {
     background: var(--gradient-aurora);
     border: none;
     color: var(--bg-universe);
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    font-size: 0.65rem;
     border-radius: 0.75rem;
     transition: all 0.3s ease;
 }
@@ -356,10 +353,9 @@ h1, h2, h3, h4, h5, h6 {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-glass);
     color: var(--text-muted);
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    font-size: 0.65rem;
     border-radius: 0.75rem;
     transition: all 0.3s ease;
 }

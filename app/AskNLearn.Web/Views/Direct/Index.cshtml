@@ -36,19 +36,25 @@
                             <div class="avatar-md rounded-xl overflow-hidden border @(isActive ? "border-aurora" : "border-glass") shadow-sm">
                                 <img src="@(string.IsNullOrEmpty(conv.OtherUserAvatar) ? $"https://api.dicebear.com/7.x/avataaars/svg?seed={conv.OtherUserName}" : conv.OtherUserAvatar)" class="w-100 h-100 object-cover" alt="@conv.OtherUserName" />
                             </div>
-                            @if (conv.IsUnread)
-                            {
-                                <div class="position-absolute top-0 end-0 rounded-circle bg-aurora shadow-sm" style="width: 10px; height: 10px; border: 2px solid var(--bg-universe);"></div>
-                            }
                         </div>
                         <div class="flex-grow-1 min-w-0">
                             <div class="d-flex justify-content-between align-items-baseline mb-1">
                                 <span class="fw-bold text-white text-truncate" style="font-size: 0.9rem;">@conv.OtherUserName</span>
                                 <span class="text-muted" style="font-size: 0.65rem;">@conv.LastMessageAt.ToString("HH:mm")</span>
                             </div>
-                            <p class="text-muted text-truncate mb-0 @(conv.IsUnread ? "fw-bold text-light italic" : "")" style="font-size: 0.75rem;">
-                                @conv.LastMessageContent
-                            </p>
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <p class="text-muted text-truncate mb-0 @(conv.UnreadCount > 0 ? "fw-bold text-light italic" : "")" 
+                                   id="last-msg-@conv.ConversationId"
+                                   style="font-size: 0.75rem;">
+                                    @conv.LastMessageContent
+                                </p>
+                                @if (conv.UnreadCount > 0)
+                                {
+                                    <span id="unread-badge-@conv.ConversationId" class="badge bg-aurora-glass text-aurora rounded-pill px-2 py-1 fw-bold flex-shrink-0" style="font-size: 0.65rem;">
+                                        + @conv.UnreadCount new messages
+                                    </span>
+                                }
+                            </div>
                         </div>
                     </a>
                 }
@@ -82,7 +88,7 @@
                         <h4 class="h5 fw-bold text-white mb-0 tracking-tight">@(otherParticipant?.User?.FullName ?? otherParticipant?.User?.UserName)</h4>
                         <div class="d-flex align-items-center gap-2 mt-1">
                             <span class="rounded-circle bg-success" style="width: 6px; height: 6px;"></span>
-                            <span class="text-muted small fw-bold text-uppercase tracking-widest" style="font-size: 0.65rem;">Online</span>
+                            <span class="text-muted small fw-bold" style="font-size: 0.7rem;">Online</span>
                         </div>
                     </div>
                 </div>
@@ -106,7 +112,7 @@
                 <div id="localVideoContainer" class="d-none position-relative bg-black rounded-xl overflow-hidden border border-aurora shadow-lg flex-shrink-0" style="width: 200px; height: 150px;">
                     <video id="localVideo" autoplay muted playsinline class="w-100 h-100 object-cover"></video>
                     <div class="position-absolute bottom-0 start-0 m-2 px-2 py-0.5 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
-                        <span class="fw-bold text-white text-uppercase" style="font-size: 0.6rem;">You</span>
+                        <span class="fw-bold text-white" style="font-size: 0.65rem;">You</span>
                     </div>
                 </div>
             </div>
@@ -126,8 +132,8 @@
                             }
                             <div class="d-flex flex-column gap-1 @(isMine ? "align-items-end" : "align-items-start")">
                                 <div class="d-flex align-items-center gap-2 px-1">
-                                    <span class="fw-black text-muted text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">@authorName</span>
-                                    <span class="fw-bold text-muted" style="font-size: 0.55rem;">@message.CreatedAt.ToString("HH:mm")</span>
+                                    <span class="fw-bold text-muted" style="font-size: 0.65rem;">@authorName</span>
+                                    <span class="fw-bold text-muted" style="font-size: 0.6rem;">@message.CreatedAt.ToString("HH:mm")</span>
                                 </div>
                                 <div class="p-3 shadow-lg" style="border-radius: 1.5rem; @(isMine ? "background: var(--gradient-aurora); color: var(--bg-universe); border-top-right-radius: 0.25rem;" : "background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: white; border-top-left-radius: 0.25rem; backdrop-filter: blur(10px);")">
                                     @if (message.Content.StartsWith("http") && (message.Content.Contains("giphy.com") || message.Content.Contains("tenor.com"))) {
@@ -168,7 +174,7 @@
                                 <span class="material-symbols-outlined fs-4">mood</span>
                             </button>
                         </div>
-                        <button id="send-btn" onclick="sendMessage()" class="btn btn-premium d-flex align-items-center justify-content-center rounded-pill px-4" style="height: 52px; min-width: 100px; font-size: 0.85rem; font-weight: 800; letter-spacing: 1px;">SEND</button>
+                        <button id="send-btn" onclick="sendMessage()" class="btn btn-premium d-flex align-items-center justify-content-center rounded-pill px-4" style="height: 52px; min-width: 100px; font-size: 0.85rem; font-weight: 700;">Send</button>
                     </div>
                 </div>
             </footer>
@@ -182,7 +188,7 @@
                         <span class="material-symbols-outlined text-aurora display-1">forum</span>
                     </div>
                 </div>
-                <h3 class="display-6 fw-bold text-white mb-3 tracking-tighter">Direct <span class="text-aurora">Messages</span></h3>
+                <h3 class="display-6 fw-bold text-white mb-3">Direct <span class="text-aurora">Messages</span></h3>
                 <p class="text-muted fs-5 mb-5" style="max-width: 400px;">Select a conversation from the sidebar to start chatting.</p>
             </div>
         }
@@ -214,9 +220,13 @@
 
             window.connection.on("ReceiveMessage", (message) => {
                 const incomingConvId = (message.conversationId || message.channelId || "").toString().toLowerCase();
-                const activeConvId = currentConversationId.toLowerCase();
+                const activeConvId = (currentConversationId || "").toLowerCase();
                 
-                if (incomingConvId === activeConvId) {
+                // 1. Update Sidebar always
+                updateSidebarPreview(message);
+
+                // 2. Update Chat Area if it's the active conversation
+                if (activeConvId && incomingConvId === activeConvId) {
                     appendMessage(message);
                 }
             });
@@ -255,21 +265,54 @@
                 }
             });
 
-            // Join the conversation group
+            // Join all conversation groups and active channel
             if(window.connection.state === signalR.HubConnectionState.Connected) {
-                window.connection.invoke("JoinChannel", currentConversationId);
+                @foreach (var conv in conversations) {
+                    <text>window.connection.invoke("JoinChannel", "@conv.ConversationId");</text>
+                }
             } else {
-                window.connection.onreconnected(() => window.connection.invoke("JoinChannel", currentConversationId));
+                window.connection.onreconnected(() => {
+                    @foreach (var conv in conversations) {
+                        <text>window.connection.invoke("JoinChannel", "@conv.ConversationId");</text>
+                    }
+                });
             }
         }
 
-        function appendMessage(msg) {
-            const container = document.getElementById('messages-container');
-            if (!container) return;
-            const isMine = msg.authorId === currentUserId;
+        function updateSidebarPreview(msg) {
+            const convId = (msg.conversationId || msg.channelId || "").toString().toLowerCase();
+            const lastMsgEl = document.getElementById(`last-msg-${convId}`);
+            const badgeEl = document.getElementById(`unread-badge-${convId}`);
             
+            if (lastMsgEl) {
+                lastMsgEl.innerText = msg.content.startsWith('http') ? 'Sent a GIF' : msg.content;
+                lastMsgEl.classList.add('fw-bold', 'text-light', 'italic');
+            }
+
+            // If not active, increment unread count
+            const activeConvId = (currentConversationId || "").toLowerCase();
+            if (convId !== activeConvId && msg.authorId !== currentUserId) {
+                if (badgeEl) {
+                    let count = parseInt(badgeEl.innerText.split(' ')[1]) || 0;
+                    badgeEl.innerText = `+ ${count + 1} new messages`;
+                    badgeEl.classList.remove('d-none');
+                } else {
+                    // Create badge if it didn't exist
+                    if (lastMsgEl) {
+                        const badgeHtml = `<span id="unread-badge-${convId}" class="badge bg-aurora-glass text-aurora rounded-pill px-2 py-1 fw-bold flex-shrink-0" style="font-size: 0.65rem;">
+                                            + 1 new messages
+                                         </span>`;
+                        lastMsgEl.parentElement.insertAdjacentHTML('beforeend', badgeHtml);
+                    }
+                }
+            }
+        }
+
+            // Deduplication: prevent adding the same message twice (e.g. optimistic UI + broadcast)
+            if (document.getElementById(`msg-${msg.id}`)) return;
+
             const msgHtml = `
-                <div class="d-flex w-100 ${isMine ? 'justify-content-end' : 'justify-content-start'} animate-slide-up">
+                <div class="d-flex w-100 ${isMine ? 'justify-content-end' : 'justify-content-start'} animate-slide-up" id="msg-${msg.id}">
                     <div class="d-flex ${isMine ? 'flex-row-reverse' : ''} gap-3 align-items-end" style="max-width: 85%;">
                         ${!isMine ? `<img src="${msg.authorAvatar}" class="avatar-sm rounded-lg shadow-sm border" style="border-color: var(--border-glass) !important;"/>` : ''}
                         <div class="d-flex flex-column gap-1 ${isMine ? 'align-items-end' : 'align-items-start'}">
@@ -293,14 +336,30 @@
             const content = input.value.trim();
             if (!content || !window.connection) return;
             
+            // Optimistic UI for immediate feedback
+            const tempId = 'temp-' + Date.now();
+            appendMessage({
+                id: tempId,
+                content: content,
+                authorId: currentUserId,
+                authorName: "You",
+                authorAvatar: document.querySelector('.avatar-md img')?.src || '',
+                createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                conversationId: "@Model?.Id"
+            });
+
+            input.value = '';
+            input.focus();
+
             try {
-                // Use the global connection from _Layout or site.js
                 await window.connection.invoke("SendMessage", "@Model?.Id", content);
-                input.value = '';
-                input.focus();
+                // Remove temp message once broadcast arrives (broadcast will use appendMessage with real ID)
+                const tempMsg = document.getElementById(`msg-${tempId}`);
+                if (tempMsg) tempMsg.remove();
             } catch (err) { 
                 console.error("SignalR Send Error:", err);
-                // Fallback focus
+                const tempMsg = document.getElementById(`msg-${tempId}`);
+                if (tempMsg) tempMsg.classList.add('opacity-50'); // Show error state
                 input.focus();
             }
         }

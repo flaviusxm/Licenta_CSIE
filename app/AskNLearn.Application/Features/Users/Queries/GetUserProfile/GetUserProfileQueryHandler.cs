@@ -24,7 +24,7 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
 
             if (user == null)
             {
-                return null;
+                return null!;
             }
 
             var postsCount = await _context.Posts.CountAsync(p => p.AuthorId == user.Id, cancellationToken);
@@ -104,7 +104,8 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
                 HasPendingVerification = hasPendingVerification,
                 ConnectionStatus = connectionStatus,
                 IsOwnProfile = request.CurrentUserId == user.Id,
-                EmailConfirmed = user.EmailConfirmed
+                EmailConfirmed = user.EmailConfirmed,
+                VerificationStatus = user.VerificationStatus.ToString()
             };
         }
     }

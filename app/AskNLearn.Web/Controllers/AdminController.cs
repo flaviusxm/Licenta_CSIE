@@ -129,6 +129,7 @@ namespace AskNLearn.Web.Controllers
             if (user != null)
             {
                 user.IsVerified = true;
+                user.VerificationStatus = UserVerificationStatus.IdentityVerified;
             }
 
             await _context.SaveChangesAsync(default);
@@ -147,6 +148,13 @@ namespace AskNLearn.Web.Controllers
             request.AdminNotes = notes;
             request.ProcessedAt = DateTime.UtcNow;
             request.ProcessedBy = _userManager.GetUserId(User);
+
+            var user = await _context.Users.FindAsync(request.UserId);
+            if (user != null)
+            {
+                user.VerificationStatus = UserVerificationStatus.Rejected;
+                user.IsVerified = false;
+            }
 
             await _context.SaveChangesAsync(default);
             return RedirectToAction(nameof(Verifications));
@@ -256,6 +264,7 @@ namespace AskNLearn.Web.Controllers
                 .Include(r => r.Reporter)
                 .Include(r => r.ReportedPost)
                 .Include(r => r.ReportedMessage)
+                .Include(r => r.ReportedResource)
                 .Where(r => r.Status == ReportStatus.Pending);
 
             if (filter == "POST")

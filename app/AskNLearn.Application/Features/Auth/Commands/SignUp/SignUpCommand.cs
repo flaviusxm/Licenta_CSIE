@@ -21,12 +21,12 @@ namespace AskNLearn.Application.Features.Auth.Commands.SignUp
         [MaxLength(100)]
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$",ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter and one number.")]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } = null!;
 
         [Required(ErrorMessage = "Please confirm your password.")]
         [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
         [DataType(DataType.Password)]
-        public string ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; } = null!;
 
         public string? VerificationBaseUrl { get; set; }
     }

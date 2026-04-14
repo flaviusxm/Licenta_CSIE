@@ -41,8 +41,11 @@ namespace AskNLearn.Domain.Entities.Core
         public UserRank? CurrentRank { get; set; }
 
         public bool IsVerified { get; set; } = false;
+        public UserVerificationStatus VerificationStatus { get; set; } = UserVerificationStatus.NotVerified;
 
         public Role Role { get; set; } = Role.Member; 
+
+        public bool IsFullyVerified => VerificationStatus == UserVerificationStatus.IdentityVerified || Role >= Role.Moderator;
 
         public string Status { get; set; } = "Offline";
         public DateTime? LastActive { get; set; }

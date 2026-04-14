@@ -17,12 +17,29 @@
         </div>
         <div class="flex-grow-1 min-w-0">
             <h4 class="fw-black text-white mb-0 text-truncate" style="font-size: 1rem;">@Model.FullName</h4>
-            <div class="d-flex align-items-center gap-1.5 mt-0.5">
-                <span class="badge bg-aurora-glass text-aurora px-1.5 py-0.5 rounded fw-black text-uppercase" style="font-size: 0.55rem;">Lv.@Model.Level Student</span>
-                @if (Model.IsVerified)
+            <div class="d-flex align-items-center gap-1.5 mt-0.5 flex-wrap">
+                @if (Model.Role == "Admin")
                 {
-                    <span class="material-symbols-outlined text-mint fs-6" style="font-variation-settings: 'FILL' 1;">verified</span>
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-1.5 py-0.5 rounded fw-black text-uppercase" style="font-size: 0.55rem;">System Admin</span>
                 }
+                else if (Model.Role == "Moderator")
+                {
+                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-1.5 py-0.5 rounded fw-black text-uppercase" style="font-size: 0.55rem;">Moderator</span>
+                }
+                else if (Model.VerificationStatus == "IdentityVerified")
+                {
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-1.5 py-0.5 rounded fw-black text-uppercase" style="font-size: 0.55rem;">Verified Member</span>
+                    <span class="material-symbols-outlined text-success fs-6" style="font-variation-settings: 'FILL' 1; font-size: 14px;">verified</span>
+                }
+                else if (Model.EmailConfirmed)
+                {
+                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-1.5 py-0.5 rounded fw-black text-uppercase" style="font-size: 0.55rem;">Email Verified</span>
+                }
+                else
+                {
+                    <span class="badge bg-muted bg-opacity-10 text-muted border border-white border-opacity-10 px-1.5 py-0.5 rounded fw-black text-uppercase" style="font-size: 0.55rem;">User</span>
+                }
+                <span class="badge bg-aurora-glass text-aurora px-1.5 py-0.5 rounded fw-black text-uppercase" style="font-size: 0.55rem;">Lv.@Model.Level</span>
             </div>
         </div>
     </div>

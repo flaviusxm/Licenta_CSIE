@@ -22,6 +22,7 @@ using AskNLearn.Application.Features.Posts.Commands.VotePost;
 using AskNLearn.Application.Features.Posts.Commands.DeleteComment;
 using AskNLearn.Application.Features.Posts.Commands.UpdateComment;
 using AskNLearn.Application.Features.Posts.Commands.TogglePostSolved;
+using Microsoft.AspNetCore.Identity;
 
 namespace AskNLearn.Web.Controllers
 {
@@ -30,11 +31,13 @@ namespace AskNLearn.Web.Controllers
     {
         private readonly IMediator _mediator;
         private readonly ILogger<ForumController> _logger;
+        private readonly UserManager<AskNLearn.Domain.Entities.Core.ApplicationUser> _userManager;
 
-        public ForumController(IMediator mediator, ILogger<ForumController> logger)
+        public ForumController(IMediator mediator, ILogger<ForumController> logger, UserManager<AskNLearn.Domain.Entities.Core.ApplicationUser> userManager)
         {
             _mediator = mediator;
             _logger = logger;
+            _userManager = userManager;
         }
 
         [AllowAnonymous]
@@ -43,6 +46,13 @@ namespace AskNLearn.Web.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var community = await _mediator.Send(new GetCommunityByIdQuery { Id = id, CurrentUserId = userId });
             if (community == null) return NotFound();
+
+            var isEmailVerified = false;
+            if (userId != null)
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                isEmailVerified = user != null && user.VerificationStatus >= AskNLearn.Domain.Entities.Core.UserVerificationStatus.EmailVerified;
+            }
 
             const int pageSize = 10;
             var posts = await _mediator.Send(new GetPostsByCommunityQuery
@@ -58,6 +68,7 @@ namespace AskNLearn.Web.Controllers
             ViewBag.TotalPostCount = totalCount;
             ViewBag.PageSize = pageSize;
             ViewBag.CurrentPage = 1;
+            ViewBag.IsEmailVerified = isEmailVerified;
 
             return View(community);
         }
@@ -81,11 +92,19 @@ namespace AskNLearn.Web.Controllers
 
             var community = await _mediator.Send(new GetCommunityByIdQuery { Id = communityId, CurrentUserId = userId });
 
+            var isEmailVerified = false;
+            if (userId != null)
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                isEmailVerified = user != null && user.VerificationStatus >= AskNLearn.Domain.Entities.Core.UserVerificationStatus.EmailVerified;
+            }
+
             ViewBag.CommunityId = communityId;
             ViewBag.CurrentPage = page;
             ViewBag.HasMorePosts = hasMore;
             ViewBag.CurrentUserId = userId;
             ViewBag.CommunityCreatorId = community?.CreatorId;
+            ViewBag.IsEmailVerified = isEmailVerified;
 
             return PartialView("_PostListPartial", posts);
         }
@@ -102,22 +121,6 @@ namespace AskNLearn.Web.Controllers
             });
 
             return PartialView("_PostCommentsPartial", result);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Join(Guid id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            await _mediator.Send(new JoinCommunityCommand { CommunityId = id, UserId = userId });
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Leave(Guid id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            await _mediator.Send(new LeaveCommunityCommand { CommunityId = id, UserId = userId });
-            return RedirectToAction(nameof(Details), new { id });
         }
 
         [HttpPost]
@@ -173,6 +176,14 @@ namespace AskNLearn.Web.Controllers
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized();
+                }
+
+                var user = await _userManager.FindByIdAsync(userId);
+                var isEmailVerified = user != null && user.VerificationStatus >= AskNLearn.Domain.Entities.Core.UserVerificationStatus.EmailVerified;
+                if (!isEmailVerified)
+                {
+                    _logger.LogWarning("Action blocked: User {UserId} attempted to comment or post without verification.", userId);
+                    return RedirectToAction(nameof(Details), new { id = command.CommunityId });
                 }
 
                 if (command.Attachment != null)
@@ -283,7 +294,16 @@ namespace AskNLearn.Web.Controllers
         {
             if (!ModelState.IsValid) return View(command);
 
-            command.AuthorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+            var isEmailVerified = user != null && user.VerificationStatus >= AskNLearn.Domain.Entities.Core.UserVerificationStatus.EmailVerified;
+            
+            if (!isEmailVerified)
+            {
+                return RedirectToAction(nameof(Details), new { id = command.CommunityId });
+            }
+
+            command.AuthorId = userId;
             await _mediator.Send(command);
 
             return RedirectToAction(nameof(Details), new { id = command.CommunityId });

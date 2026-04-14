@@ -24,6 +24,7 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries
         public string? UserName { get; set; }
         public string? FullName { get; set; }
         public string? AvatarUrl { get; set; }
+        public string? RoleName { get; set; }
         public bool IsOwner { get; set; }
         public ConnectionStatus ConnectionStatus { get; set; } = ConnectionStatus.None;
     }

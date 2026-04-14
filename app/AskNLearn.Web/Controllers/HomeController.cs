@@ -18,11 +18,6 @@ namespace app_licenta.Controllers
 
         public async Task<IActionResult> Index(string sortBy = "Latest")
         {
-            if (User.Identity?.IsAuthenticated == true && User.HasClaim(ClaimTypes.Role, "Admin"))
-            {
-                return RedirectToAction("Index", "Admin");
-            }
-
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var recentPosts = await GetPosts(currentUserId, 0, 10, sortBy);
 

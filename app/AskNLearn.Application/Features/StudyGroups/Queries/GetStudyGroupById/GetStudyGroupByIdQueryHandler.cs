@@ -52,13 +52,15 @@ namespace AskNLearn.Application.Features.StudyGroups.Queries.GetStudyGroupById
                             UserName = m.User.UserName ?? m.UserId,
                             FullName = m.User.FullName,
                             AvatarUrl = m.User.AvatarUrl,
+                            RoleName = m.Role.Name,
                             IsOwner = m.UserId == x.OwnerId,
                             ConnectionStatus = request.CurrentUserId == null ? ConnectionStatus.None : 
                                 _context.Friendships.Any(f => (f.RequesterId == request.CurrentUserId && f.AddresseeId == m.UserId && f.Status == FriendshipStatus.Accepted) || 
                                                              (f.RequesterId == m.UserId && f.AddresseeId == request.CurrentUserId && f.Status == FriendshipStatus.Accepted)) ? ConnectionStatus.Accepted :
                                 _context.Friendships.Any(f => f.RequesterId == request.CurrentUserId && f.AddresseeId == m.UserId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingSent :
                                 _context.Friendships.Any(f => f.RequesterId == m.UserId && f.AddresseeId == request.CurrentUserId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingReceived : ConnectionStatus.None
-                        }).Take(20).ToList()
+                        }).Take(20).ToList(),
+                    IsMember = x.Members.Any(m => m.UserId == request.CurrentUserId)
                 })
                 .FirstOrDefaultAsync(cancellationToken);
         }
