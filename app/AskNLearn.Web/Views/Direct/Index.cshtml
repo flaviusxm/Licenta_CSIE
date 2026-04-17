@@ -27,7 +27,7 @@
                 foreach (var conv in conversations)
                 {
                     bool isActive = Model?.Id == conv.ConversationId;
-                    <a asp-action="Index" asp-route-id="@conv.ConversationId" class="d-flex align-items-center gap-3 p-3 transition-all text-decoration-none border-bottom position-relative @(isActive ? "active-chat" : "chat-item-hover")" style="border-color: rgba(255,255,255,0.03) !important;">
+                    <a asp-action="Index" asp-route-id="@conv.ConversationId" class="d-flex align-items-center gap-3 p-3 transition-all text-decoration-none border-bottom position-relative @(isActive ? "active-chat" : "chat-item-hover")" style="border-color: rgba(255,255,255,0.03) !important; min-width: 0;">
                         @if (isActive)
                         {
                             <div class="position-absolute start-0 top-0 bottom-0 bg-aurora" style="width: 3px;"></div>
@@ -43,17 +43,11 @@
                                 <span class="text-muted" style="font-size: 0.65rem;">@conv.LastMessageAt.ToString("HH:mm")</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center gap-2">
-                                <p class="text-muted text-truncate mb-0 @(conv.UnreadCount > 0 ? "fw-bold text-light italic" : "")" 
+                                <p class="text-truncate mb-0 @(conv.UnreadCount > 0 ? "fw-bold text-light" : "text-muted")" 
                                    id="last-msg-@conv.ConversationId"
                                    style="font-size: 0.75rem;">
                                     @conv.LastMessageContent
                                 </p>
-                                @if (conv.UnreadCount > 0)
-                                {
-                                    <span id="unread-badge-@conv.ConversationId" class="badge bg-aurora-glass text-aurora rounded-pill px-2 py-1 fw-bold flex-shrink-0" style="font-size: 0.65rem;">
-                                        + @conv.UnreadCount new messages
-                                    </span>
-                                }
                             </div>
                         </div>
                     </a>
@@ -71,7 +65,7 @@
     </div>
 }
 
-<div class="d-flex flex-column h-100 flex-grow-1 bg-transparent w-100">
+<div class="d-flex flex-column h-100 flex-grow-1 bg-transparent min-w-0">
     <!-- Chat Area -->
     <main class="flex-grow-1 d-flex flex-column h-100 bg-transparent">
         @if (Model != null)
@@ -292,31 +286,40 @@
         function updateSidebarPreview(msg) {
             const convId = (msg.conversationId || msg.channelId || "").toString().toLowerCase();
             const lastMsgEl = document.getElementById(`last-msg-${convId}`);
-            const badgeEl = document.getElementById(`unread-badge-${convId}`);
+            const activeConvId = (currentConversationId || "").toLowerCase();
             
             if (lastMsgEl) {
-                lastMsgEl.innerText = msg.content.startsWith('http') ? 'Sent a GIF' : msg.content;
-                lastMsgEl.classList.add('fw-bold', 'text-light', 'italic');
-            }
+                const isFromOther = msg.authorId !== currentUserId;
+                const isInactive = convId !== activeConvId;
 
-            // If not active, increment unread count
-            const activeConvId = (currentConversationId || "").toLowerCase();
-            if (convId !== activeConvId && msg.authorId !== currentUserId) {
-                if (badgeEl) {
-                    let count = parseInt(badgeEl.innerText.split(' ')[1]) || 0;
-                    badgeEl.innerText = `+ ${count + 1} new messages`;
-                    badgeEl.classList.remove('d-none');
+                if (isFromOther && isInactive) {
+                    lastMsgEl.classList.add('fw-bold', 'text-light');
+                    lastMsgEl.classList.remove('text-muted');
+                    
+                    if (lastMsgEl.innerText.includes("new messages")) {
+                        let count = parseInt(lastMsgEl.innerText.split(' ')[1]) || 1;
+                        lastMsgEl.innerText = `+ ${count + 1} new messages`;
+                    } else if (lastMsgEl.classList.contains('fw-bold')) {
+                        lastMsgEl.innerText = `+ 2 new messages`;
+                    } else {
+                        lastMsgEl.innerText = msg.content.startsWith('http') ? 'Sent a GIF' : msg.content;
+                    }
                 } else {
-                    // Create badge if it didn't exist
-                    if (lastMsgEl) {
-                        const badgeHtml = `<span id="unread-badge-${convId}" class="badge bg-aurora-glass text-aurora rounded-pill px-2 py-1 fw-bold flex-shrink-0" style="font-size: 0.65rem;">
-                                            + 1 new messages
-                                         </span>`;
-                        lastMsgEl.parentElement.insertAdjacentHTML('beforeend', badgeHtml);
+                    lastMsgEl.innerText = msg.content.startsWith('http') ? 'Sent a GIF' : msg.content;
+                    if (!isInactive) {
+                        lastMsgEl.classList.remove('fw-bold', 'text-light');
+                        lastMsgEl.classList.add('text-muted');
                     }
                 }
             }
+
         }
+
+        function appendMessage(msg) {
+            const container = document.getElementById('messages-container');
+            if (!container) return;
+
+            const isMine = msg.authorId === currentUserId;
 
             // Deduplication: prevent adding the same message twice (e.g. optimistic UI + broadcast)
             if (document.getElementById(`msg-${msg.id}`)) return;

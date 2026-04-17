@@ -11,7 +11,8 @@ using System.Threading.Tasks;
 
 namespace AskNLearn.Web.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
+    [Route("management/administration")]
     public class AdminController : Controller
     {
         private readonly IApplicationDbContext _context;

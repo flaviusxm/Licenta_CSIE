@@ -13,77 +13,78 @@
             _                               => post.CreatedAt.ToString("MMM dd")
         };
 
-        <article class="glass-card p-4 transition-all hover-glow border-0 animate-entrance" style="background: var(--glass-surface); border-radius: 1.5rem;">
-            <div class="d-flex align-items-start gap-4">
-
+        <article class="glass-card p-4 p-md-5 transition-all position-relative post-card-animate mb-4" id="post-@post.Id">
+            <div class="d-flex gap-4 align-items-start">
+                
                 <!-- Vote Column -->
-                <div class="d-flex flex-column align-items-center gap-2" style="width: 50px;">
-                    <div class="avatar-md rounded-lg d-flex align-items-center justify-content-center fw-black shadow-lg" style="background: rgba(0,217,245,0.08); color: var(--color-aurora) !important; border: 1px solid var(--border-glass-strong); font-size: 0.7rem;">
-                        @(post.CommunityName.Length >= 2 ? post.CommunityName.Substring(0, 2).ToUpper() : post.CommunityName.ToUpper())
-                    </div>
-                    <div class="d-flex flex-column align-items-center py-2 px-1 rounded-pill" style="background: var(--glass-highlight); border: 1px solid var(--border-glass);">
-                        <button onclick="votePostHome('@post.Id', '@post.CommunityId', 1)" class="btn btn-link p-0 text-muted hover-glow">
-                            <span class="material-symbols-outlined vote-icon-up-@post.Id" style="font-size: 1.25rem;">keyboard_arrow_up</span>
-                        </button>
-                        <span class="text-white fw-black small my-1 vote-count-@post.Id">@post.VoteCount</span>
-                        <button onclick="votePostHome('@post.Id', '@post.CommunityId', -1)" class="btn btn-link p-0 text-muted hover-glow">
-                            <span class="material-symbols-outlined vote-icon-down-@post.Id" style="font-size: 1.25rem;">keyboard_arrow_down</span>
-                        </button>
-                    </div>
+                <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0 rounded-pill py-2" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass); width: 44px;">
+                    <button onclick="votePostHome('@post.Id', '@post.CommunityId', 1)" 
+                            class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center transition-colors text-muted hover-glow">
+                        <span class="material-symbols-outlined fs-5 vote-icon-up-@post.Id">keyboard_arrow_up</span>
+                    </button>
+
+                    <span class="fw-bold vote-count-@post.Id text-white" style="font-size: 0.9rem;">
+                        @post.VoteCount
+                    </span>
+
+                    <button onclick="votePostHome('@post.Id', '@post.CommunityId', -1)" 
+                            class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center transition-colors text-muted hover-text-danger">
+                        <span class="material-symbols-outlined fs-5 vote-icon-down-@post.Id">keyboard_arrow_down</span>
+                    </button>
                 </div>
 
+                <!-- Post Content -->
                 <div class="flex-grow-1 min-w-0">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <div class="position-relative">
-                                <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId"
-                                   class="text-aurora fw-bold text-decoration-none hover-card-trigger" 
-                                   data-hover-type="community" data-hover-id="@post.CommunityId" style="font-size: 0.75rem;">
-                                    @post.CommunityName
-                                </a>
-                            </div>
-                            <span class="text-muted opacity-50 small">•</span>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="position-relative">
-                                    <a asp-controller="Profile" asp-action="Index" asp-route-id="@post.AuthorId" 
-                                       class="text-muted small fw-bold text-decoration-none hover-text-white transition-colors hover-card-trigger"
-                                       data-hover-type="user" data-hover-id="@post.AuthorId">
-                                        @post.AuthorName
-                                    </a>
-                                </div>
-                            </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="avatar-xs rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+                            <span class="material-symbols-outlined text-muted" style="font-size: 14px;">person</span>
                         </div>
+                        <div class="d-flex align-items-center gap-1 flex-wrap">
+                            <a asp-controller="Profile" asp-action="Index" asp-route-id="@post.AuthorId" class="fw-bold text-white fs-6 text-decoration-none hover-text-aurora transition-all">@post.AuthorName</a>
+                            <span class="text-muted small">in</span>
+                            <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId" class="text-aurora fw-bold text-decoration-none hover-glow transition-all" style="font-size: 0.85rem;">@post.CommunityName</a>
+                        </div>
+                        <span class="text-muted ms-auto" style="font-size: 0.75rem;">• @post.CreatedAt.ToString("dd MMM yyyy")</span>
                     </div>
 
-                    <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId"
-                       class="text-decoration-none d-block" style="scroll-margin-top: 80px;">
-                        <h3 class="fs-5 fw-bold text-white mb-2 tracking-tight text-aurora-hover transition-all">@post.Title</h3>
+                    <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId" class="text-decoration-none d-block">
+                        <h3 class="h4 fw-bold text-white mb-2 text-aurora-hover transition-all">@post.Title</h3>
                     </a>
-                    <p class="text-muted mb-3 lh-relaxed" style="font-size: 0.88rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                        @post.Content
-                    </p>
+                    
+                    <p class="text-muted mb-4 fs-6" style="line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">@post.Content</p>
 
                     <div class="d-flex flex-column gap-3 mt-2">
-                        <div class="d-flex align-items-center gap-4 mt-2 pb-3 border-bottom" style="border-color: var(--border-glass) !important;">
-                            <div onclick="toggleLazyComments('@post.Id', '@post.CommunityId')" 
-                               class="d-flex align-items-center gap-1 text-muted fw-bold text-decoration-none hover-glow" style="font-size: 0.7rem; cursor: pointer;">
-                                <span class="material-symbols-outlined fs-5 toggle-icon-@post.Id">chat_bubble</span>
-                                <span>@post.CommentCount Comments</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
-                                <span class="material-symbols-outlined fs-5">visibility</span>
-                                @post.ViewCount Views
-                            </div>
-                            <div class="d-flex align-items-center gap-1 text-muted fw-bold" style="font-size: 0.7rem;">
-                                <span class="material-symbols-outlined fs-5">calendar_month</span>
-                                @post.CreatedAt.ToString("dd MMM yyyy")
+                        <div class="d-flex align-items-center justify-content-between pb-3 border-bottom" style="border-color: var(--border-glass) !important;">
+                            <div class="d-flex align-items-center gap-4 text-muted fw-bold" style="font-size: 0.8rem;">
+                                <div onclick="toggleLazyComments('@post.Id', '@post.CommunityId')"
+                                     class="d-flex align-items-center gap-2 hover-glow transition-all"
+                                     style="cursor: pointer;"
+                                     id="comments-toggle-@post.Id">
+                                    <span class="material-symbols-outlined fs-5 transition-all toggle-icon-@post.Id">chat_bubble</span>
+                                    <span>@post.CommentCount Comments</span>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="material-symbols-outlined fs-5">visibility</span>
+                                    <span>@post.ViewCount Views</span>
+                                </div>
+                                
+                                <button onclick="openReportModal('@post.Id', 'POST')" 
+                                        class="p-0 border-0 bg-transparent text-muted hover-text-danger d-flex align-items-center gap-1 transition-all" 
+                                        style="font-size: 0.8rem;"
+                                        title="Report this post">
+                                    <span class="material-symbols-outlined fs-5">report</span>
+                                    <span>Report</span>
+                                </button>
                             </div>
                         </div>
 
                         <!-- Comments Section: lazy loaded -->
                         <div id="comments-@post.Id" class="d-none animate-slide-down mt-2">
                             <div class="text-center py-4">
-                                <div class="spinner-border spinner-border-sm text-aurora" role="status"></div>
+                                <div class="spinner-border spinner-border-sm text-aurora" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
                                 <p class="text-muted mt-2 mb-0" style="font-size:0.8rem;">Loading comments...</p>
                             </div>
                         </div>

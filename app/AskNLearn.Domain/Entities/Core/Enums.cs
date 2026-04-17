@@ -20,7 +20,8 @@ namespace AskNLearn.Domain.Entities.Core
         Pending,
         Approved,
         Flagged,
-        AwaitingManualReview
+        AwaitingManualReview,
+        Removed
     }
 
     public enum UserVerificationStatus

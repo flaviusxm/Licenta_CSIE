@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Serilog;
 namespace AskNLearn.Web.Controllers
 {
+    [Route("identity/auth")]
     public class AuthController : Controller
     {
         private readonly IMediator mediator;
@@ -21,6 +22,7 @@ namespace AskNLearn.Web.Controllers
             _userManager = userManager;
         }
 
+        [HttpGet("authenticate")]
         public async Task<IActionResult> SignIn(string? returnUrl = null)
         {
             await mediator.Send(new GetSignInQuery());
@@ -29,13 +31,14 @@ namespace AskNLearn.Web.Controllers
         }
 
        
+        [HttpGet("register")]
         public async Task<IActionResult> SignUp()
         {
             await mediator.Send(new GetSignUpQuery());
             return View();
         }
 
-        [HttpPost]
+        [HttpPost("authenticate")]
         public async Task<IActionResult> SignIn(SignInCommand command, string? returnUrl = null)
         {
              if (!ModelState.IsValid)
@@ -89,7 +92,7 @@ namespace AskNLearn.Web.Controllers
             return View(command);
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         public async Task<IActionResult> SignUp(SignUpCommand command)
         {
             if (!ModelState.IsValid)
@@ -113,7 +116,7 @@ namespace AskNLearn.Web.Controllers
             return View(command);
         }
 
-        [HttpPost]
+        [HttpPost("terminate")]
         public new async Task<IActionResult> SignOut()
         {
             await mediator.Send(new SignOutCommand());

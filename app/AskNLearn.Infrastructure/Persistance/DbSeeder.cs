@@ -18,6 +18,8 @@ namespace AskNLearn.Infrastructure.Persistance
         private static readonly ThreadLocal<Random> _tlsRng = new(() => new Random(_globalRng.Next()));
         private static Random Rng => _tlsRng.Value!;
 
+        private static readonly string[] _topics = { "C#", "Java", "Python", "Web Dev", "Mobile", "AI", "DevOps", "CyberSecurity" };
+
         public static async Task SeedAsync(ApplicationDbContext ctx, UserManager<ApplicationUser> userManager, bool force = false)
         {
             ctx.Database.SetCommandTimeout(600);
@@ -72,7 +74,7 @@ namespace AskNLearn.Infrastructure.Persistance
             };
             foreach (var t in tables)
             {
-                try { await ctx.Database.ExecuteSqlRawAsync($"DELETE FROM [{t}]"); } catch { }
+                try { await ctx.Database.ExecuteSqlRawAsync("DELETE FROM [" + t + "]"); } catch { }
             }
         }
 
@@ -259,19 +261,18 @@ namespace AskNLearn.Infrastructure.Persistance
         private static async Task<List<Community>> SeedCommunitiesAsync(ApplicationDbContext ctx, List<ApplicationUser> users)
         {
             var communities = new List<Community>();
-            string[] topics = { "C#", "Java", "Python", "Web Dev", "Mobile", "AI", "DevOps", "CyberSecurity" };
             for (int i = 0; i < 8; i++)
             {
                 var creator = users[Rng.Next(users.Count)];
                 communities.Add(new Community
                 {
                     Id = Guid.NewGuid(),
-                    Name = $"{topics[i]} Community",
-                    Slug = $"{topics[i].ToLower()}-community",
-                    Description = $"Discussions about {topics[i]} programming and technology.",
+                    Name = $"{_topics[i]} Community",
+                    Slug = $"{_topics[i].ToLower()}-community",
+                    Description = $"Discussions about {_topics[i]} programming and technology.",
                     CreatorId = creator.Id,
                     CreatedAt = DateTime.UtcNow.AddMonths(-Rng.Next(1, 12)),
-                    ImageUrl = $"https://api.dicebear.com/7.x/shapes/svg?seed={topics[i]}"
+                    ImageUrl = $"https://api.dicebear.com/7.x/shapes/svg?seed={_topics[i]}"
                 });
             }
             await BulkInsertAsync(ctx, communities, "Communities", "Communities");
@@ -292,8 +293,8 @@ namespace AskNLearn.Infrastructure.Persistance
                         Id = Guid.NewGuid(),
                         CommunityId = comm.Id,
                         AuthorId = author.Id,
-                        Title = $"Thread: {topics[communities.IndexOf(comm)]} discussion #{i+1}",
-                        Content = $"Let's talk about {topics[communities.IndexOf(comm)]}. Does anyone have advice on this?",
+                        Title = $"Thread: {_topics[communities.IndexOf(comm)]} discussion #{i+1}",
+                        Content = $"Let's talk about {_topics[communities.IndexOf(comm)]}. Does anyone have advice on this?",
                         CreatedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 120)),
                         ModerationStatus = ModerationStatus.Approved,
                         ViewCount = Rng.Next(50, 2000)

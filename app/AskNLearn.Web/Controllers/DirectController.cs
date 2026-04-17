@@ -10,8 +10,10 @@ using Microsoft.EntityFrameworkCore;
 namespace AskNLearn.Web.Controllers
 {
     [Authorize]
+    [Route("communication/messaging")]
     public class DirectController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, AskNLearn.Application.Common.Interfaces.IModerationQueue moderationQueue) : Controller
     {
+        [HttpGet("conversations/{id?}")]
         public async Task<IActionResult> Index(Guid? id)
         {
             ViewData["ActivePage"] = "Messages";
@@ -26,39 +28,12 @@ namespace AskNLearn.Web.Controllers
                 .OrderByDescending(c => c.Messages.Any() ? c.Messages.Max(m => m.CreatedAt) : c.CreatedAt)
                 .ToListAsync();
 
-            var conversationList = conversations.Select(c => {
-                var otherParticipant = c.Participants.FirstOrDefault(p => p.UserId != user.Id);
-                var userParticipant = c.Participants.FirstOrDefault(p => p.UserId == user.Id);
-                var lastMessage = c.Messages.OrderByDescending(m => m.CreatedAt).FirstOrDefault();
-                
-                // Fetch unread count from database for this conversation
-                var unreadCount = context.Messages.Count(m => 
-                    m.ConversationId == c.Id && 
-                    m.AuthorId != user.Id && 
-                    (userParticipant == null || userParticipant.LastReadMessageId == null || 
-                     m.CreatedAt > (context.Messages.Where(lm => lm.Id == userParticipant.LastReadMessageId).Select(lm => lm.CreatedAt).FirstOrDefault())));
-
-                return new ConversationPreviewViewModel
-                {
-                    ConversationId = c.Id,
-                    OtherUserId = otherParticipant?.UserId ?? string.Empty,
-                    OtherUserName = otherParticipant?.User?.FullName ?? otherParticipant?.User?.UserName ?? "Unknown User",
-                    OtherUserAvatar = otherParticipant?.User?.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={otherParticipant?.User?.UserName ?? "User"}",
-                    LastMessageContent = lastMessage?.Content ?? "No messages yet",
-                    LastMessageAt = lastMessage?.CreatedAt ?? c.CreatedAt,
-                    IsUnread = unreadCount > 0,
-                    UnreadCount = unreadCount
-                };
-            }).ToList();
-
-            ViewBag.Conversations = conversationList;
-
             if (id.HasValue)
             {
                 var selectedConversation = await context.DirectConversations
                     .Include(c => c.Participants)
                         .ThenInclude(p => p.User)
-                    .Include(c => c.Messages.OrderBy(m => m.CreatedAt))
+                    .Include(c => c.Messages.Where(m => m.ModerationStatus != ModerationStatus.Flagged && m.ModerationStatus != ModerationStatus.Removed).OrderBy(m => m.CreatedAt))
                         .ThenInclude(m => m.Author)
                     .FirstOrDefaultAsync(c => c.Id == id.Value && c.Participants.Any(p => p.UserId == user.Id));
 
@@ -72,15 +47,54 @@ namespace AskNLearn.Web.Controllers
                         userParticipant.LastReadMessageId = lastMessage.Id;
                         await context.SaveChangesAsync();
                     }
-
-                    return View(selectedConversation);
+                    ViewBag.SelectedConversation = selectedConversation;
                 }
+            }
+
+            var conversationList = conversations.Select(c => {
+                var otherParticipant = c.Participants.FirstOrDefault(p => p.UserId != user.Id);
+                var userParticipant = c.Participants.FirstOrDefault(p => p.UserId == user.Id);
+                var lastMessage = c.Messages.OrderByDescending(m => m.CreatedAt).FirstOrDefault();
+                
+                // Fetch unread count from database for this conversation
+                var unreadCount = context.Messages.Count(m => 
+                    m.ConversationId == c.Id && 
+                    m.AuthorId != user.Id && 
+                    m.ModerationStatus != ModerationStatus.Flagged &&
+                    m.ModerationStatus != ModerationStatus.Removed &&
+                    (userParticipant == null || userParticipant.LastReadMessageId == null || 
+                     m.CreatedAt > (context.Messages.Where(lm => lm.Id == userParticipant.LastReadMessageId).Select(lm => lm.CreatedAt).FirstOrDefault())));
+
+                string previewText = lastMessage?.Content ?? "No messages yet";
+                if (unreadCount > 1)
+                {
+                    previewText = $"+ {unreadCount} new messages";
+                }
+
+                return new ConversationPreviewViewModel
+                {
+                    ConversationId = c.Id,
+                    OtherUserId = otherParticipant?.UserId ?? string.Empty,
+                    OtherUserName = otherParticipant?.User?.FullName ?? otherParticipant?.User?.UserName ?? "Unknown User",
+                    OtherUserAvatar = otherParticipant?.User?.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={otherParticipant?.User?.UserName ?? "User"}",
+                    LastMessageContent = previewText,
+                    LastMessageAt = lastMessage?.CreatedAt ?? c.CreatedAt,
+                    IsUnread = unreadCount > 0,
+                    UnreadCount = unreadCount
+                };
+            }).ToList();
+
+            ViewBag.Conversations = conversationList;
+
+            if (ViewBag.SelectedConversation != null)
+            {
+                return View(ViewBag.SelectedConversation);
             }
 
             return View();
         }
 
-        [HttpPost]
+        [HttpPost("conversations/initialize")]
         public async Task<IActionResult> StartChat(string userId)
         {
             var currentUserId = userManager.GetUserId(User);
@@ -120,7 +134,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Index), new { id = conversation.Id });
         }
 
-        [HttpPost]
+        [HttpPost("messages/report")]
         public async Task<IActionResult> ReportMessage(Guid id, AskNLearn.Domain.Entities.Core.ReportReason reason, string description)
         {
             var userId = userManager.GetUserId(User);

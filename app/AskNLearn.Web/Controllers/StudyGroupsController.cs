@@ -21,6 +21,7 @@ using System.Linq;
 namespace AskNLearn.Web.Controllers
 {
     [Authorize]
+    [Route("collaboration/study-groups")]
     public class StudyGroupsController : Controller
     {
         private readonly IMediator _mediator;

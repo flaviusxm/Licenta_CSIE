@@ -208,6 +208,20 @@
     const commentsLoaded = {};
     const commentsOpen = {};
 
+    // ─── Inline Post Form Toggle ──────────────────────────────────────────────
+    function toggleInlinePost(show) {
+        const form = document.getElementById('inline-post-form');
+        const container = document.getElementById('quick-post-container');
+        if (show) {
+            form.classList.remove('d-none');
+            container.classList.add('d-none');
+            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            form.classList.add('d-none');
+            container.classList.remove('d-none');
+        }
+    }
+
     // ─── CSRF Token Helper ──────────────────────────────────────────────────────
     function getAntiForgeryToken() {
         const input = document.querySelector('input[name="__RequestVerificationToken"]');
@@ -227,7 +241,7 @@
 
         try {
             const nextPage = currentPage + 1;
-            const response = await fetch(`/Forum/LoadMorePosts?communityId=${communityId}&page=${nextPage}`, {
+            const response = await fetch(`/hubs/communities/v1/discussions/batch?communityId=${communityId}&page=${nextPage}`, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
 
@@ -321,7 +335,7 @@
         if (!commentsLoaded[postId]) {
             commentsLoaded[postId] = true;
             try {
-                const response = await fetch(`/Forum/GetPostComments?postId=${postId}&communityId=${commId}`, {
+                const response = await fetch(`/hubs/communities/v1/comments/retrieve?postId=${postId}&communityId=${commId}`, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
                 if (!response.ok) throw new Error('Error loading comments');
@@ -366,7 +380,7 @@
 
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
 
-        fetch(`/Forum/VotePost?postId=${postId}&communityId=${communityId}&value=${value}`, {
+        fetch(`/hubs/communities/v1/interactions/vote?postId=${postId}&communityId=${communityId}&value=${value}`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',

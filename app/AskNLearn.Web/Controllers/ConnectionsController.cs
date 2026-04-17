@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AskNLearn.Domain.Entities.Messaging;
+using MediatR;
 
 namespace AskNLearn.Web.Controllers
 {
     [Authorize]
-    public class ConnectionsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager) : Controller
+    [Route("identity/network")]
+    public class ConnectionsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMediator mediator) : Controller
     {
         [HttpPost]
         public async Task<IActionResult> SendRequest(string userId)

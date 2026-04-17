@@ -5,9 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using AskNLearn.Domain.Entities.Core;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AskNLearn.Web.Controllers;
 
+[Authorize]
+[Route("assets/resources")]
 public class ResourcesController : Controller
 {
     private readonly IApplicationDbContext _context;

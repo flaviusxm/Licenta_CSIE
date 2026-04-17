@@ -28,51 +28,88 @@ namespace AskNLearn.Infrastructure.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Guardian AI Moderation Service is starting.");
+            _logger.LogInformation("Guardian Shield Service is starting. Monitoring for threats and validation tasks...");
 
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
                     var task = await _queue.DequeueAsync(stoppingToken);
-                    _logger.LogInformation("Processing Guardian task for {Target} with Id {Id}.", task.Target, task.Id);
+                    _logger.LogInformation("[Shield] Processing task for {Target} with Id {Id}.", task.Target, task.Id);
 
                     using var scope = _scopeFactory.CreateScope();
                     var guardianClient = scope.ServiceProvider.GetRequiredService<IGuardianClient>();
                     var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
 
-                    // 1. Determine Content to Moderate
-                    string contentToModerate = task.Content;
-                    string? titleToModerate = task.Title;
-
-                    // 2. Run AI Moderation
-                    var result = await guardianClient.ModerateTextAsync(contentToModerate, titleToModerate);
-
-                    // 3. Autonomous Action based on Target
-                    switch (task.Target)
+                    if (task.Target == ModerationTarget.IdentityVerification)
                     {
-                        case ModerationTarget.Post:
-                            await ProcessPostModeration(dbContext, task.Id, result, stoppingToken);
-                            break;
-
-                        case ModerationTarget.Comment:
-                        case ModerationTarget.Message:
-                            await ProcessMessageModeration(dbContext, task.Id, result, stoppingToken);
-                            break;
-
-                        case ModerationTarget.Report:
-                            await ProcessReportModeration(dbContext, task.Id, result, stoppingToken);
-                            break;
+                        var vResult = await guardianClient.VerifyDocumentAsync(null, task.Content);
+                        await ProcessIdentityVerification(dbContext, task.Id, vResult, stoppingToken);
+                        _logger.LogInformation("[Shield] Identity validation completed for Request {Id}. Result: {Status}", 
+                            task.Id, vResult.IsValid ? "Verified" : "Rejected/Review");
                     }
+                    else
+                    {
+                        // 1. Determine Content to Moderate
+                        string contentToModerate = task.Content;
+                        string? titleToModerate = task.Title;
 
-                    _logger.LogInformation("Guardian logic completed for {Target} {Id}. Result: {Status}", 
-                        task.Target, task.Id, result.IsSafe ? "Safe/Approved" : "Unsafe/Flagged");
+                        // 2. Run AI Moderation
+                        var result = await guardianClient.ModerateTextAsync(contentToModerate, titleToModerate);
+
+                        // 3. Autonomous Action based on Target
+                        switch (task.Target)
+                        {
+                            case ModerationTarget.Post:
+                                await ProcessPostModeration(dbContext, task.Id, result, stoppingToken);
+                                break;
+
+                            case ModerationTarget.Comment:
+                            case ModerationTarget.Message:
+                                await ProcessMessageModeration(dbContext, task.Id, result, stoppingToken);
+                                break;
+
+                            case ModerationTarget.Report:
+                                await ProcessReportModeration(dbContext, task.Id, result, stoppingToken);
+                                break;
+                        }
+
+                        _logger.LogInformation("[Shield] Moderation completed for {Target} {Id}. Result: {Status}", 
+                            task.Target, task.Id, result.IsSafe ? "Safe/Approved" : "Unsafe/Actioned");
+                    }
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Guardian AI error processing task.");
+                    _logger.LogError(ex, "Guardian Shield error processing task.");
                 }
+            }
+        }
+
+        private async Task ProcessIdentityVerification(IApplicationDbContext db, Guid requestId, (bool IsValid, string Details, string Recommendation) result, CancellationToken ct)
+        {
+            var request = await db.VerificationRequests.FindAsync(new object[] { requestId }, ct);
+            if (request != null)
+            {
+                bool autoApproved = result.IsValid && result.Recommendation.Contains("Approved", StringComparison.OrdinalIgnoreCase);
+                
+                request.Status = autoApproved ? Status.Approved : Status.Pending;
+                request.AdminNotes = $"[Guardian Shield AI]: {result.Recommendation} | Details: {result.Details}";
+                
+                if (autoApproved)
+                {
+                    request.ProcessedAt = DateTime.UtcNow;
+                    request.ProcessedBy = "SYSTEM_AI_SHIELD";
+                    
+                    var user = await db.Users.FindAsync(new object[] { request.UserId }, ct);
+                    if (user != null)
+                    {
+                        user.IsVerified = true;
+                        user.VerificationStatus = UserVerificationStatus.IdentityVerified;
+                    }
+                }
+                
+                await db.SaveChangesAsync(ct);
             }
         }
 
@@ -107,19 +144,20 @@ namespace AskNLearn.Infrastructure.Services
 
             if (report != null)
             {
-                // If AI confirms it's unsafe, flag the content and resolve report
+                // If AI confirms it's unsafe, remove the content and resolve report
                 if (!result.IsSafe)
                 {
                     report.Status = ReportStatus.Resolved;
+                    
                     if (report.ReportedPost != null)
                     {
-                        report.ReportedPost.ModerationStatus = ModerationStatus.Flagged;
-                        report.ReportedPost.ModerationReason = $"[AI Confirmed Report]: {result.Reason}";
+                        report.ReportedPost.ModerationStatus = ModerationStatus.Removed;
+                        report.ReportedPost.ModerationReason = $"[Guardian Shield - AI Confirmed Report]: {result.Reason}";
                     }
                     if (report.ReportedMessage != null)
                     {
-                        report.ReportedMessage.ModerationStatus = ModerationStatus.Flagged;
-                        report.ReportedMessage.ModerationReason = $"[AI Confirmed Report]: {result.Reason}";
+                        report.ReportedMessage.ModerationStatus = ModerationStatus.Removed;
+                        report.ReportedMessage.ModerationReason = $"[Guardian Shield - AI Confirmed Report]: {result.Reason}";
                     }
                 }
                 else

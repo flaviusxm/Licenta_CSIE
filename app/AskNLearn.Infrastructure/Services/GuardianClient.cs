@@ -40,7 +40,7 @@ namespace AskNLearn.Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error calling Guardian microservice for text moderation.");
-                return (true, "Connection error with Guardian service.");
+                return (true, "Guardian service unavailable. Defaulting to safe.");
             }
         }
 
@@ -60,12 +60,12 @@ namespace AskNLearn.Infrastructure.Services
                     return (result?.IsValid ?? false, result?.ExtractionDetails ?? "", result?.Recommendation ?? "No recommendation.");
                 }
 
-                return (false, "Guardian service unavailable.", "Contact support.");
+                return (true, "SERVICE_OFFLINE", "Approved by default.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error calling Guardian microservice for document verification.");
-                return (false, "Connection error with Guardian service.", "Please try again later.");
+                return (true, "SERVICE_OFFLINE", "Please try again later.");
             }
         }
 

@@ -132,7 +132,7 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
             {
                 try
                 {
-                    int deleted = await dbContext.Database.ExecuteSqlRawAsync($"DELETE FROM [{table}]");
+                    int deleted = await dbContext.Database.ExecuteSqlRawAsync("DELETE FROM [" + table + "]");
                     if (deleted > 0)
                         Console.WriteLine($"  ✓ Șters: {table} ({deleted} rânduri)");
                 }

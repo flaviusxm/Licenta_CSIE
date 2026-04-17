@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AskNLearn.Web.Controllers
 {
     [Authorize]
+    [Route("communication/notifications")]
     public class InboxController(ApplicationDbContext context, UserManager<ApplicationUser> userManager) : Controller
     {
         public async Task<IActionResult> Index()

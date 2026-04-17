@@ -6,7 +6,7 @@
     Layout = "_AuthLayout";
 }
 
-<form asp-controller="Auth" asp-action="SignUp" method="post" class="d-flex flex-column gap-3">
+<form asp-controller="Auth" asp-action="SignUp" method="post" class="d-flex flex-column gap-2">
     @Html.AntiForgeryToken()
     <div asp-validation-summary="ModelOnly" class="text-danger small text-center fw-bold d-none" id="validation-summary"></div>
 
@@ -66,7 +66,7 @@
     </div>
 
     <!-- Submit Button -->
-    <button type="submit" class="btn btn-premium w-100 d-flex align-items-center justify-content-center gap-2 mt-4">
+    <button type="submit" class="btn btn-premium w-100 d-flex align-items-center justify-content-center gap-2 mt-3">
         Create Account
         <span class="material-symbols-outlined fs-5">arrow_forward</span>
     </button>

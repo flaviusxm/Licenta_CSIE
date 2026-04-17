@@ -36,7 +36,7 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostComments
                     .ThenInclude(c => c.Attachments)
                         .ThenInclude(a => a.File)
                 .SelectMany(p => p.Comments
-                    .Where(c => c.ModerationStatus != ModerationStatus.Flagged)
+                    .Where(c => c.ModerationStatus != ModerationStatus.Flagged && c.ModerationStatus != ModerationStatus.Removed)
                     .Select(c => new CommentDto
                     {
                         Id = c.Id,

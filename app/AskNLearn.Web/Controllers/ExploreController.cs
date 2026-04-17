@@ -5,6 +5,7 @@ using System.Security.Claims;
 
 namespace AskNLearn.Web.Controllers
 {
+    [Route("hubs/communities/explore")]
     public class ExploreController : Controller
     {
         private readonly IMediator _mediator;

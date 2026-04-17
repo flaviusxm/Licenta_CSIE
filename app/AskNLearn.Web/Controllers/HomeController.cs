@@ -12,10 +12,12 @@ using AskNLearn.Application.Common.Models;
 
 namespace app_licenta.Controllers
 {
+    [Route("hubs/home")]
     public class HomeController(AskNLearn.Application.Common.Interfaces.IApplicationDbContext context) : Controller
     {
         private readonly AskNLearn.Application.Common.Interfaces.IApplicationDbContext _context = context;
 
+        [HttpGet("")]
         public async Task<IActionResult> Index(string sortBy = "Latest")
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -27,7 +29,7 @@ namespace app_licenta.Controllers
             return View();
         }
 
-        [HttpGet]
+        [HttpGet("feed")]
         public async Task<IActionResult> GetFeed(int skip = 10, string sortBy = "Latest")
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);

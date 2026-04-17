@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Identity;
 namespace AskNLearn.Web.Controllers
 {
     [Authorize]
+    [Route("hubs/communities")]
     public class ForumController : Controller
     {
         private readonly IMediator _mediator;
@@ -45,6 +46,7 @@ namespace AskNLearn.Web.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> Details(Guid id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -78,6 +80,7 @@ namespace AskNLearn.Web.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("v1/discussions/batch")]
         public async Task<IActionResult> LoadMorePosts(Guid communityId, int page = 2)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -114,6 +117,7 @@ namespace AskNLearn.Web.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("v1/comments/retrieve")]
         public async Task<IActionResult> GetPostComments(Guid postId, Guid communityId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -127,7 +131,7 @@ namespace AskNLearn.Web.Controllers
             return PartialView("_PostCommentsPartial", result);
         }
 
-        [HttpPost]
+        [HttpPost("v1/interactions/vote")]
         public async Task<IActionResult> VotePost(Guid postId, Guid communityId, short value)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -163,7 +167,7 @@ namespace AskNLearn.Web.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("v1/discussions/comments/add")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddComment([FromForm] AddCommentCommand command)
         {
@@ -380,7 +384,7 @@ namespace AskNLearn.Web.Controllers
             if (community == null) return NotFound();
             return PartialView("_CommunityHoverCard", community);
         }
-        [HttpPost]
+        [HttpPost("v1/discussions/report")]
         public async Task<IActionResult> ReportPost(Guid id, AskNLearn.Domain.Entities.Core.ReportReason reason, string description)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -415,7 +419,7 @@ namespace AskNLearn.Web.Controllers
             return Ok(new { message = "Post reported successfully. Guardian AI is analyzing." });
         }
 
-        [HttpPost]
+        [HttpPost("v1/comments/report")]
         public async Task<IActionResult> ReportComment(Guid id, AskNLearn.Domain.Entities.Core.ReportReason reason, string description)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

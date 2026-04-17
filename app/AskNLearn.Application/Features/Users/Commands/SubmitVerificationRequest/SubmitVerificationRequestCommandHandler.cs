@@ -12,12 +12,12 @@ namespace AskNLearn.Application.Features.Users.Commands.SubmitVerificationReques
     public class SubmitVerificationRequestCommandHandler : IRequestHandler<SubmitVerificationRequestCommand, List<string>>
     {
         private readonly IApplicationDbContext _context;
-        private readonly IGuardianClient _guardianClient;
+        private readonly IModerationQueue _moderationQueue;
 
-        public SubmitVerificationRequestCommandHandler(IApplicationDbContext context, IGuardianClient guardianClient)
+        public SubmitVerificationRequestCommandHandler(IApplicationDbContext context, IModerationQueue moderationQueue)
         {
             _context = context;
-            _guardianClient = guardianClient;
+            _moderationQueue = moderationQueue;
         }
 
         public async Task<List<string>> Handle(SubmitVerificationRequestCommand request, CancellationToken cancellationToken)
@@ -38,35 +38,29 @@ namespace AskNLearn.Application.Features.Users.Commands.SubmitVerificationReques
                 return errors;
             }
 
-            var (isValid, details, recommendation) = await _guardianClient.VerifyDocumentAsync(null, request.StudentIdUrl);
-
-            // Autonomous Moderation: Auto-approve if AI is 100% confident
-            bool autoApproved = isValid && recommendation.Contains("Approved", StringComparison.OrdinalIgnoreCase);
-
             var verificationRequest = new VerificationRequest
             {
                 UserId = request.UserId,
                 StudentIdUrl = request.StudentIdUrl,
                 CarnetUrl = request.CarnetUrl,
-                Status = autoApproved ? Status.Approved : Status.Pending,
+                Status = Status.Pending,
                 SubmittedAt = DateTime.UtcNow,
-                AdminNotes = $"[Guardian Analysis]: {recommendation} | Details: {details}",
-                ProcessedAt = autoApproved ? DateTime.UtcNow : null,
-                ProcessedBy = autoApproved ? "SYSTEM_AI" : null
+                AdminNotes = "[Guardian AI]: Analiză în curs...",
+                ProcessedAt = null,
+                ProcessedBy = null
             };
-
-            if (autoApproved)
-            {
-                var user = await _context.Users.FindAsync(request.UserId);
-                if (user != null)
-                {
-                    user.IsVerified = true;
-                    user.VerificationStatus = UserVerificationStatus.IdentityVerified;
-                }
-            }
 
             _context.VerificationRequests.Add(verificationRequest);
             await _context.SaveChangesAsync(cancellationToken);
+
+            // Enqueue for Guardian Shield (Background AI Processing)
+            _moderationQueue.Enqueue(new ModerationTask
+            {
+                Id = verificationRequest.Id,
+                Content = request.StudentIdUrl, // Primary image to verify
+                Title = request.UserId, // Link to user
+                Target = ModerationTarget.IdentityVerification
+            });
 
             return errors;
         }

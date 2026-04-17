@@ -103,7 +103,7 @@
             feedSpinner.classList.remove('d-none');
 
             try {
-                const response = await fetch(`/Home/GetFeed?skip=${feedSkip}&sortBy=${currentSort}`);
+                const response = await fetch(`/hubs/home/feed?skip=${feedSkip}&sortBy=${currentSort}`);
                 if (response.ok) {
                     const html = await response.text();
                     
@@ -156,7 +156,7 @@
                 container.style.pointerEvents = 'none';
             }
             try {
-                const resp = await fetch(`/Connections/${action}?userId=${userId}`, { method: 'POST' });
+                const resp = await fetch(`/identity/network/${action}?userId=${userId}`, { method: 'POST' });
                 if (resp.ok) {
                     if (action === 'SendRequest') {
                         container.innerHTML = `<span class="text-muted opacity-50 d-flex flex-center" title="Request Pending"><span class="material-symbols-outlined" style="font-size: 16px;">hourglass_empty</span></span>`;
@@ -181,7 +181,7 @@
         function votePostHome(postId, communityId, value) {
             const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
             
-            fetch(`/Forum/VotePost?postId=${postId}&communityId=${communityId}&value=${value}`, {
+            fetch(`/hubs/communities/v1/interactions/vote?postId=${postId}&communityId=${communityId}&value=${value}`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -255,7 +255,7 @@
             if (!commentsLoaded[postId]) {
                 commentsLoaded[postId] = true;
                 try {
-                    const response = await fetch(`/Forum/GetPostComments?postId=${postId}&communityId=${commId}`, {
+                    const response = await fetch(`/hubs/communities/v1/comments/retrieve?postId=${postId}&communityId=${commId}`, {
                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
                     });
                     if (!response.ok) throw new Error('Error loading comments');
@@ -344,7 +344,7 @@
                     card.classList.add('active');
 
                     try {
-                        const url = type === 'user' ? `/Profile/GetHoverCard/${id}` : `/Forum/GetHoverCard/${id}`;
+                        const url = type === 'user' ? `/identity/profiles/GetHoverCard/${id}` : `/hubs/communities/GetHoverCard/${id}`;
                         const resp = await fetch(url);
                         if (resp.ok) {
                             const html = await resp.text();

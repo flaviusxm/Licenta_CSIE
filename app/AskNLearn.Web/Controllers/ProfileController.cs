@@ -12,6 +12,7 @@ using AskNLearn.Domain.Entities.Core;
 namespace AskNLearn.Web.Controllers
 {
     [Authorize]
+    [Route("identity/profiles")]
     public class ProfileController : Controller
     {
         private readonly IMediator _mediator;
@@ -23,6 +24,7 @@ namespace AskNLearn.Web.Controllers
             _fileService = fileService;
         }
 
+        [HttpGet("{id?}")]
         public async Task<IActionResult> Index(string? id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);

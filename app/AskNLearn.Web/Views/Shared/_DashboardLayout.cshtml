@@ -50,7 +50,7 @@
                 Home
             </a>
             <a asp-controller="Explore" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Explore" ? "active" : "")">
-                Explore
+                Communities
             </a>
             <a asp-controller="Resources" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Resources" ? "active" : "")">
                 Resources
@@ -107,7 +107,7 @@
         }
 
         <!-- Center Feed -->
-        <main class="flex-grow-1 h-100 position-relative w-100 @(ViewData["AppLayout"] as bool? == true ? "d-flex flex-column overflow-hidden" : "overflow-y-auto custom-scrollbar")">
+        <main class="flex-grow-1 h-100 position-relative @(ViewData["AppLayout"] as bool? == true ? "d-flex flex-column overflow-hidden" : "overflow-y-auto custom-scrollbar")">
             @RenderBody()
         </main>
     </div>

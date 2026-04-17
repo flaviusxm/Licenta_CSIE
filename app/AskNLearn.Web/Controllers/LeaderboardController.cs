@@ -1,12 +1,15 @@
 using AskNLearn.Domain.Entities.Core;
 using AskNLearn.Infrastructure.Persistance;
 using AskNLearn.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AskNLearn.Web.Controllers;
 
+[Authorize]
+[Route("analytics/rankings")]
 public class LeaderboardController(ApplicationDbContext context, UserManager<ApplicationUser> userManager) : Controller
 {
     public async Task<IActionResult> Index(int page = 1, int pageSize = 12, string? searchTerm = null, string? institution = null, string? sortBy = "PointsDesc")
