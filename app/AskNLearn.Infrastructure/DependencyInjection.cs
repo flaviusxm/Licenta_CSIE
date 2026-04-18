@@ -28,9 +28,6 @@ namespace AskNLearn.Infrastructure
             services.AddScoped<IEmailService, EmailService>();
             services.AddSingleton<IPresenceTracker, PresenceTracker>();
 
-            // Adaugă serviciul de curățare
-            services.AddHostedService<EmailConfirmationCleanupService>();
-
             return services;
         }
     }

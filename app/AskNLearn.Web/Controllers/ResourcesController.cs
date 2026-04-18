@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace AskNLearn.Web.Controllers;
 
 [Authorize]
-[Route("assets/resources")]
+[Route("Resources")]
 public class ResourcesController : Controller
 {
     private readonly IApplicationDbContext _context;
@@ -26,82 +26,94 @@ public class ResourcesController : Controller
         _fileService = fileService;
         _userManager = userManager;
     }
-        public async Task<IActionResult> Index()
+
+    [HttpGet("")]
+    public async Task<IActionResult> Index()
+    {
+        ViewData["ActivePage"] = "Resources";
+        var resources = await _context.LearningResources
+            .Include(r => r.Uploader)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+        return View(resources);
+    }
+
+    [HttpPost("Delete/{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var resource = await _context.LearningResources.FindAsync(id);
+        if (resource == null) return NotFound();
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+
+        if (resource.UploaderId != userId && !isAdmin)
         {
-            ViewData["ActivePage"] = "Resources";
-            var resources = await _context.LearningResources
-                .Include(r => r.Uploader)
-                .OrderByDescending(r => r.CreatedAt)
-                .ToListAsync();
-            return View(resources);
+            return Forbid();
         }
+        
+        _context.LearningResources.Remove(resource);
+        await _context.SaveChangesAsync(default);
+        return Ok();
+    }
 
-        [HttpPost]
-        public async Task<IActionResult> Delete(Guid id)
+    [HttpPost("Report")]
+    public async Task<IActionResult> Report(Guid id, string reason)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var report = new Report
         {
-            var resource = await _context.LearningResources.FindAsync(id);
-            if (resource == null) return NotFound();
-            
-            _context.LearningResources.Remove(resource);
-            await _context.SaveChangesAsync(default);
-            return Ok();
-        }
+            Id = Guid.NewGuid(),
+            ReporterId = userId,
+            ReportedResourceId = id,
+            Reason = ReportReason.Inappropriate, // Defaulting as reason is free text from prompt
+            Description = $"User reported with reason: {reason}",
+            Status = ReportStatus.Pending,
+            CreatedAt = DateTime.UtcNow
+        };
 
-        [HttpPost]
-        public async Task<IActionResult> Report(Guid id, string reason, string description)
+        _context.Reports.Add(report);
+        await _context.SaveChangesAsync(default);
+
+        return Ok(new { message = "Report submitted successfully" });
+    }
+
+    [HttpPost("Upload")]
+    public async Task<IActionResult> Upload(IFormFile file, string title, string? description)
+    {
+        if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
+        if (string.IsNullOrEmpty(title)) return BadRequest("Title is required.");
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            using var stream = file.OpenReadStream();
+            var fileUrl = await _fileService.UploadFileAsync(stream, file.FileName, "resources");
 
-            var report = new Report
+            var resource = new LearningResource
             {
                 Id = Guid.NewGuid(),
-                ReporterId = userId,
-                ReportedResourceId = id,
-                Reason = Enum.Parse<ReportReason>(reason),
-                Description = description ?? "No description provided",
-                Status = ReportStatus.Pending,
+                Title = title,
+                Description = description,
+                Url = fileUrl,
+                ResourceType = Path.GetExtension(file.FileName).TrimStart('.').ToUpper(),
+                UploaderId = userId,
+                GroupId = null, 
                 CreatedAt = DateTime.UtcNow
             };
 
-            _context.Reports.Add(report);
+            _context.LearningResources.Add(resource);
             await _context.SaveChangesAsync(default);
 
-            return Ok(new { message = "Report submitted successfully" });
+            return RedirectToAction(nameof(Index));
         }
-
-        [HttpPost]
-        public async Task<IActionResult> Upload(IFormFile file, string title)
+        catch (Exception ex)
         {
-            if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
-            if (string.IsNullOrEmpty(title)) return BadRequest("Title is required.");
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-            try
-            {
-                using var stream = file.OpenReadStream();
-                var fileUrl = await _fileService.UploadFileAsync(stream, file.FileName, "resources");
-
-                var resource = new LearningResource
-                {
-                    Id = Guid.NewGuid(),
-                    Title = title,
-                    Url = fileUrl,
-                    ResourceType = Path.GetExtension(file.FileName).TrimStart('.').ToUpper(),
-                    UploaderId = userId,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                _context.LearningResources.Add(resource);
-                await _context.SaveChangesAsync(default);
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Error uploading file: {ex.Message}");
-            }
+            return BadRequest($"Error uploading file: {ex.Message}");
         }
+    }
 }

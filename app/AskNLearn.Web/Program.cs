@@ -43,7 +43,7 @@ builder.Services.AddSignalR(options =>
 builder.Services.AddHttpClient<IOllamaService, OllamaService>();
 builder.Services.AddSingleton<IModerationQueue, ModerationQueue>();
 builder.Services.AddHostedService<ModerationBackgroundService>();
-builder.Services.AddHostedService<EmailConfirmationCleanupService>();
+
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -76,8 +76,8 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Auth/SignIn";
-    options.AccessDeniedPath = "/Auth/AccessDenied";
+    options.LoginPath = "/identity/auth/authenticate";
+    options.AccessDeniedPath = "/identity/auth/access-denied";
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
 });
 
@@ -132,7 +132,7 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
             {
                 try
                 {
-                    int deleted = await dbContext.Database.ExecuteSqlRawAsync("DELETE FROM [" + table + "]");
+                    int deleted = await dbContext.Database.ExecuteSqlAsync($"DELETE FROM [{table}]");
                     if (deleted > 0)
                         Console.WriteLine($"  ✓ Șters: {table} ({deleted} rânduri)");
                 }
@@ -244,9 +244,9 @@ app.Use(async (context, next) =>
         if (user != null && !user.EmailConfirmed)
         {
             var path = context.Request.Path.Value?.ToLower() ?? "";
-            if (!path.StartsWith("/auth") && !path.StartsWith("/lib") && !path.StartsWith("/css") && !path.StartsWith("/js") && !path.StartsWith("/images") && !path.StartsWith("/uploads"))
+            if (!path.StartsWith("/identity/auth") && !path.StartsWith("/lib") && !path.StartsWith("/css") && !path.StartsWith("/js") && !path.StartsWith("/images") && !path.StartsWith("/uploads"))
             {
-                context.Response.Redirect("/Auth/VerifyEmailNotice");
+                context.Response.Redirect("/identity/auth/verify-email-notice");
                 return;
             }
         }

@@ -10,11 +10,12 @@ using MediatR;
 namespace AskNLearn.Web.Controllers
 {
     [Authorize]
+    [IgnoreAntiforgeryToken]
     [Route("identity/network")]
-    public class ConnectionsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMediator mediator) : Controller
+    public class ConnectionsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager) : Controller
     {
-        [HttpPost]
-        public async Task<IActionResult> SendRequest(string userId)
+        [HttpPost("/Connections/SendRequest")]
+        public async Task<IActionResult> SendRequest([FromQuery] string userId)
         {
             var currentUserId = userManager.GetUserId(User);
             if (currentUserId == userId) return BadRequest("You cannot connect with yourself.");
@@ -33,23 +34,12 @@ namespace AskNLearn.Web.Controllers
             };
 
             context.Friendships.Add(friendship);
-            
-            // Add notification
-            var notification = new Notification
-            {
-                UserId = userId,
-                Title = "New Connection Request",
-                Message = $"{User.Identity?.Name} wants to connect with you.",
-                CreatedAt = DateTime.UtcNow
-            };
-            context.Notifications.Add(notification);
-
             await context.SaveChangesAsync();
             return Ok(new { status = "PendingSent" });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AcceptRequest(string userId)
+        [HttpPost("/Connections/AcceptRequest")]
+        public async Task<IActionResult> AcceptRequest([FromQuery] string userId)
         {
             var currentUserId = userManager.GetUserId(User);
             var request = await context.Friendships
@@ -73,8 +63,8 @@ namespace AskNLearn.Web.Controllers
             return Ok(new { status = "Accepted" });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> DeclineRequest(string userId)
+        [HttpPost("/Connections/DeclineRequest")]
+        public async Task<IActionResult> DeclineRequest([FromQuery] string userId)
         {
             var currentUserId = userManager.GetUserId(User);
             var request = await context.Friendships
@@ -87,8 +77,8 @@ namespace AskNLearn.Web.Controllers
             return Ok();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> RemoveConnection(string userId)
+        [HttpPost("/Connections/RemoveConnection")]
+        public async Task<IActionResult> RemoveConnection([FromQuery] string userId)
         {
             var currentUserId = userManager.GetUserId(User);
             var friendship = await context.Friendships
@@ -100,6 +90,26 @@ namespace AskNLearn.Web.Controllers
             context.Friendships.Remove(friendship);
             await context.SaveChangesAsync();
             return Ok();
+        }
+
+        [HttpGet("/Connections/SearchPeople")]
+        public async Task<IActionResult> SearchPeople(string term)
+        {
+            if (string.IsNullOrWhiteSpace(term)) return Ok(new List<object>());
+            
+            var users = await userManager.Users
+                .Where(u => u.UserName!.Contains(term) || u.FullName!.Contains(term))
+                .Take(10)
+                .Select(u => new 
+                {
+                    id = u.Id,
+                    userName = u.UserName,
+                    fullName = u.FullName,
+                    avatarUrl = u.AvatarUrl
+                })
+                .ToListAsync();
+
+            return Ok(users);
         }
     }
 }

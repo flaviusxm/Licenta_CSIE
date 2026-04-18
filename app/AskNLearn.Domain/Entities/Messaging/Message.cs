@@ -42,7 +42,7 @@ namespace AskNLearn.Domain.Entities.Messaging
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
-        public ModerationStatus ModerationStatus { get; set; } = ModerationStatus.Pending;
+        public AskNLearn.Domain.Entities.Core.ModerationStatus ModerationStatus { get; set; } = AskNLearn.Domain.Entities.Core.ModerationStatus.Pending;
         public string? ModerationReason { get; set; }
 
         public ICollection<MessageReaction> Reactions { get; set; } = new List<MessageReaction>();

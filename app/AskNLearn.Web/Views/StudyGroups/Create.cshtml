@@ -34,13 +34,13 @@
             <span asp-validation-for="Description" class="text-danger small fw-bold"></span>
         </div>
 
-        <div class="glass-panel p-4 d-flex align-items-center gap-3 transition-all hover-glow" style="border-radius: 1.25rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass) !important;">
-            <div class="form-check m-0 d-flex align-items-center p-0">
-                <input asp-for="IsPublic" type="checkbox" class="form-check-input bg-transparent border-glass text-aurora shadow-none" style="width: 24px; height: 24px; cursor: pointer;" />
-                <div class="ms-3">
-                    <label asp-for="IsPublic" class="fw-bold text-white mb-0" style="font-size: 0.9rem; cursor: pointer;">Make Public</label>
-                    <p class="text-muted small fw-medium mb-0">Anyone can find and join this group.</p>
-                </div>
+        <div class="glass-panel p-4 transition-all hover-glow" style="border-radius: 1.25rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass) !important;">
+            <div class="form-check d-flex align-items-center gap-3 p-0 m-0">
+                <input asp-for="IsPublic" type="checkbox" class="form-check-input m-0 shadow-none" style="width: 24px; height: 24px; cursor: pointer; float: none; position: static;" />
+                <label asp-for="IsPublic" class="form-check-label flex-grow-1" style="cursor: pointer;">
+                    <span class="fw-bold text-white d-block" style="font-size: 0.9rem;">Make Public</span>
+                    <span class="text-muted small fw-medium d-block">Anyone can find and join this group.</span>
+                </label>
             </div>
         </div>
 

@@ -1,16 +1,18 @@
 @using AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
+@inject Microsoft.AspNetCore.Identity.UserManager<AskNLearn.Domain.Entities.Core.ApplicationUser> UserManager
 @model List<PostDto>
 
 @{
     var communityId = ViewBag.CommunityId as Guid? ?? Guid.Empty;
-    var currentUserId = ViewBag.CurrentUserId as string;
+    var currentUserId = UserManager.GetUserId(User);
+    var isAdmin = User.IsInRole("Admin");
     var communityCreatorId = ViewBag.CommunityCreatorId as string;
 }
 
 @foreach (var post in Model)
 {
     var canDelete = !string.IsNullOrEmpty(currentUserId)
-        && (currentUserId == post.AuthorId || currentUserId == communityCreatorId);
+        && (currentUserId == post.AuthorId || currentUserId == communityCreatorId || isAdmin);
 
     <div class="glass-card p-4 p-md-5 group transition-all position-relative post-card-animate" id="post-@post.Id">
         <div class="d-flex gap-4 align-items-start">

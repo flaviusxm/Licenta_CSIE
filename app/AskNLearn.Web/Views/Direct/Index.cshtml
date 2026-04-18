@@ -122,7 +122,9 @@
                     <div class="d-flex w-100 @(isMine ? "justify-content-end" : "justify-content-start") animate-slide-up group">
                         <div class="d-flex @(isMine ? "flex-row-reverse" : "") gap-3 align-items-end" style="max-width: 85%;">
                             @if (!isMine) {
-                                <img src="@authorAvatar" class="avatar-sm rounded-lg shadow-sm border" style="border-color: var(--border-glass) !important;"/>
+                                <div class="avatar-sm flex-shrink-0">
+                                    <img src="@authorAvatar" class="w-100 h-100 rounded-lg shadow-sm border object-cover" style="border-color: var(--border-glass) !important;"/>
+                                </div>
                             }
                             <div class="d-flex flex-column gap-1 @(isMine ? "align-items-end" : "align-items-start")">
                                 <div class="d-flex align-items-center gap-2 px-1">
@@ -327,7 +329,7 @@
             const msgHtml = `
                 <div class="d-flex w-100 ${isMine ? 'justify-content-end' : 'justify-content-start'} animate-slide-up" id="msg-${msg.id}">
                     <div class="d-flex ${isMine ? 'flex-row-reverse' : ''} gap-3 align-items-end" style="max-width: 85%;">
-                        ${!isMine ? `<img src="${msg.authorAvatar}" class="avatar-sm rounded-lg shadow-sm border" style="border-color: var(--border-glass) !important;"/>` : ''}
+                        ${!isMine ? `<div class="avatar-sm flex-shrink-0"><img src="${msg.authorAvatar}" class="w-100 h-100 rounded-lg shadow-sm border object-cover" style="border-color: var(--border-glass) !important;"/></div>` : ''}
                         <div class="d-flex flex-column gap-1 ${isMine ? 'align-items-end' : 'align-items-start'}">
                             <div class="d-flex align-items-center gap-2 px-1">
                                 <span class="fw-black text-muted text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">${msg.authorName}</span>
@@ -456,7 +458,6 @@
         }
 
         function handleDMAttachment(input) {
-            if (input.files.length > 0) window.Notify.success(`${input.files.length} files attached.`);
         }
 
         async function createPeerConnection(connectionId, isOffer) {

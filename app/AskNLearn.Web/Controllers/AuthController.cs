@@ -124,19 +124,19 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        [HttpGet]
+        [HttpGet("access-denied")]
         public IActionResult AccessDenied()
         {
             return View();
         }
 
-        [HttpGet]
+        [HttpGet("verify-email-notice")]
         public IActionResult VerifyEmailNotice()
         {
             return View();
         }
 
-        [HttpGet]
+        [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             if (userId == null || token == null)

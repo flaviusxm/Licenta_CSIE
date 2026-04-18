@@ -24,7 +24,7 @@ namespace AskNLearn.Web.Controllers
             _fileService = fileService;
         }
 
-        [HttpGet("{id?}")]
+        [HttpGet("view/{id?}")]
         public async Task<IActionResult> Index(string? id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -54,6 +54,7 @@ namespace AskNLearn.Web.Controllers
             return View(profile);
         }
 
+        [HttpGet("verification")]
         public async Task<IActionResult> Verification()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -72,7 +73,7 @@ namespace AskNLearn.Web.Controllers
             return View(profile);
         }
 
-        [HttpPost]
+        [HttpPost("verification/submit")]
         public async Task<IActionResult> SubmitVerification(IFormFile studentId, IFormFile carnet)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -108,7 +109,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
+        [HttpPost("verification/cancel")]
         public async Task<IActionResult> CancelVerification()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -128,7 +129,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost]
+        [HttpPost("update")]
         public async Task<IActionResult> Update(AskNLearn.Application.Features.Users.Commands.UpdateUserProfile.UpdateUserProfileCommand command)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -160,6 +161,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction("Index");
         }
         [AllowAnonymous]
+        [HttpGet("hover-card/{id}")]
         public async Task<IActionResult> GetHoverCard(string id)
         {
             var profile = await _mediator.Send(new GetUserProfileQuery { UserId = id });

@@ -15,6 +15,7 @@ namespace AskNLearn.Web.Controllers
             _mediator = mediator;
         }
 
+        [HttpGet("")]
         public async Task<IActionResult> Index(string? searchTerm)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -28,7 +29,7 @@ namespace AskNLearn.Web.Controllers
             return View(communities);
         }
 
-        [HttpGet]
+        [HttpGet("v1/batch")]
         public async Task<IActionResult> GetCommunities(int skip, string? searchTerm)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

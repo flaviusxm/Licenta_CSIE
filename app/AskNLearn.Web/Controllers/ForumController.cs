@@ -128,6 +128,7 @@ namespace AskNLearn.Web.Controllers
                 CurrentUserId = userId
             });
 
+            ViewData["CurrentUserId"] = userId;
             return PartialView("_PostCommentsPartial", result);
         }
 
@@ -150,7 +151,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = communityId });
         }
 
-        [HttpPost]
+        [HttpPost("v1/comments/update")]
         public async Task<IActionResult> UpdateComment(Guid id, Guid communityId, string content)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -158,7 +159,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = communityId });
         }
 
-        [HttpPost]
+        [HttpPost("v1/comments/delete")]
         public async Task<IActionResult> DeleteComment(Guid id, Guid communityId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -212,6 +213,7 @@ namespace AskNLearn.Web.Controllers
                         CommunityId = command.CommunityId ?? Guid.Empty, 
                         CurrentUserId = userId 
                     });
+                    ViewData["CurrentUserId"] = userId;
                     return PartialView("_PostCommentsPartial", comments);
                 }
 
@@ -224,12 +226,13 @@ namespace AskNLearn.Web.Controllers
             }
         }
 
+        [HttpGet("initiate")]
         public IActionResult Create()
         {
             return View();
         }
 
-        [HttpPost]
+        [HttpPost("initiate")]
         public async Task<IActionResult> Create(CreateCommunityCommand command)
         {
             if (!ModelState.IsValid) return View(command);
@@ -240,6 +243,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction("Index", "Explore");
         }
 
+        [HttpGet("manage/{id:guid}")]
         public async Task<IActionResult> Edit(Guid id)
         {
             var community = await _mediator.Send(new GetCommunityByIdQuery { Id = id });
@@ -259,7 +263,7 @@ namespace AskNLearn.Web.Controllers
             return View(command);
         }
 
-        [HttpPost]
+        [HttpPost("manage")]
         public async Task<IActionResult> Edit(UpdateCommunityCommand command)
         {
             if (!ModelState.IsValid) return View(command);
@@ -276,7 +280,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction("Index", "Explore");
         }
 
-        [HttpPost]
+        [HttpPost("terminate/{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var community = await _mediator.Send(new GetCommunityByIdQuery { Id = id });
@@ -291,13 +295,14 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction("Index", "Explore");
         }
 
+        [HttpGet("hub/{communityId:guid}/discussions/initiate")]
         public IActionResult CreatePost(Guid communityId)
         {
             var command = new CreatePostCommand { CommunityId = communityId };
             return View(command);
         }
 
-        [HttpPost]
+        [HttpPost("hub/discussions/initiate")]
         public async Task<IActionResult> CreatePost(CreatePostCommand command)
         {
             if (!ModelState.IsValid) return View(command);
@@ -317,6 +322,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = command.CommunityId });
         }
 
+        [HttpGet("discussions/manage/{id:guid}")]
         public async Task<IActionResult> EditPost(Guid id)
         {
             var post = await _mediator.Send(new GetPostByIdQuery { Id = id });
@@ -337,7 +343,7 @@ namespace AskNLearn.Web.Controllers
             return View(command);
         }
 
-        [HttpPost]
+        [HttpPost("discussions/manage")]
         public async Task<IActionResult> EditPost(UpdatePostCommand command, Guid communityId)
         {
             if (!ModelState.IsValid) return View(command);
@@ -354,7 +360,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = communityId });
         }
 
-        [HttpPost]
+        [HttpPost("discussions/terminate/{id:guid}")]
         public async Task<IActionResult> DeletePost(Guid id, Guid communityId)
         {
             var post = await _mediator.Send(new GetPostByIdQuery { Id = id });
@@ -369,7 +375,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = communityId });
         }
 
-        [HttpPost]
+        [HttpPost("discussions/v1/solve-toggle/{id:guid}")]
         public async Task<IActionResult> ToggleSolved(Guid id, Guid communityId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -377,6 +383,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = communityId });
         }
         [AllowAnonymous]
+        [HttpGet("hover-card/{id:guid}")]
         public async Task<IActionResult> GetHoverCard(Guid id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

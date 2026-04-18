@@ -31,7 +31,7 @@ namespace AskNLearn.Web.Controllers
             return user.Role == Role.Admin;
         }
 
-        [HttpPost]
+        [HttpPost("moderator/apply")]
         [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApplyForModerator()
@@ -59,6 +59,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction("Verification", "Profile");
         }
 
+        [HttpGet("overview")]
         public async Task<IActionResult> Index()
         {
             if (!await IsAdmin())
@@ -88,6 +89,7 @@ namespace AskNLearn.Web.Controllers
             return View();
         }
 
+        [HttpGet("verifications")]
         public async Task<IActionResult> Verifications(int? pageNumber)
         {
             if (!await IsAdmin())
@@ -114,7 +116,7 @@ namespace AskNLearn.Web.Controllers
             return View(paginatedRequests);
         }
 
-        [HttpPost]
+        [HttpPost("verifications/approve/{id:guid}")]
         public async Task<IActionResult> Approve(Guid id)
         {
             if (!await IsAdmin()) return Forbid();
@@ -137,7 +139,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Verifications));
         }
 
-        [HttpPost]
+        [HttpPost("verifications/reject/{id:guid}")]
         public async Task<IActionResult> Reject(Guid id, string notes)
         {
             if (!await IsAdmin()) return Forbid();
@@ -161,6 +163,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Verifications));
         }
 
+        [HttpGet("moderation")]
         public async Task<IActionResult> Moderation()
         {
             if (!await IsAdmin())
@@ -177,7 +180,7 @@ namespace AskNLearn.Web.Controllers
             return View(new AskNLearn.Web.Models.ModerationViewModel());
         }
 
-        [HttpGet]
+        [HttpGet("v1/moderation/ai-reports")]
         public async Task<IActionResult> LoadAIReports(int skip = 0, int take = 20, string filter = "ALL")
         {
             if (!await IsAdmin()) return Forbid();
@@ -256,7 +259,7 @@ namespace AskNLearn.Web.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("v1/moderation/user-reports")]
         public async Task<IActionResult> LoadUserReports(int skip = 0, int take = 20, string filter = "ALL")
         {
             if (!await IsAdmin()) return Forbid();
@@ -284,7 +287,7 @@ namespace AskNLearn.Web.Controllers
             return PartialView("_UserReportsTable", reports);
         }
 
-        [HttpPost]
+        [HttpPost("v1/moderation/posts/approve/{id:guid}")]
         public async Task<IActionResult> ApprovePost(Guid id)
         {
             if (!await IsAdmin()) return Forbid();
@@ -297,7 +300,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Moderation));
         }
 
-        [HttpPost]
+        [HttpPost("v1/moderation/posts/flag/{id:guid}")]
         public async Task<IActionResult> FlagPost(Guid id)
         {
             if (!await IsAdmin()) return Forbid();
@@ -310,7 +313,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Moderation));
         }
 
-        [HttpPost]
+        [HttpPost("v1/moderation/comments/approve/{id:guid}")]
         public async Task<IActionResult> ApproveComment(Guid id)
         {
             if (!await IsAdmin()) return Forbid();
@@ -323,7 +326,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Moderation));
         }
 
-        [HttpPost]
+        [HttpPost("v1/moderation/comments/flag/{id:guid}")]
         public async Task<IActionResult> FlagComment(Guid id)
         {
             if (!await IsAdmin()) return Forbid();
@@ -336,7 +339,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Moderation));
         }
 
-        [HttpPost]
+        [HttpPost("v1/moderation/reports/resolve/{id:guid}")]
         public async Task<IActionResult> ResolveReport(Guid id)
         {
             if (!await IsAdmin()) return Forbid();
@@ -349,7 +352,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Moderation));
         }
 
-        [HttpPost]
+        [HttpPost("v1/moderation/reports/dismiss/{id:guid}")]
         public async Task<IActionResult> DismissReport(Guid id)
         {
             if (!await IsAdmin()) return Forbid();
@@ -363,6 +366,7 @@ namespace AskNLearn.Web.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("system/stats")]
         public async Task<IActionResult> DataReport()
         {
             var report = new
@@ -384,6 +388,7 @@ namespace AskNLearn.Web.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("system/diagnostic")]
         public IActionResult Diagnostic()
         {
             return Ok(new

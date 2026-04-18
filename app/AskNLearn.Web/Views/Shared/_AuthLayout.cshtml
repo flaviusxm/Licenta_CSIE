@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    <link href="~/css/theme.css" rel="stylesheet" />
+    <link href="~/css/theme.css" rel="stylesheet" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 
@@ -19,7 +19,7 @@
     <div class="aurora-orb aurora-orb-cyan position-fixed"></div>
     <div class="aurora-orb aurora-orb-purple position-fixed"></div>
 
-    <main class="container position-relative z-1" style="max-width: 480px;">
+    <main class="container position-relative z-1" style="max-width: 30rem;">
 
         <!-- Logo -->
         <div class="text-center mb-4 animate-entrance">
@@ -65,17 +65,17 @@
                 }
 
                 toast.style.cssText = `
-                    width: 340px;
+                    width: 21.25rem;
                     pointer-events: auto;
                     background: rgba(10, 24, 18, 0.95);
-                    border-left: 4px solid ${color};
-                    backdrop-filter: blur(25px);
-                    margin-bottom: 12px;
-                    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+                    border-left: 0.25rem solid ${color};
+                    backdrop-filter: blur(1.5625rem);
+                    margin-bottom: 0.75rem;
+                    box-shadow: 0 0.625rem 2.5rem -0.625rem rgba(0,0,0,0.5);
                 `;
                 
                 toast.innerHTML = `
-                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05);">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 2.5rem; height: 2.5rem; background: rgba(255,255,255,0.05);">
                         <span class="material-symbols-outlined" style="color: ${color}; font-size: 22px;">${defaultIcon}</span>
                     </div>
                     <div class="flex-grow-1">

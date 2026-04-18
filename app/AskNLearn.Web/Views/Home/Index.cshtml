@@ -30,8 +30,8 @@
                         Join thousands of students collaborating in live study rooms, sharing resources, and helping each other succeed.
                     </p>
                     <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-md-start">
-                        <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium px-4 py-3 shadow-lg">Get Started Free</a>
-                        <a asp-controller="Auth" asp-action="SignIn" class="btn btn-glass px-4 py-3">Log In</a>
+                        <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium shadow-lg">Get Started Free</a>
+                        <a asp-controller="Auth" asp-action="SignIn" class="btn btn-glass">Log In</a>
                     </div>
                 </div>
             </div>
@@ -53,10 +53,6 @@
                 </div>
             </div>
             
-            <a asp-controller="Profile" asp-action="Index" class="btn btn-glass-sm py-1 px-3 d-flex align-items-center gap-2 border-0" style="background: rgba(255,255,255,0.03);">
-                <span class="material-symbols-outlined fs-6 opacity-50">tune</span>
-                <span class="text-muted small fw-bold">Adjust Interests</span>
-            </a>
         </div>
         
         <!-- Feed Content -->
@@ -170,43 +166,7 @@
                             </form>`;
                     }
                 }
-                if (container) {
-                    container.style.opacity = '1';
-                    container.style.pointerEvents = 'all';
-                }
             } catch(e) { console.error(e); }
-        }
-
-        // --- Voting Logic (Home) ---
-        function votePostHome(postId, communityId, value) {
-            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
-            
-            fetch(`/hubs/communities/v1/interactions/vote?postId=${postId}&communityId=${communityId}&value=${value}`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'RequestVerificationToken': token
-                }
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    const countEl = document.querySelector(`.vote-count-${postId}`);
-                    if (countEl) {
-                        countEl.textContent = data.voteCount;
-                        countEl.classList.remove('text-mint', 'text-danger', 'text-white');
-                        countEl.classList.add(data.userVote === 1 ? 'text-mint' : data.userVote === -1 ? 'text-danger' : 'text-white');
-                    }
-                    
-                    const upIcon = document.querySelector(`.vote-icon-up-${postId}`);
-                    const downIcon = document.querySelector(`.vote-icon-down-${postId}`);
-                    
-                    if (upIcon) upIcon.style.color = data.userVote === 1 ? 'var(--color-mint-bright)' : '';
-                    if (downIcon) downIcon.style.color = data.userVote === -1 ? '#ef4444' : '';
-                }
-            })
-            .catch(e => console.error(e));
         }
 
         // --- Post Bookmarking Logic ---
@@ -232,42 +192,6 @@
                 }
             });
         });
-
-        // --- Lazy Comments (Home) ---
-        const commentsLoaded = {};
-        const commentsOpen = {};
-        async function toggleLazyComments(postId, commId) {
-            const container = document.getElementById(`comments-${postId}`);
-            if (!container) return;
-
-            const isCurrentlyHidden = container.classList.contains('d-none');
-            const toggleIcon = document.querySelector(`.toggle-icon-${postId}`);
-
-            if (!isCurrentlyHidden) {
-                container.classList.add('d-none');
-                commentsOpen[postId] = false;
-                return;
-            }
-
-            container.classList.remove('d-none');
-            commentsOpen[postId] = true;
-
-            if (!commentsLoaded[postId]) {
-                commentsLoaded[postId] = true;
-                try {
-                    const response = await fetch(`/hubs/communities/v1/comments/retrieve?postId=${postId}&communityId=${commId}`, {
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    if (!response.ok) throw new Error('Error loading comments');
-                    const html = await response.text();
-                    container.innerHTML = html;
-                } catch (err) {
-                    console.error('Error loading comments:', err);
-                    container.innerHTML = '<p class="text-danger p-3 mb-0">Failed to load comments.</p>';
-                    commentsLoaded[postId] = false;
-                }
-            }
-        }
     </script>
     <style>
         @@keyframes slide-down {

@@ -38,6 +38,7 @@ namespace AskNLearn.Web.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("browse")]
         public async Task<IActionResult> Index(string? searchTerm)
         {
             var currentUserId = _userManager.GetUserId(User);
@@ -52,7 +53,7 @@ namespace AskNLearn.Web.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet]
+        [HttpGet("v1/batch")]
         public async Task<IActionResult> GetGroups(int skip, string? searchTerm)
         {
             var currentUserId = _userManager.GetUserId(User);
@@ -66,7 +67,7 @@ namespace AskNLearn.Web.Controllers
             return PartialView("_GroupCards", groups);
         }
 
-        [HttpPost]
+        [HttpPost("v1/membership/join")]
         public async Task<IActionResult> Join(Guid id)
         {
             var userId = _userManager.GetUserId(User);
@@ -106,6 +107,7 @@ namespace AskNLearn.Web.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("hub/{id:guid}")]
         public async Task<IActionResult> Details(Guid id)
         {
             var currentUserId = _userManager.GetUserId(User);
@@ -118,6 +120,7 @@ namespace AskNLearn.Web.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("v1/membership/batch")]
         public async Task<IActionResult> LoadMoreMembers(Guid groupId, int skip = 20, int take = 20)
         {
             const int maxTake = 50;
@@ -182,7 +185,7 @@ namespace AskNLearn.Web.Controllers
             });
         }
 
-        [HttpPost]
+        [HttpPost("v1/membership/promote")]
         public async Task<IActionResult> PromoteMember(Guid groupId, string userId)
         {
             var currentUserId = _userManager.GetUserId(User);
@@ -207,12 +210,13 @@ namespace AskNLearn.Web.Controllers
             return Ok();
         }
 
+        [HttpGet("initiate")]
         public IActionResult Create()
         {
             return View();
         }
 
-        [HttpPost]
+        [HttpPost("initiate")]
         public async Task<IActionResult> Create(CreateStudyGroupCommand command)
         {
             if (!ModelState.IsValid) return View(command);
@@ -223,6 +227,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet("manage/{id:guid}")]
         public async Task<IActionResult> Edit(Guid id)
         {
             var studyGroup = await _mediator.Send(new GetStudyGroupByIdQuery { Id = id });
@@ -248,7 +253,7 @@ namespace AskNLearn.Web.Controllers
             return View(viewModel);
         }
 
-        [HttpPost]
+        [HttpPost("manage")]
         public async Task<IActionResult> Edit(EditStudyGroupViewModel viewModel)
         {
             if (!ModelState.IsValid)
@@ -264,7 +269,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = viewModel.Command.Id });
         }
 
-        [HttpPost]
+        [HttpPost("terminate/{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _mediator.Send(new DeleteStudyGroupCommand { Id = id });
@@ -273,7 +278,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost]
+        [HttpPost("v1/channels/create")]
         public async Task<IActionResult> CreateChannel(CreateChannelCommand command)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -286,7 +291,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = command.GroupId });
         }
 
-        [HttpPost]
+        [HttpPost("v1/channels/delete")]
         public async Task<IActionResult> DeleteChannel(Guid id, Guid groupId)
         {
             var userId = _userManager.GetUserId(User);
@@ -297,7 +302,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = groupId });
         }
 
-        [HttpGet]
+        [HttpGet("v1/channels/messages/{channelId:guid}")]
         public async Task<IActionResult> GetChannelMessages(Guid channelId)
         {
             var messages = await _context.Messages

@@ -14,7 +14,7 @@
             <p class="text-muted fs-5 m-0" style="max-width: 600px;">Discover study groups and forums tailored to your curriculum.</p>
         </div>
         <div class="flex-shrink-0">
-            <a asp-controller="Forum" asp-action="Create" class="btn btn-premium d-flex align-items-center gap-2 shadow-lg">
+            <a asp-controller="Forum" asp-action="Create" class="btn btn-premium shadow-lg">
                 <span class="material-symbols-outlined fs-5">add_circle</span>
                 New Forum
             </a>
@@ -87,7 +87,7 @@
 
             const currentSearch = searchInput.value.trim();
             try {
-                const url = `/Explore/GetCommunities?skip=${communitiesSkip}${currentSearch ? '&searchTerm=' + encodeURIComponent(currentSearch) : ''}`;
+                const url = `/hubs/communities/explore/v1/batch?skip=${communitiesSkip}${currentSearch ? '&searchTerm=' + encodeURIComponent(currentSearch) : ''}`;
                 const response = await fetch(url);
                 if (response.ok) {
                     const html = await response.text();

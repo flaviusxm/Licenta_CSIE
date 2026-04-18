@@ -150,7 +150,7 @@
                                             </button>
                                         </div>
                                     } else if (Model.HasPendingVerification && !Model.IsVerified) {
-                                         <div class="p-4 rounded-4 mt-2 bg-black bg-opacity-20 border border-glass animate-pulse">
+                                         <div class="p-4 rounded-4 mt-2 bg-black bg-opacity-20 border border-glass">
                                             <div class="d-flex align-items-center justify-content-between mb-3">
                                                 <p class="text-aurora small m-0 fw-bold italic">System Administrators are verifying your uploaded documents.</p>
                                                 <div class="spinner-grow text-aurora spinner-grow-sm" role="status"></div>
@@ -211,22 +211,7 @@
                         </div>
                     </div>
 
-                    <!-- Interests -->
-                    <div class="glass-card p-5 shadow-lg border-glass" style="border-radius: 1.5rem;">
-                        <h3 class="fw-black text-white text-uppercase tracking-widest fs-xs mb-4">Academic Domains</h3>
-                        <div class="d-flex flex-wrap gap-2">
-                             @{
-                                var tags = new[] { "Computer Science", "Economics", "Mathematics", "Law", "Medicine", "Engineering", "Arts", "Social Sciences", "Physics", "Chemistry" };
-                                var activeTags = (Model.Interests ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
-                            }
-                            @foreach (var tag in tags) {
-                                bool active = activeTags.Contains(tag);
-                                <button type="button" onclick="toggleTag(this, &quot;@tag&quot;)" class="pro-chip @(active ? "active" : "")">
-                                    @tag
-                                </button>
-                            }
-                        </div>
-                    </div>
+
 
                     <!-- Social Connectivity -->
                     <div class="glass-card p-5 shadow-lg border-glass" style="border-radius: 1.5rem;">
@@ -268,7 +253,7 @@
     <div id="syncBadge" class="position-fixed bottom-0 start-50 translate-middle-x mb-5 z-5 pointer-events-none transition-all" style="transform: translateY(100%) translateX(-50%); opacity: 0;">
         <div class="glass-card px-4 py-3 d-flex align-items-center gap-3 border shadow-lg" style="border-radius: 2rem; border-color: rgba(52, 211, 153, 0.4);">
              <div class="spinner-border text-aurora" style="width: 1rem; height: 1rem; border-width: 2px;"></div>
-             <span id="syncStatus" class="text-white fw-black text-uppercase fs-xs tracking-widest">Workspace Synced</span>
+             <span id="syncStatus" class="text-white fw-black text-uppercase fs-xs tracking-widest">Changes saved</span>
         </div>
     </div>
 
@@ -361,7 +346,7 @@
     async function executeSync() {
         const hud = document.getElementById('syncBadge');
         const status = document.getElementById('syncStatus');
-        status.innerText = 'Synchronizing Workspace...';
+        status.innerText = 'Saving changes...';
         hud.style.opacity = '1'; hud.style.transform = 'translateY(0) translateX(-50%)';
         
         const f = document.getElementById('linkedInForm');
@@ -371,7 +356,7 @@
         try {
             const res = await fetch(f.action, { method: 'POST', body: fd });
             if (res.ok) {
-                status.innerText = 'Cloud Sync Complete';
+                status.innerText = 'Changes saved';
                 setTimeout(() => { hud.style.opacity = '0'; hud.style.transform = 'translateY(100%) translateX(-50%)'; }, 1500);
             }
         } catch(e) { console.error(e); }

@@ -83,6 +83,18 @@ namespace AskNLearn.Web.Hubs
             else message.ConversationId = channelId;
 
             context.Messages.Add(message);
+
+            // Update last read for sender
+            if (!isChannel)
+            {
+                var senderParticipant = await context.DirectConversationParticipants
+                    .FirstOrDefaultAsync(p => p.ConversationId == channelId && p.UserId == userId);
+                if (senderParticipant != null)
+                {
+                    senderParticipant.LastReadMessageId = message.Id;
+                }
+            }
+            
             await context.SaveChangesAsync(default);
 
             var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -101,6 +113,25 @@ namespace AskNLearn.Web.Hubs
         }
 
         // WebRTC Signaling
+        public async Task StartCall(string targetUserId, Guid conversationId, string type)
+        {
+            var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            
+            await Clients.Group($"user-{targetUserId}").SendAsync("IncomingCall", new
+            {
+                fromUserId = userId,
+                fromUserName = user?.FullName ?? user?.UserName ?? "Someone",
+                conversationId = conversationId,
+                type = type // 'voice' or 'video'
+            });
+        }
+
+        public async Task EndCall(string targetUserId, Guid conversationId)
+        {
+            await Clients.Group($"user-{targetUserId}").SendAsync("CallEnded", conversationId);
+        }
+
         public async Task SendSignal(string signal, string targetConnectionId)
         {
             await Clients.Client(targetConnectionId).SendAsync("ReceiveSignal", signal, Context.ConnectionId);

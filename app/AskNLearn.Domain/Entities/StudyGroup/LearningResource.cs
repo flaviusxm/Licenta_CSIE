@@ -10,14 +10,14 @@ namespace AskNLearn.Domain.Entities.StudyGroup
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
         
-        public Guid GroupId { get; set; }
+        public Guid? GroupId { get; set; }
         public string UploaderId { get; set; } = null!;
         
         [Required]
         [MaxLength(255)]
         public string Title { get; set; } = null!;
         
-        public string Description { get; set; } = null!;
+        public string? Description { get; set; }
         
         [MaxLength(50)]
         public string ResourceType { get; set; } = null!;
@@ -30,7 +30,7 @@ namespace AskNLearn.Domain.Entities.StudyGroup
 
         // Navigation properties
         [ForeignKey(nameof(GroupId))]
-        public StudyGroup Group { get; set; } = null!;
+        public StudyGroup? Group { get; set; }
         
         [ForeignKey(nameof(UploaderId))]
         public ApplicationUser Uploader { get; set; } = null!;

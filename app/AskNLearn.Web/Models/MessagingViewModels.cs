@@ -5,6 +5,9 @@ namespace AskNLearn.Web.Models
     public class ConversationPreviewViewModel
     {
         public Guid ConversationId { get; set; }
+        public bool IsChannel { get; set; }
+        public Guid? ChannelId { get; set; }
+        public string? GroupName { get; set; }
         public string OtherUserId { get; set; } = string.Empty;
         public string OtherUserName { get; set; } = string.Empty;
         public string OtherUserAvatar { get; set; } = string.Empty;

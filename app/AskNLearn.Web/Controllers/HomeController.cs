@@ -17,6 +17,7 @@ namespace app_licenta.Controllers
     {
         private readonly AskNLearn.Application.Common.Interfaces.IApplicationDbContext _context = context;
 
+        [HttpGet("/")]
         [HttpGet("")]
         public async Task<IActionResult> Index(string sortBy = "Latest")
         {
@@ -46,39 +47,36 @@ namespace app_licenta.Controllers
 
             query = sortBy switch
             {
-                "TopRated" => query.OrderByDescending(p => _context.PostVotes.Where(v => v.PostId == p.Id).Sum(v => (int)v.VoteValue)),
+                "TopRated" => query.OrderByDescending(p => p.Votes.Sum(v => (int)v.VoteValue)),
                 "Latest" => query.OrderByDescending(p => p.CreatedAt),
-                _ => query.OrderByDescending(p => p.CreatedAt) // Default to latest for "Relevance" if not defined
+                _ => query.OrderByDescending(p => p.CreatedAt)
             };
 
             return await query
-                .Include(p => p.Author)
-                .Include(p => p.Comments)
                 .Skip(skip)
                 .Take(take)
-                .Join(_context.Communities,
-                    p => p.CommunityId,
-                    c => (Guid?)c.Id,
-                    (p, c) => new { p, c })
-                .Select(x => new HomeFeedPostDto
+                .Select(p => new HomeFeedPostDto
                 {
-                    Id = x.p.Id,
-                    CommunityId = x.p.CommunityId!.Value,
-                    CommunityName = x.c.Name,
-                    AuthorId = x.p.AuthorId,
-                    AuthorName = x.p.Author != null ? x.p.Author.FullName : "Unknown",
+                    Id = p.Id,
+                    CommunityId = p.CommunityId ?? Guid.Empty,
+                    CommunityName = _context.Communities.Where(c => c.Id == p.CommunityId).Select(c => c.Name).FirstOrDefault() ?? "Unknown Community",
+                    AuthorId = p.AuthorId,
+                    AuthorName = p.Author != null ? p.Author.FullName : "Unknown Student",
                     AuthorConnectionStatus = string.IsNullOrEmpty(currentUserId) ? ConnectionStatus.None : 
-                        _context.Friendships.Any(f => (f.RequesterId == currentUserId && f.AddresseeId == x.p.AuthorId && f.Status == FriendshipStatus.Accepted) || 
-                                                     (f.RequesterId == x.p.AuthorId && f.AddresseeId == currentUserId && f.Status == FriendshipStatus.Accepted)) ? ConnectionStatus.Accepted :
-                        _context.Friendships.Any(f => f.RequesterId == currentUserId && f.AddresseeId == x.p.AuthorId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingSent :
-                        _context.Friendships.Any(f => f.RequesterId == x.p.AuthorId && f.AddresseeId == currentUserId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingReceived : ConnectionStatus.None,
-                    Title = x.p.Title,
-                    Content = x.p.Content,
-                    CommentCount = x.p.Comments.Count,
-                    ViewCount = x.p.ViewCount,
-                    VoteCount = _context.PostVotes.Where(v => v.PostId == x.p.Id).Select(v => (int)v.VoteValue).Sum(),
-                    IsSolved = x.p.IsSolved,
-                    CreatedAt = x.p.CreatedAt
+                        _context.Friendships.Any(f => (f.RequesterId == currentUserId && f.AddresseeId == p.AuthorId && f.Status == FriendshipStatus.Accepted) || 
+                                                     (f.RequesterId == p.AuthorId && f.AddresseeId == currentUserId && f.Status == FriendshipStatus.Accepted)) ? ConnectionStatus.Accepted :
+                        _context.Friendships.Any(f => f.RequesterId == currentUserId && f.AddresseeId == p.AuthorId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingSent :
+                        _context.Friendships.Any(f => f.RequesterId == p.AuthorId && f.AddresseeId == currentUserId && f.Status == FriendshipStatus.Pending) ? ConnectionStatus.PendingReceived : ConnectionStatus.None,
+                    Title = p.Title,
+                    Content = p.Content,
+                    CommentCount = p.Comments.Count,
+                    ViewCount = p.ViewCount,
+                    VoteCount = p.Votes.Sum(v => (int)v.VoteValue),
+                    IsSolved = p.IsSolved,
+                    CreatedAt = p.CreatedAt,
+                    UserVote = !string.IsNullOrEmpty(currentUserId)
+                        ? p.Votes.Where(v => v.UserId == currentUserId).Select(v => (int)v.VoteValue).FirstOrDefault()
+                        : 0
                 })
                 .ToListAsync();
         }
@@ -109,6 +107,7 @@ namespace app_licenta.Controllers
         public int ViewCount { get; set; }
         public int VoteCount { get; set; }
         public bool IsSolved { get; set; }
+        public int UserVote { get; set; } // 1, -1, or 0
         public DateTime CreatedAt { get; set; }
     }
 }

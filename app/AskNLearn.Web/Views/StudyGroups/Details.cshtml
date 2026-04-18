@@ -90,11 +90,6 @@
 
                 <!-- Members View -->
                 <div id="sidebar-view-members" class="sidebar-view-pane d-flex flex-column overflow-hidden h-100">
-                    <div class="px-4 py-3 border-bottom flex-shrink-0" style="border-color: rgba(255,255,255,0.05) !important;">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <span class="badge rounded-pill glass-card border-0 px-2 py-1 fw-bold text-aurora" style="font-size: 0.65rem; background: rgba(0,245,160,0.1);">@Model.MemberCount MEMBERS</span>
-                        </div>
-                    </div>
                     
                     <div id="members-scroll-area" class="flex-grow-1 overflow-y-auto custom-scrollbar p-4 d-flex flex-column gap-2">
                         <div id="members-items-container" class="d-flex flex-column gap-2">
@@ -103,8 +98,8 @@
                                 var isMe = member.UserId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                                 var isOwner = member.UserId == Model.OwnerId;
                                 var avatarBg = isOwner 
-                                    ? "rgba(0,245,160,0.1); border:1px solid rgba(0,245,160,0.2);" 
-                                    : "rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);";
+                                    ? "transparent;" 
+                                    : "transparent;";
                                 
                                 <div class="member-card d-flex align-items-center gap-3 p-2 rounded-lg transition-all animate-entrance hover-card-trigger" 
                                      data-hover-type="user" data-hover-id="@member.UserId"
@@ -112,14 +107,13 @@
                                     <div class="position-relative">
                                         @if (!string.IsNullOrEmpty(member.AvatarUrl))
                                         {
-                                            <div class="avatar-xs rounded-lg overflow-hidden border shadow-sm" style="background:@avatarBg">
+                                            <div class="avatar-xs rounded-lg overflow-hidden" style="background:@avatarBg">
                                                 <img src="@member.AvatarUrl" class="w-100 h-100 object-cover" />
                                             </div>
                                         }
                                         else
                                         {
-                                            <div class="avatar-xs rounded-lg d-flex flex-center @(isOwner ? "text-aurora" : "text-muted") shadow-sm" 
-                                                 style="background:@avatarBg">
+                                            <div class="avatar-xs rounded-lg d-flex flex-center @(isOwner ? "text-aurora" : "text-muted")">
                                                 <span class="material-symbols-outlined fs-6">account_circle</span>
                                             </div>
                                         }
@@ -157,7 +151,7 @@
                                             @switch (member.ConnectionStatus)
                                             {
                                                 case AskNLearn.Application.Common.Models.ConnectionStatus.Accepted:
-                                                    <form asp-controller="Direct" asp-action="StartChat" method="post" class="mb-0">
+                                                    <form action="/communication/messaging/conversations/initialize" method="post" class="mb-0">
                                                         <input type="hidden" name="userId" value="@member.UserId" />
                                                         <button type="submit" class="btn btn-link p-1 text-aurora hover-text-white text-decoration-none d-flex flex-center shadow-none" title="Send Message">
                                                             <span class="material-symbols-outlined fs-6">chat</span>
@@ -451,6 +445,24 @@
     .animate-entrance {
         animation: animate-entrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+
+    .blur-content {
+        transition: filter 0.8s var(--ease-apple);
+    }
+
+    .blur-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(var(--blur-medium));
+        -webkit-backdrop-filter: blur(var(--blur-medium));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        z-index: 100;
+        border-radius: inherit;
+    }
 </style>
 
 
@@ -637,11 +649,11 @@
                 // Update Buttons
                 btnMembers.classList.add('text-aurora');
                 btnMembers.classList.remove('text-muted');
-                btnMembers.style.borderBottom = '2px solid var(--color-mint-bright) !important';
+                btnMembers.style.setProperty('border-bottom', '2px solid var(--color-mint-bright)', 'important');
                 
                 btnChannels.classList.remove('text-aurora');
                 btnChannels.classList.add('text-muted');
-                btnChannels.style.borderBottom = '2px solid transparent !important';
+                btnChannels.style.setProperty('border-bottom', '2px solid transparent', 'important');
 
                 // Initialize members lazy load if needed
                 initMembersLazyLoad();
@@ -651,11 +663,11 @@
                 // Update Buttons
                 btnChannels.classList.add('text-aurora');
                 btnChannels.classList.remove('text-muted');
-                btnChannels.style.borderBottom = '2px solid var(--color-mint-bright) !important';
+                btnChannels.style.setProperty('border-bottom', '2px solid var(--color-mint-bright)', 'important');
                 
                 btnMembers.classList.remove('text-aurora');
                 btnMembers.classList.add('text-muted');
-                btnMembers.style.borderBottom = '2px solid transparent !important';
+                btnMembers.style.setProperty('border-bottom', '2px solid transparent', 'important');
             }
         }
 
@@ -906,7 +918,7 @@
             if (container) {
                 container.innerHTML = `<div class="py-5 text-center opacity-75"><div class="spinner-border text-aurora mb-3"></div><p class="text-muted small fw-bold">Loading history...</p></div>`;
                 try {
-                    const resp = await fetch(`/StudyGroups/GetChannelMessages?channelId=${id}`);
+                    const resp = await fetch(`/collaboration/study-groups/v1/channels/messages/${id}`);
                     const messages = await resp.json();
                     container.innerHTML = '';
                     if (messages.length === 0) {
@@ -963,7 +975,7 @@
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Joining...';
             }
             try {
-                const resp = await fetch(`/StudyGroups/Join/${id}`, { method: 'POST' });
+                const resp = await fetch(`/collaboration/study-groups/v1/membership/join?id=${id}`, { method: 'POST' });
                 if (resp.ok) {
                     location.reload(true); // Force fresh reload
                 } else {
@@ -996,16 +1008,16 @@
             if (membersLoading || membersAllLoaded) return;
             membersLoading = true;
             try {
-                const resp = await fetch(`/StudyGroups/LoadMoreMembers?groupId=${GROUP_ID}&skip=${membersSkip}&take=20`);
+                const resp = await fetch(`/collaboration/study-groups/v1/membership/batch?groupId=${GROUP_ID}&skip=${membersSkip}&take=20`);
                 const data = await resp.json();
                 const container = document.getElementById('members-items-container');
                 if (container) data.members.forEach(m => container.insertAdjacentHTML('beforeend', buildMemberHtml(m)));
                 membersSkip = data.nextSkip;
                 membersAllLoaded = !data.hasMore;
-                }
             } catch(e) { console.error('Members load error:', e); }
             finally {
                 membersLoading = false;
+                const spinner = document.getElementById('members-load-spinner');
                 if (spinner) spinner.classList.add('d-none');
             }
         }
@@ -1041,7 +1053,7 @@
             const resp = await fetch(`/Connections/AcceptRequest?userId=${userId}`, { method: 'POST' });
             if (resp.ok) {
                 document.getElementById(`member-actions-${userId}`).innerHTML = `
-                    <form action="/Direct/StartChat" method="post" class="mb-0">
+                    <form action="/Messaging/Conversations/Initialize" method="post" class="mb-0">
                         <input type="hidden" name="userId" value="${userId}" />
                         <button type="submit" class="btn btn-link p-1 text-aurora hover-glow text-decoration-none d-flex flex-center" title="Send Message">
                             <span class="material-symbols-outlined fs-6">chat</span>
@@ -1061,9 +1073,9 @@
         }
         async function promoteMember(userId) {
             if (!confirm('Are you sure you want to promote this member to Admin?')) return;
-            const resp = await fetch(`/StudyGroups/PromoteMember?groupId=${GROUP_ID}&userId=${userId}`, { method: 'POST' });
+            const resp = await fetch(`/collaboration/study-groups/v1/membership/promote?groupId=${GROUP_ID}&userId=${userId}`, { method: 'POST' });
             if (resp.ok) {
-                showToast('Success', 'Member promoted to Admin', 'success');
+                window.Notify.success('Member promoted to Admin');
                 const badge = document.getElementById(`role-badge-${userId}`);
                 if (badge) {
                     badge.innerText = 'Admin';
@@ -1075,7 +1087,7 @@
                     event.currentTarget.remove();
                 }
             } else {
-                showToast('Error', 'Failed to promote member', 'error');
+                window.Notify.error('Failed to promote member');
             }
         }
     </script>

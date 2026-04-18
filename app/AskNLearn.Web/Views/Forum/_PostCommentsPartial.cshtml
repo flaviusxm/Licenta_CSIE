@@ -1,16 +1,22 @@
 @using AskNLearn.Application.Features.Posts.Queries.GetPostComments
 @using AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
+@inject Microsoft.AspNetCore.Identity.UserManager<AskNLearn.Domain.Entities.Core.ApplicationUser> UserManager
 @model PostCommentsResult
 
+@{
+    var currentUserId = UserManager.GetUserId(User);
+    var isAdmin = User.IsInRole("Admin");
+}
+
 @functions {
-    async Task RenderComments(List<CommentDto> allComments, Guid? parentId, int depth = 0)
+    async Task RenderComments(List<CommentDto> allComments, Guid? parentId, string currentUserId, bool isAdmin, int depth = 0)
     {
         var currentComments = allComments.Where(c => c.ReplyToMessageId == parentId).OrderBy(c => c.CreatedAt).ToList();
         foreach (var comment in currentComments)
         {
             <div class="d-flex flex-column gap-2 @(depth > 0 ? "ms-4 ps-4 mt-3" : "mt-4")" style="@(depth > 0 ? "border-left: 2px solid var(--border-glass);" : "")">
                 <div class="d-flex gap-3">
-                    <div class="avatar-sm rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(255,255,255,0.05);">
+                    <div class="avatar-sm rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
                         <span class="material-symbols-outlined fs-6 text-muted">person</span>
                     </div>
                     <div class="flex-grow-1 min-w-0">
@@ -40,6 +46,15 @@
                         <!-- Comment Actions -->
                         <div class="d-flex align-items-center gap-3">
                             <button onclick="toggleReplyForm('@comment.Id')" class="btn btn-link p-0 text-aurora fw-bold text-decoration-none" style="font-size: 0.7rem;">Reply</button>
+                            
+                            @if (currentUserId == comment.AuthorId || isAdmin)
+                            {
+                                    <button onclick="deleteCommentAsync('@comment.Id', '@Model.PostId', '@Model.CommunityId')" class="btn btn-link p-0 text-muted hover-text-danger text-decoration-none d-flex align-items-center gap-1" style="font-size: 0.7rem;">
+                                        <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
+                                        Delete
+                                    </button>
+                            }
+
                             <button onclick="openReportModal('@comment.Id', 'COMMENT')" class="btn btn-link p-0 text-muted hover-text-danger text-decoration-none d-flex align-items-center gap-1" style="font-size: 0.7rem;" title="Report this comment">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">report</span>
                                 Report
@@ -72,58 +87,9 @@
                         </div>
                     </div>
                 </div>
-                @{ await RenderComments(allComments, comment.Id, depth + 1); }
+                @{ await RenderComments(allComments, comment.Id, currentUserId, isAdmin, depth + 1); }
             </div>
         }
-    }
-
-    async Task RenderGlobalScripts() {
-        <script>
-            if (typeof window.submitCommentAsync === 'undefined') {
-                window.submitCommentAsync = async function(e, form) {
-                    e.preventDefault();
-                    const formData = new FormData(form);
-                    const postId = formData.get('PostId');
-                    const container = document.getElementById(`comments-${postId}`);
-                    
-                    // Show small loading state
-                    const btn = form.querySelector('button[type="submit"]');
-                    const originalContent = btn.innerHTML;
-                    btn.disabled = true;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-                    try {
-                        const response = await fetch(form.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                        });
-
-                        if (response.ok) {
-                            const html = await response.text();
-                            if (container) {
-                                container.innerHTML = html;
-                                // Scroll a bit to see new comment? Optional.
-                            }
-                        } else {
-                            window.Notify.error("Failed to post comment. Please try again.");
-                        }
-                    } catch (err) {
-                        console.error(err);
-                    } finally {
-                        btn.disabled = false;
-                        btn.innerHTML = originalContent;
-                    }
-                };
-
-                window.updateFileName = function(input) {
-                    const nameSpan = input.closest('div').querySelector('.file-name');
-                    if (nameSpan && input.files.length > 0) {
-                        nameSpan.textContent = input.files[0].name;
-                    }
-                };
-            }
-        </script>
     }
 }
 
@@ -135,7 +101,7 @@
         <input type="hidden" name="PostId" value="@Model.PostId" />
         <input type="hidden" name="CommunityId" value="@Model.CommunityId" />
         <div class="d-flex gap-3 align-items-start">
-            <div class="avatar-sm rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(0,245,160,0.1);">
+            <div class="avatar-sm rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
                 <span class="material-symbols-outlined fs-6 text-aurora">person</span>
             </div>
             <div class="flex-grow-1 position-relative">
@@ -156,12 +122,10 @@
     <!-- Recursive Comment Tree -->
     @if (Model.Comments.Any())
     {
-        await RenderComments(Model.Comments, null);
+        await RenderComments(Model.Comments, null, currentUserId, isAdmin);
     }
     else
     {
         <p class="text-muted text-center py-3 mb-0" style="font-size: 0.85rem;">No comments yet. Be the first!</p>
     }
 </div>
-
-@{ await RenderGlobalScripts(); }

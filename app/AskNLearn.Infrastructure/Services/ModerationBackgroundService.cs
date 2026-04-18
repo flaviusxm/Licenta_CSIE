@@ -15,6 +15,7 @@ namespace AskNLearn.Infrastructure.Services
         private readonly IModerationQueue _queue;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<ModerationBackgroundService> _logger;
+        private DateTime _lastCleanupTime = DateTime.MinValue;
 
         public ModerationBackgroundService(
             IModerationQueue queue,
@@ -34,55 +35,134 @@ namespace AskNLearn.Infrastructure.Services
             {
                 try
                 {
+                    // 1. Process Queue Tasks (Non-blocking check)
                     var task = await _queue.DequeueAsync(stoppingToken);
-                    _logger.LogInformation("[Shield] Processing task for {Target} with Id {Id}.", task.Target, task.Id);
-
-                    using var scope = _scopeFactory.CreateScope();
-                    var guardianClient = scope.ServiceProvider.GetRequiredService<IGuardianClient>();
-                    var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
-
-                    if (task.Target == ModerationTarget.IdentityVerification)
+                    if (task != null)
                     {
-                        var vResult = await guardianClient.VerifyDocumentAsync(null, task.Content);
-                        await ProcessIdentityVerification(dbContext, task.Id, vResult, stoppingToken);
-                        _logger.LogInformation("[Shield] Identity validation completed for Request {Id}. Result: {Status}", 
-                            task.Id, vResult.IsValid ? "Verified" : "Rejected/Review");
-                    }
-                    else
-                    {
-                        // 1. Determine Content to Moderate
-                        string contentToModerate = task.Content;
-                        string? titleToModerate = task.Title;
+                        _logger.LogInformation("[Shield] Processing task for {Target} with Id {Id}.", task.Target, task.Id);
 
-                        // 2. Run AI Moderation
-                        var result = await guardianClient.ModerateTextAsync(contentToModerate, titleToModerate);
+                        using var scope = _scopeFactory.CreateScope();
+                        var guardianClient = scope.ServiceProvider.GetRequiredService<IGuardianClient>();
+                        var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
 
-                        // 3. Autonomous Action based on Target
-                        switch (task.Target)
+                        if (task.Target == ModerationTarget.IdentityVerification)
                         {
-                            case ModerationTarget.Post:
-                                await ProcessPostModeration(dbContext, task.Id, result, stoppingToken);
-                                break;
-
-                            case ModerationTarget.Comment:
-                            case ModerationTarget.Message:
-                                await ProcessMessageModeration(dbContext, task.Id, result, stoppingToken);
-                                break;
-
-                            case ModerationTarget.Report:
-                                await ProcessReportModeration(dbContext, task.Id, result, stoppingToken);
-                                break;
+                            var vResult = await guardianClient.VerifyDocumentAsync(null, task.Content);
+                            await ProcessIdentityVerification(dbContext, task.Id, vResult, stoppingToken);
+                            _logger.LogInformation("[Shield] Identity validation completed for Request {Id}. Result: {Status}", 
+                                task.Id, vResult.IsValid ? "Verified" : "Rejected/Review");
                         }
+                        else
+                        {
+                            string contentToModerate = task.Content;
+                            string? titleToModerate = task.Title;
 
-                        _logger.LogInformation("[Shield] Moderation completed for {Target} {Id}. Result: {Status}", 
-                            task.Target, task.Id, result.IsSafe ? "Safe/Approved" : "Unsafe/Actioned");
+                            var result = await guardianClient.ModerateTextAsync(contentToModerate, titleToModerate);
+
+                            switch (task.Target)
+                            {
+                                case ModerationTarget.Post:
+                                    await ProcessPostModeration(dbContext, task.Id, result, stoppingToken);
+                                    break;
+
+                                case ModerationTarget.Comment:
+                                case ModerationTarget.Message:
+                                    await ProcessMessageModeration(dbContext, task.Id, result, stoppingToken);
+                                    break;
+
+                                case ModerationTarget.Report:
+                                    await ProcessReportModeration(dbContext, task.Id, result, stoppingToken);
+                                    break;
+                            }
+
+                            _logger.LogInformation("[Shield] Moderation completed for {Target} {Id}. Result: {Status}", 
+                                task.Target, task.Id, result.IsSafe ? "Safe/Approved" : "Unsafe/Actioned");
+                        }
+                    }
+
+                    // 2. Periodic Maintenance (Maintenance Cycle)
+                    if (DateTime.UtcNow - _lastCleanupTime > TimeSpan.FromHours(1))
+                    {
+                        await PerformMaintenanceTasks(stoppingToken);
+                        _lastCleanupTime = DateTime.UtcNow;
                     }
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Guardian Shield error processing task.");
+                    await Task.Delay(1000, stoppingToken); // Prevent infinite fast loop on error
                 }
+            }
+        }
+
+        private async Task PerformMaintenanceTasks(CancellationToken ct)
+        {
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+
+                _logger.LogInformation("[Shield] Running maintenance tasks (Cleanup)...");
+
+                var cutoff = DateTime.UtcNow.AddDays(-1);
+                var unconfirmedUsers = await dbContext.Users
+                    .Where(u => !u.EmailConfirmed && u.CreatedAt < cutoff)
+                    .ToListAsync(ct);
+
+                if (unconfirmedUsers.Any())
+                {
+                    var userIds = unconfirmedUsers.Select(u => u.Id).ToList();
+
+                    // Cascade deletes
+                    var friendships = await dbContext.Friendships
+                        .Where(f => userIds.Contains(f.RequesterId) || userIds.Contains(f.AddresseeId))
+                        .ToListAsync(ct);
+                    if (friendships.Any()) dbContext.Friendships.RemoveRange(friendships);
+
+                    var participants = await dbContext.DirectConversationParticipants
+                        .Where(p => userIds.Contains(p.UserId))
+                        .ToListAsync(ct);
+                    if (participants.Any()) dbContext.DirectConversationParticipants.RemoveRange(participants);
+
+                    var communityMembers = await dbContext.CommunityMemberships
+                        .Where(m => userIds.Contains(m.UserId))
+                        .ToListAsync(ct);
+                    if (communityMembers.Any()) dbContext.CommunityMemberships.RemoveRange(communityMembers);
+
+                    var groupMembers = await dbContext.GroupMemberships
+                        .Where(m => userIds.Contains(m.UserId))
+                        .ToListAsync(ct);
+                    if (groupMembers.Any()) dbContext.GroupMemberships.RemoveRange(groupMembers);
+
+                    var notifications = await dbContext.Notifications
+                        .Where(n => userIds.Contains(n.UserId))
+                        .ToListAsync(ct);
+                    if (notifications.Any()) dbContext.Notifications.RemoveRange(notifications);
+
+                    var verRequests = await dbContext.VerificationRequests
+                        .Where(v => userIds.Contains(v.UserId))
+                        .ToListAsync(ct);
+                    if (verRequests.Any()) dbContext.VerificationRequests.RemoveRange(verRequests);
+
+                    var posts = await dbContext.Posts
+                        .Where(p => userIds.Contains(p.AuthorId))
+                        .ToListAsync(ct);
+                    if (posts.Any()) dbContext.Posts.RemoveRange(posts);
+
+                    var messages = await dbContext.Messages
+                        .Where(m => userIds.Contains(m.AuthorId))
+                        .ToListAsync(ct);
+                    if (messages.Any()) dbContext.Messages.RemoveRange(messages);
+
+                    dbContext.Users.RemoveRange(unconfirmedUsers);
+                    await dbContext.SaveChangesAsync(ct);
+                    _logger.LogInformation("[Shield] Cleaned up {Count} unconfirmed accounts.", unconfirmedUsers.Count);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Guardian Shield maintenance error.");
             }
         }
 

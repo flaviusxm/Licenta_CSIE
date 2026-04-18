@@ -11,6 +11,12 @@
 }
 
 <div class="container-fluid py-5" style="max-width: 1000px;">
+    <!-- Back Button -->
+    <a asp-controller="Explore" asp-action="Index" class="btn-back-modern mb-4">
+        <span class="material-symbols-outlined">arrow_back_ios_new</span>
+        <span>Back to Communities</span>
+    </a>
+
     <!-- Community Header -->
     <div class="glass-card p-4 p-md-5 mb-5 d-flex flex-column flex-md-row align-items-center gap-4 animate-entrance position-relative overflow-hidden">
         <div class="position-absolute rounded-circle" style="top: -20px; left: -20px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(0,217,245,0.15) 0%, transparent 70%); filter: blur(20px);"></div>
@@ -46,9 +52,6 @@
 
         <!-- Actions -->
         <div class="d-flex align-items-center gap-2 position-relative z-1">
-            <a asp-controller="Explore" asp-action="Index" class="btn btn-glass p-2 d-flex align-items-center justify-content-center" title="Back">
-                <span class="material-symbols-outlined fs-5">arrow_back</span>
-            </a>
             @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.CreatorId)
             {
                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-glass p-2 d-flex align-items-center justify-content-center" title="Settings">
@@ -72,21 +75,7 @@
             {
                 if (!posts.Any())
                 {
-                    <!-- Quick Post Interaction -->
-                    <div id="quick-post-container" class="animate-entrance">
-                        <div class="glass-card p-4 mb-4" onclick="toggleInlinePost(true)" style="cursor: pointer;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="avatar-md rounded-circle bg-glass d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-                                    <span class="material-symbols-outlined text-aurora">person</span>
-                                </div>
-                                <div class="flex-grow-1 bg-white bg-opacity-5 rounded-pill px-4 py-2 text-muted border border-glass hover-bg-glass transition-all" style="font-size: 0.9rem;">
-                                    Start a discussion in @Model.Name...
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="no-posts-placeholder" class="glass-card text-center py-5">
+                    <div id="no-posts-placeholder" class="glass-card text-center py-5 animate-entrance">
                         <span class="material-symbols-outlined display-1 text-muted mb-4 opacity-50">post_add</span>
                         <p class="text-white fw-bold fs-5 mb-1">No posts yet in this community.</p>
                         <p class="text-muted mb-4">Be the first to share something!</p>
@@ -310,112 +299,149 @@
         observer.observe(sentinel);
     })();
 
-    // ─── Lazy Comments ──────────────────────────────────────────────────────────
-    async function toggleLazyComments(postId, commId) {
-        const container = document.getElementById(`comments-${postId}`);
-        if (!container) return;
+    // ─── Vote Post: Handled by global site.js script ────────────────────────────
 
-        const isCurrentlyHidden = container.classList.contains('d-none');
-        const toggleIcon = document.querySelector(`.toggle-icon-${postId}`);
-
-        if (!isCurrentlyHidden) {
-            // Close
-            container.classList.add('d-none');
-            if (toggleIcon) toggleIcon.textContent = 'add';
-            commentsOpen[postId] = false;
-            return;
-        }
-
-        // Open
-        container.classList.remove('d-none');
-        if (toggleIcon) toggleIcon.textContent = 'remove';
-        commentsOpen[postId] = true;
-
-        // Load only if not already loaded
-        if (!commentsLoaded[postId]) {
-            commentsLoaded[postId] = true;
-            try {
-                const response = await fetch(`/hubs/communities/v1/comments/retrieve?postId=${postId}&communityId=${commId}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                if (!response.ok) throw new Error('Error loading comments');
-                const html = await response.text();
-                container.innerHTML = html;
-            } catch (err) {
-                console.error('Error loading comments:', err);
-                container.innerHTML = '<p class="text-danger p-3 mb-0">Failed to load comments.</p>';
-                commentsLoaded[postId] = false; // Allow retry
-            }
-        }
-    }
-
-    // ─── Reply Form Toggle ──────────────────────────────────────────────────────
+    // ─── Comments & Replies ───────────────────────────────────────────────────
     function toggleReplyForm(commentId) {
-        const el = document.getElementById(`reply-form-${commentId}`);
-        if (el) {
-            el.classList.toggle('d-none');
-            if (!el.classList.contains('d-none')) {
-                const input = el.querySelector('input[type="text"]');
-                if (input) input.focus();
-            }
+        const form = document.getElementById(`reply-form-${commentId}`);
+        if (form) form.classList.toggle('d-none');
+    }
+
+    function updateFileName(input) {
+        const fileNameSpan = input.closest('label').nextElementSibling;
+        if (fileNameSpan && input.files.length > 0) {
+            fileNameSpan.textContent = input.files[0].name;
         }
     }
 
-    // ─── File Name Display ──────────────────────────────────────────────────────
-    function updateFileName(input) {
-        const fileName = input.files[0] ? input.files[0].name : '';
-        const container = input.closest('form').querySelector('.file-name');
-        if (container) container.textContent = fileName;
+    async function submitCommentAsync(event, form) {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const postId = formData.get('PostId');
+        
+        try {
+            const response = await fetch('/hubs/communities/v1/discussions/comments/add', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.ok) {
+                const html = await response.text();
+                const container = document.getElementById(`comments-section-${postId}`);
+                if (container) {
+                    container.innerHTML = html;
+                } else {
+                    // Fallback for root level comments
+                    const rootContainer = form.closest('.glass-card').querySelector('[id^="comments-section-"]') || 
+                                          document.querySelector(`[id^="comments-section-${postId}"]`);
+                    if (rootContainer) rootContainer.innerHTML = html;
+                    else location.reload(); // Hard refresh if container not found
+                }
+                form.reset();
+                const fileNameSpan = form.querySelector('.file-name');
+                if (fileNameSpan) fileNameSpan.textContent = '';
+            } else {
+                const error = await response.text();
+                window.Notify.error("Failed to post comment. Make sure you are verified.");
+            }
+        } catch (err) {
+            console.error(err);
+            window.Notify.error("A network error occurred.");
+        }
     }
 
-    // ─── Vote Post ──────────────────────────────────────────────────────────────
-    function votePost(postId, communityId, value) {
-        const upBtn = document.querySelector(`.vote-btn-up-${postId}`);
-        const downBtn = document.querySelector(`.vote-btn-down-${postId}`);
-        const upIcon = upBtn?.querySelector('.material-symbols-outlined');
-        const downIcon = downBtn?.querySelector('.material-symbols-outlined');
+    async function deleteCommentAsync(commentId, postId, communityId) {
+        if (!confirm('Are you sure you want to delete this comment?')) return;
 
-        if (upBtn) upBtn.style.pointerEvents = 'none';
-        if (downBtn) downBtn.style.pointerEvents = 'none';
+        try {
+            const token = getAntiForgeryToken();
+            const response = await fetch(`/hubs/communities/v1/comments/delete?id=${commentId}&communityId=${communityId}`, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': token,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
 
-        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+            if (response.ok) {
+                // Refresh comments for this post
+                const refreshResp = await fetch(`/hubs/communities/v1/comments/retrieve?postId=${postId}&communityId=${communityId}`);
+                if (refreshResp.ok) {
+                    const html = await refreshResp.text();
+                    const container = document.getElementById(`comments-section-${postId}`);
+                    if (container) container.innerHTML = html;
+                    else location.reload();
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
-        fetch(`/hubs/communities/v1/interactions/vote?postId=${postId}&communityId=${communityId}&value=${value}`, {
+    // ─── Report Modal ──────────────────────────────────────────────────────────
+    function openReportModal(targetId, type) {
+        // Since we don't have a complex modal system here yet, we'll use a simple prompt
+        const reason = prompt("Why are you reporting this? (SPAM, OFFENSIVE, HARASSMENT, etc.)");
+        if (!reason) return;
+
+        const description = prompt("Additional details (optional):");
+        const token = getAntiForgeryToken();
+        
+        const url = type === 'POST' ? '/hubs/communities/v1/discussions/report' : '/hubs/communities/v1/comments/report';
+        
+        const params = new URLSearchParams();
+        params.append('id', targetId);
+        params.append('reason', reason);
+        params.append('description', description || "");
+
+        fetch(url, {
             method: 'POST',
+            body: params,
             headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'RequestVerificationToken': token
+                'RequestVerificationToken': token,
+                'Content-Type': 'application/x-www-form-urlencoded'
             }
         })
         .then(r => r.json())
         .then(data => {
-            if (data.success) {
-                document.querySelectorAll(`.vote-count-${postId}`).forEach(el => {
-                    el.textContent = data.voteCount;
-                    el.classList.remove('text-mint', 'text-danger', 'text-white');
-                    el.classList.add(data.userVote === 1 ? 'text-mint' : data.userVote === -1 ? 'text-danger' : 'text-white');
-                });
-                document.querySelectorAll(`.vote-btn-up-${postId}`).forEach(el => {
-                    el.classList.remove('text-mint', 'text-muted', 'font-weight-bold');
-                    const icon = el.querySelector('.material-symbols-outlined');
-                    if (icon) { icon.textContent = 'keyboard_arrow_up'; icon.classList.remove('spinning'); }
-                    el.classList.add(data.userVote === 1 ? 'text-mint' : 'text-muted');
-                    if (data.userVote === 1) el.classList.add('font-weight-bold');
-                });
-                document.querySelectorAll(`.vote-btn-down-${postId}`).forEach(el => {
-                    el.classList.remove('text-danger', 'text-muted', 'font-weight-bold');
-                    const icon = el.querySelector('.material-symbols-outlined');
-                    if (icon) { icon.textContent = 'keyboard_arrow_down'; icon.classList.remove('spinning'); }
-                    el.classList.add(data.userVote === -1 ? 'text-danger' : 'text-muted');
-                    if (data.userVote === -1) el.classList.add('font-weight-bold');
-                });
-            }
+            window.Notify.success(data.message || "Reported successfully.");
         })
-        .finally(() => {
-            if (upBtn) upBtn.style.pointerEvents = 'auto';
-            if (downBtn) downBtn.style.pointerEvents = 'auto';
+        .catch(err => {
+            console.error(err);
+            window.Notify.error("Failed to submit report.");
         });
+    }
+
+    // ─── Lazy Load Comments ───────────────────────────────────────────────────
+    async function toggleLazyComments(postId, commId) {
+        const container = document.getElementById(`comments-${postId}`);
+        const icon = document.querySelector(`.toggle-icon-${postId}`);
+        
+        if (!container.classList.contains('d-none')) {
+            container.classList.add('d-none');
+            if (icon) icon.style.transform = 'rotate(0deg)';
+            return;
+        }
+
+        container.classList.remove('d-none');
+        if (icon) icon.style.transform = 'rotate(90deg)';
+
+        if (!commentsLoaded[postId]) {
+            try {
+                const resp = await fetch(`/hubs/communities/v1/comments/retrieve?postId=${postId}&communityId=${commId}`);
+                if (resp.ok) {
+                    const html = await resp.text();
+                    container.innerHTML = `<div id="comments-section-${postId}">${html}</div>`;
+                    commentsLoaded[postId] = true;
+                }
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<p class="text-danger p-3">Error loading comments.</p>';
+            }
+        }
     }
 </script>
 

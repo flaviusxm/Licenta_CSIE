@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using ModerationStatus = AskNLearn.Domain.Entities.Core.ModerationStatus;
 
 namespace AskNLearn.Infrastructure.Persistance
 {
@@ -74,7 +75,7 @@ namespace AskNLearn.Infrastructure.Persistance
             };
             foreach (var t in tables)
             {
-                try { await ctx.Database.ExecuteSqlRawAsync("DELETE FROM [" + t + "]"); } catch { }
+                try { await ctx.Database.ExecuteSqlAsync($"DELETE FROM [{t}]"); } catch { }
             }
         }
 
@@ -296,7 +297,7 @@ namespace AskNLearn.Infrastructure.Persistance
                         Title = $"Thread: {_topics[communities.IndexOf(comm)]} discussion #{i+1}",
                         Content = $"Let's talk about {_topics[communities.IndexOf(comm)]}. Does anyone have advice on this?",
                         CreatedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 120)),
-                        ModerationStatus = ModerationStatus.Approved,
+                        ModerationStatus = AskNLearn.Domain.Entities.Core.ModerationStatus.Approved,
                         ViewCount = Rng.Next(50, 2000)
                     };
                     posts.Add(post);
@@ -320,7 +321,7 @@ namespace AskNLearn.Infrastructure.Persistance
                         AuthorId = author.Id,
                         Content = commentTexts[Rng.Next(commentTexts.Length)],
                         CreatedAt = p.CreatedAt.AddHours(Rng.Next(1, 48)),
-                        ModerationStatus = ModerationStatus.Approved
+                        ModerationStatus = AskNLearn.Domain.Entities.Core.ModerationStatus.Approved
                     });
                 }
             }
@@ -437,7 +438,7 @@ namespace AskNLearn.Infrastructure.Persistance
                         AuthorId = author.Id,
                         Content = sampleMessages[Rng.Next(sampleMessages.Length)],
                         CreatedAt = DateTime.UtcNow.AddHours(-Rng.Next(1, 72)),
-                        ModerationStatus = ModerationStatus.Approved
+                        ModerationStatus = AskNLearn.Domain.Entities.Core.ModerationStatus.Approved
                     });
                 }
             }
@@ -476,7 +477,7 @@ namespace AskNLearn.Infrastructure.Persistance
                         AuthorId = author,
                         Content = $"DM message {i+1} between friends.",
                         CreatedAt = f.CreatedAt.AddDays(1).AddMinutes(i * 15),
-                        ModerationStatus = ModerationStatus.Approved
+                        ModerationStatus = AskNLearn.Domain.Entities.Core.ModerationStatus.Approved
                     });
                 }
             }
@@ -525,7 +526,7 @@ namespace AskNLearn.Infrastructure.Persistance
                         Title = $"Resource {i+1} for {g.Name}",
                         Description = "Useful study material.",
                         ResourceType = types[Rng.Next(types.Length)],
-                        Url = $"https://example.com/resource/{Guid.NewGuid()}",
+                        Url = $"/uploads/resources/sample-{i+1}.{types[Rng.Next(types.Length)].ToLower()}",
                         UploaderId = uploader.Id,
                         CreatedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 30)),
                         DownloadCount = Rng.Next(5, 100)

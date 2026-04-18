@@ -1,202 +1,876 @@
 @using AskNLearn.Web.Models
+@using AskNLearn.Domain.Entities.Messaging
+@using AskNLearn.Application.Common.Interfaces
 @model InboxViewModel
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IPresenceTracker PresenceTracker
+@inject Microsoft.AspNetCore.Identity.UserManager<AskNLearn.Domain.Entities.Core.ApplicationUser> UserManager
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = "Inbox";
+    ViewData["Title"] = "Communication Hub";
+    ViewData["AppLayout"] = true; // Use full height layout
+    var currentUserId = UserManager.GetUserId(User);
 }
 
-<div class="container py-5 max-w-7xl">
-    
-    <div class="d-flex flex-column gap-5 position-relative z-1">
-        <!-- Header Section -->
-        <div class="d-flex align-items-center justify-content-between mb-2">
-            <div>
-                <h2 class="display-5 fw-bold text-white tracking-tight mb-1">Inbox</h2>
-                <p class="text-muted fw-bold text-uppercase tracking-widest mb-0" style="font-size: 0.7rem;">Manage your communications and network</p>
+@section Sidebar {
+    <div class="d-flex flex-column h-100 w-100 bg-transparent animate-entrance">
+        <!-- Search -->
+        <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-center" style="border-color: var(--border-glass) !important; min-height: 80px;">
+            <div class="position-relative w-100">
+                <span class="material-symbols-outlined position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" style="font-size: 1rem;">search</span>
+                <input type="text" id="global-search-input" placeholder="Search people or messages..." class="form-control form-control-glass ps-5 py-2" style="font-size: 0.85rem; border-radius: 1rem;" oninput="handleGlobalSearch(this.value)" />
+                
+                <!-- Search Results Overlay -->
+                <div id="search-results-overlay" class="position-absolute start-0 end-0 mt-2 glass-card d-none shadow-2xl animate-entrance" style="z-index: 100; max-height: 400px; overflow-y: auto; border: 1px solid var(--border-glass-strong); background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px); border-radius: 1rem;">
+                    <div id="search-results-content" class="p-2"></div>
+                </div>
             </div>
-            <button onclick="markAllInboxRead()" class="btn btn-glass px-4 py-3 fw-bold text-uppercase tracking-widest shadow-lg" style="font-size: 0.7rem; border-radius: 1rem;">
-                Mark All Read
-            </button>
         </div>
 
-        <!-- Main Workspace Grid -->
-        <div class="row g-5">
-            <!-- Central Feed: Communications -->
-            <section class="col-12 col-xl-8 d-flex flex-column gap-4">
-                <div class="d-flex align-items-center justify-content-between px-2">
-                        Recent Messages
-                    </h3>
-                    <a asp-controller="Direct" asp-action="Index" class="fw-bold text-aurora text-uppercase tracking-widest hover-text-white d-flex align-items-center gap-1 transition-all text-decoration-none" style="font-size: 0.75rem; transition: transform 0.3s var(--ease-snappy);">
-                        Open Chat <span class="material-symbols-outlined" style="font-size: 1rem;">arrow_forward</span>
-                    </a>
-                </div>
+        <!-- Categories & Navigation -->
+        <div class="flex-grow-1 overflow-y-auto custom-scrollbar" id="inbox-sidebar-content">
+            <!-- MESSAGES SECTION -->
+            <div class="sidebar-category" id="cat-messages">
+                <button class="d-flex align-items-center justify-content-between w-100 px-4 py-3 bg-transparent border-0 text-muted hover-bg-glass transition-all section-header" onclick="toggleSection('messages')">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined fs-5">chat_bubble</span>
+                        <span class="fw-black text-uppercase tracking-widest" style="font-size: 0.7rem;">Messages</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @if (Model.RecentMessages.Count(m => m.UnreadCount > 0) > 0)
+                        {
+                            <span class="badge rounded-pill bg-aurora text-dark" style="font-size: 0.6rem;">@Model.RecentMessages.Count(m => m.UnreadCount > 0)</span>
+                        }
+                        <span class="material-symbols-outlined fs-6 transition-all rotate-icon" id="icon-messages">expand_more</span>
+                    </div>
+                </button>
                 
-                <div class="glass-card overflow-hidden shadow-lg border-glass-strong" style="border-radius: 2.5rem; transition: all 0.6s var(--ease-smooth);">
+                <div class="section-content" id="content-messages">
                     @if (Model.RecentMessages.Any())
                     {
-                        <div class="d-flex flex-column">
-                            @foreach (var conv in Model.RecentMessages)
-                            {
-                                <a asp-controller="Direct" asp-action="Index" asp-route-id="@conv.ConversationId" class="d-flex align-items-center gap-4 p-4 p-md-5 transition-all group position-relative text-decoration-none @(conv.IsUnread ? "bg-primary bg-opacity-10" : "hover-bg-glass")" style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: all 0.4s var(--ease-smooth);">
-                                    <div class="position-relative flex-shrink-0">
-                                        <div class="rounded-4 shadow-lg position-relative z-1 bg-cover bg-center border border-glass transition-transform" style="width: 80px; height: 80px; background-image: url('@conv.OtherUserAvatar'); background-color: rgba(255,255,255,0.05); transition: transform 0.5s var(--ease-snappy);"></div>
-                                        @if(conv.IsUnread) {
-                                            <div class="position-absolute rounded-circle shadow-sm z-2 border border-dark border-2" style="top: -4px; right: -4px; width: 16px; height: 16px; background: var(--color-mint-bright);"></div>
+                        foreach (var conv in Model.RecentMessages)
+                        {
+                            bool isActive = Model.SelectedConversation?.Id == conv.ConversationId;
+                            <a asp-action="Index" asp-route-id="@conv.ConversationId" 
+                               class="d-flex align-items-center gap-3 px-4 py-3 transition-all text-decoration-none border-bottom position-relative conversation-item @(isActive ? "active-chat" : "chat-item-hover")" 
+                               data-name="@conv.OtherUserName.ToLower()"
+                               style="border-color: rgba(255,255,255,0.03) !important;">
+                                @if (isActive)
+                                {
+                                    <div class="position-absolute start-0 top-0 bottom-0 bg-aurora" style="width: 3px;"></div>
+                                }
+                                <div class="flex-shrink-0 position-relative">
+                                    <div class="avatar-md rounded-xl overflow-hidden border @(isActive ? "border-aurora" : "border-glass") shadow-sm" style="width: 42px; height: 42px;">
+                                        <img src="@conv.OtherUserAvatar" class="w-100 h-100 object-cover" />
+                                        @if (conv.UnreadCount > 0)
+                                        {
+                                            <div class="position-absolute top-0 end-0 translate-middle badge rounded-circle bg-danger p-1 border border-2 border-dark" style="width: 10px; height: 10px;"></div>
                                         }
                                     </div>
-                                    <div class="flex-grow-1 min-vw-0 d-flex flex-column justify-content-center">
-                                        <div class="d-flex justify-content-between align-items-baseline mb-2">
-                                            <h5 class="fw-bold text-white fs-5 tracking-tight m-0 text-truncate">@conv.OtherUserName</h5>
-                                            <span class="text-muted fw-bold text-uppercase tracking-widest flex-shrink-0 ms-3" style="font-size: 0.6rem; opacity: 0.5;">@conv.LastMessageAt.ToShortTimeString()</span>
-                                        </div>
-                                        <p class="text-truncate lh-base m-0 @(conv.IsUnread ? "fw-bold text-white" : "text-muted")" style="font-size: 0.9rem;">
-                                            @conv.LastMessageContent
-                                        </p>
+                                </div>
+                                <div class="flex-grow-1 min-w-0">
+                                    <div class="d-flex justify-content-between align-items-baseline">
+                                        <span class="fw-bold text-white text-truncate small">@conv.OtherUserName</span>
+                                        <span class="text-muted" style="font-size: 0.55rem;">@conv.LastMessageAt.ToString("HH:mm")</span>
                                     </div>
-                                </a>
-                            }
-                        </div>
+                                    <p id="sidebar-msg-@conv.ConversationId.ToString().ToLower()" class="text-truncate mb-0 @(conv.UnreadCount > 0 ? "fw-bold text-light" : "text-muted")" style="font-size: 0.7rem;">
+                                        @conv.LastMessageContent
+                                    </p>
+                                </div>
+                            </a>
+                        }
                     }
                     else
                     {
-                        <div class="p-5 text-center d-flex flex-column align-items-center">
-                            <div class="w-100 h-100 py-5 rounded-4 d-flex align-items-center justify-content-center text-muted position-relative z-1" style="background: rgba(255,255,255,0.02);">
-                                <span class="material-symbols-outlined fw-bold opacity-25" style="font-size: 5rem;">mail</span>
-                            </div>
-                            <h4 class="fs-4 fw-bold text-white mt-4 mb-2">Secure Channels Empty</h4>
-                            <p class="text-muted fw-bold small text-uppercase tracking-widest">Initialization required</p>
+                        <div class="p-4 text-center opacity-50">
+                            <p class="text-muted small mb-0">No conversations</p>
                         </div>
                     }
                 </div>
-            </section>
+            </div>
 
-            <!-- Peripheral Hub -->
-            <aside class="col-12 col-xl-4 d-flex flex-column gap-5">
-                <!-- Network Highlights -->
-                <div class="d-flex flex-column gap-4 animate-entrance delay-200">
-                    <div class="d-flex align-items-center justify-content-between px-2">
-                        <h3 class="fw-bold text-white fs-4 tracking-tight m-0 d-flex align-items-center gap-2">
-                            Network Highlights
-                        </h3>
+            <!-- CONNECTIONS SECTION -->
+            <div class="sidebar-category mt-1" id="cat-friends">
+                <button class="d-flex align-items-center justify-content-between w-100 px-4 py-3 bg-transparent border-0 text-muted hover-bg-glass transition-all section-header collapsed" onclick="toggleSection('friends')">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined fs-5">group</span>
+                        <span class="fw-black text-uppercase tracking-widest" style="font-size: 0.7rem;">Connections</span>
                     </div>
-                    <div class="glass-card p-4 shadow-lg border-glass-strong position-relative overflow-hidden" style="border-radius: 2.5rem;">
-                        <div class="position-absolute top-0 end-0 m-n3 opacity-10" style="font-size: 8rem; color: var(--color-mint-bright);">
-                            <span class="material-symbols-outlined">groups</span>
-                        </div>
-                        <div class="position-relative z-1">
-                            <h4 class="h1 fw-black text-aurora mb-0">@Model.TotalConnections</h4>
-                            <p class="text-muted fw-bold text-uppercase tracking-widest small mb-4">Study Connections</p>
-                            <a asp-action="Connections" class="btn btn-premium w-100 py-3 fw-bold text-uppercase tracking-widest" style="font-size: 0.7rem; letter-spacing: 1px;">
-                                View All Connections
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined fs-6 transition-all rotate-icon" id="icon-friends">chevron_right</span>
+                    </div>
+                </button>
+
+                <div class="section-content d-none" id="content-friends">
+                    @if (Model.Connections.Any())
+                    {
+                        foreach (var friend in Model.Connections)
+                        {
+                            <form action="/communication/messaging/conversations/initialize" method="post" class="m-0">
+                                <input type="hidden" name="userId" value="@friend.Id" />
+                                <button type="submit" class="d-flex align-items-center gap-3 px-4 py-3 w-100 bg-transparent border-0 border-bottom text-start transition-all chat-item-hover" style="border-color: rgba(255,255,255,0.03) !important;">
+                                    <div class="avatar-sm rounded-lg overflow-hidden border border-glass position-relative" style="width: 36px; height: 36px;">
+                                        <img src="@(friend.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={friend.UserName}")" class="w-100 h-100 object-cover" />
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <span class="fw-bold text-white text-truncate small">@(friend.FullName ?? friend.UserName)</span>
+                                        @{
+                                            var isOnline = await PresenceTracker.IsUserOnline(friend.Id);
+                                        }
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="rounded-circle @(isOnline ? "bg-success shadow-glow" : "bg-secondary")" style="width: 6px; height: 6px;"></span>
+                                            <span class="text-muted" style="font-size: 0.6rem;">@(isOnline ? "Online" : "Offline")</span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </form>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- CHANNELS SECTION -->
+            <div class="sidebar-category mt-1" id="cat-channels">
+                <button class="d-flex align-items-center justify-content-between w-100 px-4 py-3 bg-transparent border-0 text-muted hover-bg-glass transition-all section-header collapsed" onclick="toggleSection('channels')">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined fs-5">tag</span>
+                        <span class="fw-black text-uppercase tracking-widest" style="font-size: 0.7rem;">Channels</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined fs-6 transition-all rotate-icon" id="icon-channels">chevron_right</span>
+                    </div>
+                </button>
+
+                <div class="section-content d-none" id="content-channels">
+                    @if (Model.RecentChannels.Any())
+                    {
+                        foreach (var channel in Model.RecentChannels)
+                        {
+                            bool isActive = Model.SelectedChannel?.Id == channel.ChannelId;
+                            <a asp-action="Index" asp-route-id="@channel.ChannelId" 
+                               class="d-flex align-items-center gap-3 px-4 py-3 transition-all text-decoration-none border-bottom position-relative conversation-item @(isActive ? "active-chat" : "chat-item-hover")" 
+                               style="border-color: rgba(255,255,255,0.03) !important;">
+                                @if (isActive)
+                                {
+                                    <div class="position-absolute start-0 top-0 bottom-0 bg-aurora" style="width: 3px;"></div>
+                                }
+                                <div class="flex-shrink-0">
+                                    <div class="avatar-md rounded-xl overflow-hidden border @(isActive ? "border-aurora" : "border-glass") shadow-sm d-flex align-items-center justify-content-center bg-dark" style="width: 42px; height: 42px;">
+                                        <span class="material-symbols-outlined text-aurora">tag</span>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 min-w-0">
+                                    <div class="d-flex justify-content-between align-items-baseline">
+                                        <span class="fw-bold text-white text-truncate small">@channel.OtherUserName</span>
+                                        <span class="badge bg-glass text-muted" style="font-size: 0.5rem;">@channel.GroupName</span>
+                                    </div>
+                                    <p id="sidebar-msg-@channel.ChannelId.ToString()?.ToLower()" class="text-truncate mb-0 text-muted" style="font-size: 0.7rem;">
+                                        @channel.LastMessageContent
+                                    </p>
+                                </div>
                             </a>
+                        }
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center opacity-50">
+                            <p class="text-muted small mb-0">No active channels</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- REQUESTS SECTION -->
+            <div class="sidebar-category mt-1" id="cat-requests">
+                <button class="d-flex align-items-center justify-content-between w-100 px-4 py-3 bg-transparent border-0 text-muted hover-bg-glass transition-all section-header collapsed" onclick="toggleSection('requests')">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined fs-5">person_add</span>
+                        <span class="fw-black text-uppercase tracking-widest" style="font-size: 0.7rem;">Requests</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @if (Model.PendingRequests.Any())
+                        {
+                            <span class="badge rounded-pill bg-aurora text-dark" style="font-size: 0.6rem;">@Model.PendingRequests.Count</span>
+                        }
+                        <span class="material-symbols-outlined fs-6 transition-all rotate-icon" id="icon-requests">chevron_right</span>
+                    </div>
+                </button>
+
+                <div class="section-content d-none" id="content-requests">
+                    @if (Model.PendingRequests.Any())
+                    {
+                        foreach (var req in Model.PendingRequests)
+                        {
+                            <div class="px-4 py-3 border-bottom border-glass" id="sidebar-request-@req.RequesterId" style="background: rgba(52, 211, 153, 0.03);">
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <div class="avatar-sm rounded-circle overflow-hidden border border-glass" style="width: 32px; height: 32px;">
+                                        <img src="@(req.Requester.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={req.Requester.UserName}")" class="w-100 h-100 object-cover" />
+                                    </div>
+                                    <div class="min-w-0 flex-grow-1">
+                                        <p class="fw-bold text-white mb-0 text-truncate small">@(req.Requester.FullName ?? req.Requester.UserName)</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button onclick="handleFriendRequest('@req.RequesterId', 'AcceptRequest')" class="btn btn-premium-sm flex-grow-1 py-1" style="font-size: 0.65rem;">Accept</button>
+                                    <button onclick="handleFriendRequest('@req.RequesterId', 'DeclineRequest')" class="btn btn-glass-sm flex-grow-1 py-1 text-danger" style="font-size: 0.65rem;">Decline</button>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center opacity-50">
+                            <p class="text-muted small mb-0">No pending requests</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Voice Status Panel -->
+        <div id="voice-status-panel" class="d-none mt-auto border-top p-0 bg-transparent animate-entrance" style="border-color: var(--border-glass) !important;">
+            <div class="p-3 d-flex align-items-center justify-content-between border-bottom" style="border-color: var(--border-glass) !important;">
+                <div class="d-flex flex-column gap-1">
+                    <div class="d-flex align-items-center gap-1">
+                         <span class="material-symbols-outlined text-aurora fw-bold" style="font-size: 0.8rem;">wifi</span>
+                        <span class="text-aurora fw-bold" style="font-size: 0.7rem;">Voice Connected</span>
+                    </div>
+                    <p id="connected-channel-name" class="text-white fw-bold mb-0 text-truncate" style="font-size: 0.75rem; max-width: 120px;">Conversation</p>
+                </div>
+                <div class="d-flex gap-1">
+                    <button onclick="toggleMic()" id="mic-btn" class="btn btn-glass p-2 text-muted hover-glow">
+                        <span id="mic-icon" class="material-symbols-outlined fs-5">mic</span>
+                    </button>
+                    <button onclick="endCall()" class="btn btn-glass p-2 text-danger hover-glow">
+                        <span class="material-symbols-outlined fs-5">call_end</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="container-fluid h-100 p-0 overflow-hidden">
+    <div class="row h-100 g-0">
+        <!-- Main Content Area -->
+        <div class="col-12 h-100 d-flex flex-column border-end border-glass" style="background: rgba(15, 23, 42, 0.05);">
+            @if (Model.SelectedConversation != null)
+            {
+                var otherParticipant = Model.SelectedConversation.Participants.FirstOrDefault(p => p.UserId != currentUserId);
+                
+                <!-- Chat Header -->
+                <header class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom" style="min-height: 80px; border-color: var(--border-glass) !important; background: rgba(255,255,255,0.02); backdrop-filter: blur(10px);">
+                    <div class="d-flex align-items-center gap-3">
+                        <a asp-controller="Profile" asp-action="Index" asp-route-id="@otherParticipant?.UserId" class="d-flex align-items-center gap-3 text-decoration-none hover-glow transition-all">
+                            <div class="avatar-md rounded-xl overflow-hidden border border-aurora shadow-lg" style="width: 48px; height: 48px;">
+                                <img src="@(otherParticipant?.User?.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={otherParticipant?.User?.UserName}")" class="w-100 h-100 object-cover" />
+                            </div>
+                            <div>
+                                <h4 class="h6 fw-bold text-white mb-0">@(otherParticipant?.User?.FullName ?? otherParticipant?.User?.UserName)</h4>
+                                <div class="d-flex align-items-center gap-1">
+                                    <span class="rounded-circle bg-success" style="width: 6px; height: 6px;"></span>
+                                    <span class="text-muted" style="font-size: 0.65rem;">Online</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button id="call-btn-voice" onclick="startCall('voice')" class="btn btn-glass p-2"><span class="material-symbols-outlined fs-5">call</span></button>
+                        <button id="call-btn-video" onclick="startCall('video')" class="btn btn-glass p-2"><span class="material-symbols-outlined fs-5">videocam</span></button>
+                    </div>
+                </header>
+
+                <!-- Video Grid -->
+                <div id="video-grid" class="d-none flex-row gap-3 p-3 overflow-x-auto custom-scrollbar transition-all" style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-glass); min-height: 180px; max-height: 180px;">
+                    <div id="local-video-container" class="d-none position-relative bg-black rounded-lg overflow-hidden border shadow-lg flex-shrink-0" style="width: 240px; height: 148px; border-color: var(--border-glass) !important;">
+                        <video id="local-video" autoplay muted playsinline class="w-100 h-100 object-cover"></video>
+                        <div class="position-absolute bottom-0 start-0 m-2 px-2 py-0.5 glass-card rounded-lg" style="background: rgba(0,0,0,0.5);">
+                            <span class="fw-black text-white" style="font-size: 0.6rem;">You</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Pending Connections -->
-                <div class="d-flex flex-column gap-4">
-                        Friend Requests
-                    </h3>
-                    <div class="glass-card overflow-hidden shadow-lg border-glass-strong d-flex flex-column animate-entrance" style="border-radius: 2.5rem; transition: all 0.6s var(--ease-smooth);">
-                        @if (Model.PendingRequests.Any())
-                        {
-                            <div class="d-flex flex-column">
-                                @foreach (var request in Model.PendingRequests)
+                <!-- Messages -->
+                <div id="messages-container" class="flex-grow-1 overflow-y-auto p-4 d-flex flex-column gap-4 custom-scrollbar">
+                    @{
+                        var messages = Model.SelectedConversation?.Messages ?? Model.SelectedChannel?.Messages ?? new List<AskNLearn.Domain.Entities.Messaging.Message>();
+                    }
+                    @foreach (var message in messages)
+                    {
+                        bool isMine = message.AuthorId == currentUserId;
+                        <div class="d-flex w-100 @(isMine ? "justify-content-end" : "justify-content-start") animate-slide-up">
+                            <div class="d-flex @(isMine ? "flex-row-reverse" : "") gap-3 align-items-end" style="max-width: 80%;">
+                                @if (!isMine) {
+                                    <div class="avatar-sm flex-shrink-0" style="width: 32px; height: 32px;">
+                                        <img src="@(message.Author?.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={message.Author?.UserName}")" class="w-100 h-100 rounded-lg shadow-sm border border-glass object-cover"/>
+                                    </div>
+                                }
+                                <div class="d-flex flex-column gap-1 @(isMine ? "align-items-end" : "align-items-start") position-relative group">
+                                    @if (!isMine && Model.SelectedChannel != null)
+                                    {
+                                        <span class="text-muted px-2" style="font-size: 0.65rem;">@(message.Author?.FullName ?? message.Author?.UserName)</span>
+                                    }
+                                    <div class="p-3 shadow-lg message-bubble" id="msg-bubble-@message.Id" style="border-radius: 1.25rem; @(isMine ? "background: var(--gradient-aurora); color: var(--bg-universe); border-bottom-right-radius: 0.25rem;" : "background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: white; border-bottom-left-radius: 0.25rem; backdrop-filter: blur(10px);")">
+                                        <p class="mb-0" style="font-size: 0.9rem; line-height: 1.5;">@message.Content</p>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2 px-2">
+                                        <span class="text-muted" style="font-size: 0.6rem;">@message.CreatedAt.ToString("HH:mm")</span>
+                                        @if (isMine)
+                                        {
+                                            <button onclick="deleteDM('@message.Id')" class="btn btn-link p-0 text-muted hover-text-danger d-flex align-items-center opacity-0 group-hover-opacity-100 transition-all" style="font-size: 0.6rem;">
+                                                <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Input -->
+                <footer class="p-3 border-0 bg-transparent">
+                    <div class="d-flex align-items-center gap-2 glass-card p-2 px-3 shadow-2xl" style="border-radius: 1.5rem; background: rgba(15, 23, 42, 0.4) !important; border: 1px solid var(--border-glass-strong) !important;">
+                        <button class="btn btn-link text-muted p-1 hover-glow"><span class="material-symbols-outlined">add_circle</span></button>
+                        <input type="text" id="message-input" placeholder="Write a message..." class="form-control border-0 bg-transparent shadow-none text-white py-2" />
+                        <button id="emoji-btn" class="btn btn-link text-muted p-1 hover-glow"><span class="material-symbols-outlined">mood</span></button>
+                        <button onclick="sendMessage()" class="btn btn-premium rounded-pill px-4 py-2 fw-black text-uppercase tracking-widest" style="font-size: 0.75rem;">Send</button>
+                    </div>
+                </footer>
+            }
+            else
+            {
+                <!-- Dashboard Mode -->
+                <div class="flex-grow-1 overflow-y-auto p-4 p-md-5 custom-scrollbar animate-entrance">
+                    <div class="mb-5">
+                        <h2 class="display-6 fw-black text-white mb-2">Communication <span class="text-aurora">Hub</span></h2>
+                        <p class="text-muted fw-bold text-uppercase tracking-widest" style="font-size: 0.65rem;">Overview & Recent Activity</p>
+                    </div>
+
+                    <div class="d-flex flex-column gap-4">
+                        <div class="d-flex align-items-center justify-content-between px-2">
+                            <h3 class="h5 fw-bold text-white mb-0">Recent Notifications</h3>
+                            <button onclick="markAllInboxRead()" class="btn btn-link text-aurora fw-bold text-decoration-none small text-uppercase tracking-widest" style="font-size: 0.65rem;">Mark all read</button>
+                        </div>
+
+                        <div class="glass-card overflow-hidden shadow-lg border-glass-strong" style="border-radius: 1.5rem;">
+                            @if (Model.RecentNotifications.Any())
+                            {
+                                @foreach (var n in Model.RecentNotifications.Take(10))
                                 {
-                                    <div class="p-4 border-bottom border-glass hover-bg-glass transition-all" id="request-row-@request.RequesterId" style="transition: all 0.4s var(--ease-smooth);">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="avatar-md rounded-4 overflow-hidden border border-glass" style="width: 50px; height: 50px;">
-                                                <img src="@(request.Requester.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={request.Requester.UserName}")" class="w-100 h-100 object-cover" />
-                                            </div>
-                                            <div class="flex-grow-1 min-w-0">
-                                                <p class="fw-bold text-white mb-0 text-truncate" style="font-size: 0.85rem;">@(request.Requester.FullName ?? request.Requester.UserName)</p>
-                                                <p class="text-muted small mb-0">Wants to connect</p>
-                                            </div>
-                                            <div class="d-flex gap-1">
-                                                <button onclick="handleRequest('@request.RequesterId', 'AcceptRequest')" class="btn btn-glass p-2 text-success hover-glow" title="Accept" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s var(--ease-snappy);">
-                                                    <span class="material-symbols-outlined fs-5">check</span>
-                                                </button>
-                                                <button onclick="handleRequest('@request.RequesterId', 'DeclineRequest')" class="btn btn-glass p-2 text-danger hover-glow" title="Decline" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s var(--ease-snappy);">
-                                                    <span class="material-symbols-outlined fs-5">close</span>
-                                                </button>
-                                            </div>
+                                    <div class="p-4 border-bottom border-glass d-flex align-items-center gap-4 transition-all hover-bg-glass @(n.IsRead ? "opacity-75" : "bg-primary bg-opacity-10")">
+                                        <div class="rounded-circle bg-glass d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px;">
+                                            <span class="material-symbols-outlined text-aurora">notifications</span>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="text-white mb-1" style="font-size: 0.9rem;">@n.Message</p>
+                                            <span class="text-muted" style="font-size: 0.7rem;">@n.CreatedAt.ToString("g")</span>
                                         </div>
                                     </div>
                                 }
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="p-5 text-center">
-                                <p class="fw-bold text-muted text-uppercase tracking-widest m-0" style="font-size: 0.65rem; opacity: 0.6;">No pending requests</p>
-                            </div>
-                        }
+                            }
+                            else
+                            {
+                                <div class="p-5 text-center text-muted">
+                                    <span class="material-symbols-outlined display-4 mb-2 opacity-25">notifications_off</span>
+                                    <p class="fw-bold text-uppercase tracking-widest mb-0" style="font-size: 0.65rem;">No new notifications</p>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
-
-            </aside>
+            }
         </div>
+
     </div>
 </div>
 
 @section Scripts {
     <script>
-        document.querySelectorAll('.group').forEach(group => {
-            group.addEventListener('mouseenter', () => {
-                const btn = group.querySelector('button.opacity-0');
-                if (btn) btn.classList.replace('opacity-0', 'opacity-100');
+        // --- Sidebar Navigation ---
+        function toggleSection(sectionId) {
+            const sections = ['messages', 'friends', 'requests', 'channels'];
+            sections.forEach(s => {
+                const content = document.getElementById(`content-${s}`);
+                const icon = document.getElementById(`icon-${s}`);
+                const header = document.querySelector(`#cat-${s} .section-header`);
+                
+                if (s === sectionId) {
+                    const isHidden = content.classList.contains('d-none');
+                    content.classList.toggle('d-none', !isHidden);
+                    header.classList.toggle('collapsed', !isHidden);
+                    icon.textContent = isHidden ? 'expand_more' : 'chevron_right';
+                    icon.classList.toggle('rotate-icon-active', isHidden);
+                }
             });
-            group.addEventListener('mouseleave', () => {
-                const btn = group.querySelector('button.opacity-100');
-                if (btn) btn.classList.replace('opacity-100', 'opacity-0');
+        }
+
+        function filterConversations(term) {
+            term = term.toLowerCase();
+            // Filter Messages
+            document.querySelectorAll('#content-messages .conversation-item').forEach(item => {
+                const name = item.getAttribute('data-name');
+                item.style.display = name.includes(term) ? 'flex' : 'none';
             });
+            // Filter Friends
+            document.querySelectorAll('#content-friends button').forEach(item => {
+                const name = item.querySelector('span').innerText.toLowerCase();
+                item.style.display = name.includes(term) ? 'flex' : 'none';
+            });
+        }
+
+        let searchTimeout;
+        async function handleGlobalSearch(term) {
+            const overlay = document.getElementById('search-results-overlay');
+            const content = document.getElementById('search-results-content');
+            
+            if (!term || term.length < 2) {
+                overlay.classList.add('d-none');
+                return;
+            }
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const resp = await fetch(`/Connections/SearchPeople?term=${encodeURIComponent(term)}`);
+                    if (resp.ok) {
+                        const users = await resp.json();
+                        overlay.classList.remove('d-none');
+                        
+                        if (users.length === 0) {
+                            content.innerHTML = '<div class="p-4 text-center text-muted small">No people found</div>';
+                        } else {
+                            content.innerHTML = users.map(u => `
+                                <form action="/communication/messaging/conversations/initialize" method="post" class="m-0">
+                                    <input type="hidden" name="userId" value="${u.id}" />
+                                    <button type="submit" class="d-flex align-items-center gap-3 p-3 w-100 bg-transparent border-0 text-start hover-bg-glass transition-all rounded-3">
+                                        <div class="avatar-sm rounded-circle overflow-hidden border border-glass" style="width: 32px; height: 32px;">
+                                            <img src="${u.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.userName}`}" class="w-100 h-100 object-cover" />
+                                        </div>
+                                        <div class="flex-grow-1 min-w-0">
+                                            <div class="fw-bold text-white small text-truncate">${u.fullName || u.userName}</div>
+                                            <div class="text-muted" style="font-size: 0.6rem;">@@${u.userName}</div>
+                                        </div>
+                                    </button>
+                                </form>
+                            `).join('');
+                        }
+                    }
+                } catch (e) { console.error(e); }
+            }, 300);
+        }
+
+        // Close search on click outside
+        document.addEventListener('click', (e) => {
+            const overlay = document.getElementById('search-results-overlay');
+            if (overlay && !overlay.contains(e.target) && e.target.id !== 'global-search-input') {
+                overlay.classList.add('d-none');
+            }
         });
 
-        async function markRead(id, btn) {
+        async function handleFriendRequest(userId, action) {
             try {
-                const response = await fetch(`/Inbox/MarkAsRead/${id}`, { method: 'POST' });
-                if(response.ok) {
-                    const group = btn.closest('.group');
-                    group.classList.add('opacity-50', 'hover-bg-glass');
-                    group.classList.remove('bg-warning', 'bg-opacity-10');
-                    btn.remove();
+                window.Notify.system("Processing...");
+                const resp = await fetch(`/Connections/${action}?userId=${userId}`, { method: 'POST' });
+                if (resp.ok) {
+                    window.Notify.success(action === 'AcceptRequest' ? "Connection accepted!" : "Request declined.");
+                    const el = document.getElementById(`sidebar-request-${userId}`);
+                    if (el) {
+                        el.style.opacity = '0';
+                        el.style.transform = 'translateX(-20px)';
+                        setTimeout(() => {
+                            el.remove();
+                            // If no more requests, show welcome message
+                            const container = document.getElementById('content-requests');
+                            if (container && container.querySelectorAll('.border-glass').length === 0) {
+                                container.innerHTML = '<div class="p-4 text-center opacity-50"><p class="text-muted small mb-0">No pending requests</p></div>';
+                            }
+                        }, 400);
+                    }
+                } else {
+                    window.Notify.error("Failed to process request.");
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error(e); 
+                window.Notify.error("Network error.");
+            }
         }
 
         async function markAllInboxRead() {
             try {
-                const response = await fetch('/Inbox/MarkAllAsRead', { method: 'POST' });
-                if(response.ok) location.reload();
+                const resp = await fetch('/communication/notifications/v1/notifications/mark-all-read', { method: 'POST' });
+                if (resp.ok) location.reload();
             } catch (e) { console.error(e); }
         }
 
-        async function handleRequest(userId, action) {
-            const btnRow = document.getElementById(`request-row-${userId}`);
-            if (btnRow) {
-                btnRow.style.opacity = '0.5';
-                btnRow.style.pointerEvents = 'none';
-                btnRow.style.transform = 'translateX(20px)';
-            }
-            try {
-                const resp = await fetch(`/Connections/${action}?userId=${userId}`, { method: 'POST' });
-                if (resp.ok) {
-                    if (btnRow) {
-                        btnRow.style.height = '0';
-                        btnRow.style.padding = '0';
-                        btnRow.style.margin = '0';
-                        btnRow.style.overflow = 'hidden';
-                        setTimeout(() => btnRow.remove(), 400);
+        // --- Chat Logic ---
+        const msgContainer = document.getElementById('messages-container');
+        if (msgContainer) msgContainer.scrollTop = msgContainer.scrollHeight;
+
+        const currentConversationId = "@(Model.SelectedConversation?.Id ?? Model.SelectedChannel?.Id)";
+        const currentUserId = "@currentUserId";
+
+        if (currentConversationId) {
+            const joinChannels = () => {
+                if (window.connection.state === "Connected") {
+                    // Join current
+                    window.connection.invoke("JoinChannel", currentConversationId);
+                    
+                    // Join all others for sidebar updates
+                    @foreach (var conv in Model.RecentMessages) {
+                        <text>window.connection.invoke("JoinChannel", "@conv.ConversationId");</text>
                     }
-                } else {
-                    if (btnRow) {
-                        btnRow.style.opacity = '1';
-                        btnRow.style.pointerEvents = 'all';
-                        btnRow.style.transform = 'translateX(0)';
+                    @foreach (var ch in Model.RecentChannels) {
+                        <text>window.connection.invoke("JoinChannel", "@ch.ChannelId");</text>
                     }
                 }
-            } catch(e) { console.error(e); }
+            };
+
+            if (window.connection.state === "Connected") {
+                joinChannels();
+            } else {
+                window.onSignalRConnected = joinChannels;
+            }
+            
+            window.connection.on("ReceiveMessage", (msg) => {
+                console.log("SignalR: ReceiveMessage", msg);
+                const incomingId = (msg.conversationId || msg.channelId || "").toString().toLowerCase();
+                const activeId = (currentConversationId || "").toLowerCase();
+
+                // Update Sidebar
+                const sidebarMsg = document.getElementById(`sidebar-msg-${incomingId}`);
+                if (sidebarMsg) {
+                    sidebarMsg.innerText = msg.content;
+                    sidebarMsg.classList.add('fw-bold', 'text-light');
+                    sidebarMsg.classList.remove('text-muted');
+                }
+
+                // Update Chat
+                if (incomingId === activeId) {
+                    appendMessage(msg);
+                } else {
+                    window.Notify.info(`New message from ${msg.authorName}`);
+                }
+            });
         }
+
+        function appendMessage(msg) {
+            if (!msgContainer) return;
+            const isMine = msg.authorId === currentUserId;
+            const html = `
+                <div class="d-flex w-100 ${isMine ? 'justify-content-end' : 'justify-content-start'} animate-slide-up">
+                    <div class="d-flex ${isMine ? 'flex-row-reverse' : ''} gap-3 align-items-end" style="max-width: 80%;">
+                        ${!isMine ? `<div class="avatar-sm flex-shrink-0" style="width: 32px; height: 32px;"><img src="${msg.authorAvatar}" class="w-100 h-100 rounded-lg shadow-sm border border-glass object-cover"/></div>` : ''}
+                        <div class="d-flex flex-column gap-1 ${isMine ? 'align-items-end' : 'align-items-start'}">
+                            <div class="p-3 shadow-lg" style="border-radius: 1.25rem; ${isMine ? 'background: var(--gradient-aurora); color: var(--bg-universe); border-bottom-right-radius: 0.25rem;' : 'background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: white; border-bottom-left-radius: 0.25rem; backdrop-filter: blur(10px);'}">
+                                <p class="mb-0" style="font-size: 0.9rem; line-height: 1.5;">${msg.content}</p>
+                            </div>
+                            <span class="text-muted px-2" style="font-size: 0.6rem;">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            msgContainer.insertAdjacentHTML('beforeend', html);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+            if (!content || !currentConversationId) return;
+
+            input.value = '';
+            try {
+                await window.connection.invoke("SendMessage", currentConversationId, content);
+            } catch (err) {
+                console.error(err);
+                window.Notify.error("Failed to send message.");
+            }
+        }
+
+        async function deleteDM(msgId) {
+            if (!confirm('Ștergi acest mesaj?')) return;
+            try {
+                const resp = await fetch(`/communication/messaging/messages/delete?id=${msgId}`, { method: 'POST' });
+                if (resp.ok) {
+                    const bubble = document.getElementById(`msg-bubble-${msgId}`)?.closest('.animate-slide-up');
+                    if (bubble) {
+                        bubble.style.opacity = '0';
+                        bubble.style.transform = 'scale(0.9)';
+                        setTimeout(() => bubble.remove(), 300);
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        document.getElementById('message-input')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // --- Auto-join Call from URL ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('acceptCall') === 'true') {
+                const type = urlParams.get('type') || 'voice';
+                console.log("[WebRTC] Auto-joining call...", type);
+                
+                // Wait for SignalR
+                await ensureSignalR();
+                
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: true, 
+                        video: type === 'video' 
+                    });
+                    localStream = stream;
+                    isVideoOn = type === 'video';
+
+                    if (isVideoOn) {
+                        const localVideo = document.getElementById('local-video');
+                        localVideo.srcObject = localStream;
+                        document.getElementById('video-grid').classList.remove('d-none');
+                        document.getElementById('local-video-container').classList.remove('d-none');
+                    }
+
+                    document.getElementById('voice-status-panel').classList.remove('d-none');
+                    await window.connection.invoke("JoinVoice", currentConversationId);
+                } catch (err) {
+                    console.error(err);
+                    window.Notify.error("Failed to access camera/mic for auto-join.");
+                }
+            }
+        });
+
+        async function ensureSignalR() {
+            if (window.connection.state !== "Connected") {
+                await new Promise(resolve => {
+                    const check = setInterval(() => {
+                        if (window.connection.state === "Connected") { clearInterval(check); resolve(); }
+                    }, 100);
+                });
+            }
+        }
+
+        // --- WebRTC & Calling Logic ---
+        let localStream = null;
+        let isMuted = false;
+        let isVideoOn = false;
+        const peers = {};
+        const iceServers = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+        const otherUserId = "@(Model.SelectedConversation?.Participants.FirstOrDefault(p => p.UserId != currentUserId)?.UserId)";
+
+        async function startCall(type) {
+            if (!currentConversationId || !otherUserId) return;
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: true, 
+                    video: type === 'video' 
+                });
+                localStream = stream;
+                isVideoOn = type === 'video';
+                
+                // Show local video
+                if (isVideoOn) {
+                    const localVideo = document.getElementById('local-video');
+                    localVideo.srcObject = localStream;
+                    document.getElementById('video-grid').classList.remove('d-none');
+                    document.getElementById('local-video-container').classList.remove('d-none');
+                }
+
+                // Show voice panel
+                document.getElementById('voice-status-panel').classList.remove('d-none');
+                document.getElementById('mic-icon').innerText = 'mic';
+                
+                // Signal others
+                await window.connection.invoke("StartCall", otherUserId, currentConversationId, type);
+                await window.connection.invoke("JoinVoice", currentConversationId);
+                
+                window.Notify.system(`Calling...`);
+            } catch (err) {
+                console.error(err);
+                window.Notify.error("Microphone/Camera access denied.");
+            }
+        }
+
+        async function endCall() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            
+            Object.keys(peers).forEach(id => {
+                peers[id].pc.close();
+                delete peers[id];
+                document.getElementById(`remote-video-${id}`)?.remove();
+            });
+
+            document.getElementById('video-grid').classList.add('d-none');
+            document.getElementById('voice-status-panel').classList.add('d-none');
+            
+            if (currentConversationId && otherUserId) {
+                await window.connection.invoke("EndCall", otherUserId, currentConversationId);
+                await window.connection.invoke("LeaveVoice", currentConversationId);
+            }
+        }
+
+        function toggleMic() {
+            if (!localStream) return;
+            isMuted = !isMuted;
+            localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
+            document.getElementById('mic-icon').innerText = isMuted ? 'mic_off' : 'mic';
+            document.getElementById('mic-btn').classList.toggle('text-danger', isMuted);
+            if (currentConversationId) window.connection.invoke("ToggleMute", currentConversationId, isMuted);
+        }
+
+        async function createPeerConnection(connectionId, isOffer) {
+            const pc = new RTCPeerConnection(iceServers);
+            peers[connectionId] = { pc };
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    window.connection.invoke("SendSignal", JSON.stringify({ candidate: event.candidate }), connectionId);
+                }
+            };
+
+            pc.ontrack = (event) => {
+                let remoteVideo = document.getElementById(`remote-video-${connectionId}`);
+                if (!remoteVideo) {
+                    const container = document.createElement('div');
+                    container.id = `remote-video-container-${connectionId}`;
+                    container.className = "position-relative bg-black rounded-lg overflow-hidden border shadow-lg flex-shrink-0 animate-slide-up";
+                    container.style = "width: 240px; height: 148px; border-color: var(--border-glass) !important;";
+                    
+                    remoteVideo = document.createElement('video');
+                    remoteVideo.id = `remote-video-${connectionId}`;
+                    remoteVideo.autoplay = true;
+                    remoteVideo.playsinline = true;
+                    remoteVideo.className = "w-100 h-100 object-cover";
+                    
+                    container.appendChild(remoteVideo);
+                    document.getElementById('video-grid').appendChild(container);
+                    document.getElementById('video-grid').classList.remove('d-none');
+                }
+                remoteVideo.srcObject = event.streams[0];
+            };
+
+            if (localStream) {
+                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            }
+
+            if (isOffer) {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                window.connection.invoke("SendSignal", JSON.stringify({ sdp: offer }), connectionId);
+            }
+
+            return pc;
+        }
+
+        // --- SignalR Handlers for Calling ---
+        window.connection.on("CallEnded", (conversationId) => {
+            window.Notify.system("Call ended.");
+            endCall();
+        });
+
+        window.connection.on("ReceiveSignal", async (signal, fromConnectionId) => {
+            const data = JSON.parse(signal);
+            let pc = peers[fromConnectionId]?.pc;
+
+            if (!pc) {
+                pc = await createPeerConnection(fromConnectionId, false);
+            }
+
+            if (data.sdp) {
+                await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                if (data.sdp.type === 'offer') {
+                    const answer = await pc.createAnswer();
+                    await pc.setLocalDescription(answer);
+                    window.connection.invoke("SendSignal", JSON.stringify({ sdp: answer }), fromConnectionId);
+                }
+            } else if (data.candidate) {
+                await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+        });
+
+        window.connection.on("UserJoinedVoice", async (data) => {
+            console.log("UserJoinedVoice", data);
+            if (data.connectionId !== window.connection.connectionId) {
+                await createPeerConnection(data.connectionId, true);
+            }
+        });
+
+        window.connection.on("UserLeftVoice", (connectionId) => {
+            if (peers[connectionId]) {
+                peers[connectionId].pc.close();
+                delete peers[connectionId];
+                document.getElementById(`remote-video-container-${connectionId}`)?.remove();
+            }
+        });
     </script>
 }
+
+<style>
+    .bg-aurora { background: var(--gradient-aurora); }
+    .text-aurora {
+        background: var(--gradient-aurora);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .border-aurora { border-color: var(--color-mint-bright) !important; }
+    .active-chat { background: rgba(52, 211, 153, 0.08); }
+    .chat-item-hover:hover { background: rgba(255,255,255,0.03); }
+    
+    .section-header {
+        cursor: pointer;
+        outline: none !important;
+        border-left: 3px solid transparent !important;
+    }
+    .section-header:not(.collapsed) {
+        color: white !important;
+        background: rgba(255,255,255,0.02);
+        border-left-color: var(--color-mint-bright) !important;
+    }
+    
+    .rotate-icon { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .rotate-icon-active { transform: rotate(0deg); }
+    
+    .section-content {
+        animation: fadeIn 0.3s ease-out;
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@keyframes slide-up {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-up { animation: slide-up 0.4s ease-out forwards; }
+    
+    .btn-premium-sm {
+        background: var(--gradient-aurora);
+        border: none;
+        color: var(--bg-universe);
+        font-weight: 800;
+        border-radius: 0.5rem;
+        transition: all 0.3s var(--ease-apple);
+    }
+    .btn-premium-sm:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 245, 160, 0.3);
+    }
+    
+    .btn-glass-sm {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border-glass);
+        color: white;
+        border-radius: 0.5rem;
+        transition: all 0.3s var(--ease-apple);
+    }
+    .btn-glass-sm:hover { background: rgba(255,255,255,0.1); }
+    
+    .group:hover .group-hover-opacity-100 { opacity: 1 !important; }
+    .transition-all { transition: all 0.3s ease; }
+</style>
