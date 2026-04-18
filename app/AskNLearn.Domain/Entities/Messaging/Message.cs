@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using AskNLearn.Domain.Entities.Core;
 using AskNLearn.Domain.Entities.SocialFeed;
-using AskNLearn.Domain.Entities.StudyGroup;
 
 namespace AskNLearn.Domain.Entities.Messaging
 {
@@ -11,12 +10,6 @@ namespace AskNLearn.Domain.Entities.Messaging
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
-
-
-        public Guid? ChannelId { get; set; }
-        [ForeignKey(nameof(ChannelId))]
-        public Channel? Channel { get; set; }
-
         public Guid? ConversationId { get; set; }
         [ForeignKey(nameof(ConversationId))]
         public DirectConversation? Conversation { get; set; }

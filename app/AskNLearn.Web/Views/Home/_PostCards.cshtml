@@ -25,11 +25,11 @@
                 <!-- Vote Column -->
                 <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0 rounded-pill py-2" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass); width: 44px;">
                     <button onclick="votePost('@post.Id', '@post.CommunityId', 1)" 
-                            class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-up-@post.Id transition-colors @(post.UserVote == 1 ? "text-mint font-weight-bold" : "text-muted hover-glow")">
+                            class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-up-@post.Id transition-colors @(post.UserVote == 1 ? "text-accent font-weight-bold" : "text-muted hover-glow")">
                         <span class="material-symbols-outlined fs-5 vote-icon-up-@post.Id">keyboard_arrow_up</span>
                     </button>
 
-                    <span class="fw-bold vote-count-@post.Id @(post.UserVote == 1 ? "text-mint" : post.UserVote == -1 ? "text-danger" : "text-white")" style="font-size: 0.9rem;">
+                    <span class="fw-bold vote-count-@post.Id @(post.UserVote == 1 ? "text-accent" : post.UserVote == -1 ? "text-danger" : "text-white")" style="font-size: 0.9rem;">
                         @post.VoteCount
                     </span>
 
@@ -75,13 +75,16 @@
                                     <span>@post.ViewCount Views</span>
                                 </div>
                                 
-                                <button onclick="openReportModal('@post.Id', 'POST')" 
-                                        class="p-0 border-0 bg-transparent text-muted hover-text-danger d-flex align-items-center gap-1 transition-all" 
-                                        style="font-size: 0.8rem;"
-                                        title="Report this post">
-                                    <span class="material-symbols-outlined fs-5">report</span>
-                                    <span>Report</span>
-                                </button>
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <button onclick="openReportModal('@post.Id', 'POST')" 
+                                            class="p-0 border-0 bg-transparent text-muted hover-text-danger d-flex align-items-center gap-1 transition-all" 
+                                            style="font-size: 0.8rem;"
+                                            title="Report this post">
+                                        <span class="material-symbols-outlined fs-5">report</span>
+                                        <span>Report</span>
+                                    </button>
+                                }
                             </div>
 
                             @if (currentUserId == post.AuthorId || isAdmin)

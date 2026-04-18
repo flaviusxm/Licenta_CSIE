@@ -249,9 +249,10 @@ namespace AskNLearn.Web.Controllers
             var community = await _mediator.Send(new GetCommunityByIdQuery { Id = id });
             if (community == null) return NotFound();
 
-            // Check if user is creator
+            // Check if user is creator or admin
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (community.CreatorId != userId) return Forbid();
+            var isAdmin = User.IsInRole("Admin");
+            if (community.CreatorId != userId && !isAdmin) return Forbid();
 
             var command = new UpdateCommunityCommand
             {
@@ -272,7 +273,8 @@ namespace AskNLearn.Web.Controllers
             if (community == null) return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (community.CreatorId != userId) return Forbid();
+            var isAdmin = User.IsInRole("Admin");
+            if (community.CreatorId != userId && !isAdmin) return Forbid();
 
             var result = await _mediator.Send(command);
             if (!result) return NotFound();
@@ -287,7 +289,8 @@ namespace AskNLearn.Web.Controllers
             if (community == null) return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (community.CreatorId != userId) return Forbid();
+            var isAdmin = User.IsInRole("Admin");
+            if (community.CreatorId != userId && !isAdmin) return Forbid();
 
             var result = await _mediator.Send(new DeleteCommunityCommand { Id = id });
             if (!result) return NotFound();

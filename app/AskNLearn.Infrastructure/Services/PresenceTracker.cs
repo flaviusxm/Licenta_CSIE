@@ -58,36 +58,5 @@ namespace AskNLearn.Infrastructure.Services
             return Task.FromResult(OnlineUsers.ContainsKey(userId));
         }
 
-        // ChannelId -> Dictionary<ConnectionId, UserId>
-        private static readonly ConcurrentDictionary<Guid, ConcurrentDictionary<string, string>> VoiceChannels = new();
-
-        public Task JoinVoiceChannel(Guid channelId, string userId, string connectionId)
-        {
-            var channel = VoiceChannels.GetOrAdd(channelId, _ => new ConcurrentDictionary<string, string>());
-            channel.TryAdd(connectionId, userId);
-            return Task.CompletedTask;
-        }
-
-        public Task LeaveVoiceChannel(Guid channelId, string connectionId)
-        {
-            if (VoiceChannels.TryGetValue(channelId, out var channel))
-            {
-                channel.TryRemove(connectionId, out _);
-                if (channel.IsEmpty)
-                {
-                    VoiceChannels.TryRemove(channelId, out _);
-                }
-            }
-            return Task.CompletedTask;
-        }
-
-        public Task<IEnumerable<(string UserId, string ConnectionId)>> GetUsersInVoiceChannel(Guid channelId)
-        {
-            if (VoiceChannels.TryGetValue(channelId, out var channel))
-            {
-                return Task.FromResult(channel.Select(x => (x.Value, x.Key)));
-            }
-            return Task.FromResult(Enumerable.Empty<(string UserId, string ConnectionId)>());
-        }
     }
 }

@@ -2,7 +2,6 @@ using AskNLearn.Domain.Entities.Core;
 using AskNLearn.Domain.Entities.SocialFeed;
 using AskNLearn.Domain.Entities.Gamification;
 using AskNLearn.Domain.Entities.Messaging;
-using AskNLearn.Domain.Entities.StudyGroup;
 using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,10 +18,6 @@ namespace AskNLearn.Application.Common.Interfaces
         DbSet<Notification> Notifications { get; }
         DbSet<Message> Messages { get; }
         DbSet<UserRank> UserRanks { get; }
-        DbSet<GroupMembership> GroupMemberships { get; }
-        DbSet<GroupRole> GroupRoles { get; }
-        DbSet<StudyGroup> StudyGroups { get; }
-        DbSet<Channel> Channels { get; }
         DbSet<PostVote> PostVotes { get; }
         DbSet<PostAttachment> PostAttachments { get; }
         DbSet<PostView> PostViews { get; }
@@ -34,8 +29,6 @@ namespace AskNLearn.Application.Common.Interfaces
         DbSet<DirectConversationParticipant> DirectConversationParticipants { get; }
         
         DbSet<PostTag> PostTags { get; }
-        DbSet<LearningResource> LearningResources { get; }
-        DbSet<Event> Events { get; }
         DbSet<Report> Reports { get; }
         
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);

@@ -8,78 +8,28 @@ namespace AskNLearn.Infrastructure.Services
 {
     public class GuardianClient : IGuardianClient
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _baseUrl;
+        private readonly IOllamaService _ollama;
         private readonly ILogger<GuardianClient> _logger;
 
-        public GuardianClient(HttpClient httpClient, IConfiguration config, ILogger<GuardianClient> logger)
+        public GuardianClient(IOllamaService ollama, ILogger<GuardianClient> logger)
         {
-            _httpClient = httpClient;
-            _baseUrl = config["Guardian:BaseUrl"] ?? "http://localhost:5200"; 
+            _ollama = ollama;
             _logger = logger;
         }
 
         public async Task<(bool IsSafe, string Reason)> ModerateTextAsync(string content, string? title = null)
         {
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/api/Guardian/moderate", new
-                {
-                    Content = content,
-                    Title = title
-                });
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<ModerationResult>();
-                    return (result?.IsSafe ?? true, result?.Reason ?? "Analiză finalizată.");
-                }
-                
-                return (true, "Guardian service is currently unavailable. Content approved by default.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error calling Guardian microservice for text moderation.");
-                return (true, "Guardian service unavailable. Defaulting to safe.");
-            }
+            var prompt = @"Analizează următorul conținut academic. Căutăm: limbaj licențios, hărțuire, spam, amenințări de securitate sau cod malițios. 
+            Răspunde DOAR în format JSON: { ""isSafe"": boolean, ""reason"": ""scurtă explicație"" }";
+            
+            return await _ollama.AnalyzeTextAsync(content, prompt, "qwen2.5:0.5b");
         }
 
-        public async Task<(bool IsValid, string Details, string Recommendation)> VerifyDocumentAsync(string? base64Image, string? imageUrl = null)
+        public async Task<(bool IsValid, string Details, string Recommendation)> VerifyDocumentAsync(byte[] imageBytes)
         {
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}/api/Guardian/verify", new
-                {
-                    ImageBase64 = base64Image,
-                    ImageUrl = imageUrl
-                });
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<VerificationResult>();
-                    return (result?.IsValid ?? false, result?.ExtractionDetails ?? "", result?.Recommendation ?? "No recommendation.");
-                }
-
-                return (true, "SERVICE_OFFLINE", "Approved by default.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error calling Guardian microservice for document verification.");
-                return (true, "SERVICE_OFFLINE", "Please try again later.");
-            }
-        }
-
-        private class ModerationResult
-        {
-            public bool IsSafe { get; set; }
-            public string Reason { get; set; } = string.Empty;
-        }
-
-        private class VerificationResult
-        {
-            public bool IsValid { get; set; }
-            public string ExtractionDetails { get; set; } = string.Empty;
-            public string Recommendation { get; set; } = string.Empty;
+            var prompt = "Identify the document in the image. Is it a valid student ID card or an academic credential? Extract the student name and institution if visible. Respond with whether it is 'valid' or 'invalid' and provide details.";
+            
+            return await _ollama.AnalyzeImageAsync(imageBytes, prompt, "moondream");
         }
     }
 }

@@ -20,18 +20,18 @@
         else
         {
             <!-- Hero Card (Guest) -->
-             <div class="glass-card p-4 p-md-5 text-center text-md-start position-relative overflow-hidden mb-2">
-                <div class="position-absolute top-0 end-0 h-100 w-50 d-none d-md-block" style="background: radial-gradient(ellipse at right, rgba(52, 211, 153, 0.1), transparent); pointer-events: none;"></div>
+             <div class="py-5 text-center text-md-start position-relative overflow-hidden mb-4">
+
                 <div class="position-relative z-1 col-md-8">
-                    <h1 class="display-5 fw-bold text-white mb-3" style="letter-spacing: -0.03em; line-height: 1.1;">
-                        Master your studies with <span class="text-aurora">AskNLearn</span>
+                    <h1 class="display-5 fw-bold text-white mb-3 tracking-tighter" style="line-height: 1.1;">
+                        Master your studies with Ask<span class="text-accent">N</span>Learn
                     </h1>
-                    <p class="fs-5 text-muted mb-4 opacity-75">
-                        Join thousands of students collaborating in live study rooms, sharing resources, and helping each other succeed.
+                    <p class="fs-5 text-muted mb-4 opacity-80 fw-medium" style="max-width: 540px;">
+                        Join thousands of students collaborating in communities, sharing insights, and helping each other succeed.
                     </p>
                     <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-md-start">
-                        <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium shadow-lg">Get Started Free</a>
-                        <a asp-controller="Auth" asp-action="SignIn" class="btn btn-glass">Log In</a>
+                        <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium shadow-lg px-5">Get Started Free</a>
+                        <a asp-controller="Auth" asp-action="SignIn" class="btn btn-glass px-5">Log In</a>
                     </div>
                 </div>
             </div>

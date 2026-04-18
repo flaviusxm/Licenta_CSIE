@@ -7,5 +7,6 @@ namespace AskNLearn.Application.Common.Interfaces
     {
         Task<string> UploadFileAsync(Stream fileStream, string fileName, string folder);
         void DeleteFile(string filePath);
+        Task<byte[]> ReadFileAsync(string filePath);
     }
 }

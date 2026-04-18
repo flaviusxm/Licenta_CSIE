@@ -10,156 +10,99 @@
     var hasMore = posts.Count >= pageSize && posts.Count < totalPostCount;
 }
 
-<div class="container-fluid py-5" style="max-width: 1000px;">
-    <!-- Back Button -->
-    <a asp-controller="Explore" asp-action="Index" class="btn-back-modern mb-4">
-        <span class="material-symbols-outlined">arrow_back_ios_new</span>
-        <span>Back to Communities</span>
-    </a>
-
-    <!-- Community Header -->
-    <div class="glass-card p-4 p-md-5 mb-5 d-flex flex-column flex-md-row align-items-center gap-4 animate-entrance position-relative overflow-hidden">
-        <div class="position-absolute rounded-circle" style="top: -20px; left: -20px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(0,217,245,0.15) 0%, transparent 70%); filter: blur(20px);"></div>
-
-        <!-- Icon / Image -->
-        @if (!string.IsNullOrEmpty(Model.ImageUrl))
-        {
-            <div class="rounded-xl flex-shrink-0 overflow-hidden position-relative z-1" style="width: 80px; height: 80px; border: 1px solid var(--border-glass);">
-                <img src="@Model.ImageUrl" class="w-100 h-100 object-cover" alt="@Model.Name" />
-            </div>
-        }
-        else
-        {
-            <div class="rounded-xl flex-shrink-0 d-flex align-items-center justify-content-center position-relative z-1" style="width: 80px; height: 80px; background: rgba(0,217,245,0.1); border: 1px solid rgba(0,217,245,0.2);">
-                <span class="material-symbols-outlined text-aurora" style="font-size: 2.5rem;">groups</span>
-            </div>
-        }
-
-        <!-- Main Info -->
-        <div class="flex-grow-1 min-w-0 text-center text-md-start position-relative z-1">
-            <h1 class="display-6 fw-bold text-white text-truncate mb-2 tracking-tighter">
-                @Model.Name
-            </h1>
-            <p class="text-muted fs-6 mb-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                @Model.Description
-            </p>
-            <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 mt-1 text-muted" style="font-size: 0.8rem;">
-                <span class="fw-bold">@Model.PostCount posts</span>
-                <span>•</span>
-                <span>Created @Model.CreatedAt.ToString("MMM yyyy")</span>
+<div class="d-flex h-100 overflow-hidden">
+    <!-- Discord-like Community Sidebar -->
+    <aside class="sidebar-community border-right border-glass d-none d-lg-flex flex-column" style="width: 300px; background: rgba(0,0,0,0.15);">
+        <div class="p-4 border-bottom border-glass">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <div class="rounded-xl overflow-hidden mb-3 shadow-lg" style="width: 80px; height: 80px; border: 1px solid var(--border-glass);">
+                    <img src="@Model.ImageUrl" class="w-100 h-100 object-cover" alt="@Model.Name" />
+                </div>
+            }
+            <h1 class="h4 fw-bold text-white mb-2">@Model.Name</h1>
+            <p class="text-muted small mb-3">@Model.Description</p>
+            
+            <div class="d-flex flex-column gap-2">
+                <div class="d-flex align-items-center gap-2 text-muted small">
+                    <span class="material-symbols-outlined fs-6">analytics</span>
+                    <span>@totalPostCount Discussions</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 text-muted small">
+                    <span class="material-symbols-outlined fs-6">calendar_month</span>
+                    <span>Created @Model.CreatedAt.ToString("MMM yyyy")</span>
+                </div>
             </div>
         </div>
 
-        <!-- Actions -->
-        <div class="d-flex align-items-center gap-2 position-relative z-1">
-            @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.CreatorId)
+        <div class="flex-grow-1 p-3 overflow-y-auto custom-scrollbar">
+            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Moderation</label>
+            @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.CreatorId || User.IsInRole("Admin"))
             {
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-glass p-2 d-flex align-items-center justify-content-center" title="Settings">
-                    <span class="material-symbols-outlined fs-5">settings</span>
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="nav-link-flat d-flex align-items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined fs-6">settings</span>
+                    Forum Settings
                 </a>
             }
+            <button class="nav-link-flat w-100 text-start d-flex align-items-center gap-2 text-danger border-0 bg-transparent" onclick="openReportModal('@Model.Id', 'COMMUNITY')">
+                <span class="material-symbols-outlined fs-6">flag</span>
+                Report Community
+            </button>
         </div>
-    </div>
+        
+        <div class="p-3 border-top border-glass">
+            <a asp-controller="Explore" asp-action="Index" class="btn btn-glass w-100 d-flex align-items-center justify-content-center gap-2 py-2">
+                <span class="material-symbols-outlined fs-6">arrow_back</span>
+                All Communities
+            </a>
+        </div>
+    </aside>
 
-    <!-- Posts Section -->
-    <div class="position-relative">
-        <div class="d-flex flex-column gap-4 animate-entrance delay-100">
-            <div class="d-flex justify-content-between align-items-center pb-3 mb-2 border-bottom" style="border-color: var(--border-glass) !important;">
-                <h2 class="h4 fw-bold text-white mb-0">Recent Discussions</h2>
-                @if (totalPostCount > 0)
-                {
-                    <span class="text-muted" style="font-size: 0.8rem;">@totalPostCount posts total</span>
-                }
-            </div>
+    <!-- Main Content (Reddit-like Feed) -->
+    <main class="flex-grow-1 overflow-y-auto custom-scrollbar bg-black-alpha-10">
+        <div class="max-w-4xl mx-auto py-5 px-3">
+            
+            <!-- Quick Post Area -->
             @if (ViewBag.IsEmailVerified == true)
             {
-                if (!posts.Any())
-                {
-                    <div id="no-posts-placeholder" class="glass-card text-center py-5 animate-entrance">
-                        <span class="material-symbols-outlined display-1 text-muted mb-4 opacity-50">post_add</span>
-                        <p class="text-white fw-bold fs-5 mb-1">No posts yet in this community.</p>
-                        <p class="text-muted mb-4">Be the first to share something!</p>
-                        <button onclick="toggleInlinePost(true)" class="btn btn-premium d-inline-flex align-items-center gap-2 px-4 py-2">
-                            Post Now
-                        </button>
-                    </div>
-                }
-                else
-                {
-                    <!-- Modern Inline Post Interaction -->
-                    <div id="quick-post-container" class="animate-entrance">
-                        <div class="glass-card p-4 mb-4 overflow-hidden position-relative" onclick="toggleInlinePost(true)" style="cursor: pointer;">
-                            <div class="position-absolute top-0 start-0 w-100 h-100 bg-gradient-aurora opacity-5" style="pointer-events: none;"></div>
-                            <div class="d-flex align-items-center gap-3 position-relative z-1">
-                                <div class="flex-shrink-0">
-                                    <div class="avatar-md rounded-xl bg-premium d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; box-shadow: 0 0 15px rgba(0,245,160,0.3);">
-                                        <span class="material-symbols-outlined text-white">edit_square</span>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h4 class="h6 fw-bold text-white mb-1">Share something with the community</h4>
-                                    <p class="text-muted small mb-0">What's on your mind? Click here to start a new discussion...</p>
-                                </div>
-                                <button type="submit" class="btn btn-premium px-5 py-3 rounded-pill fw-bold shadow-lg transition-transform hover-scale d-flex align-items-center gap-2">
-                            <span class="material-symbols-outlined">send</span>
-                            Create post
-                        </button>
-                            </div>
+                <div id="quick-post-container" class="mb-4">
+                    <div class="reddit-post d-flex align-items-center gap-3 bg-black-alpha-20 border border-glass-soft cursor-pointer" onclick="toggleInlinePost(true)">
+                        <div class="avatar-md rounded-circle bg-accent-soft d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <span class="material-symbols-outlined text-white">edit_square</span>
                         </div>
+                        <div class="flex-grow-1 text-muted">Start a new discussion...</div>
+                        <button class="btn btn-premium btn-sm rounded-pill px-4">Post</button>
                     </div>
-                }
-            }
-            else if (User.Identity?.IsAuthenticated == true)
-            {
-                <div class="glass-card p-4 mb-4 text-center animate-entrance">
-                    <p class="text-muted mb-0">
-                        <span class="material-symbols-outlined align-middle me-2">verified_user</span>
-                        Verify your email to start a discussion in this hub.
-                    </p>
+                </div>
+
+                <!-- Inline Form -->
+                <div id="inline-post-form" class="d-none mb-5 animate-entrance">
+                    <div class="py-4 border-bottom border-glass-soft">
+                        <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="CommunityId" value="@Model.Id" />
+                            <input type="text" name="Title" class="form-control form-control-glass bg-transparent border-0 border-bottom border-glass-soft rounded-0 mb-3 fs-5 fw-bold text-white px-0" placeholder="Title" required>
+                            <textarea name="Content" class="form-control form-control-glass bg-transparent border-0 rounded-0 mb-3 text-white px-0" rows="4" placeholder="Text (optional)" required></textarea>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" onclick="toggleInlinePost(false)" class="btn btn-glass btn-sm px-4">Cancel</button>
+                                <button type="submit" class="btn btn-premium btn-sm px-4">Post</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             }
 
-            <!-- Hidden Inline Form -->
-            <div id="inline-post-form" class="d-none animate-entrance mb-5">
-                <div class="glass-card p-4 p-md-5 shadow-2xl border-aurora position-relative overflow-hidden">
-                    <div class="position-absolute top-0 start-0 w-100 h-1 bg-gradient-aurora"></div>
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h3 class="h4 fw-bold text-white mb-1">Create a new post</h3>
-                        <button onclick="toggleInlinePost(false)" class="btn btn-glass p-2 rounded-circle">
-                            <span class="material-symbols-outlined">close</span>
-                        </button>
-                    </div>
-                    
-                    <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
-                        <input type="hidden" name="CommunityId" value="@Model.Id" />
-                        <div class="mb-4">
-                            <label class="form-label text-muted small fw-black text-uppercase tracking-widest" style="font-size: 0.6rem;">Discussion Title</label>
-                            <input type="text" name="Title" class="form-control form-control-glass py-3 px-4 fw-bold text-white fs-5" placeholder="Give your post a clear, descriptive title..." required>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label text-muted small fw-black text-uppercase tracking-widest" style="font-size: 0.6rem;">Content</label>
-                            <textarea name="Content" class="form-control form-control-glass p-4 text-white" rows="6" placeholder="What would you like to discuss? Use markdown for better formatting..." required></textarea>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-glass p-3 rounded-xl" title="Add Image">
-                                    <span class="material-symbols-outlined fs-5">image</span>
-                                </button>
-                                <button type="button" class="btn btn-glass p-3 rounded-xl" title="Add Link">
-                                    <span class="material-symbols-outlined fs-5">link</span>
-                                </button>
-                            </div>
-                            <div class="d-flex gap-3">
-                                <button type="button" onclick="toggleInlinePost(false)" class="btn btn-glass px-4 py-2 fw-bold text-uppercase tracking-widest" style="font-size: 0.7rem;">Cancel</button>
-                                <button type="submit" class="btn btn-premium px-5 py-3 fw-bold text-uppercase tracking-widest shadow-lg">Publish Discussion</button>
-                            </div>
-                        </div>
-                    </form>
+            <!-- Feed Header -->
+            <div class="px-3 pb-2 mb-3 border-bottom border-glass-soft d-flex align-items-center justify-content-between">
+                <span class="text-muted small fw-bold text-uppercase tracking-widest">Recent Discussions</span>
+                <div class="dropdown">
+                    <button class="btn btn-link text-muted text-decoration-none small p-0 d-flex align-items-center gap-1">
+                        Sort by: New <span class="material-symbols-outlined fs-6">expand_more</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Posts Container — AJAX will append here -->
-            <div id="posts-container" class="d-flex flex-column gap-4">
+            <!-- Posts Container -->
+            <div id="posts-container" class="d-flex flex-column">
                 @{
                     var partialVd = new ViewDataDictionary(ViewData);
                     partialVd["CommunityId"] = Model.Id;
@@ -172,18 +115,15 @@
             </div>
 
             <!-- Load More Area -->
-            <div id="load-more-area" class="@(hasMore ? "" : "d-none") text-center mt-2">
-                <button id="load-more-btn" onclick="loadMorePosts()" class="btn btn-glass d-inline-flex align-items-center gap-2 px-5 py-3">
-                    <span class="material-symbols-outlined fs-5">expand_more</span>
+            <div id="load-more-area" class="@(hasMore ? "" : "d-none") text-center mt-4">
+                <button id="load-more-btn" onclick="loadMorePosts()" class="btn btn-glass rounded-pill px-5 py-2">
                     Load More
                 </button>
             </div>
 
-            <!-- Sentinel for IntersectionObserver -->
             <div id="scroll-sentinel" style="height: 1px;"></div>
         </div>
-        @* Removed Blur Overlay *@
-    </div>
+    </main>
 </div>
 
 <script>
@@ -478,7 +418,7 @@
         color: #ff6b6b !important;
     }
     .text-mint {
-        color: var(--color-mint-bright) !important;
+        color: var(--color-accent) !important;
     }
     .post-card-animate {
         transition: opacity 0.4s ease, transform 0.4s ease;

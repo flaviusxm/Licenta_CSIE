@@ -31,8 +31,7 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
             var answersCount = await _context.Messages.CountAsync(m => m.AuthorId == user.Id && m.PostId != null, cancellationToken);
             
             var communityCount = await _context.CommunityMemberships.CountAsync(cm => cm.UserId == user.Id, cancellationToken);
-            var studyGroupCount = await _context.GroupMemberships.CountAsync(gm => gm.UserId == user.Id, cancellationToken);
-            var groupsCount = communityCount + studyGroupCount;
+            var groupsCount = communityCount;
 
             string? rankName = null;
             string? rankIconUrl = null;

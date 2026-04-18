@@ -14,104 +14,80 @@
     var canDelete = !string.IsNullOrEmpty(currentUserId)
         && (currentUserId == post.AuthorId || currentUserId == communityCreatorId || isAdmin);
 
-    <div class="glass-card p-4 p-md-5 group transition-all position-relative post-card-animate" id="post-@post.Id">
-        <div class="d-flex gap-4 align-items-start">
+    <div class="reddit-post group position-relative post-card-animate" id="post-@post.Id">
+        <div class="d-flex gap-3 align-items-start">
 
-            <!-- Vote Column -->
-            <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0 rounded-pill py-2" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass); width: 44px;">
+            <!-- Vote Column (Reddit style) -->
+            <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0" style="width: 40px; margin-top: 4px;">
                 <button onclick="votePost('@post.Id', '@communityId', 1)"
-                        class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-up-@post.Id transition-colors @(post.UserVote == 1 ? "text-mint font-weight-bold" : "text-muted hover-glow")">
-                    <span class="material-symbols-outlined fs-5">keyboard_arrow_up</span>
+                        class="btn btn-link p-0 text-decoration-none d-flex align-items-center justify-content-center vote-btn-up-@post.Id transition-all @(post.UserVote == 1 ? "text-accent scale-125" : "text-muted hover-text-accent")">
+                    <span class="material-symbols-outlined fs-3">keyboard_arrow_up</span>
                 </button>
 
-                <span class="fw-bold vote-count-@post.Id @(post.UserVote == 1 ? "text-mint" : post.UserVote == -1 ? "text-danger" : "text-white")" style="font-size: 0.9rem;">
+                <span class="fw-bold vote-count-@post.Id @(post.UserVote == 1 ? "text-accent" : post.UserVote == -1 ? "text-danger" : "text-white")" style="font-size: 0.85rem;">
                     @post.VoteCount
                 </span>
 
                 <button onclick="votePost('@post.Id', '@communityId', -1)"
-                        class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-down-@post.Id transition-colors @(post.UserVote == -1 ? "text-danger font-weight-bold" : "text-muted hover-text-danger")">
-                    <span class="material-symbols-outlined fs-5">keyboard_arrow_down</span>
+                        class="btn btn-link p-0 text-decoration-none d-flex align-items-center justify-content-center vote-btn-down-@post.Id transition-all @(post.UserVote == -1 ? "text-danger scale-125" : "text-muted hover-text-danger")">
+                    <span class="material-symbols-outlined fs-3">keyboard_arrow_down</span>
                 </button>
             </div>
 
             <!-- Post Content -->
             <div class="flex-grow-1 min-w-0">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <div class="avatar-xs rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
-                        <span class="material-symbols-outlined text-muted" style="font-size: 14px;">person</span>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <div class="avatar-xs rounded-circle bg-dark-alpha d-flex align-items-center justify-content-center flex-shrink-0" style="width: 20px; height: 20px;">
+                        <span class="material-symbols-outlined text-muted" style="font-size: 12px;">person</span>
                     </div>
-                    <a asp-controller="Profile" asp-action="Index" asp-route-id="@post.AuthorId" class="fw-bold text-white fs-6 text-decoration-none hover-text-aurora transition-all">@post.AuthorName</a>
-
-                    <span class="text-muted ms-auto" style="font-size: 0.75rem;">• @post.CreatedAt.ToString("dd MMM yyyy")</span>
+                    <a asp-controller="Profile" asp-action="Index" asp-route-id="@post.AuthorId" class="fw-medium text-muted small text-decoration-none hover-text-white transition-all">u/@post.AuthorName.ToLower().Replace(" ", "_")</a>
+                    <span class="text-muted small">• @post.CreatedAt.ToString("dd MMM yyyy")</span>
                 </div>
-                <h3 class="h4 fw-bold text-white mb-2 text-aurora-hover transition-all">@post.Title</h3>
-                <p class="text-muted mb-4 fs-6" style="line-height: 1.6;">@post.Content</p>
+                
+                <h3 class="h5 fw-bold text-white mb-2">@post.Title</h3>
+                <p class="text-muted mb-3 fs-6" style="line-height: 1.5; color: rgba(255,255,255,0.7) !important;">@post.Content</p>
 
                 @if (post.Attachments.Any())
                 {
-                    <div class="d-flex flex-wrap gap-2 mb-4">
+                    <div class="d-flex flex-wrap gap-2 mb-3">
                         @foreach (var attachment in post.Attachments)
                         {
-                            <a href="@attachment.Url" target="_blank" class="text-decoration-none d-flex align-items-center gap-2 px-3 py-2 rounded-lg border hover-glow transition-all" style="background: rgba(255,255,255,0.02); border-color: var(--border-glass);">
-                                <span class="material-symbols-outlined fs-5 text-muted">
-                                    @(attachment.FileType?.Contains("image") == true ? "image" : "description")
-                                </span>
-                                <span class="text-muted fw-bold text-truncate" style="font-size: 0.75rem; max-width: 200px;">
-                                    @System.IO.Path.GetFileName(attachment.Url)
-                                </span>
+                            <a href="@attachment.Url" target="_blank" class="text-decoration-none d-flex align-items-center gap-2 px-3 py-1 rounded-pill border-glass-soft bg-black-alpha-10 hover-bg-glass transition-all" style="font-size: 0.75rem;">
+                                <span class="material-symbols-outlined fs-6 text-muted">attach_file</span>
+                                <span class="text-muted text-truncate" style="max-width: 150px;">@System.IO.Path.GetFileName(attachment.Url)</span>
                             </a>
                         }
                     </div>
                 }
 
-                <div class="d-flex flex-column gap-3 mt-2">
-                    <div class="d-flex align-items-center justify-content-between pb-3 border-bottom" style="border-color: var(--border-glass) !important;">
-                        <div class="d-flex align-items-center gap-4 text-muted fw-bold" style="font-size: 0.8rem;">
-
-                            <!-- Comments Toggle — tot rândul e clickabil, fără casuta separată +/- -->
-                            <div onclick="toggleLazyComments('@post.Id', '@communityId')"
-                                 class="d-flex align-items-center gap-2 hover-glow transition-all"
-                                 style="cursor: pointer;"
-                                 id="comments-toggle-@post.Id">
-                                <span class="material-symbols-outlined fs-5 transition-all toggle-icon-@post.Id">chat_bubble</span>
-                                <span>@post.CommentCount Comments</span>
-                            </div>
-
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="material-symbols-outlined fs-5">visibility</span>
-                                <span>@post.ViewCount Views</span>
-                            </div>
-                            
-                            <button onclick="openReportModal('@post.Id', 'POST')" 
-                                    class="p-0 border-0 bg-transparent text-muted hover-text-danger d-flex align-items-center gap-1 transition-all" 
-                                    style="font-size: 0.8rem;"
-                                    title="Report this post">
-                                <span class="material-symbols-outlined fs-5">report</span>
-                                <span>Report</span>
-                            </button>
-                        </div>
-
-                        <!-- Delete: doar autorul postarii sau creatorul forumului -->
-                        @if (canDelete)
-                        {
-                            <div class="d-flex gap-2">
-                                <form asp-controller="Forum" asp-action="DeletePost" asp-route-id="@post.Id" asp-route-communityId="@communityId" method="post" onsubmit="return confirm('Stergi aceasta postare?')" class="m-0 p-0">
-                                    <button type="submit" class="btn btn-link p-1 text-muted hover-text-danger text-decoration-none d-flex align-items-center justify-content-center" title="Sterge postarea">
-                                        <span class="material-symbols-outlined fs-5">delete</span>
-                                    </button>
-                                </form>
-                            </div>
-                        }
+                <div class="d-flex align-items-center gap-4 text-muted fw-bold" style="font-size: 0.75rem;">
+                    <div onclick="toggleLazyComments('@post.Id', '@communityId')" class="d-flex align-items-center gap-2 hover-bg-glass px-2 py-1 rounded cursor-pointer transition-all">
+                        <span class="material-symbols-outlined fs-5">chat_bubble</span>
+                        <span>@post.CommentCount Comments</span>
                     </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined fs-5">visibility</span>
+                        <span>@post.ViewCount Views</span>
+                    </div>
+                    @if (canDelete)
+                    {
+                        <form asp-controller="Forum" asp-action="DeletePost" asp-route-id="@post.Id" asp-route-communityId="@communityId" method="post" onsubmit="return confirm('Stergi aceasta postare?')" class="m-0">
+                            <button type="submit" class="p-0 border-0 bg-transparent text-muted hover-text-danger d-flex align-items-center gap-1 transition-all" style="font-size: 0.75rem;">
+                                <span class="material-symbols-outlined fs-5">delete</span>
+                                <span>Delete</span>
+                            </button>
+                        </form>
+                    }
+                    <button onclick="openReportModal('@post.Id', 'POST')" class="p-0 border-0 bg-transparent text-muted hover-text-danger d-flex align-items-center gap-1 transition-all ms-auto" style="font-size: 0.75rem;">
+                        <span class="material-symbols-outlined fs-5">report</span>
+                        <span>Report</span>
+                    </button>
+                </div>
 
-                    <!-- Comments Section: lazy loaded -->
-                    <div id="comments-@post.Id" class="d-none animate-slide-down mt-2">
-                        <div class="text-center py-4">
-                            <div class="spinner-border spinner-border-sm text-aurora" role="status">
-                                <span class="visually-hidden">Se incarca...</span>
-                            </div>
-                            <p class="text-muted mt-2 mb-0" style="font-size:0.8rem;">Se incarca comentariile...</p>
-                        </div>
+                <!-- Comments Section -->
+                <div id="comments-@post.Id" class="d-none mt-3 pt-3 border-top border-glass-soft">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-accent" role="status"></div>
                     </div>
                 </div>
             </div>

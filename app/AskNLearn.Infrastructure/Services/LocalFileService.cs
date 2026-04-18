@@ -51,5 +51,12 @@ namespace AskNLearn.Infrastructure.Services
                 File.Delete(absolutePath);
             }
         }
+
+        public async Task<byte[]> ReadFileAsync(string filePath)
+        {
+            var absolutePath = Path.Combine(_webHostEnvironment.WebRootPath, filePath.TrimStart('/'));
+            if (!File.Exists(absolutePath)) return Array.Empty<byte>();
+            return await File.ReadAllBytesAsync(absolutePath);
+        }
     }
 }

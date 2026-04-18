@@ -60,52 +60,17 @@ namespace AskNLearn.Web.Controllers
                 };
             }).OrderByDescending(c => c.LastMessageAt).ToList();
 
-            // 2. Fetch Study Group Channels
-            var groupIds = await context.GroupMemberships
-                .Where(m => m.UserId == user.Id)
-                .Select(m => m.GroupId)
-                .ToListAsync();
-
-            var channels = await context.Channels
-                .Include(c => c.Group)
-                .Where(c => groupIds.Contains(c.GroupId) && c.Type == AskNLearn.Domain.Entities.StudyGroup.ChannelType.Text)
-                .ToListAsync();
-
-            var channelPreviews = channels.Select(c => {
-                var lastMessage = context.Messages
-                    .Where(m => m.ChannelId == c.Id && 
-                                m.ModerationStatus != ModerationStatus.Flagged && 
-                                m.ModerationStatus != ModerationStatus.Removed)
-                    .OrderByDescending(m => m.CreatedAt)
-                    .FirstOrDefault();
-
-                return new ConversationPreviewViewModel
-                {
-                    ConversationId = c.Id, // Reuse for routing
-                    IsChannel = true,
-                    ChannelId = c.Id,
-                    GroupName = c.Group?.Name,
-                    OtherUserName = c.Name,
-                    LastMessageContent = lastMessage?.Content ?? "Welcome to the channel!",
-                    LastMessageAt = lastMessage?.CreatedAt ?? DateTime.MinValue,
-                    OtherUserAvatar = $"https://api.dicebear.com/7.x/initials/svg?seed={c.Name}"
-                };
-            }).OrderByDescending(c => c.LastMessageAt).ToList();
 
             // 3. Resolve Selected Content
             AskNLearn.Domain.Entities.Messaging.DirectConversation? selectedConversation = null;
-            AskNLearn.Domain.Entities.StudyGroup.Channel? selectedChannel = null;
-
             if (id.HasValue)
             {
-                // Check if it's a conversation
                 selectedConversation = await context.DirectConversations
                     .Include(c => c.Participants).ThenInclude(p => p.User)
                     .FirstOrDefaultAsync(c => c.Id == id.Value && c.Participants.Any(p => p.UserId == user.Id));
 
                 if (selectedConversation != null)
                 {
-                    // Force load messages with a fresh query to avoid Include issues with tracking
                     var messages = await context.Messages
                         .Include(m => m.Author)
                         .Where(m => m.ConversationId == selectedConversation.Id && 
@@ -115,32 +80,7 @@ namespace AskNLearn.Web.Controllers
                         .ToListAsync();
                     
                     selectedConversation.Messages = messages;
-                }
 
-                if (selectedConversation == null)
-                {
-                    // Check if it's a channel
-                    selectedChannel = await context.Channels
-                        .Include(c => c.Group)
-                        .Include(c => c.Messages.OrderBy(m => m.CreatedAt))
-                            .ThenInclude(m => m.Author)
-                        .FirstOrDefaultAsync(c => c.Id == id.Value && groupIds.Contains(c.GroupId));
-
-                    if (selectedChannel != null)
-                    {
-                        var messages = await context.Messages
-                            .Include(m => m.Author)
-                            .Where(m => m.ChannelId == selectedChannel.Id && 
-                                        m.ModerationStatus != ModerationStatus.Flagged && 
-                                        m.ModerationStatus != ModerationStatus.Removed)
-                            .OrderBy(m => m.CreatedAt)
-                            .ToListAsync();
-                        
-                        selectedChannel.Messages = messages;
-                    }
-                }
-                else
-                {
                     // Update last read for DM
                     var userParticipant = selectedConversation.Participants.FirstOrDefault(p => p.UserId == user.Id);
                     var lastMessage = selectedConversation.Messages.LastOrDefault();
@@ -165,13 +105,11 @@ namespace AskNLearn.Web.Controllers
             var viewModel = new InboxViewModel
             {
                 RecentMessages = messagePreviews,
-                RecentChannels = channelPreviews,
                 RecentNotifications = notifications,
                 PendingRequests = pendingRequests,
                 Connections = connections!,
                 TotalConnections = totalConnections,
-                SelectedConversation = selectedConversation,
-                SelectedChannel = selectedChannel
+                SelectedConversation = selectedConversation
             };
 
             return View(viewModel);

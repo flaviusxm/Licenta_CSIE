@@ -122,8 +122,7 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
             {
                 "AuditLogs", "Reports", "Notifications", "MessageReactions", "MessageAttachments", "Messages",
                 "DirectConversationParticipants", "DirectConversations", "PostTags", "PostVotes", "PostViews",
-                "PostAttachments", "Posts", "LearningResources", "Events", "GroupInvites", "GroupMemberships",
-                "Channels", "ChannelCategories", "GroupRoles", "StudyGroups", "Friendships", "CommunityMemberships",
+                "PostAttachments", "Posts", "Friendships", "CommunityMemberships",
                 "Communities", "StoredFiles", "VerificationRequests", "UserRoles", "UserClaims", "UserLogins",
                 "UserTokens", "RoleClaims", "Roles", "Users", "UserRanks", "Tags"
             };
@@ -132,7 +131,7 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
             {
                 try
                 {
-                    int deleted = await dbContext.Database.ExecuteSqlAsync($"DELETE FROM [{table}]");
+                    int deleted = await dbContext.Database.ExecuteSqlRawAsync($"DELETE FROM [{table}]");
                     if (deleted > 0)
                         Console.WriteLine($"  ✓ Șters: {table} ({deleted} rânduri)");
                 }
@@ -212,6 +211,39 @@ if (args.Contains("migratedb"))
     await db.Database.MigrateAsync();
     Console.WriteLine("✓ Migrări aplicate!");
     return;
+}
+
+// ─── DATABASE SCHEMA SYNC (Prevent Crashes) ───────────────────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        // Forțăm crearea bazei de date dacă nu există, apoi migrări
+        if (app.Environment.IsDevelopment())
+        {
+            await dbContext.Database.OpenConnectionAsync();
+            await dbContext.Database.ExecuteSqlRawAsync(@"
+                IF EXISTS (SELECT * FROM sys.tables WHERE name = 'StoredFiles')
+                BEGIN
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('[StoredFiles]') AND name = 'IsSafe')
+                    BEGIN
+                        ALTER TABLE [StoredFiles] ADD [IsSafe] BIT NOT NULL DEFAULT 1;
+                    END
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('[StoredFiles]') AND name = 'SecurityNotes')
+                    BEGIN
+                        ALTER TABLE [StoredFiles] ADD [SecurityNotes] NVARCHAR(MAX) NULL;
+                    END
+                END
+            ");
+            await dbContext.Database.CloseConnectionAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Schema sync failed - this is normal if DB is not SQL Server or just initialized.");
+    }
 }
 
 // ─── NORMAL APP STARTUP ───────────────────────────────────────────────────────

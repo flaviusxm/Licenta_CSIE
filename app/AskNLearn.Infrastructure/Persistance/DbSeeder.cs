@@ -2,7 +2,6 @@ using AskNLearn.Domain.Entities.Core;
 using AskNLearn.Domain.Entities.Gamification;
 using AskNLearn.Domain.Entities.Messaging;
 using AskNLearn.Domain.Entities.SocialFeed;
-using AskNLearn.Domain.Entities.StudyGroup;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -26,6 +25,26 @@ namespace AskNLearn.Infrastructure.Persistance
             ctx.Database.SetCommandTimeout(600);
             Console.WriteLine("[Seeder] Starting comprehensive seed...");
 
+            // Ensure StoredFiles has the new columns (Manual Migration Hack)
+            try
+            {
+                var conn = ctx.Database.GetDbConnection();
+                if (conn.State != ConnectionState.Open) await conn.OpenAsync();
+                
+                await ctx.Database.ExecuteSqlRawAsync(@"
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('[StoredFiles]') AND name = 'IsSafe')
+                    BEGIN
+                        ALTER TABLE [StoredFiles] ADD [IsSafe] BIT NOT NULL DEFAULT 1;
+                    END
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('[StoredFiles]') AND name = 'SecurityNotes')
+                    BEGIN
+                        ALTER TABLE [StoredFiles] ADD [SecurityNotes] NVARCHAR(MAX) NULL;
+                    END
+                ");
+            }
+            catch { /* Ignore if it fails or if it's not SQL Server */ }
+
+
             if (force) await ClearAllDataAsync(ctx);
 
             // 1. Ranks
@@ -44,11 +63,6 @@ namespace AskNLearn.Infrastructure.Persistance
             var communities = await SeedCommunitiesAsync(ctx, users);
             var posts = await SeedPostsAsync(ctx, communities, users);
 
-            // 5. Study Groups, Channels, Memberships, Messages
-            var groups = await SeedStudyGroupsAsync(ctx, users);
-            var channels = await SeedChannelsAsync(ctx, groups);
-            await SeedGroupMembershipsAsync(ctx, groups, users);
-            await SeedChannelMessagesAsync(ctx, channels, users);
 
             // 6. Direct Conversations & Messages
             await SeedDirectConversationsAsync(ctx, users);
@@ -56,8 +70,6 @@ namespace AskNLearn.Infrastructure.Persistance
             // 7. Notifications (diverse)
             await SeedNotificationsAsync(ctx, users);
 
-            // 8. Learning Resources (doar câteva exemple)
-            await SeedLearningResourcesAsync(ctx, users, groups);
 
             Console.WriteLine("[Seeder] Done.");
         }
@@ -68,9 +80,8 @@ namespace AskNLearn.Infrastructure.Persistance
             {
                 "AuditLogs", "Reports", "Notifications", "MessageReactions", "MessageAttachments", "Messages",
                 "DirectConversationParticipants", "DirectConversations", "PostTags", "PostVotes", "PostViews",
-                "PostAttachments", "Posts", "LearningResources", "Events", "GroupInvites", "GroupMemberships",
-                "Channels", "ChannelCategories", "GroupRoles", "StudyGroups", "Friendships", "CommunityMemberships",
-                "Communities", "StoredFiles", "VerificationRequests", "UserRoles", "UserClaims", "UserLogins",
+                "PostAttachments", "Posts",
+                "StoredFiles", "VerificationRequests", "UserRoles", "UserClaims", "UserLogins",
                 "UserTokens", "RoleClaims", "Roles", "Users", "UserRanks", "Tags"
             };
             foreach (var t in tables)
@@ -97,6 +108,8 @@ namespace AskNLearn.Infrastructure.Persistance
 
         private static async Task<List<IdentityRole>> SeedIdentityRolesAsync(ApplicationDbContext ctx)
         {
+            if (await ctx.Roles.AnyAsync()) return await ctx.Roles.ToListAsync();
+
             var roles = new List<IdentityRole>
             {
                 new() { Id = Guid.NewGuid().ToString(), Name = "Admin", NormalizedName = "ADMIN" },
@@ -109,6 +122,12 @@ namespace AskNLearn.Infrastructure.Persistance
 
         private static async Task<(List<ApplicationUser> Users, List<IdentityUserRole<string>> UserRoles)> SeedUsersAsync(ApplicationDbContext ctx, List<UserRank> ranks, List<IdentityRole> roles)
         {
+            if (await ctx.Users.AnyAsync()) 
+            {
+                var existingUsers = await ctx.Users.ToListAsync();
+                var existingUserRoles = await ctx.UserRoles.ToListAsync();
+                return (existingUsers, existingUserRoles);
+            }
             var hash = new PasswordHasher<ApplicationUser>().HashPassword(new ApplicationUser(), DefaultPassword);
             var users = new List<ApplicationUser>();
             var userRoles = new List<IdentityUserRole<string>>();
@@ -235,6 +254,7 @@ namespace AskNLearn.Infrastructure.Persistance
 
         private static async Task SeedFriendshipsAsync(ApplicationDbContext ctx, List<ApplicationUser> users)
         {
+            if (await ctx.Friendships.AnyAsync()) return;
             var friendships = new List<Friendship>();
             var seen = new HashSet<string>();
             foreach (var u in users)
@@ -261,6 +281,7 @@ namespace AskNLearn.Infrastructure.Persistance
 
         private static async Task<List<Community>> SeedCommunitiesAsync(ApplicationDbContext ctx, List<ApplicationUser> users)
         {
+            if (await ctx.Communities.AnyAsync()) return await ctx.Communities.ToListAsync();
             var communities = new List<Community>();
             for (int i = 0; i < 8; i++)
             {
@@ -282,20 +303,32 @@ namespace AskNLearn.Infrastructure.Persistance
 
         private static async Task<List<Post>> SeedPostsAsync(ApplicationDbContext ctx, List<Community> communities, List<ApplicationUser> users)
         {
+            if (await ctx.Posts.AnyAsync()) return await ctx.Posts.ToListAsync();
             var posts = new List<Post>();
+            string[] postTitles = { "How to implement JWT in ASP.NET Core?", "Looking for study partners for the Midterm Exam", "Has anyone tried the new Python library for ML?", "Discussion: Microservices vs Monoliths in 2025", "Best resources for learning Distributed Systems", "Internship opportunities at tech companies this summer" };
+            string[] postContents = { 
+                "I've been trying to set up JWT authentication in my latest project but I'm running into some issues with token expiration. Does anyone have a good tutorial or sample code?",
+                "The midterm exam for Advanced Algorithms is coming up next week. I'm struggling with Dynamic Programming. Anyone interested in a group study session at the library?",
+                "I just found this amazing library called 'SciPy-Fast' that claims to be 10x faster for matrix multiplications. Has anyone used it in production yet?",
+                "There's a lot of talk about moving back to monoliths for simpler deployment. What do you think is the right approach for a student project?",
+                "I'm looking for some advanced books on Distributed Systems. I've already read DDIA by Martin Kleppmann. Any other suggestions?",
+                "I saw that several companies are opening their internship portals this week. Let's share links and tips for the interview process!"
+            };
+
             foreach (var comm in communities)
             {
-                int postCount = Rng.Next(30, 60); // Mai multe postări
+                int postCount = Rng.Next(30, 60);
                 for (int i = 0; i < postCount; i++)
                 {
                     var author = users[Rng.Next(users.Count)];
+                    var titleIdx = Rng.Next(postTitles.Length);
                     var post = new Post
                     {
                         Id = Guid.NewGuid(),
                         CommunityId = comm.Id,
                         AuthorId = author.Id,
-                        Title = $"Thread: {_topics[communities.IndexOf(comm)]} discussion #{i+1}",
-                        Content = $"Let's talk about {_topics[communities.IndexOf(comm)]}. Does anyone have advice on this?",
+                        Title = postTitles[titleIdx],
+                        Content = postContents[titleIdx] + "\n\nThis is a long-form discussion post aimed at improving our collective knowledge in this specific field. Please contribute your thoughts below!",
                         CreatedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 120)),
                         ModerationStatus = AskNLearn.Domain.Entities.Core.ModerationStatus.Approved,
                         ViewCount = Rng.Next(50, 2000)
@@ -307,8 +340,15 @@ namespace AskNLearn.Infrastructure.Persistance
 
             // SEED COMMENTS (Messages linked to posts)
             var comments = new List<Message>();
-            string[] commentTexts = { "Great point!", "I disagree, here is why...", "Thanks for sharing!", "Does this work for everyone?", "Interesting perspective.", "Can you explain more?" };
-            foreach (var p in posts.Take(posts.Count / 2)) // Punem comentarii la jumătate din postări
+            string[] commentTexts = { 
+                "That's a very interesting point. I think the key is to focus on scalability from the start.", 
+                "I've had a similar issue before. Usually, it's related to the CORS configuration in the Startup class.", 
+                "Thanks for sharing this! I'll definitely check out the library you mentioned.", 
+                "I'm in for the study session! Does Wednesday afternoon work for everyone?", 
+                "I actually disagree. Monoliths are better for small teams because they reduce operational complexity significantly.", 
+                "Could you provide more details on how you solved the authentication bug? I'm stuck on the same thing." 
+            };
+            foreach (var p in posts.Take(posts.Count / 2))
             {
                 int commentCount = Rng.Next(5, 15);
                 for (int i = 0; i < commentCount; i++)
@@ -330,123 +370,10 @@ namespace AskNLearn.Infrastructure.Persistance
             return posts;
         }
 
-        private static async Task<List<StudyGroup>> SeedStudyGroupsAsync(ApplicationDbContext ctx, List<ApplicationUser> users)
-        {
-            var groups = new List<StudyGroup>();
-            string[] subjects = { "Calculus I", "Data Structures", "Macroeconomics", "Distributed Systems", "Machine Learning", "Mobile Apps", "UI/UX Design", "Game Theory", "Cloud Computing" };
-            for (int i = 0; i < 20; i++) // 20 groups
-            {
-                var sub = subjects[Rng.Next(subjects.Length)];
-                var owner = users[Rng.Next(users.Count)];
-                var isPublic = Rng.NextDouble() > 0.3;
-                groups.Add(new StudyGroup
-                {
-                    Id = Guid.NewGuid(),
-                    Name = $"{subjects[i]} Study Group",
-                    Description = $"Collaborative learning for {subjects[i]}",
-                    SubjectArea = subjects[i],
-                    OwnerId = owner.Id,
-                    IsPublic = isPublic,
-                    CreatedAt = DateTime.UtcNow.AddMonths(-Rng.Next(1, 8)),
-                    InviteCode = isPublic ? null : Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()
-                });
-            }
-            await BulkInsertAsync(ctx, groups, "StudyGroups", "StudyGroups");
-            return groups;
-        }
-
-        private static async Task<List<Channel>> SeedChannelsAsync(ApplicationDbContext ctx, List<StudyGroup> groups)
-        {
-            var channels = new List<Channel>();
-            foreach (var g in groups)
-            {
-                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "announcements", Type = ChannelType.Text, Position = 0 });
-                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "general", Type = ChannelType.Text, Position = 1 });
-                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "resources-links", Type = ChannelType.Text, Position = 2 });
-                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "Voice Study", Type = ChannelType.Voice, Position = 3 });
-                channels.Add(new Channel { Id = Guid.NewGuid(), GroupId = g.Id, Name = "Live Session", Type = ChannelType.Video, Position = 4 });
-            }
-            await BulkInsertAsync(ctx, channels, "Channels", "Channels");
-            return channels;
-        }
-
-        private static async Task SeedGroupMembershipsAsync(ApplicationDbContext ctx, List<StudyGroup> groups, List<ApplicationUser> users)
-        {
-            var memberships = new List<GroupMembership>();
-            var roles = new List<GroupRole>();
-            var roleDict = new Dictionary<Guid, Guid>(); // GroupId -> MemberRoleId
-
-            foreach (var g in groups)
-            {
-                var memberRoleId = Guid.NewGuid();
-                roles.Add(new GroupRole { Id = memberRoleId, GroupId = g.Id, Name = "Member", Permissions = "READ,WRITE" });
-                roleDict[g.Id] = memberRoleId;
-
-                // Owner membership
-                if (g.OwnerId != null)
-                {
-                    memberships.Add(new GroupMembership
-                    {
-                        GroupId = g.Id,
-                        UserId = g.OwnerId,
-                        GroupRoleId = memberRoleId,
-                        JoinedAt = g.CreatedAt
-                    });
-                }
-
-                // Alți membri
-                int memberCount = Rng.Next(5, 20);
-                var potentialMembers = users.Where(u => u.Id != g.OwnerId).ToList();
-                for (int i = 0; i < memberCount; i++)
-                {
-                    var user = potentialMembers[Rng.Next(potentialMembers.Count)];
-                    if (memberships.Any(m => m.GroupId == g.Id && m.UserId == user.Id)) continue;
-                    memberships.Add(new GroupMembership
-                    {
-                        GroupId = g.Id,
-                        UserId = user.Id,
-                        GroupRoleId = memberRoleId,
-                        JoinedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 60))
-                    });
-                }
-            }
-
-            await BulkInsertAsync(ctx, roles, "GroupRoles", "GroupRoles");
-            await BulkInsertAsync(ctx, memberships, "GroupMemberships", "GroupMemberships");
-        }
-
-        private static async Task SeedChannelMessagesAsync(ApplicationDbContext ctx, List<Channel> channels, List<ApplicationUser> users)
-        {
-            var messages = new List<Message>();
-            string[] sampleMessages = {
-                "Hello everyone!", "Does anyone have notes for the exam?", "I'll share my summary later.",
-                "Great session today!", "What time is the next meeting?", "Check out this resource: example.com",
-                "Can someone help with exercise 3?", "I'm stuck on the recursion part.", "Thanks for the help!",
-                "Let's schedule a voice call.", "Good luck with your studies!"
-            };
-
-            foreach (var ch in channels.Where(c => c.Type == ChannelType.Text))
-            {
-                int msgCount = Rng.Next(50, 150); // Mult mai multe mesaje pentru scroll
-                for (int i = 0; i < msgCount; i++)
-                {
-                    var author = users[Rng.Next(users.Count)];
-                    messages.Add(new Message
-                    {
-                        Id = Guid.NewGuid(),
-                        ChannelId = ch.Id,
-                        AuthorId = author.Id,
-                        Content = sampleMessages[Rng.Next(sampleMessages.Length)],
-                        CreatedAt = DateTime.UtcNow.AddHours(-Rng.Next(1, 72)),
-                        ModerationStatus = AskNLearn.Domain.Entities.Core.ModerationStatus.Approved
-                    });
-                }
-            }
-            await BulkInsertAsync(ctx, messages, "Messages", "Messages");
-        }
 
         private static async Task SeedDirectConversationsAsync(ApplicationDbContext ctx, List<ApplicationUser> users)
         {
+            if (await ctx.DirectConversations.AnyAsync()) return;
             var conversations = new List<DirectConversation>();
             var participants = new List<DirectConversationParticipant>();
             var messages = new List<Message>();
@@ -466,16 +393,23 @@ namespace AskNLearn.Infrastructure.Persistance
                 participants.Add(new DirectConversationParticipant { ConversationId = convId, UserId = f.AddresseeId });
 
                 // Mesaje
-                int msgCount = Rng.Next(40, 100); // Conversații lungi
+                int msgCount = Rng.Next(50, 150); // Conversații chiar mai lungi
+                string[] dmStarters = { "Hey, do you have the notes from today's course?", "I was thinking about that project we discussed.", "Did you see the latest announcement?", "I'm struggling with the C# assignment, any tips?", "Are you coming to the study session tomorrow?" };
+                string[] dmResponses = { "Yeah, I'll send them in a bit.", "I think we should focus on the database layer first.", "No, what happened?", "Sure, I can help you with that. Which part is tricky?", "I'll be there, see you then!" };
+                
                 for (int i = 0; i < msgCount; i++)
                 {
                     var author = i % 2 == 0 ? f.RequesterId : f.AddresseeId;
+                    var content = i == 0 ? dmStarters[Rng.Next(dmStarters.Length)] : 
+                                  i == 1 ? dmResponses[Rng.Next(dmResponses.Length)] :
+                                  $"Message {i+1}: This is part of a longer academic discussion about topics like software architecture, distributed systems, and modern web development. We are collaborating on a research project for the Computer Science department.";
+                    
                     messages.Add(new Message
                     {
                         Id = Guid.NewGuid(),
                         ConversationId = convId,
                         AuthorId = author,
-                        Content = $"DM message {i+1} between friends.",
+                        Content = content,
                         CreatedAt = f.CreatedAt.AddDays(1).AddMinutes(i * 15),
                         ModerationStatus = AskNLearn.Domain.Entities.Core.ModerationStatus.Approved
                     });
@@ -485,10 +419,38 @@ namespace AskNLearn.Infrastructure.Persistance
             await BulkInsertAsync(ctx, conversations, "DirectConversations", "DirectConversations");
             await BulkInsertAsync(ctx, participants, "DirectConversationParticipants", "DirectConversationParticipants");
             await BulkInsertAsync(ctx, messages, "DirectMessages", "Messages");
+
+            // SEED RESOURCES
+            await SeedResourcesAsync(ctx, users);
+        }
+
+        private static async Task SeedResourcesAsync(ApplicationDbContext ctx, List<ApplicationUser> users)
+        {
+            if (await ctx.StoredFiles.AnyAsync(f => f.ModuleContext == "Resources")) return;
+            var resources = new List<StoredFile>();
+            string[] fileNames = { "Course_Notes_Week1.pdf", "Algorithm_CheatSheet.docx", "Project_Proposal.pdf", "Exam_Prep_2025.pdf", "Database_Schema_v2.png" };
+            for (int i = 0; i < 20; i++)
+            {
+                var uploader = users[Rng.Next(users.Count)];
+                var name = fileNames[Rng.Next(fileNames.Length)];
+                resources.Add(new StoredFile
+                {
+                    Id = Guid.NewGuid(),
+                    FileName = $"{i}_{name}",
+                    FilePath = $"/uploads/resources/sample_{i}.pdf",
+                    FileType = name.EndsWith(".pdf") ? "application/pdf" : name.EndsWith(".png") ? "image/png" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    FileSize = Rng.Next(1024, 1024 * 1024 * 5),
+                    UploaderId = uploader.Id,
+                    UploadedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 30)),
+                    ModuleContext = "Resources"
+                });
+            }
+            await BulkInsertAsync(ctx, resources, "Resources", "StoredFiles");
         }
 
         private static async Task SeedNotificationsAsync(ApplicationDbContext ctx, List<ApplicationUser> users)
         {
+            if (await ctx.Notifications.AnyAsync()) return;
             var notifications = new List<Notification>();
             string[] titles = { "New Connection Request", "Connection Accepted", "New Message", "Post Liked", "Event Reminder" };
             foreach (var u in users.Take(15))
@@ -510,31 +472,6 @@ namespace AskNLearn.Infrastructure.Persistance
             await BulkInsertAsync(ctx, notifications, "Notifications", "Notifications");
         }
 
-        private static async Task SeedLearningResourcesAsync(ApplicationDbContext ctx, List<ApplicationUser> users, List<StudyGroup> groups)
-        {
-            var resources = new List<LearningResource>();
-            string[] types = { "PDF", "DOCX", "PPT", "ZIP" };
-            foreach (var g in groups.Take(3))
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    var uploader = users[Rng.Next(users.Count)];
-                    resources.Add(new LearningResource
-                    {
-                        Id = Guid.NewGuid(),
-                        GroupId = g.Id,
-                        Title = $"Resource {i+1} for {g.Name}",
-                        Description = "Useful study material.",
-                        ResourceType = types[Rng.Next(types.Length)],
-                        Url = $"/uploads/resources/sample-{i+1}.{types[Rng.Next(types.Length)].ToLower()}",
-                        UploaderId = uploader.Id,
-                        CreatedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 30)),
-                        DownloadCount = Rng.Next(5, 100)
-                    });
-                }
-            }
-            await BulkInsertAsync(ctx, resources, "LearningResources", "LearningResources");
-        }
 
         private static async Task BulkInsertAsync<T>(ApplicationDbContext ctx, List<T> data, string label, string tableName) where T : class
         {

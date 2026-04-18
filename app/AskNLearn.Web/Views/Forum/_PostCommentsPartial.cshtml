@@ -93,7 +93,7 @@
     }
 }
 
-<div class="p-4 rounded-xl" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass);">
+<div class="py-2">
     <!-- Comment Input Form -->
     <form asp-controller="Forum" asp-action="AddComment" method="post" enctype="multipart/form-data" 
           onsubmit="submitCommentAsync(event, this)" class="d-flex flex-column gap-3 mb-4">
@@ -109,8 +109,8 @@
             </div>
             <button type="submit" class="btn btn-premium px-4" style="height: 48px;">Post</button>
         </div>
-        <div class="d-flex align-items-center gap-2 overflow-hidden" style="padding-left: 2.75rem;">
-            <label class="cursor-pointer d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-lg border text-muted fw-bold hover-glow transition-all mb-0" style="font-size: 0.75rem; border-color: var(--border-glass);">
+        <div class="d-flex align-items-center gap-2 overflow-hidden" style="padding-left: 3.25rem;">
+            <label class="cursor-pointer d-flex align-items-center gap-1.5 text-muted fw-bold hover-text-white transition-all mb-0" style="font-size: 0.75rem;">
                 <span class="material-symbols-outlined" style="font-size: 1rem;">attach_file</span>
                 <span>Attach File</span>
                 <input type="file" name="Attachment" class="d-none" onchange="updateFileName(this)" accept=".pdf,.docx,.jpeg,.jpg,.png" />

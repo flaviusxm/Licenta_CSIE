@@ -268,16 +268,12 @@ namespace AskNLearn.Web.Controllers
                 .Include(r => r.Reporter)
                 .Include(r => r.ReportedPost)
                 .Include(r => r.ReportedMessage)
-                .Include(r => r.ReportedResource)
                 .Where(r => r.Status == ReportStatus.Pending);
 
             if (filter == "POST")
                 query = query.Where(r => r.ReportedPostId != null);
             else if (filter == "COMMENT")
                 query = query.Where(r => r.ReportedMessageId != null);
-
-            int totalCount = await query.CountAsync();
-            Response.Headers.Add("X-Total-Count", totalCount.ToString());
 
             var reports = await query
                 .OrderByDescending(r => r.CreatedAt)
@@ -376,9 +372,6 @@ namespace AskNLearn.Web.Controllers
                 Posts = await _context.Posts.CountAsync(),
                 Messages = await _context.Messages.CountAsync(),
                 VerificationRequests = await _context.VerificationRequests.CountAsync(),
-                StudyGroups = await _context.StudyGroups.CountAsync(),
-                Channels = await _context.Channels.CountAsync(),
-                Events = await _context.Events.CountAsync(),
                 Votes = await _context.PostVotes.CountAsync(),
                 Ranks = await _context.UserRanks.CountAsync(),
                 DatabaseProvider = _context is DbContext dc ? dc.Database.ProviderName : "Unknown"

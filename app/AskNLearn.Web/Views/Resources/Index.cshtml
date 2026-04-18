@@ -1,246 +1,141 @@
-@using AskNLearn.Domain.Entities.StudyGroup
-@using Microsoft.AspNetCore.Identity
 @using AskNLearn.Domain.Entities.Core
-@inject UserManager<ApplicationUser> UserManager
-@model List<LearningResource>
+@model List<StoredFile>
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = "Resources Hub";
-    var currentUserId = UserManager.GetUserId(User);
-    var isAdmin = User.IsInRole("Admin");
+    ViewData["Title"] = "Academic Resources";
 }
 
-<div class="container py-5 max-w-7xl animate-entrance">
-    <div class="d-flex flex-column gap-5">
-        <!-- Header -->
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
-            <div>
-                <h2 class="display-6 fw-bold text-white tracking-tight mb-2">Resources Hub</h2>
-                <div class="d-flex align-items-center gap-3">
-                    <p class="text-muted fs-5 fw-medium m-0" style="max-width: 600px;">Access and share study materials with your peers.</p>
+<div class="d-flex h-100 flex-column overflow-hidden">
+    <!-- Header Area (Discord-like) -->
+    <div class="px-4 py-3 border-bottom border-glass d-flex align-items-center justify-content-between bg-black-alpha-20">
+        <div>
+            <h2 class="h5 fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-accent">folder_open</span>
+                Academic Resources
+            </h2>
+            <p class="text-muted small mb-0">Browse and share learning materials with your colleagues</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-premium btn-sm d-flex align-items-center gap-2 px-3" onclick="document.getElementById('fileUpload').click()">
+                <span class="material-symbols-outlined fs-6">upload</span>
+                Upload Material
+            </button>
+            <form asp-action="Upload" method="post" enctype="multipart/form-data" class="d-none">
+                <input type="file" id="fileUpload" name="file" onchange="this.form.submit()" />
+            </form>
+        </div>
+    </div>
+
+    <div class="flex-grow-1 d-flex overflow-hidden">
+        <!-- Sidebar Filters (Discord-like) -->
+        <aside class="sidebar-filters border-right border-glass p-3 d-none d-lg-block" style="width: 240px;">
+            <div class="mb-4">
+                <label class="text-muted small fw-bold text-uppercase tracking-widest mb-2 d-block">Filter by type</label>
+                <div class="d-flex flex-column gap-1">
+                    <a href="?type=" class="nav-link-flat @(string.IsNullOrEmpty(Context.Request.Query["type"]) ? "active" : "")">All Files</a>
+                    <a href="?type=pdf" class="nav-link-flat @(Context.Request.Query["type"] == "pdf" ? "active" : "")">PDF Documents</a>
+                    <a href="?type=image" class="nav-link-flat @(Context.Request.Query["type"] == "image" ? "active" : "")">Images</a>
+                    <a href="?type=word" class="nav-link-flat @(Context.Request.Query["type"] == "word" ? "active" : "")">Word Docs</a>
                 </div>
             </div>
-            <div class="flex-shrink-0 d-flex gap-3">
-                <button class="btn btn-premium shadow-lg" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                    <span class="material-symbols-outlined fs-5">upload</span>
-                    Upload
-                </button>
+            
+            <div class="mb-4">
+                <label class="text-muted small fw-bold text-uppercase tracking-widest mb-2 d-block">Search</label>
+                <form action="" method="get">
+                    <input type="hidden" name="type" value="@Context.Request.Query["type"]" />
+                    <input type="text" name="searchTerm" class="form-control form-control-glass sm" placeholder="Search files..." value="@Context.Request.Query["searchTerm"]" />
+                </form>
             </div>
-        </div>
+        </aside>
 
-        <!-- Search bar -->
-        <div class="flex-grow-1 position-relative">
-            <span class="material-symbols-outlined position-absolute top-50 translate-middle-y text-muted" style="left: 1.5rem;">search</span>
-            <input id="resourceSearch" class="form-control form-control-glass w-100 shadow-lg"
-                   style="padding: 1rem 1.5rem 1rem 3.5rem; border-radius: 1.5rem;"
-                   placeholder="Search for notes, PDFs, or exam papers..." type="text" />
-        </div>
-
-        <!-- Resource Grid -->
-        <div class="row g-4" id="resource-grid">
-            @if (Model == null || !Model.Any())
-            {
-                <div class="col-12 py-5 text-center opacity-50">
-                    <span class="material-symbols-outlined display-1 mb-4 text-muted">folder_open</span>
-                    <h3 class="fw-black text-white text-uppercase tracking-widest">No resources found</h3>
-                    <p class="text-muted">Be the first to share something with the community!</p>
-                </div>
-            }
-            else
-            {
-                foreach (var resource in Model)
+        <!-- Main Feed (Reddit/Flat style) -->
+        <main class="flex-grow-1 overflow-y-auto custom-scrollbar p-4">
+            <div class="max-w-4xl mx-auto">
+                @if (!Model.Any())
                 {
-                    var isDoc = resource.ResourceType?.Contains("DOC", StringComparison.OrdinalIgnoreCase) == true;
-                    var isPdf = resource.ResourceType?.Contains("PDF", StringComparison.OrdinalIgnoreCase) == true;
-                    var icon = isPdf ? "picture_as_pdf" : isDoc ? "description" : "article";
-                    var iconColor = isPdf ? "var(--color-mint-bright)" : isDoc ? "#3b82f6" : "var(--color-emerald)";
-                    var iconBg = isPdf ? "rgba(0, 245, 160, 0.1)" : isDoc ? "rgba(59, 130, 246, 0.1)" : "rgba(0,245,160,0.1)";
-                    var canDelete = isAdmin || resource.UploaderId == currentUserId;
-
-                    <div class="col-12 col-md-6 col-lg-4 resource-item" id="resource-@resource.Id">
-                        <div class="glass-card p-4 d-flex flex-column h-100 gap-4 group transition-all hover-glow border-glass-strong shadow-lg">
-                            <div class="d-flex align-items-start justify-content-between">
-                                <div class="rounded-4 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; background: @iconBg; color: @iconColor; border: 1px solid rgba(255,255,255,0.1);">
-                                    <span class="material-symbols-outlined fs-2">@icon</span>
-                                </div>
-                                <div class="dropdown">
-                                    <button class="btn btn-link p-1 text-muted hover-text-white transition-colors text-decoration-none shadow-none" data-bs-toggle="dropdown">
-                                        <span class="material-symbols-outlined">more_vert</span>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end glass-card border-glass shadow-xl p-2" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border-radius: 1rem; min-width: 160px;">
-                                        <li>
-                                            <button onclick="reportResource('@resource.Id')" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded-3 text-muted hover-bg-glass transition-all">
-                                                <span class="material-symbols-outlined fs-5">flag</span>
-                                                <span class="small fw-bold text-uppercase tracking-widest" style="font-size: 0.65rem;">Report</span>
-                                            </button>
-                                        </li>
-                                        @if (canDelete)
-                                        {
-                                            <li><hr class="dropdown-divider opacity-10"></li>
-                                            <li>
-                                                <button onclick="deleteResource('@resource.Id')" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded-3 text-danger hover-bg-glass transition-all">
-                                                    <span class="material-symbols-outlined fs-5">delete</span>
-                                                    <span class="small fw-bold text-uppercase tracking-widest" style="font-size: 0.65rem;">Delete</span>
-                                                </button>
-                                            </li>
-                                        }
-                                    </ul>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 onclick="openPreview('@resource.Url', '@resource.Title')" class="fs-5 fw-bold text-white mb-2 transition-colors cursor-pointer hover-text-aurora">@resource.Title</h3>
-                                <p class="text-muted small m-0">Shared by @(resource.Uploader?.FullName ?? "User") • @resource.CreatedAt.ToString("MMM dd, yyyy")</p>
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between mt-auto pt-3" style="border-top: 1px solid var(--border-glass);">
-                                <span class="badge bg-glass text-muted fw-bold text-uppercase tracking-widest" style="font-size: 0.6rem;">@resource.ResourceType</span>
-                                <div class="d-flex gap-2">
-                                    <button onclick="openPreview('@resource.Url', '@resource.Title')" class="btn btn-sm btn-glass d-flex align-items-center gap-1 px-3 py-1 rounded-pill shadow-sm text-decoration-none text-white">
-                                        <span class="material-symbols-outlined small">visibility</span>
-                                        Preview
-                                    </button>
-                                    <a href="@resource.Url" download class="btn btn-sm btn-premium d-flex align-items-center gap-1 px-3 py-1 rounded-pill shadow-sm text-decoration-none text-white">
-                                        <span class="material-symbols-outlined small">download</span>
-                                        Download
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="text-center py-5 opacity-50">
+                        <span class="material-symbols-outlined display-1 mb-3">draft_orders</span>
+                        <h3 class="h4">No resources found</h3>
+                        <p>Be the first to upload a study material!</p>
                     </div>
                 }
-            }
-        </div>
+                else
+                {
+                    <div class="d-flex flex-column gap-1">
+                        @foreach (var file in Model)
+                        {
+                            <div class="resource-item d-flex align-items-center gap-3 p-3 rounded-lg hover-bg-glass transition-all border-bottom border-glass-soft">
+                                <div class="file-icon rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+                                    <span class="material-symbols-outlined fs-4 text-accent">
+                                        @(file.FileType?.Contains("pdf") == true ? "picture_as_pdf" : 
+                                          file.FileType?.Contains("image") == true ? "image" : 
+                                          file.FileType?.Contains("word") == true ? "description" : "draft")
+                                    </span>
+                                </div>
+                                
+                                <div class="flex-grow-1 min-w-0">
+                                    <h4 class="h6 fw-bold text-white mb-0 text-truncate">@file.FileName</h4>
+                                    <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.75rem;">
+                                        <span>Uploaded by @(file.Uploader?.FullName ?? "Unknown")</span>
+                                        <span>•</span>
+                                        <span>@((file.FileSize ?? 0) / 1024) KB</span>
+                                        <span>•</span>
+                                        <span>@file.UploadedAt.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-1">
+                                    <a asp-action="Download" asp-route-id="@file.Id" class="btn btn-glass btn-icon-sm" title="Download">
+                                        <span class="material-symbols-outlined fs-5">download</span>
+                                    </a>
+                                    @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == file.UploaderId || User.IsInRole("Admin"))
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@file.Id" method="post" onsubmit="return confirm('Delete this file?')" class="m-0">
+                                            <button type="submit" class="btn btn-glass btn-icon-sm text-danger" title="Delete">
+                                                <span class="material-symbols-outlined fs-5">delete</span>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </main>
     </div>
 </div>
 
-
-
-@section Scripts {
-    <script>
-        function openPreview(url, title) {
-            const frame = document.getElementById('previewFrame');
-            const previewTitle = document.getElementById('previewTitle');
-            const previewSub = document.getElementById('previewSub');
-            const modalEl = document.getElementById('previewModal');
-            
-            previewTitle.innerText = title;
-            previewSub.innerText = "Interactive Preview";
-            
-            let viewerUrl = url;
-            const ext = url.split('.').pop().toLowerCase();
-            const isOffice = ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext);
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-            if (isOffice) {
-                if (isLocal) {
-                    // Google Docs Viewer cannot reach localhost. Show fallback.
-                    frame.src = "about:blank";
-                    setTimeout(() => {
-                        const doc = frame.contentDocument || frame.contentWindow.document;
-                        doc.body.innerHTML = `
-                            <div style="color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 20px;">
-                                <span class="material-symbols-outlined" style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;">visibility_off</span>
-                                <h2 style="margin-bottom: 10px;">Preview Unavailable</h2>
-                                <p style="opacity: 0.7; max-width: 400px; line-height: 1.5;">
-                                    Google Document Viewer cannot access files on <b>localhost</b>. 
-                                    Please download the file to view it, or test this feature on a live environment.
-                                </p>
-                                <a href="${url}" download class="btn btn-premium" style="margin-top: 20px; text-decoration: none; padding: 10px 20px; border-radius: 20px; color: black; font-weight: bold; background: var(--gradient-aurora);">Download Now</a>
-                            </div>
-                        `;
-                    }, 100);
-                } else {
-                    viewerUrl = `https://docs.google.com/viewer?url=${window.location.origin}${encodeURIComponent(url)}&embedded=true`;
-                    frame.src = viewerUrl;
-                }
-            } else {
-                // Direct preview for PDF, Images, or anything else
-                frame.src = viewerUrl;
-            }
-            
-            new bootstrap.Modal(modalEl).show();
-        }
-
-        async function deleteResource(id) {
-            if (!confirm("Are you sure you want to delete this resource?")) return;
-            try {
-                const resp = await fetch(`/Resources/Delete/${id}`, { method: 'POST' });
-                if (resp.ok) {
-                    const el = document.getElementById(`resource-${id}`);
-                    el.style.opacity = '0';
-                    el.style.transform = 'scale(0.9)';
-                    setTimeout(() => el.remove(), 400);
-                }
-            } catch (e) { window.Notify.error("Error deleting resource."); }
-        }
-
-        async function reportResource(id) {
-            const reason = prompt("Why are you reporting this resource?");
-            if (!reason) return;
-            try {
-                await fetch(`/Resources/Report`, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `id=${id}&reason=${encodeURIComponent(reason)}`
-                });
-                window.Notify.success("Thank you. Report received.");
-            } catch (e) {}
-        }
-
-        document.getElementById('resourceSearch')?.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            document.querySelectorAll('.resource-item').forEach(item => {
-                const text = item.innerText.toLowerCase();
-                item.style.display = text.includes(term) ? 'block' : 'none';
-            });
-        });
-    </script>
-}
-@section Modals {
-    <!-- Upload Modal -->
-    <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content glass-card p-2 shadow-2xl" style="background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(40px); border-radius: 1.5rem; border: 1px solid var(--border-glass-strong);">
-                <div class="modal-header border-0 pb-0 px-4 pt-4">
-                    <h4 class="modal-title fw-black text-white text-uppercase tracking-widest" style="font-size: 1rem;">Share Resource</h4>
-                    <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <form asp-action="Upload" asp-controller="Resources" method="post" enctype="multipart/form-data">
-                        <div class="mb-4">
-                            <label class="form-label text-muted fw-bold small text-uppercase tracking-widest mb-2" style="font-size: 0.65rem;">Resource Title</label>
-                            <input type="text" name="title" class="form-control form-control-glass py-3 px-4 fw-bold text-white" placeholder="e.g. Data Structures Notes" required />
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label text-muted fw-bold small text-uppercase tracking-widest mb-2" style="font-size: 0.65rem;">Description (Optional)</label>
-                            <textarea name="description" class="form-control form-control-glass py-3 px-4 text-white" rows="3" placeholder="Add more context or details..."></textarea>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label text-muted fw-bold small text-uppercase tracking-widest mb-2" style="font-size: 0.65rem;">Select File</label>
-                            <input type="file" name="file" class="form-control form-control-glass py-3" required />
-                            <p class="text-muted small mt-2 mb-0" style="font-size: 0.7rem;">PDF, Word, or Images are preferred.</p>
-                        </div>
-                        <button type="submit" class="btn btn-premium w-100 py-3 rounded-pill fw-black text-uppercase tracking-widest shadow-lg">Post Resource</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Preview Modal -->
-    <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content glass-card border-glass-strong" style="background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(40px); border-radius: 1.5rem; height: 90vh;">
-                <div class="modal-header border-glass py-3">
-                    <div>
-                        <h4 class="modal-title fw-bold text-white mb-0" id="previewTitle">Preview</h4>
-                        <p class="text-muted small mb-0" id="previewSub">Loading document viewer...</p>
-                    </div>
-                    <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0 position-relative overflow-hidden" style="background: #1e293b;">
-                    <iframe id="previewFrame" src="" class="w-100 h-100 border-0"></iframe>
-                </div>
-            </div>
-        </div>
-    </div>
-}
+<style>
+    .nav-link-flat {
+        display: block;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    .nav-link-flat:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-pure);
+    }
+    .nav-link-flat.active {
+        background: var(--color-accent-soft);
+        color: var(--text-pure);
+    }
+    .resource-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+    .btn-icon-sm {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+    }
+    .bg-black-alpha-20 { background: rgba(0,0,0,0.2); }
+</style>

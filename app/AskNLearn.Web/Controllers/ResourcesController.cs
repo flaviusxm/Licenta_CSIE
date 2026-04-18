@@ -1,119 +1,108 @@
-using Microsoft.AspNetCore.Mvc;
-using AskNLearn.Application.Common.Interfaces;
-using AskNLearn.Domain.Entities.StudyGroup;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using AskNLearn.Domain.Entities.Core;
-using System.Security.Claims;
+using AskNLearn.Infrastructure.Persistance;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace AskNLearn.Web.Controllers;
-
-[Authorize]
-[Route("Resources")]
-public class ResourcesController : Controller
+namespace AskNLearn.Web.Controllers
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IFileService _fileService;
-    private readonly UserManager<ApplicationUser> _userManager;
-
-    public ResourcesController(
-        IApplicationDbContext context, 
-        IFileService fileService,
-        UserManager<ApplicationUser> userManager)
+    [Authorize]
+    [Route("resources")]
+    public class ResourcesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IWebHostEnvironment environment) : Controller
     {
-        _context = context;
-        _fileService = fileService;
-        _userManager = userManager;
-    }
-
-    [HttpGet("")]
-    public async Task<IActionResult> Index()
-    {
-        ViewData["ActivePage"] = "Resources";
-        var resources = await _context.LearningResources
-            .Include(r => r.Uploader)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync();
-        return View(resources);
-    }
-
-    [HttpPost("Delete/{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        var resource = await _context.LearningResources.FindAsync(id);
-        if (resource == null) return NotFound();
-
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var isAdmin = User.IsInRole("Admin");
-
-        if (resource.UploaderId != userId && !isAdmin)
+        [HttpGet("")]
+        public async Task<IActionResult> Index(string? searchTerm, string? type)
         {
-            return Forbid();
-        }
-        
-        _context.LearningResources.Remove(resource);
-        await _context.SaveChangesAsync(default);
-        return Ok();
-    }
+            var query = context.StoredFiles
+                .Include(f => f.Uploader)
+                .AsQueryable();
 
-    [HttpPost("Report")]
-    public async Task<IActionResult> Report(Guid id, string reason)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-        var report = new Report
-        {
-            Id = Guid.NewGuid(),
-            ReporterId = userId,
-            ReportedResourceId = id,
-            Reason = ReportReason.Inappropriate, // Defaulting as reason is free text from prompt
-            Description = $"User reported with reason: {reason}",
-            Status = ReportStatus.Pending,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _context.Reports.Add(report);
-        await _context.SaveChangesAsync(default);
-
-        return Ok(new { message = "Report submitted successfully" });
-    }
-
-    [HttpPost("Upload")]
-    public async Task<IActionResult> Upload(IFormFile file, string title, string? description)
-    {
-        if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
-        if (string.IsNullOrEmpty(title)) return BadRequest("Title is required.");
-
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-        try
-        {
-            using var stream = file.OpenReadStream();
-            var fileUrl = await _fileService.UploadFileAsync(stream, file.FileName, "resources");
-
-            var resource = new LearningResource
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                Id = Guid.NewGuid(),
-                Title = title,
-                Description = description,
-                Url = fileUrl,
-                ResourceType = Path.GetExtension(file.FileName).TrimStart('.').ToUpper(),
+                query = query.Where(f => f.FileName.Contains(searchTerm));
+            }
+
+            if (!string.IsNullOrEmpty(type))
+            {
+                query = query.Where(f => f.FileType != null && f.FileType.Contains(type));
+            }
+
+            var files = await query
+                .OrderByDescending(f => f.UploadedAt)
+                .ToListAsync();
+
+            return View(files);
+        }
+
+        [HttpPost("upload")]
+        public async Task<IActionResult> Upload(IFormFile file)
+        {
+            if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
+
+            var userId = userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var uploadsPath = Path.Combine(environment.WebRootPath, "uploads", "resources");
+            if (!Directory.Exists(uploadsPath)) Directory.CreateDirectory(uploadsPath);
+
+            var fileId = Guid.NewGuid();
+            var extension = Path.GetExtension(file.FileName);
+            var filePath = Path.Combine("uploads", "resources", $"{fileId}{extension}");
+            var absolutePath = Path.Combine(environment.WebRootPath, filePath);
+
+            using (var stream = new FileStream(absolutePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var storedFile = new StoredFile
+            {
+                Id = fileId,
+                FileName = file.FileName,
+                FilePath = "/" + filePath.Replace("\\", "/"),
+                FileType = file.ContentType,
+                FileSize = file.Length,
                 UploaderId = userId,
-                GroupId = null, 
-                CreatedAt = DateTime.UtcNow
+                UploadedAt = DateTime.UtcNow,
+                ModuleContext = "Resources"
             };
 
-            _context.LearningResources.Add(resource);
-            await _context.SaveChangesAsync(default);
+            context.StoredFiles.Add(storedFile);
+            await context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
-        catch (Exception ex)
+
+        [HttpPost("delete/{id}")]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            return BadRequest($"Error uploading file: {ex.Message}");
+            var userId = userManager.GetUserId(User);
+            var file = await context.StoredFiles.FindAsync(id);
+
+            if (file == null) return NotFound();
+            if (file.UploaderId != userId && !User.IsInRole("Admin")) return Forbid();
+
+            var absolutePath = Path.Combine(environment.WebRootPath, file.FilePath.TrimStart('/'));
+            if (System.IO.File.Exists(absolutePath)) System.IO.File.Delete(absolutePath);
+
+            context.StoredFiles.Remove(file);
+            await context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet("download/{id}")]
+        public async Task<IActionResult> Download(Guid id)
+        {
+            var file = await context.StoredFiles.FindAsync(id);
+            if (file == null) return NotFound();
+
+            var absolutePath = Path.Combine(environment.WebRootPath, file.FilePath.TrimStart('/'));
+            if (!System.IO.File.Exists(absolutePath)) return NotFound();
+
+            var bytes = await System.IO.File.ReadAllBytesAsync(absolutePath);
+            return File(bytes, file.FileType ?? "application/octet-stream", file.FileName);
         }
     }
 }

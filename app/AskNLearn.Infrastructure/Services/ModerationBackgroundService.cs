@@ -47,10 +47,18 @@ namespace AskNLearn.Infrastructure.Services
 
                         if (task.Target == ModerationTarget.IdentityVerification)
                         {
-                            var vResult = await guardianClient.VerifyDocumentAsync(null, task.Content);
-                            await ProcessIdentityVerification(dbContext, task.Id, vResult, stoppingToken);
-                            _logger.LogInformation("[Shield] Identity validation completed for Request {Id}. Result: {Status}", 
-                                task.Id, vResult.IsValid ? "Verified" : "Rejected/Review");
+                            var fileService = scope.ServiceProvider.GetRequiredService<IFileService>();
+                            var request = await dbContext.VerificationRequests.FindAsync(new object[] { task.Id }, stoppingToken);
+                            
+                            if (request != null)
+                            {
+                                byte[] studentIdBytes = await fileService.ReadFileAsync(request.StudentIdUrl);
+                                var vResult = await guardianClient.VerifyDocumentAsync(studentIdBytes);
+                                await ProcessIdentityVerification(dbContext, task.Id, vResult, stoppingToken);
+                                
+                                _logger.LogInformation("[Shield] Identity validation completed for Request {Id}. Result: {Status}", 
+                                    task.Id, vResult.IsValid ? "Verified" : "Rejected/Review");
+                            }
                         }
                         else
                         {
@@ -73,6 +81,10 @@ namespace AskNLearn.Infrastructure.Services
                                 case ModerationTarget.Report:
                                     await ProcessReportModeration(dbContext, task.Id, result, stoppingToken);
                                     break;
+
+                                case ModerationTarget.Resource:
+                                    await ProcessResourceModeration(dbContext, task.Id, result, stoppingToken);
+                                    break;
                             }
 
                             _logger.LogInformation("[Shield] Moderation completed for {Target} {Id}. Result: {Status}", 
@@ -81,9 +93,10 @@ namespace AskNLearn.Infrastructure.Services
                     }
 
                     // 2. Periodic Maintenance (Maintenance Cycle)
-                    if (DateTime.UtcNow - _lastCleanupTime > TimeSpan.FromHours(1))
+                    if (DateTime.UtcNow - _lastCleanupTime > TimeSpan.FromMinutes(15))
                     {
                         await PerformMaintenanceTasks(stoppingToken);
+                        await ScanNewResources(stoppingToken);
                         _lastCleanupTime = DateTime.UtcNow;
                     }
                 }
@@ -130,10 +143,6 @@ namespace AskNLearn.Infrastructure.Services
                         .ToListAsync(ct);
                     if (communityMembers.Any()) dbContext.CommunityMemberships.RemoveRange(communityMembers);
 
-                    var groupMembers = await dbContext.GroupMemberships
-                        .Where(m => userIds.Contains(m.UserId))
-                        .ToListAsync(ct);
-                    if (groupMembers.Any()) dbContext.GroupMemberships.RemoveRange(groupMembers);
 
                     var notifications = await dbContext.Notifications
                         .Where(n => userIds.Contains(n.UserId))
@@ -166,20 +175,60 @@ namespace AskNLearn.Infrastructure.Services
             }
         }
 
+        private async Task ScanNewResources(CancellationToken ct)
+        {
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+                
+                var unscannedFiles = await dbContext.StoredFiles
+                    .Where(f => f.SecurityNotes == null)
+                    .Take(10)
+                    .ToListAsync(ct);
+
+                foreach (var file in unscannedFiles)
+                {
+                    _queue.Enqueue(new ModerationTask 
+                    { 
+                        Id = file.Id, 
+                        Target = ModerationTarget.Resource, 
+                        Content = file.FileName,
+                        Title = file.ModuleContext
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error scanning new resources.");
+            }
+        }
+
+        private async Task ProcessResourceModeration(IApplicationDbContext db, Guid id, (bool IsSafe, string Reason) result, CancellationToken ct)
+        {
+            var file = await db.StoredFiles.FindAsync(new object[] { id }, ct);
+            if (file != null)
+            {
+                file.IsSafe = result.IsSafe;
+                file.SecurityNotes = $"[Shield AI Scan]: {result.Reason}";
+                await db.SaveChangesAsync(ct);
+            }
+        }
+
         private async Task ProcessIdentityVerification(IApplicationDbContext db, Guid requestId, (bool IsValid, string Details, string Recommendation) result, CancellationToken ct)
         {
             var request = await db.VerificationRequests.FindAsync(new object[] { requestId }, ct);
             if (request != null)
             {
-                bool autoApproved = result.IsValid && result.Recommendation.Contains("Approved", StringComparison.OrdinalIgnoreCase);
+                bool autoApproved = result.IsValid;
                 
                 request.Status = autoApproved ? Status.Approved : Status.Pending;
-                request.AdminNotes = $"[Guardian Shield AI]: {result.Recommendation} | Details: {result.Details}";
+                request.AdminNotes = $"[Guardian Shield Moondream AI]: {result.Recommendation} | Details: {result.Details}";
                 
                 if (autoApproved)
                 {
                     request.ProcessedAt = DateTime.UtcNow;
-                    request.ProcessedBy = "SYSTEM_AI_SHIELD";
+                    request.ProcessedBy = "SYSTEM_AI_GUARDIAN";
                     
                     var user = await db.Users.FindAsync(new object[] { request.UserId }, ct);
                     if (user != null)
@@ -198,7 +247,7 @@ namespace AskNLearn.Infrastructure.Services
             var post = await db.Posts.FindAsync(new object[] { id }, ct);
             if (post != null)
             {
-                post.ModerationStatus = result.IsSafe ? ModerationStatus.Approved : ModerationStatus.Flagged;
+                post.ModerationStatus = result.IsSafe ? ModerationStatus.Approved : ModerationStatus.Removed;
                 post.ModerationReason = result.Reason;
                 await db.SaveChangesAsync(ct);
             }
@@ -209,7 +258,7 @@ namespace AskNLearn.Infrastructure.Services
             var message = await db.Messages.FindAsync(new object[] { id }, ct);
             if (message != null)
             {
-                message.ModerationStatus = result.IsSafe ? ModerationStatus.Approved : ModerationStatus.Flagged;
+                message.ModerationStatus = result.IsSafe ? ModerationStatus.Approved : ModerationStatus.Removed;
                 message.ModerationReason = result.Reason;
                 await db.SaveChangesAsync(ct);
             }
@@ -224,28 +273,24 @@ namespace AskNLearn.Infrastructure.Services
 
             if (report != null)
             {
-                // If AI confirms it's unsafe, remove the content and resolve report
                 if (!result.IsSafe)
                 {
                     report.Status = ReportStatus.Resolved;
-                    
                     if (report.ReportedPost != null)
                     {
                         report.ReportedPost.ModerationStatus = ModerationStatus.Removed;
-                        report.ReportedPost.ModerationReason = $"[Guardian Shield - AI Confirmed Report]: {result.Reason}";
+                        report.ReportedPost.ModerationReason = $"[Shield AI Confirmed]: {result.Reason}";
                     }
                     if (report.ReportedMessage != null)
                     {
                         report.ReportedMessage.ModerationStatus = ModerationStatus.Removed;
-                        report.ReportedMessage.ModerationReason = $"[Guardian Shield - AI Confirmed Report]: {result.Reason}";
+                        report.ReportedMessage.ModerationReason = $"[Shield AI Confirmed]: {result.Reason}";
                     }
                 }
                 else
                 {
-                    // If AI says it's safe despite report, mark report but keep content visible
                     report.Status = ReportStatus.Dismissed;
                 }
-                
                 await db.SaveChangesAsync(ct);
             }
         }

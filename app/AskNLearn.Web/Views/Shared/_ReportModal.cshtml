@@ -69,7 +69,6 @@
             if (type === 'POST') url = '/hubs/communities/v1/discussions/report';
             else if (type === 'COMMENT') url = '/hubs/communities/v1/comments/report';
             else if (type === 'MESSAGE') url = '/communication/messaging/messages/report';
-            else if (type === 'RESOURCE') url = '/Resources/Report';
 
             const response = await fetch(url + `?id=${id}&reason=${reason}&description=${encodeURIComponent(description)}`, {
                 method: 'POST',

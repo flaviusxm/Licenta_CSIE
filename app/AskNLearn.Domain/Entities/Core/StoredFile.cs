@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AskNLearn.Domain.Entities.Core
@@ -37,5 +37,7 @@ namespace AskNLearn.Domain.Entities.Core
         public string? ModuleContext { get; set; } 
 
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+        public bool IsSafe { get; set; } = true;
+        public string? SecurityNotes { get; set; }
     }
 }

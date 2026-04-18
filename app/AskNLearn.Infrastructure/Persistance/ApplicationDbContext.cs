@@ -4,7 +4,6 @@ using AskNLearn.Domain.Entities.Core;
 using AskNLearn.Domain.Entities.Gamification;
 using AskNLearn.Domain.Entities.Messaging;
 using AskNLearn.Domain.Entities.SocialFeed;
-using AskNLearn.Domain.Entities.StudyGroup;
 using AskNLearn.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
@@ -40,15 +39,6 @@ namespace AskNLearn.Infrastructure.Persistance
         public DbSet<Tag> Tags { get; set; }
         public DbSet<PostTag> PostTags { get; set; }
 
-        // StudyGroup
-        public DbSet<Channel> Channels { get; set; }
-        public DbSet<ChannelCategory> ChannelCategories { get; set; }
-        public DbSet<GroupInvite> GroupInvites { get; set; }
-        public DbSet<GroupMembership> GroupMemberships { get; set; }
-        public DbSet<GroupRole> GroupRoles { get; set; }
-        public DbSet<StudyGroup> StudyGroups { get; set; }
-        public DbSet<LearningResource> LearningResources { get; set; }
-        public DbSet<Event> Events { get; set; }
 
         // Explicit interface implementations if needed, but here we just need public DbSets
         // that match the interface property names.
@@ -132,28 +122,9 @@ namespace AskNLearn.Infrastructure.Persistance
             // SQL SERVER CASCADE FIXES
             // ================================================================
 
-            builder.Entity<GroupMembership>(entity =>
-            {
-                entity.HasOne(gm => gm.Group)
-                    .WithMany(g => g.Members)
-                    .HasForeignKey(gm => gm.GroupId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
-
-            builder.Entity<Channel>(entity =>
-            {
-                entity.HasOne(c => c.Group)
-                    .WithMany(g => g.Channels)
-                    .HasForeignKey(c => c.GroupId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
 
             builder.Entity<Post>(entity =>
             {
-                entity.HasOne(p => p.Channel)
-                    .WithMany()
-                    .HasForeignKey(p => p.ChannelId)
-                    .OnDelete(DeleteBehavior.Restrict);
                 
                 entity.HasOne(p => p.Author)
                     .WithMany()

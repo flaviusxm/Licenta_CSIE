@@ -132,15 +132,15 @@ async function votePost(postId, communityId, value) {
             // Update counts
             countEls.forEach(el => {
                 el.textContent = data.voteCount;
-                el.classList.remove('text-mint', 'text-danger', 'text-white');
-                el.classList.add(data.userVote === 1 ? 'text-mint' : data.userVote === -1 ? 'text-danger' : 'text-white');
+                el.classList.remove('text-accent', 'text-danger', 'text-white');
+                el.classList.add(data.userVote === 1 ? 'text-accent' : data.userVote === -1 ? 'text-danger' : 'text-white');
             });
 
             // Update icons/buttons
             upIcons.forEach(el => {
                 const icon = el.tagName === 'SPAN' ? el : el.querySelector('.material-symbols-outlined');
-                if (icon) icon.style.color = data.userVote === 1 ? 'var(--color-mint-bright)' : '';
-                el.classList.toggle('text-mint', data.userVote === 1);
+                if (icon) icon.style.color = data.userVote === 1 ? 'var(--color-accent)' : '';
+                el.classList.toggle('text-accent', data.userVote === 1);
                 el.classList.toggle('font-weight-bold', data.userVote === 1);
                 el.classList.toggle('text-muted', data.userVote !== 1);
             });

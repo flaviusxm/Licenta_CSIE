@@ -1,4 +1,4 @@
-﻿@{
+@{
     Layout = null;
 }
 <!DOCTYPE html>
@@ -185,14 +185,6 @@
                     <span class="material-symbols-outlined">bookmarks</span>
                     <span>Saved</span>
                 </a>
-                <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-dark font-medium transition-colors cursor-pointer" onclick="showAuthWall('Resources', 'Access shared notes, PDFs, and guides.')" href="javascript:void(0)">
-                    <span class="material-symbols-outlined">school</span>
-                    <span>Resources</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-dark font-medium transition-colors cursor-pointer" onclick="showAuthWall('Study Groups', 'Join live study sessions with verified students.')" href="javascript:void(0)">
-                    <span class="material-symbols-outlined">groups</span>
-                    <span>Study Groups</span>
-                </a>
                 <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-surface-dark font-medium transition-colors cursor-pointer" onclick="showAuthWall('Leaderboard', 'See who is topping the charts this semester.')" href="javascript:void(0)">
                     <span class="material-symbols-outlined">leaderboard</span>
                     <span>Leaderboard</span>
@@ -324,53 +316,6 @@
                                 </div>
                             </div>
                         </article>
-                        <!-- Post Card 2 (Resource) -->
-                        <article class="flex flex-col rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm hover:border-primary/50 transition-colors">
-                            <div class="p-4 flex gap-4">
-                                <!-- Vote Column -->
-                                <div class="flex flex-col items-center gap-1 pt-1">
-                                    <button class="text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_up</span></button>
-                                    <span class="text-sm font-bold text-slate-700 dark:text-white">128</span>
-                                    <button class="text-slate-400 hover:text-red-400 hover:bg-slate-100 dark:hover:bg-[#234248] rounded p-1 transition-colors"><span class="material-symbols-outlined">keyboard_arrow_down</span></button>
-                                </div>
-                                <!-- Content -->
-                                <div class="flex flex-col flex-1 gap-3">
-                                    <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-[#92c0c9]">
-                                        <div class="size-5 rounded bg-emerald-500 flex items-center justify-center text-[10px] text-white font-bold">MA</div>
-                                        <span class="font-medium text-slate-700 dark:text-slate-300">Calculus II</span>
-                                        <span>•</span>
-                                        <span>Posted by u/MathWhiz</span>
-                                        <span>•</span>
-                                        <span>5h ago</span>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Integration Techniques Cheat Sheet (PDF) 📚</h3>
-                                        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
-                                            Compiled all the major integration formulas and techniques into a single page reference sheet. Hope it helps with the midterm!
-                                        </p>
-                                        <!-- Preview Image -->
-                                        <div class="w-full h-48 rounded-lg bg-cover bg-center border border-border-light dark:border-border-dark" data-alt="Preview of a math formula cheat sheet with calculus equations" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDHV_JMHrhHTMPfIyrsfEjkVY3zcmKs61QWVaSDG4q3WS83etoALUAiSqb6MYGc1PFGDAj8Lj5xRsD2sHQjLeFch_M9aivBhRHSSznif6EKxDMc2ttZXd7YzQL1kCl458yG0KBrVBCWlsx9gB9UthZpVHKGwojDV77vShaXmKrH3BFt3_52dpRn6DujeoMOn9Snmyy3_wheTejC21VhSjxcvSCkk-uUjTt-QqW0cIt7vJaJ-i8wWWH3Hc13kuQehrWBxqKiSxms");'></div>
-                                    </div>
-                                    <!-- Tags -->
-                                    <div class="flex flex-wrap gap-2">
-                                        <span class="px-2 py-1 rounded-md bg-slate-100 dark:bg-background-dark text-slate-600 dark:text-[#92c0c9] text-xs font-medium border border-border-light dark:border-border-dark">#Math</span>
-                                        <span class="px-2 py-1 rounded-md bg-slate-100 dark:bg-background-dark text-slate-600 dark:text-[#92c0c9] text-xs font-medium border border-border-light dark:border-border-dark">#MidtermPrep</span>
-                                        <span class="px-2 py-1 rounded-md bg-slate-100 dark:bg-background-dark text-slate-600 dark:text-[#92c0c9] text-xs font-medium border border-border-light dark:border-border-dark">#Resources</span>
-                                    </div>
-                                    <div class="flex items-center gap-4 mt-1">
-                                        <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
-                                            <span class="material-symbols-outlined text-[18px]">chat_bubble</span> 45 Comments
-                                        </button>
-                                        <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors">
-                                            <span class="material-symbols-outlined text-[18px]">share</span> Share
-                                        </button>
-                                        <button class="flex items-center gap-1 text-slate-500 dark:text-[#92c0c9] text-sm hover:text-slate-700 dark:hover:text-white transition-colors ml-auto">
-                                            <span class="material-symbols-outlined text-[18px]">download</span> Download PDF
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
                     </div>
                 </div> <!-- End feed-content -->
                 <!-- Auth Wall Section -->
@@ -380,7 +325,7 @@
                     </div>
                     <h2 id="auth-title" class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Join the Community</h2>
                     <p id="auth-message" class="text-lg text-slate-500 dark:text-[#92c0c9] max-w-md mx-auto mb-8">
-                        Connect with classmates, join live study sessions, and access exclusive resources. Create an account to get started.
+                        Connect with classmates, join live study sessions, and succeed together. Create an account to get started.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
                         <a asp-controller="Auth" asp-action="SignUp" class="inline-flex items-center justify-center px-8 py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-white/10 font-bold text-lg transition-all text-slate-700 dark:text-white">

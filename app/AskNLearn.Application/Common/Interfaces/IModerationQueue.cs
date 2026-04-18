@@ -26,6 +26,7 @@ namespace AskNLearn.Application.Common.Interfaces
         Comment,
         Message,
         Report,
-        IdentityVerification
+        IdentityVerification,
+        Resource
     }
 }

@@ -1,3 +1,4 @@
+using AskNLearn.Application.Common.Interfaces;
 using AskNLearn.Application.Features.Auth.Commands.SignIn;
 using AskNLearn.Application.Features.Auth.Commands.SignUp;
 using AskNLearn.Application.Features.Auth.Queries.GetSignIn;
@@ -15,11 +16,13 @@ namespace AskNLearn.Web.Controllers
     {
         private readonly IMediator mediator;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IMediator mediator, UserManager<ApplicationUser> userManager)
+        public AuthController(IMediator mediator, UserManager<ApplicationUser> userManager, IEmailService emailService)
         {
             this.mediator = mediator;
             _userManager = userManager;
+            _emailService = emailService;
         }
 
         [HttpGet("authenticate")]
@@ -154,6 +157,72 @@ namespace AskNLearn.Web.Controllers
             var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
             
             ViewBag.Status = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            return View();
+        }
+
+        [ViewData]
+        public string? Status { get; set; }
+
+        [HttpPost("request-password-reset")]
+        public async Task<IActionResult> RequestPasswordReset()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(token));
+            
+            var resetLink = Url.Action("ResetPassword", "Auth", new { userId = user.Id, token = encodedToken }, Request.Scheme);
+
+            var emailBody = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #ffffff; color: #333;'>
+                    <h2 style='color: #007aff;'>Reset Your AskNLearn Password</h2>
+                    <p>Hi {user.FullName},</p>
+                    <p>We received a request to reset your password. Click the button below to choose a new one:</p>
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='{resetLink}' style='background-color: #007aff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;'>Reset Password</a>
+                    </div>
+                    <p>If the button doesn't work, copy and paste this link:</p>
+                    <p style='word-break: break-all; color: #888;'>{resetLink}</p>
+                    <hr style='margin: 20px 0; border: 0; border-top: 1px solid #eee;' />
+                    <p style='font-size: 12px; color: #888;'>If you didn't request this, you can ignore this email.</p>
+                </div>";
+
+            await _emailService.SendEmailAsync(user.Email!, "Reset Password - AskNLearn", emailBody);
+
+            return Ok(new { message = "Reset link sent to your email." });
+        }
+
+        [HttpGet("reset-password")]
+        public IActionResult ResetPassword(string userId, string token)
+        {
+            ViewBag.UserId = userId;
+            ViewBag.Token = token;
+            return View();
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(string userId, string token, string newPassword)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            var decodedToken = System.Text.Encoding.UTF8.GetString(Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(token));
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, newPassword);
+
+            if (result.Succeeded)
+            {
+                ViewBag.Status = "Password reset successfully. You can now log in.";
+                return RedirectToAction("SignIn");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            ViewBag.UserId = userId;
+            ViewBag.Token = token;
             return View();
         }
     }

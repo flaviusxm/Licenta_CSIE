@@ -34,12 +34,12 @@
     }
 
     <!-- Top Navigation Bar -->
-    <header class="glass-nav position-relative z-3 w-100 px-4 d-flex align-items-center justify-content-between" style="height: 5rem; flex-shrink: 0;">
+    <header class="glass-nav position-relative z-3 w-100 px-4 d-flex align-items-center justify-content-between" style="height: 4rem; flex-shrink: 0;">
         <!-- Logo Area -->
         <div class="d-flex align-items-center" style="width: 15.625rem;">
             <a asp-controller="Home" asp-action="Index" class="d-flex align-items-center gap-2 text-decoration-none">
                 <h1 class="fs-4 fw-bold text-white mb-0">
-                    Ask<span class="text-aurora">N</span>Learn
+                    Ask<span class="text-accent">N</span>Learn
                 </h1>
             </a>
         </div>
@@ -54,9 +54,6 @@
             </a>
             <a asp-controller="Resources" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Resources" ? "active" : "")">
                 Resources
-            </a>
-            <a asp-controller="StudyGroups" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "StudyGroups" ? "active" : "")">
-                Groups
             </a>
             <a asp-controller="Leaderboard" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Leaderboard" ? "active" : "")">
                 Leaderboard
@@ -110,8 +107,8 @@
                     }
                     @if (_totalCount > 0)
                     {
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-aurora text-dark border border-1 border-dark d-flex align-items-center justify-content-center shadow-lg" 
-                              style="font-size: 0.75rem; min-width: 1.5rem; height: 1.5rem; padding: 0.2rem; margin-top: 0.2rem; margin-left: -0.2rem; z-index: 10; overflow: visible; font-weight: 800; box-shadow: 0 0 15px rgba(52, 211, 153, 0.5) !important;">
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-white d-flex align-items-center justify-content-center shadow-lg" 
+                              style="font-size: 0.7rem; min-width: 1.4rem; height: 1.4rem; padding: 0 5px; margin-top: 0.35rem; margin-left: -0.35rem; z-index: 10; font-weight: 900; border: 2px solid var(--bg-universe); background: #FF3B30 !important; box-shadow: 0 0 12px rgba(255, 59, 48, 0.5);">
                             @(_totalCount > 99 ? "99+" : _totalCount.ToString())
                         </span>
                     }
@@ -126,9 +123,9 @@
             }
             else
             {
-                <div class="d-flex align-items-center gap-3">
-                    <a asp-controller="Auth" asp-action="SignIn" class="btn btn-link text-muted hover-text-white text-decoration-none fw-bold small text-uppercase tracking-widest px-3">Log In</a>
-                    <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium d-flex align-items-center justify-content-center py-2 px-4 shadow-sm" style="font-size: 0.8rem;">Sign Up</a>
+                <div class="d-flex align-items-center gap-2">
+                    <a asp-controller="Auth" asp-action="SignIn" class="btn btn-ghost px-3">Log In</a>
+                    <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium py-2 px-4 shadow-sm" style="font-size: 0.85rem;">Sign Up</a>
                 </div>
             }
         </div>
@@ -325,38 +322,6 @@
              window.Notify.show(data.message, 'success', 'check_circle');
         });
 
-        // --- Global Call Handling ---
-        window.connection.on("IncomingCall", (data) => {
-            const modal = document.getElementById('global-call-modal');
-            const nameEl = document.getElementById('global-call-caller-name');
-            const typeEl = document.getElementById('global-call-type');
-            const acceptBtn = document.getElementById('global-call-accept-btn');
-            const declineBtn = document.getElementById('global-call-decline-btn');
-
-            if (modal && nameEl) {
-                nameEl.innerText = data.fromUserName;
-                typeEl.innerText = data.type === 'video' ? 'video call' : 'voice call';
-                
-                acceptBtn.onclick = () => {
-                    window.location.href = `/Inbox/Index?id=${data.conversationId}&acceptCall=true&type=${data.type}`;
-                };
-                
-                declineBtn.onclick = () => {
-                    window.connection.invoke("EndCall", data.fromUserId, data.conversationId);
-                    modal.classList.add('d-none');
-                };
-
-                modal.classList.remove('d-none');
-                // Play sound?
-                const ringtone = new Audio('https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3');
-                ringtone.play().catch(e => console.log("Audio play blocked"));
-            }
-        });
-
-        window.connection.on("CallEnded", () => {
-            const modal = document.getElementById('global-call-modal');
-            if (modal) modal.classList.add('d-none');
-        });
 
         // --- Layout Logic ---
         const leftSidebar = document.getElementById("leftSidebar");
@@ -382,25 +347,6 @@
             to { opacity: 1; transform: translateX(0) scale(1) blur(0); }
         }
     </style>
-    <!-- Global Incoming Call Modal -->
-    <div id="global-call-modal" class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center z-3 animate-entrance" style="z-index: 2000; background: rgba(15,23,42,0.8); backdrop-filter: blur(10px);">
-        <div class="glass-card p-5 text-center shadow-2xl border-aurora" style="max-width: 400px; border-radius: 2rem;">
-            <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4 animate-pulse" style="width: 100px; height: 100px; background: var(--gradient-aurora);">
-                <span class="material-symbols-outlined text-dark display-4">call</span>
-            </div>
-            <h3 id="global-call-caller-name" class="h4 fw-black text-white mb-1">Caller Name</h3>
-            <p id="global-call-type" class="text-muted fw-bold text-uppercase tracking-widest small mb-5">Incoming call</p>
-            
-            <div class="d-flex gap-3 justify-content-center">
-                <button id="global-call-decline-btn" class="btn btn-glass px-4 py-3 text-danger fw-bold rounded-pill">
-                    <span class="material-symbols-outlined me-2">call_end</span> Decline
-                </button>
-                <button id="global-call-accept-btn" class="btn btn-premium px-4 py-3 fw-black rounded-pill">
-                    <span class="material-symbols-outlined me-2">call</span> Accept
-                </button>
-            </div>
-        </div>
-    </div>
 
     @await Html.PartialAsync("_ReportModal")
     @RenderSection("Modals", required: false)
