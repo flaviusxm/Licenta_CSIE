@@ -12,7 +12,7 @@
 
 <div class="d-flex h-100 overflow-hidden">
     <!-- Discord-like Community Sidebar -->
-    <aside class="sidebar-community border-right border-glass d-none d-lg-flex flex-column" style="width: 300px; background: rgba(0,0,0,0.15);">
+    <aside class="sidebar-community border-right border-glass d-none d-lg-flex flex-column" style="width: 400px; background: rgba(0,0,0,0.15);">
         <div class="p-4 border-bottom border-glass">
             @if (!string.IsNullOrEmpty(Model.ImageUrl))
             {
@@ -44,18 +44,16 @@
                     Forum Settings
                 </a>
             }
-            <button class="nav-link-flat w-100 text-start d-flex align-items-center gap-2 text-danger border-0 bg-transparent" onclick="openReportModal('@Model.Id', 'COMMUNITY')">
+            <button class="nav-link-flat w-100 text-start d-flex align-items-center gap-2 text-danger border-0 bg-transparent" onclick="ForumManager.openReportModal('@Model.Id', 'COMMUNITY')">
                 <span class="material-symbols-outlined fs-6">flag</span>
                 Report Community
             </button>
         </div>
         
-        <div class="p-3 border-top border-glass">
-            <a asp-controller="Explore" asp-action="Index" class="btn btn-glass w-100 d-flex align-items-center justify-content-center gap-2 py-2">
-                <span class="material-symbols-outlined fs-6">arrow_back</span>
-                All Communities
-            </a>
-        </div>
+        <a asp-controller="Explore" asp-action="Index" class="d-flex align-items-center justify-content-center gap-2 py-4 mt-auto text-muted hover-text-white transition-all text-decoration-none border-top border-glass">
+            <span class="material-symbols-outlined fs-5">arrow_back</span>
+            <span class="fw-bold text-uppercase tracking-widest fs-xs">Back</span>
+        </a>
     </aside>
 
     <!-- Main Content (Reddit-like Feed) -->
@@ -66,25 +64,43 @@
             @if (ViewBag.IsEmailVerified == true)
             {
                 <div id="quick-post-container" class="mb-4">
-                    <div class="reddit-post d-flex align-items-center gap-3 bg-black-alpha-20 border border-glass-soft cursor-pointer" onclick="toggleInlinePost(true)">
-                        <div class="avatar-md rounded-circle bg-accent-soft d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                            <span class="material-symbols-outlined text-white">edit_square</span>
+                    <div class="quick-post-trigger d-flex align-items-center gap-3 px-4 py-3 bg-black-alpha-20 border border-glass-soft rounded-4 cursor-pointer transition-all" onclick="ForumManager.toggleInlinePost(true)">
+                        <div class="avatar-md rounded-circle bg-accent-soft d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <span class="material-symbols-outlined text-accent">add_circle</span>
                         </div>
-                        <div class="flex-grow-1 text-muted">Start a new discussion...</div>
-                        <button class="btn btn-premium btn-sm rounded-pill px-4">Post</button>
+                        <div class="flex-grow-1 text-muted fw-medium fs-5">Start a new discussion...</div>
+                        <div class="d-flex gap-2 text-muted opacity-50">
+                            <span class="material-symbols-outlined">image</span>
+                            <span class="material-symbols-outlined">attach_file</span>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Inline Form -->
-                <div id="inline-post-form" class="d-none mb-5 animate-entrance">
-                    <div class="py-4 border-bottom border-glass-soft">
+                <div id="inline-post-form" class="d-none mb-5 overflow-hidden animate-slide-down">
+                    <div class="glass-card p-4 border border-glass-strong shadow-2xl rounded-4">
                         <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
                             <input type="hidden" name="CommunityId" value="@Model.Id" />
-                            <input type="text" name="Title" class="form-control form-control-glass bg-transparent border-0 border-bottom border-glass-soft rounded-0 mb-3 fs-5 fw-bold text-white px-0" placeholder="Title" required>
-                            <textarea name="Content" class="form-control form-control-glass bg-transparent border-0 rounded-0 mb-3 text-white px-0" rows="4" placeholder="Text (optional)" required></textarea>
-                            <div class="d-flex justify-content-end gap-2">
-                                <button type="button" onclick="toggleInlinePost(false)" class="btn btn-glass btn-sm px-4">Cancel</button>
-                                <button type="submit" class="btn btn-premium btn-sm px-4">Post</button>
+                            <div class="mb-4">
+                                <input type="text" name="Title" class="form-control form-control-glass bg-transparent border-0 border-bottom border-glass-soft rounded-0 py-3 fs-4 fw-black text-white px-0 shadow-none" placeholder="Give your discussion a title..." required>
+                            </div>
+                            <div class="mb-4">
+                                <textarea name="Content" class="form-control form-control-glass bg-transparent border-0 rounded-0 text-white px-0 shadow-none" rows="5" placeholder="Share your thoughts, questions or insights..." required></textarea>
+                            </div>
+                            
+                            <div class="d-flex align-items-center justify-content-between border-top border-glass-soft pt-4 mt-2">
+                                <div class="d-flex gap-3">
+                                    <label class="btn btn-glass-accent btn-sm d-flex align-items-center gap-2 rounded-3 cursor-pointer">
+                                        <span class="material-symbols-outlined fs-5">image</span>
+                                        <span class="small fw-bold text-uppercase tracking-wider">Add Media</span>
+                                        <input type="file" name="Attachments" class="d-none" multiple accept="image/*" onchange="updateFileName(this)" />
+                                    </label>
+                                    <span class="file-name text-muted small italic d-flex align-items-center"></span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" onclick="ForumManager.toggleInlinePost(false)" class="btn btn-ghost btn-sm px-4 fw-bold text-uppercase tracking-widest fs-xs">Discard</button>
+                                    <button type="submit" class="btn btn-premium px-5 py-2 fw-black text-uppercase tracking-widest fs-xs shadow-lg">Publish Discussion</button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -116,7 +132,7 @@
 
             <!-- Load More Area -->
             <div id="load-more-area" class="@(hasMore ? "" : "d-none") text-center mt-4">
-                <button id="load-more-btn" onclick="loadMorePosts()" class="btn btn-glass rounded-pill px-5 py-2">
+                <button id="load-more-btn" onclick="ForumManager.loadMorePosts()" class="btn btn-glass rounded-pill px-5 py-2">
                     Load More
                 </button>
             </div>
@@ -126,264 +142,13 @@
     </main>
 </div>
 
+@section Scripts {
 <script>
-    // ─── State ─────────────────────────────────────────────────────────────────
-    const communityId = '@Model.Id';
-    let currentPage = 1;
-    let isLoading = false;
-    let hasMore = @hasMore.ToString().ToLower();
-
-    // Track which posts have had their comments loaded
-    const commentsLoaded = {};
-    const commentsOpen = {};
-
-    // ─── Inline Post Form Toggle ──────────────────────────────────────────────
-    function toggleInlinePost(show) {
-        const form = document.getElementById('inline-post-form');
-        const container = document.getElementById('quick-post-container');
-        if (show) {
-            form.classList.remove('d-none');
-            container.classList.add('d-none');
-            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-            form.classList.add('d-none');
-            container.classList.remove('d-none');
-        }
-    }
-
-    // ─── CSRF Token Helper ──────────────────────────────────────────────────────
-    function getAntiForgeryToken() {
-        const input = document.querySelector('input[name="__RequestVerificationToken"]');
-        return input ? input.value : '';
-    }
-
-    // ─── Load More Posts ────────────────────────────────────────────────────────
-    async function loadMorePosts() {
-        if (isLoading || !hasMore) return;
-        isLoading = true;
-
-        const btn = document.getElementById('load-more-btn');
-        if (btn) {
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Loading...';
-            btn.disabled = true;
-        }
-
-        try {
-            const nextPage = currentPage + 1;
-            const response = await fetch(`/hubs/communities/v1/discussions/batch?communityId=${communityId}&page=${nextPage}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-
-            if (!response.ok) throw new Error('Network error');
-
-            const html = await response.text();
-
-            // Parse the response to check for more posts
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newCards = doc.querySelectorAll('.post-card-animate');
-
-            if (newCards.length === 0) {
-                hasMore = false;
-            } else {
-                const container = document.getElementById('posts-container');
-
-                // Inject cards with entrance animation
-                newCards.forEach(card => {
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-                    container.appendChild(card);
-                    requestAnimationFrame(() => {
-                        card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    });
-                });
-
-                currentPage = nextPage;
-
-                // Check if more remain
-                // We infer from whether we got a full page
-                if (newCards.length < 10) {
-                    hasMore = false;
-                }
-            }
-
-            const loadMoreArea = document.getElementById('load-more-area');
-            if (!hasMore && loadMoreArea) {
-                loadMoreArea.classList.add('d-none');
-            }
-
-        } catch (err) {
-            console.error('loadMorePosts error:', err);
-        } finally {
-            isLoading = false;
-            if (btn && hasMore) {
-                btn.innerHTML = '<span class="material-symbols-outlined fs-5">expand_more</span> Load More';
-                btn.disabled = false;
-            }
-        }
-    }
-
-    // ─── IntersectionObserver for auto-load ────────────────────────────────────
-    (function setupIntersectionObserver() {
-        const sentinel = document.getElementById('scroll-sentinel');
-        if (!sentinel || !hasMore) return;
-
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && hasMore && !isLoading) {
-                loadMorePosts();
-            }
-        }, { rootMargin: '200px' });
-
-        observer.observe(sentinel);
-    })();
-
-    // ─── Vote Post: Handled by global site.js script ────────────────────────────
-
-    // ─── Comments & Replies ───────────────────────────────────────────────────
-    function toggleReplyForm(commentId) {
-        const form = document.getElementById(`reply-form-${commentId}`);
-        if (form) form.classList.toggle('d-none');
-    }
-
-    function updateFileName(input) {
-        const fileNameSpan = input.closest('label').nextElementSibling;
-        if (fileNameSpan && input.files.length > 0) {
-            fileNameSpan.textContent = input.files[0].name;
-        }
-    }
-
-    async function submitCommentAsync(event, form) {
-        event.preventDefault();
-        const formData = new FormData(form);
-        const postId = formData.get('PostId');
-        
-        try {
-            const response = await fetch('/hubs/communities/v1/discussions/comments/add', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-
-            if (response.ok) {
-                const html = await response.text();
-                const container = document.getElementById(`comments-section-${postId}`);
-                if (container) {
-                    container.innerHTML = html;
-                } else {
-                    // Fallback for root level comments
-                    const rootContainer = form.closest('.glass-card').querySelector('[id^="comments-section-"]') || 
-                                          document.querySelector(`[id^="comments-section-${postId}"]`);
-                    if (rootContainer) rootContainer.innerHTML = html;
-                    else location.reload(); // Hard refresh if container not found
-                }
-                form.reset();
-                const fileNameSpan = form.querySelector('.file-name');
-                if (fileNameSpan) fileNameSpan.textContent = '';
-            } else {
-                const error = await response.text();
-                window.Notify.error("Failed to post comment. Make sure you are verified.");
-            }
-        } catch (err) {
-            console.error(err);
-            window.Notify.error("A network error occurred.");
-        }
-    }
-
-    async function deleteCommentAsync(commentId, postId, communityId) {
-        if (!confirm('Are you sure you want to delete this comment?')) return;
-
-        try {
-            const token = getAntiForgeryToken();
-            const response = await fetch(`/hubs/communities/v1/comments/delete?id=${commentId}&communityId=${communityId}`, {
-                method: 'POST',
-                headers: {
-                    'RequestVerificationToken': token,
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-
-            if (response.ok) {
-                // Refresh comments for this post
-                const refreshResp = await fetch(`/hubs/communities/v1/comments/retrieve?postId=${postId}&communityId=${communityId}`);
-                if (refreshResp.ok) {
-                    const html = await refreshResp.text();
-                    const container = document.getElementById(`comments-section-${postId}`);
-                    if (container) container.innerHTML = html;
-                    else location.reload();
-                }
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
-    // ─── Report Modal ──────────────────────────────────────────────────────────
-    function openReportModal(targetId, type) {
-        // Since we don't have a complex modal system here yet, we'll use a simple prompt
-        const reason = prompt("Why are you reporting this? (SPAM, OFFENSIVE, HARASSMENT, etc.)");
-        if (!reason) return;
-
-        const description = prompt("Additional details (optional):");
-        const token = getAntiForgeryToken();
-        
-        const url = type === 'POST' ? '/hubs/communities/v1/discussions/report' : '/hubs/communities/v1/comments/report';
-        
-        const params = new URLSearchParams();
-        params.append('id', targetId);
-        params.append('reason', reason);
-        params.append('description', description || "");
-
-        fetch(url, {
-            method: 'POST',
-            body: params,
-            headers: {
-                'RequestVerificationToken': token,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        })
-        .then(r => r.json())
-        .then(data => {
-            window.Notify.success(data.message || "Reported successfully.");
-        })
-        .catch(err => {
-            console.error(err);
-            window.Notify.error("Failed to submit report.");
-        });
-    }
-
-    // ─── Lazy Load Comments ───────────────────────────────────────────────────
-    async function toggleLazyComments(postId, commId) {
-        const container = document.getElementById(`comments-${postId}`);
-        const icon = document.querySelector(`.toggle-icon-${postId}`);
-        
-        if (!container.classList.contains('d-none')) {
-            container.classList.add('d-none');
-            if (icon) icon.style.transform = 'rotate(0deg)';
-            return;
-        }
-
-        container.classList.remove('d-none');
-        if (icon) icon.style.transform = 'rotate(90deg)';
-
-        if (!commentsLoaded[postId]) {
-            try {
-                const resp = await fetch(`/hubs/communities/v1/comments/retrieve?postId=${postId}&communityId=${commId}`);
-                if (resp.ok) {
-                    const html = await resp.text();
-                    container.innerHTML = `<div id="comments-section-${postId}">${html}</div>`;
-                    commentsLoaded[postId] = true;
-                }
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = '<p class="text-danger p-3">Error loading comments.</p>';
-            }
-        }
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+        ForumManager.init('@Model.Id', @hasMore.ToString().ToLower());
+    });
 </script>
+}
 
 <style>
     .blur-content {
@@ -422,5 +187,20 @@
     }
     .post-card-animate {
         transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .quick-post-trigger {
+        border-style: dashed !important;
+        background: rgba(255, 255, 255, 0.02) !important;
+    }
+    .quick-post-trigger:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-style: solid !important;
+        border-color: var(--color-accent-soft) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .quick-post-trigger:hover .material-symbols-outlined.text-accent {
+        transform: scale(1.1);
+        transition: transform 0.3s var(--ease-apple);
     }
 </style>

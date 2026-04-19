@@ -18,7 +18,7 @@
                 <div class="profile-banner-stage" style="background-image: url(&quot;@(Model.BannerUrl ?? "https://images.unsplash.com/photo-1557683316-973673baf926")&quot;);">
                     <div class="banner-overlay"></div>
                     @if (Model.IsOwnProfile) {
-                        <input type="file" name="BannerFile" id="bannerUpload" class="d-none" onchange="syncChanges()" />
+                        <input type="file" name="BannerFile" id="bannerUpload" class="d-none" onchange="ProfileManager.syncChanges()" />
                         <button type="button" class="btn btn-glass btn-sm position-absolute top-0 end-0 m-4 rounded-pill shadow-lg" onclick="document.getElementById('bannerUpload').click()">
                             <span class="material-symbols-outlined fs-6 me-1">landscape</span> Change Cover
                         </button>
@@ -30,7 +30,7 @@
                         <div class="profile-avatar-stage shadow-2xl">
                             <img src="@(Model.AvatarUrl ?? "https://api.dicebear.com/7.x/avataaars/svg?seed=" + Model.FullName)" id="avatarPreview" />
                             @if (Model.IsOwnProfile) {
-                                <input type="file" name="AvatarFile" id="avatarUpload" class="d-none" onchange="syncChanges()" />
+                                <input type="file" name="AvatarFile" id="avatarUpload" class="d-none" onchange="ProfileManager.syncChanges()" />
                                 <button type="button" class="avatar-edit-btn" onclick="document.getElementById('avatarUpload').click()">
                                     <span class="material-symbols-outlined">camera_enhance</span>
                                 </button>
@@ -39,35 +39,32 @@
                         <div class="flex-grow-1 pb-3">
                             <div class="d-flex align-items-center gap-3 mb-2">
                                 <h1 class="display-4 fw-black text-white m-0 tracking-tighter">@Model.FullName</h1>
-                                @if (Model.IsVerified) {
-                                    <span class="material-symbols-outlined text-accent fs-1" title="Verified Professional">verified</span>
-                                }
                             </div>
                             <div class="d-flex flex-wrap align-items-center gap-x-4 gap-y-2 text-muted fw-bold text-uppercase tracking-widest fs-xs">
+                                @if (Model.IsVerified) {
+                                    <div class="d-flex align-items-center gap-2 text-accent" title="ID Verified">
+                                        <span class="material-symbols-outlined fs-6">how_to_reg</span>
+                                        <span>Verified</span>
+                                    </div>
+                                    <span class="opacity-20">|</span>
+                                }
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="material-symbols-outlined fs-6 opacity-50">work</span>
-                                    <input type="text" name="Occupation" value="@Model.Occupation" class="inline-edit-input" placeholder="Add Occupation..." @(Model.IsOwnProfile ? "" : "readonly") />
+                                    <input type="text" name="Occupation" value="@Model.Occupation" class="inline-edit-input" placeholder="@(Model.IsOwnProfile ? "Add Occupation..." : "")" @(Model.IsOwnProfile ? "" : "readonly") />
                                 </div>
                                 <span class="opacity-20">|</span>
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="material-symbols-outlined fs-6 opacity-50">school</span>
-                                    <input type="text" name="Institution" value="@Model.Institution" class="inline-edit-input" placeholder="Add Institution..." @(Model.IsOwnProfile ? "" : "readonly") />
+                                    <input type="text" name="Institution" value="@Model.Institution" class="inline-edit-input" placeholder="@(Model.IsOwnProfile ? "Add Institution..." : "")" @(Model.IsOwnProfile ? "" : "readonly") />
                                 </div>
                             </div>
-                        </div>
-                        <div class="pb-3 d-none d-xl-block">
-                             <div class="reputation-badge">
-                                 <span class="val">@Model.ReputationPoints</span>
-                                 <span class="lbl">Reputation</span>
-                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- QUICK STATS ROW -->
             <div class="container px-5 mb-5">
-                <div class="d-flex gap-5 py-4 border-top border-bottom border-glass-soft">
+                <div class="d-flex justify-content-center gap-5 py-4">
                     <div class="quick-stat-item">
                         <span class="val">@Model.PostsCount</span>
                         <span class="lbl">Posts Published</span>
@@ -79,6 +76,10 @@
                     <div class="quick-stat-item">
                         <span class="val">@Model.Level</span>
                         <span class="lbl">Community Level</span>
+                    </div>
+                    <div class="quick-stat-item">
+                        <span class="val">@Model.ReputationPoints</span>
+                        <span class="lbl">Reputation</span>
                     </div>
                 </div>
             </div>
@@ -182,7 +183,7 @@
                             @if (Model.IsOwnProfile) {
                                 <div class="d-flex gap-2">
                                     <input type="text" id="socialInputBox" class="form-control premium-input-sm flex-grow-1" placeholder="Add link..." />
-                                    <button type="button" onclick="addSocialLink()" class="btn btn-premium rounded-3 px-3">
+                                    <button type="button" onclick="ProfileManager.addSocialLink()" class="btn btn-premium rounded-3 px-3">
                                         <span class="material-symbols-outlined fs-5">add</span>
                                     </button>
                                 </div>
@@ -197,7 +198,7 @@
                                      Security
                                  </h3>
                                  <div class="d-grid gap-2">
-                                     <button type="button" onclick="showResetModal()" class="btn btn-glass py-2 fw-bold text-uppercase fs-xs">
+                                     <button type="button" onclick="ProfileManager.showResetModal()" class="btn btn-glass py-2 fw-bold text-uppercase fs-xs">
                                          Change Password
                                      </button>
                                      <button type="button" onclick="document.getElementById('logoutForm').submit()" class="btn btn-link text-muted text-hover-danger text-uppercase tracking-widest fw-black fs-xs text-decoration-none">
@@ -223,39 +224,12 @@
 
     <form asp-controller="Auth" asp-action="SignOut" method="post" id="logoutForm" class="d-none"></form>
 
-    <!-- Password Reset Modal -->
-    <div class="modal fade" id="resetModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content glass-card border-glass shadow-2xl" style="border-radius: 2rem; background: rgba(15, 15, 17, 0.95); backdrop-filter: blur(40px);">
-                <div class="modal-body p-5 text-center">
-                    <div class="avatar-lg bg-accent-soft text-accent rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
-                        <span class="material-symbols-outlined fs-1">lock_reset</span>
-                    </div>
-                    <h3 class="text-white fw-black text-uppercase tracking-tight mb-3">Security Update</h3>
-                    <p class="text-muted small mb-4">For your security, we will send a password reset link to your registered email address.</p>
-                    <div id="resetFeedback" class="mb-4 d-none">
-                        <div class="alert alert-success border-0 bg-success-soft text-success small py-2 px-3 rounded-4">
-                            Check your email for the reset link!
-                        </div>
-                    </div>
-                    <div class="d-grid gap-2">
-                        <button type="button" id="btnRequestReset" onclick="requestReset()" class="btn btn-accent py-3 fw-bold text-uppercase tracking-widest shadow-lg" style="border-radius: 1rem;">
-                            Send Reset Link
-                        </button>
-                        <button type="button" class="btn btn-link text-muted text-decoration-none fw-bold fs-xs text-uppercase tracking-widest" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <style>
     .profile-hero-stage { position: relative; border-radius: 0 0 3rem 3rem; overflow: hidden; background: var(--bg-universe); }
     .profile-banner-stage { height: 320px; background-size: cover; background-position: center; position: relative; }
-    .banner-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent, var(--bg-universe)); }
+    .banner-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 70%, var(--bg-universe)); }
     .profile-info-stage { margin-top: -120px; position: relative; z-index: 10; }
     .profile-avatar-stage { width: 200px; height: 200px; border-radius: 2.5rem; overflow: hidden; border: 8px solid var(--bg-universe); background: var(--bg-universe); position: relative; }
     .profile-avatar-stage img { width: 100%; height: 100%; object-cover: cover; }
@@ -268,118 +242,58 @@
     .reputation-badge .val { display: block; font-size: 2rem; font-weight: 900; color: var(--color-accent); line-height: 1; }
     .reputation-badge .lbl { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: var(--color-accent-soft); letter-spacing: 2px; }
 
-    .quick-stat-item { display: flex; flex-direction: column; }
+    .quick-stat-item { display: flex; flex-direction: column; text-align: center; }
     .quick-stat-item .val { font-size: 1.5rem; font-weight: 900; color: white; line-height: 1; }
     .quick-stat-item .lbl { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-top: 5px; }
 
     .border-glass-soft { border-color: rgba(255,255,255,0.03) !important; }
     
-    .premium-textarea { background: transparent; border: none; border-left: 3px solid var(--border-glass); border-radius: 0; color: white; padding: 0 1.5rem; font-size: 1.1rem; line-height: 1.8; transition: all 0.3s ease; }
-    .premium-textarea:focus { border-left-color: var(--color-accent); outline: none; }
+    .premium-textarea { background: transparent; border: none; border-radius: 0; color: white; padding: 0 1.5rem; font-size: 1.1rem; line-height: 1.8; transition: all 0.3s ease; }
+    .premium-textarea:focus { outline: none; }
 </style>
 
+@section Modals {
+    <!-- Password Reset Modal -->
+    <style>
+        #resetModal { z-index: 99999 !important; }
+        #resetModal .modal-content { z-index: 100000 !important; }
+        .modal-backdrop { z-index: 99998 !important; opacity: 0.4 !important; backdrop-filter: blur(4px); }
+    </style>
+    <div class="modal" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-2xl" style="border-radius: 2rem; background: #0a0a0b; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;">
+                <div class="modal-body p-5 text-center">
+                    <div class="avatar-lg bg-accent-soft text-accent rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                        <span class="material-symbols-outlined fs-1">lock_reset</span>
+                    </div>
+                    <h3 class="text-white fw-black text-uppercase tracking-tight mb-3">Security Update</h3>
+                    <p class="text-muted small mb-4">For your security, we will send a password reset link to your registered email address.</p>
+                    <div id="resetFeedback" class="mb-4 d-none">
+                        <div class="alert alert-success border-0 bg-success-soft text-success small py-2 px-3 rounded-4">
+                            Check your email for the reset link!
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="button" id="btnRequestReset" class="btn btn-accent py-3 fw-bold text-uppercase tracking-widest shadow-lg" style="border-radius: 1rem;">
+                            Send Reset Link
+                        </button>
+                        <button type="button" class="btn btn-link text-muted text-decoration-none fw-bold fs-xs text-uppercase tracking-widest" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @section Scripts {
+<script type="module" src="~/js/module.profile.js" asp-append-version="true"></script>
 <script>
-    const interestsHidden = document.getElementById('interestsHidden');
-    let tags = interestsHidden.value ? interestsHidden.value.split(',').filter(x => x.trim() !== '') : [];
-    let saveDelay;
-
-    function toggleTag(btn, val) {
-        @if (!Model.IsOwnProfile) { <text>return;</text> }
-        if (tags.includes(val)) {
-            tags = tags.filter(t => t !== val);
-            btn.classList.remove('active');
-        } else {
-            tags.push(val);
-            btn.classList.add('active');
-        }
-        interestsHidden.value = tags.join(',');
-        syncChanges();
-    }
-
-    // Socials
-    const socialsHidden = document.getElementById('socialLinksHidden');
-    const socialListView = document.getElementById('socialListArea');
-    let links = socialsHidden.value.split(';').filter(x => x.trim() !== '');
-
-    function renderLinks() {
-        socialListView.innerHTML = '';
-        links.forEach((l, i) => {
-            const row = document.createElement('div');
-            row.className = 'd-flex align-items-center justify-content-between p-3 rounded-4 shadow-sm';
-            row.style.background = 'transparent';
-            row.style.borderBottom = '1px solid var(--border-glass)';
-            row.style.borderRadius = '0';
-            row.innerHTML = `<span class="text-truncate text-muted small fw-bold text-uppercase flex-grow-1 ps-2">${l}</span>
-                           <button type="button" onclick="removeSocialLink(${i})" class="btn btn-link text-danger text-decoration-none fw-black fs-xs p-0 ms-2">DEL</button>`;
-            socialListView.appendChild(row);
-        });
-    }
-
-    function addSocialLink() {
-        const inp = document.getElementById('socialInputBox');
-        const v = inp.value.trim();
-        if (v && !links.includes(v)) { links.push(v); inp.value = ''; updateSocialSync(); }
-    }
-    function removeSocialLink(i) { links.splice(i, 1); updateSocialSync(); }
-    function updateSocialSync() { socialsHidden.value = links.join(';'); renderLinks(); syncChanges(); }
-
-    function syncChanges() {
-        @if (!Model.IsOwnProfile) { <text>return;</text> }
-        clearTimeout(saveDelay);
-        saveDelay = setTimeout(executeSync, 2000);
-    }
-
-    async function executeSync() {
-        const hud = document.getElementById('syncBadge');
-        const status = document.getElementById('syncStatus');
-        status.innerText = 'Saving changes...';
-        hud.style.opacity = '1'; hud.style.transform = 'translateY(0) translateX(-50%)';
-        
-        const f = document.getElementById('linkedInForm');
-        const fd = new FormData(f);
-        fd.delete('studentId'); fd.delete('carnet');
-
-        try {
-            const res = await fetch(f.action, { method: 'POST', body: fd });
-            if (res.ok) {
-                status.innerText = 'Changes saved';
-                setTimeout(() => { hud.style.opacity = '0'; hud.style.transform = 'translateY(100%) translateX(-50%)'; }, 1500);
-            }
-        } catch(e) { console.error(e); }
-    }
-
-    @if (Model.IsOwnProfile) {
-        <text>
-        document.getElementById('linkedInForm').addEventListener('input', (e) => {
-            if (e.target.type !== 'file') syncChanges();
-        });
-        </text>
-    }
-    function showResetModal() {
-        new bootstrap.Modal(document.getElementById('resetModal')).show();
-    }
-
-    async function requestReset() {
-        const btn = document.getElementById('btnRequestReset');
-        const feedback = document.getElementById('resetFeedback');
-        btn.disabled = true;
-        btn.innerText = 'Sending...';
-
-        try {
-            const res = await fetch('/identity/auth/request-password-reset', { method: 'POST' });
-            if (res.ok) {
-                feedback.classList.remove('d-none');
-                btn.innerText = 'Link Sent';
-                setTimeout(() => { bootstrap.Modal.getInstance(document.getElementById('resetModal')).hide(); }, 3000);
-            }
-        } catch(e) { 
-            console.error(e); 
-            btn.disabled = false;
-            btn.innerText = 'Try Again';
-        }
-    }
-
-    renderLinks();
+    document.addEventListener('DOMContentLoaded', () => {
+        const initialTags = "@Model.Interests".split(',').filter(x => x.trim() !== '');
+        const initialLinks = "@Model.SocialLinks".split(';').filter(x => x.trim() !== '');
+        ProfileManager.init(@Model.IsOwnProfile.ToString().ToLower(), initialTags, initialLinks);
+    });
 </script>
 }

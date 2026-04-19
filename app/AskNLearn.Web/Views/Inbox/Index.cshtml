@@ -17,7 +17,7 @@
         <div class="px-4 py-3 border-bottom border-glass" style="min-height: 70px;">
             <div class="position-relative w-100">
                 <span class="material-symbols-outlined position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" style="font-size: 1rem;">search</span>
-                <input type="text" id="global-search-input" placeholder="Search people..." class="form-control form-control-glass ps-5" style="font-size: 0.85rem;" oninput="handleGlobalSearch(this.value)" />
+                <input type="text" id="global-search-input" placeholder="Search people..." class="form-control form-control-glass ps-5" style="font-size: 0.85rem;" oninput="MessagingManager.handleGlobalSearch(this.value)" />
             </div>
         </div>
 
@@ -25,7 +25,7 @@
         <div class="flex-grow-1 overflow-y-auto custom-scrollbar">
             <!-- MESSAGES SECTION -->
             <div class="px-2 pt-3">
-                <div class="section-header d-flex align-items-center justify-content-between px-3 py-2 rounded-lg hover-bg-glass cursor-pointer" onclick="toggleSection('messages')">
+                <div class="section-header d-flex align-items-center justify-content-between px-3 py-2 rounded-lg hover-bg-glass cursor-pointer" onclick="MessagingManager.toggleSection('messages')">
                     <div class="d-flex align-items-center gap-2">
                         <span class="material-symbols-outlined text-muted" style="font-size: 1.1rem;">chat_bubble</span>
                         <span class="text-uppercase tracking-widest fw-bold text-muted" style="font-size: 0.65rem;">Messages</span>
@@ -37,11 +37,10 @@
                                 @Model.RecentMessages.Sum(m => m.UnreadCount)
                             </span>
                         }
-                        <span id="icon-messages" class="material-symbols-outlined text-muted rotate-icon rotate-icon-active" style="font-size: 1.1rem;">expand_more</span>
                     </div>
                 </div>
                 
-                <div id="content-messages" class="d-flex flex-column gap-1 mt-1 px-1">
+                <div id="content-messages" class="sidebar-section-content show gap-1 mt-1 px-1">
                     @if (Model.RecentMessages.Any())
                     {
                         foreach (var conv in Model.RecentMessages)
@@ -75,23 +74,24 @@
 
             <!-- CONNECTIONS SECTION -->
             <div class="px-2 pt-2">
-                <div class="section-header d-flex align-items-center justify-content-between px-3 py-2 rounded-lg hover-bg-glass cursor-pointer collapsed" onclick="toggleSection('connections')">
+                <div class="section-header d-flex align-items-center justify-content-between px-3 py-2 rounded-lg hover-bg-glass cursor-pointer collapsed" onclick="MessagingManager.toggleSection('connections')">
                     <div class="d-flex align-items-center gap-2">
                         <span class="material-symbols-outlined text-muted" style="font-size: 1.1rem;">group</span>
                         <span class="text-uppercase tracking-widest fw-bold text-muted" style="font-size: 0.65rem;">Connections</span>
                     </div>
-                    <span id="icon-connections" class="material-symbols-outlined text-muted rotate-icon" style="font-size: 1.1rem;">chevron_right</span>
                 </div>
-                <div id="content-connections" class="d-none flex-column gap-1 mt-1 px-1">
+                <div id="content-connections" class="sidebar-section-content gap-1 mt-1 px-1">
                     @if (Model.Connections != null && Model.Connections.Any())
                     {
                         foreach (var friend in Model.Connections)
                         {
-                            <a asp-controller="Profile" asp-action="Index" asp-route-id="@friend.Id" class="d-flex align-items-center gap-3 px-3 py-2 rounded-xl transition-all text-decoration-none hover-bg-glass">
-                                <div class="avatar-sm rounded-circle overflow-hidden border border-glass" style="width: 32px; height: 32px;">
+                            <a asp-controller="Profile" asp-action="Index" asp-route-id="@friend.Id" class="d-flex align-items-center gap-3 px-3 py-2 rounded-xl transition-all text-decoration-none hover-bg-glass cursor-pointer">
+                                <div class="avatar-sm rounded-circle overflow-hidden border border-glass flex-shrink-0" style="width: 32px; height: 32px;">
                                     <img src="@(friend.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={friend.UserName}")" class="w-100 h-100 object-cover" />
                                 </div>
-                                <span class="text-secondary small text-truncate">@(friend.FullName ?? friend.UserName)</span>
+                                <div class="flex-grow-1 min-w-0">
+                                    <span class="text-secondary small text-truncate d-block">@(friend.FullName ?? friend.UserName)</span>
+                                </div>
                             </a>
                         }
                     }
@@ -106,7 +106,7 @@
 
             <!-- REQUESTS SECTION -->
             <div class="px-2 pt-2 pb-4">
-                <div class="section-header d-flex align-items-center justify-content-between px-3 py-2 rounded-lg hover-bg-glass cursor-pointer @(Model.PendingRequests.Any() ? "" : "collapsed")" onclick="toggleSection('requests')">
+                <div class="section-header d-flex align-items-center justify-content-between px-3 py-2 rounded-lg hover-bg-glass cursor-pointer @(Model.PendingRequests.Any() ? "" : "collapsed")" onclick="MessagingManager.toggleSection('requests')">
                     <div class="d-flex align-items-center gap-2">
                         <span class="material-symbols-outlined text-muted" style="font-size: 1.1rem;">person_add</span>
                         <span class="text-uppercase tracking-widest fw-bold text-muted" style="font-size: 0.65rem;">Requests</span>
@@ -118,26 +118,25 @@
                                 @Model.PendingRequests.Count()
                             </span>
                         }
-                        <span id="icon-requests" class="material-symbols-outlined text-muted rotate-icon @(Model.PendingRequests.Any() ? "rotate-icon-active" : "")" style="font-size: 1.1rem;">@(Model.PendingRequests.Any() ? "expand_more" : "chevron_right")</span>
                     </div>
                 </div>
-                <div id="content-requests" class="@(Model.PendingRequests.Any() ? "" : "d-none") flex-column gap-2 px-2 mt-2">
+                <div id="content-requests" class="sidebar-section-content @(Model.PendingRequests.Any() ? "show" : "") gap-2 px-2 mt-2">
                     @foreach (var req in Model.PendingRequests)
                     {
-                        <div class="d-grid align-items-center gap-3 px-3 py-2 rounded-xl" id="sidebar-request-@req.RequesterId" style="grid-template-columns: 32px 1fr 64px; min-height: 52px;">
+                        <div class="d-flex align-items-center gap-3 px-3 py-2 rounded-xl hover-bg-glass cursor-pointer" id="sidebar-request-@req.RequesterId">
                             <div class="avatar-sm rounded-circle overflow-hidden border border-glass flex-shrink-0" style="width: 32px; height: 32px;">
                                 <img src="@(req.Requester.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={req.Requester.UserName}")" class="w-100 h-100 object-cover" />
                             </div>
-                            <div class="min-w-0 d-flex flex-column justify-content-center">
+                            <div class="flex-grow-1 min-w-0">
                                 <p class="fw-bold text-white mb-0 text-truncate" style="font-size: 0.85rem; line-height: 1.2;">@(req.Requester.FullName ?? req.Requester.UserName)</p>
                             </div>
-                            <div class="d-flex gap-2 justify-content-end align-items-center">
-                                <button onclick="handleFriendRequest('@req.RequesterId', 'AcceptRequest')" 
+                            <div class="d-flex gap-2 flex-shrink-0 align-items-center">
+                                <button onclick="MessagingManager.handleFriendRequest('@req.RequesterId', 'AcceptRequest')" 
                                         class="btn btn-accent p-0 d-flex align-items-center justify-content-center rounded-circle shadow-sm" 
                                         style="width: 28px; height: 28px;" title="Accept">
                                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">check</span>
                                 </button>
-                                <button onclick="handleFriendRequest('@req.RequesterId', 'DeclineRequest')" 
+                                <button onclick="MessagingManager.handleFriendRequest('@req.RequesterId', 'DeclineRequest')" 
                                         class="btn btn-glass p-0 d-flex align-items-center justify-content-center rounded-circle border-danger-thin" 
                                         style="width: 28px; height: 28px; background: rgba(239, 68, 68, 0.05);" title="Decline">
                                     <span class="material-symbols-outlined text-danger" style="font-size: 1.1rem;">close</span>
@@ -194,7 +193,7 @@
                                         <span class="text-muted" style="font-size: 0.55rem;">@message.CreatedAt.ToString("HH:mm")</span>
                                         @if (isMine)
                                         {
-                                            <button onclick="deleteDM('@message.Id')" class="btn btn-link p-0 text-muted hover-text-danger opacity-0 group-hover-opacity-100 transition-all">
+                                            <button onclick="MessagingManager.deleteDM('@message.Id')" class="btn btn-link p-0 text-muted hover-text-danger opacity-0 group-hover-opacity-100 transition-all">
                                                 <span class="material-symbols-outlined" style="font-size: 12px;">delete</span>
                                             </button>
                                         }
@@ -217,11 +216,11 @@
 
                         <div class="d-flex align-items-center gap-2 glass-card p-2 px-3" style="border-radius: 24px;">
                             <button class="btn btn-link text-muted p-1 hover-text-accent transition-all"><span class="material-symbols-outlined">add</span></button>
-                            <button type="button" onclick="toggleEmojiPicker()" class="btn btn-link text-muted p-1 hover-text-accent transition-all" id="emoji-btn">
+                            <button type="button" onclick="MessagingManager.toggleEmojiPicker()" class="btn btn-link text-muted p-1 hover-text-accent transition-all" id="emoji-btn">
                                 <span class="material-symbols-outlined">sentiment_satisfied</span>
                             </button>
                             <input type="text" id="message-input" placeholder="Message..." class="form-control border-0 bg-transparent shadow-none text-white py-1" style="font-size: 0.9rem;" />
-                            <button onclick="sendMessage()" class="btn btn-accent rounded-circle p-2 d-flex align-items-center justify-content-center shadow-lg" style="width: 32px; height: 32px;">
+                            <button onclick="MessagingManager.sendMessage()" class="btn btn-accent rounded-circle p-2 d-flex align-items-center justify-content-center shadow-lg" style="width: 32px; height: 32px;">
                                 <span class="material-symbols-outlined fs-6">send</span>
                             </button>
                         </div>
@@ -239,262 +238,17 @@
         </div>
 
 @section Scripts {
-    <script>
-        // --- Sidebar Navigation ---
-        function toggleSection(sectionId) {
-            const sections = ['messages', 'connections', 'requests'];
-            sections.forEach(s => {
-                const content = document.getElementById(`content-${s}`);
-                const icon = document.getElementById(`icon-${s}`);
-                const header = document.querySelector(`.section-header[onclick*="${s}"]`);
-                
-                if (s === sectionId) {
-                    const isHidden = content.classList.contains('d-none');
-                    content.classList.toggle('d-none', !isHidden);
-                    header.classList.toggle('collapsed', !isHidden);
-                    icon.textContent = isHidden ? 'expand_more' : 'chevron_right';
-                    icon.classList.toggle('rotate-icon-active', isHidden);
-                }
-            });
-        }
-
-        function filterConversations(term) {
-            term = term.toLowerCase();
-            // Filter Messages
-            document.querySelectorAll('#content-messages .conversation-item').forEach(item => {
-                const name = item.getAttribute('data-name');
-                item.style.display = name.includes(term) ? 'flex' : 'none';
-            });
-            // Filter Friends
-            document.querySelectorAll('#content-friends button').forEach(item => {
-                const name = item.querySelector('span').innerText.toLowerCase();
-                item.style.display = name.includes(term) ? 'flex' : 'none';
-            });
-        }
-
-        let searchTimeout;
-        async function handleGlobalSearch(term) {
-            const overlay = document.getElementById('search-results-overlay');
-            const content = document.getElementById('search-results-content');
-            
-            if (!term || term.length < 2) {
-                overlay.classList.add('d-none');
-                return;
+<script type="module" src="~/js/module.messaging.js" asp-append-version="true"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const recentConvIds = [
+            @foreach (var conv in Model.RecentMessages) {
+                <text>"@conv.ConversationId",</text>
             }
-
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(async () => {
-                try {
-                    const resp = await fetch(`/Connections/SearchPeople?term=${encodeURIComponent(term)}`);
-                    if (resp.ok) {
-                        const users = await resp.json();
-                        overlay.classList.remove('d-none');
-                        
-                        if (users.length === 0) {
-                            content.innerHTML = '<div class="p-4 text-center text-muted small">No people found</div>';
-                        } else {
-                            content.innerHTML = users.map(u => `
-                                <form action="/communication/messaging/conversations/initialize" method="post" class="m-0">
-                                    <input type="hidden" name="userId" value="${u.id}" />
-                                    <button type="submit" class="d-flex align-items-center gap-3 p-3 w-100 bg-transparent border-0 text-start hover-bg-glass transition-all rounded-3">
-                                        <div class="avatar-sm rounded-circle overflow-hidden border border-glass" style="width: 32px; height: 32px;">
-                                            <img src="${u.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.userName}`}" class="w-100 h-100 object-cover" />
-                                        </div>
-                                        <div class="flex-grow-1 min-w-0">
-                                            <div class="fw-bold text-white small text-truncate">${u.fullName || u.userName}</div>
-                                            <div class="text-muted" style="font-size: 0.6rem;">@@${u.userName}</div>
-                                        </div>
-                                    </button>
-                                </form>
-                            `).join('');
-                        }
-                    }
-                } catch (e) { console.error(e); }
-            }, 300);
-        }
-
-        // Close search on click outside
-        document.addEventListener('click', (e) => {
-            const overlay = document.getElementById('search-results-overlay');
-            if (overlay && !overlay.contains(e.target) && e.target.id !== 'global-search-input') {
-                overlay.classList.add('d-none');
-            }
-        });
-
-        async function handleFriendRequest(userId, action) {
-            try {
-                window.Notify.system("Processing...");
-                const resp = await fetch(`/Connections/${action}?userId=${userId}`, { method: 'POST' });
-                if (resp.ok) {
-                    window.Notify.success(action === 'AcceptRequest' ? "Connection accepted!" : "Request declined.");
-                    const el = document.getElementById(`sidebar-request-${userId}`);
-                    if (el) {
-                        el.style.opacity = '0';
-                        el.style.transform = 'translateX(-20px)';
-                        setTimeout(() => {
-                            el.remove();
-                            // If no more requests, show welcome message
-                            const container = document.getElementById('content-requests');
-                            if (container && container.querySelectorAll('.border-glass').length === 0) {
-                                container.innerHTML = '<div class="p-4 text-center opacity-50"><p class="text-muted small mb-0">No pending requests</p></div>';
-                            }
-                        }, 400);
-                    }
-                } else {
-                    window.Notify.error("Failed to process request.");
-                }
-            } catch (e) { 
-                console.error(e); 
-                window.Notify.error("Network error.");
-            }
-        }
-
-        async function markAllInboxRead() {
-            try {
-                const resp = await fetch('/communication/notifications/v1/notifications/mark-all-read', { method: 'POST' });
-                if (resp.ok) location.reload();
-            } catch (e) { console.error(e); }
-        }
-
-        // --- Chat Logic ---
-        const msgContainer = document.getElementById('messages-container');
-        if (msgContainer) msgContainer.scrollTop = msgContainer.scrollHeight;
-
-        const currentConversationId = "@(Model.SelectedConversation?.Id)";
-        const currentUserId = "@currentUserId";
-
-        if (currentConversationId) {
-            const joinChannels = () => {
-                if (window.connection.state === "Connected") {
-                    // Join current
-                    window.connection.invoke("JoinChannel", currentConversationId);
-                    
-                    // Join all others for sidebar updates
-                    @foreach (var conv in Model.RecentMessages) {
-                        <text>window.connection.invoke("JoinChannel", "@conv.ConversationId");</text>
-                    }
-                }
-            };
-
-            if (window.connection.state === "Connected") {
-                joinChannels();
-            } else {
-                window.onSignalRConnected = joinChannels;
-            }
-            
-            window.connection.on("ReceiveMessage", (msg) => {
-                console.log("SignalR: ReceiveMessage", msg);
-                const incomingId = (msg.conversationId || msg.channelId || "").toString().toLowerCase();
-                const activeId = (currentConversationId || "").toLowerCase();
-
-                // Update Sidebar
-                const sidebarMsg = document.getElementById(`sidebar-msg-${incomingId}`);
-                if (sidebarMsg) {
-                    sidebarMsg.innerText = msg.content;
-                    sidebarMsg.classList.add('fw-bold', 'text-light');
-                    sidebarMsg.classList.remove('text-muted');
-                }
-
-                // Update Chat
-                if (incomingId === activeId) {
-                    appendMessage(msg);
-                } else {
-                    window.Notify.info(`New message from ${msg.authorName}`);
-                }
-            });
-        }
-
-        function appendMessage(msg) {
-            if (!msgContainer) return;
-            const isMine = msg.authorId === currentUserId;
-            const html = `
-                <div class="d-flex w-100 ${isMine ? 'justify-content-end' : 'justify-content-start'} animate-slide-up">
-                    <div class="d-flex ${isMine ? 'flex-row-reverse' : ''} gap-2 align-items-end" style="max-width: 75%;">
-                        <div class="d-flex flex-column gap-1 ${isMine ? 'align-items-end' : 'align-items-start'}">
-                            <div class="px-3 py-2 shadow-sm" style="border-radius: 18px; ${isMine ? 'background: var(--color-accent); color: white;' : 'background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.05); color: white;'}">
-                                <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">${msg.content}</p>
-                            </div>
-                            <span class="text-muted px-1" style="font-size: 0.55rem;">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            msgContainer.insertAdjacentHTML('beforeend', html);
-            msgContainer.scrollTop = msgContainer.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('message-input');
-            const content = input.value.trim();
-            if (!content || !currentConversationId) return;
-
-            input.value = '';
-            try {
-                await window.connection.invoke("SendMessage", currentConversationId, content);
-            } catch (err) {
-                console.error(err);
-                window.Notify.error("Failed to send message.");
-            }
-        }
-
-        async function deleteDM(msgId) {
-            if (!confirm('Ștergi acest mesaj?')) return;
-            try {
-                const resp = await fetch(`/communication/messaging/messages/delete?id=${msgId}`, { method: 'POST' });
-                if (resp.ok) {
-                    const bubble = document.getElementById(`msg-bubble-${msgId}`)?.closest('.animate-slide-up');
-                    if (bubble) {
-                        bubble.style.opacity = '0';
-                        bubble.style.transform = 'scale(0.9)';
-                        setTimeout(() => bubble.remove(), 300);
-                    }
-                }
-            } catch (e) { console.error(e); }
-        }
-
-        // --- Emoji Picker Logic ---
-        const emojiList = ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","🙃","😉","😌","😍","🥰","😘","😗","😙","😚","😋","😛","😝","😜","🤪","🤨","🧐","🤓","😎","🤩","🥳","😏","😒","😞","😔","😟","😕","🙁","☹️","😣","😖","😫","😩","🥺","😢","😭","😤","😠","😡","🤬","🤯","😳","🥵","🥶","😱","😨","😰","😥","😓","🤗","🤔","🤭","🤫","🤥","😶","😐","😑","😬","🙄","😯","😦","😧","😮","😲","🥱","😴","🤤","😪","😵","🤐","🥴","🤢","🤮","🤧","😷","🤒","🤕","🤑","🤠","😈","👿","👹","👺","🤡","💩","👻","💀","☠️","👽","👾","🤖","🎃","😺","😸","😹","😻","😼","😽","🙀","😿","😾","❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❣️","💕","💞","💓","💗","💖","💘","💝","💟","✨","⭐","🌟","🔥","💨","💦","💧","💤","💢","✨"];
-        
-        function toggleEmojiPicker() {
-            const picker = document.getElementById('emoji-picker');
-            picker.classList.toggle('d-none');
-            
-            if (!picker.classList.contains('d-none') && document.getElementById('emoji-list').children.length === 0) {
-                const list = document.getElementById('emoji-list');
-                emojiList.forEach(emoji => {
-                    const span = document.createElement('span');
-                    span.innerText = emoji;
-                    span.style.cursor = 'pointer';
-                    span.style.fontSize = '1.25rem';
-                    span.style.padding = '5px';
-                    span.className = 'hover-scale transition-all d-inline-block';
-                    span.onclick = () => {
-                        const input = document.getElementById('message-input');
-                        input.value += emoji;
-                        input.focus();
-                    };
-                    list.appendChild(span);
-                });
-            }
-        }
-
-        // Close picker on click outside
-        document.addEventListener('click', (e) => {
-            const picker = document.getElementById('emoji-picker');
-            const btn = document.getElementById('emoji-btn');
-            if (picker && !picker.contains(e.target) && !btn.contains(e.target)) {
-                picker.classList.add('d-none');
-            }
-        });
-
-        document.getElementById('message-input')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-                document.getElementById('emoji-picker').classList.add('d-none');
-            }
-        });
-
-    </script>
+        ];
+        MessagingManager.init("@(Model.SelectedConversation?.Id)", "@currentUserId", recentConvIds);
+    });
+</script>
 }
 
 <style>

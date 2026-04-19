@@ -83,7 +83,7 @@
             <div class="text-muted small">
                 Showing page <span class="text-white fw-bold">@Model.CurrentPage</span> of <span class="text-white fw-bold">@Model.TotalPages</span>
             </div>
-            <select class="form-select form-select-glass py-1 px-2 fw-bold text-white shadow-sm" style="border-radius: 0.5rem; font-size: 0.7rem; width: auto;" onchange="loadLeaderboard(1, this.value)">
+            <select class="form-select form-select-glass py-1 px-2 fw-bold text-white shadow-sm" style="border-radius: 0.5rem; font-size: 0.7rem; width: auto;" onchange="LeaderboardManager.loadLeaderboard(1, this.value)">
                 <option value="12" selected="@(Model.PageSize == 12)">12 / page</option>
                 <option value="24" selected="@(Model.PageSize == 24)">24 / page</option>
                 <option value="36" selected="@(Model.PageSize == 36)">36 / page</option>
@@ -92,7 +92,7 @@
         <div class="d-flex gap-2">
             @if (Model.HasPreviousPage)
             {
-                <a href="javascript:void(0)" onclick="loadLeaderboard(@(Model.CurrentPage - 1))"
+                <a href="javascript:void(0)" onclick="LeaderboardManager.loadLeaderboard(@(Model.CurrentPage - 1))"
                    class="btn btn-glass-sm d-flex align-items-center gap-2">
                     <span class="material-symbols-outlined fs-6">chevron_left</span>
                     <span>Previous</span>
@@ -100,7 +100,7 @@
             }
             @if (Model.HasNextPage)
             {
-                <a href="javascript:void(0)" onclick="loadLeaderboard(@(Model.CurrentPage + 1))"
+                <a href="javascript:void(0)" onclick="LeaderboardManager.loadLeaderboard(@(Model.CurrentPage + 1))"
                    class="btn btn-premium-sm d-flex align-items-center gap-2">
                     <span>Next</span>
                     <span class="material-symbols-outlined fs-6">chevron_right</span>

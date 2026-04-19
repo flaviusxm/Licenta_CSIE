@@ -133,85 +133,11 @@
     </div>
 </div>
 
+@section Scripts {
+<script type="module" src="~/js/module.leaderboard.js" asp-append-version="true"></script>
 <script>
-    let debounceTimer;
-    
-    function loadLeaderboard(page = 1, pageSize = null) {
-        const searchTerm = document.querySelector('input[name="searchTerm"]').value;
-        const institution = document.querySelector('input[name="institution"]').value;
-        const sortBy = document.querySelector('select[name="sortBy"]').value;
-        if (!pageSize) {
-            const pageSizeBottom = document.querySelector('select.form-select-glass[onchange*="loadLeaderboard"]');
-            pageSize = pageSizeBottom ? pageSizeBottom.value : 12;
-        }
-
-        const url = `/Leaderboard?page=${page}&pageSize=${pageSize}&searchTerm=${encodeURIComponent(searchTerm)}&institution=${encodeURIComponent(institution)}&sortBy=${sortBy}`;
-        
-        const container = document.getElementById('leaderboard-data-container');
-        if (container) {
-            container.style.opacity = '0.6';
-            container.style.filter = 'blur(2px)';
-            container.style.pointerEvents = 'none';
-        }
-
-        fetch(url, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.text();
-        })
-        .then(html => {
-            if (container) {
-                container.innerHTML = html;
-                container.style.opacity = '1';
-                container.style.filter = 'none';
-                container.style.pointerEvents = 'auto';
-                
-                // Scroll to top of results if needed
-                if (page > 1) {
-                    window.scrollTo({ top: container.offsetTop - 100, behavior: 'smooth' });
-                }
-            }
-            // Update URL without reload
-            window.history.pushState({ path: url }, '', url);
-        })
-        .catch(err => {
-            console.error('Fetch error:', err);
-            if (container) {
-                container.style.opacity = '1';
-                container.style.filter = 'none';
-                container.style.pointerEvents = 'auto';
-            }
-        });
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
-        const searchInput = document.querySelector('input[name="searchTerm"]');
-        const institutionInput = document.querySelector('input[name="institution"]');
-        const sortBySelect = document.querySelector('select[name="sortBy"]');
-
-        if (searchInput) {
-            searchInput.addEventListener('input', () => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => loadLeaderboard(1), 300);
-            });
-        }
-
-        if (institutionInput) {
-            institutionInput.addEventListener('input', () => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => loadLeaderboard(1), 300);
-            });
-        }
-
-        if (sortBySelect) {
-            sortBySelect.addEventListener('change', () => loadLeaderboard(1));
-        }
-
-        // Handle browser back/forward buttons
-        window.addEventListener('popstate', (event) => {
-            location.reload(); // Simplest way to handle state back for now
-        });
+        LeaderboardManager.init();
     });
 </script>
+}

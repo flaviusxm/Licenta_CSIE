@@ -44,6 +44,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    image-rendering: -webkit-optimize-contrast;
 }
 
 /* Override Bootstrap muted text for better visibility */
@@ -364,7 +365,6 @@ body {
 
 .profile-sidebar-card {
     background: transparent;
-    border-bottom: 1px solid var(--border-glass);
     border-radius: 0;
     padding: 2rem 0;
     height: fit-content;
@@ -420,5 +420,32 @@ body {
     padding-left: 1.5rem;
     border-left: 2px solid var(--border-glass);
     display: flex;
-    flex-column: gap: 2.5rem;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+.cursor-pointer {
+    cursor: pointer !important;
+}
+
+/* Sidebar Animations */
+.sidebar-section-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.2, 0, 0, 1), opacity 0.3s ease;
+    max-height: 0;
+    opacity: 0;
+}
+
+.sidebar-section-content.show {
+    max-height: 2000px;
+    opacity: 1;
+}
+
+.rotate-icon {
+    transition: transform 0.3s var(--ease-apple);
+}
+
+.rotate-icon.rotate-icon-active {
+    transform: rotate(90deg);
 }

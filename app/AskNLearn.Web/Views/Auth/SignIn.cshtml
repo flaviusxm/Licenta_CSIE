@@ -50,24 +50,4 @@
         <a asp-controller="Auth" asp-action="SignUp" class="text-accent text-decoration-none ms-1">Register</a>
     </p>
 </form>
-
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        // Collect errors from the hidden summary and show toasts
-        const summary = document.getElementById('validation-summary');
-        if (summary) {
-            const errors = summary.querySelectorAll('li');
-            errors.forEach(err => {
-                if (err.innerText && err.innerText !== "ModelOnly") {
-                    window.Notify.error(err.innerText);
-                }
-            });
-            
-            // Also check if there's direct text in the summary div
-            const directText = summary.innerText.trim();
-            if (directText && errors.length === 0) {
-                window.Notify.error(directText);
-            }
-        }
-    });
-</script>
+

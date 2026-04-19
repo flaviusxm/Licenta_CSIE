@@ -43,6 +43,7 @@
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
+    <script type="module" src="~/js/module.auth.js" asp-append-version="true"></script>
     <script>
         // --- Global Notification Engine ---
         window.Notify = {
@@ -102,76 +103,13 @@
             warning: (msg) => window.Notify.show(msg, 'warning'),
             system: (msg) => window.Notify.show(msg, 'system')
         };
-        function setupPasswordToggle(passwordId, toggleId) {
-            const input = document.querySelector(`#${passwordId}`);
-            const toggle = document.querySelector(`#${toggleId}`);
-            if (!input || !toggle) return;
-            toggle.addEventListener("click", () => {
-                const type = input.type === "password" ? "text" : "password";
-                input.type = type;
-                toggle.innerHTML = type === "password"
-                    ? '<span class="material-symbols-outlined fs-5">visibility</span>'
-                    : '<span class="material-symbols-outlined fs-5">visibility_off</span>';
-            });
-        }
 
-        // SignUp toggles
-        setupPasswordToggle("PasswordSignUp", "togglePasswordSignUp");
-        setupPasswordToggle("ConfirmPasswordSignUp", "toggleConfirmSignUp");
-
-        // SignIn toggle
-        setupPasswordToggle("PasswordSignIn", "togglePasswordSignIn");
-
-        // SignUp Password Strength + Confirm Match
-        const passwordInput = document.querySelector("#PasswordSignUp");
-        const confirmInput = document.querySelector("#ConfirmPasswordSignUp");
-        const strengthBar = document.querySelector("#passwordStrengthBar");
-        const strengthText = document.querySelector("#passwordStrengthText");
-        const confirmText = document.querySelector("#confirmMatchText");
-
-        if (passwordInput && strengthBar) {
-            passwordInput.addEventListener("input", () => {
-                let value = passwordInput.value;
-                let strength = 0;
-                if (value.length >= 8) strength++;
-                if (/[A-Z]/.test(value)) strength++;
-                if (/[a-z]/.test(value)) strength++;
-                if (/[0-9]/.test(value)) strength++;
-                if (/[^A-Za-z0-9]/.test(value)) strength++;
-
-                switch(strength) {
-                    case 0:
-                    case 1:
-                        strengthBar.style.width = "20%";
-                        strengthBar.className = "progress-bar bg-danger";
-                        strengthText.textContent = "Weak password";
-                        break;
-                    case 2:
-                    case 3:
-                        strengthBar.style.width = "60%";
-                        strengthBar.className = "progress-bar bg-warning";
-                        strengthText.textContent = "Medium password";
-                        break;
-                    case 4:
-                    case 5:
-                        strengthBar.style.width = "100%";
-                        strengthBar.className = "progress-bar bg-success";
-                        strengthText.textContent = "Strong password";
-                        break;
-                }
-
-                if (confirmInput) {
-                    confirmText.textContent = passwordInput.value === confirmInput.value ? "Passwords match ✅" : "Passwords do not match ❌";
-                }
-            });
-
-            if (confirmInput) {
-                confirmInput.addEventListener("input", () => {
-                    confirmText.textContent = passwordInput.value === confirmInput.value ? "Passwords match ✅" : "Passwords do not match ❌";
-                });
-            }
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            AuthManager.init();
+        });
     </script>
+
+    @RenderSection("Scripts", required: false)
 
 </body>
 </html>

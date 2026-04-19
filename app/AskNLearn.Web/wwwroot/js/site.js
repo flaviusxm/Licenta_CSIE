@@ -1,42 +1,24 @@
-// Global State for Lazy Loading Comments
-window.commentsLoaded = {};
-window.commentsOpen = {};
+/**
+ * site.js
+ * Core platform utilities, notification engine, and real-time connectivity.
+ */
 
-// --- Lazy Comments Engine ---
-async function toggleLazyComments(postId, commId) {
-    const container = document.getElementById(`comments-${postId}`);
-    if (!container) return;
+// --- Global Security Helper ---
+window.getAntiForgeryToken = function() {
+    const input = document.querySelector('input[name="__RequestVerificationToken"]');
+    return input ? input.value : '';
+};
 
-    const isCurrentlyHidden = container.classList.contains('d-none');
-    
-    if (!isCurrentlyHidden) {
-        container.classList.add('d-none');
-        window.commentsOpen[postId] = false;
-        return;
-    }
+// --- Global UI Helpers ---
+window.updateFileName = function(input) {
+    const fileName = input.files[0] ? input.files[0].name : '';
+    // Support multiple label/span structures
+    const container = input.closest('form') || input.closest('label')?.parentElement;
+    const nameSpan = container ? container.querySelector('.file-name') : null;
+    if (nameSpan) nameSpan.textContent = fileName;
+};
 
-    container.classList.remove('d-none');
-    window.commentsOpen[postId] = true;
-
-    if (!window.commentsLoaded[postId]) {
-        window.commentsLoaded[postId] = true;
-        try {
-            const response = await fetch(`/hubs/communities/v1/comments/retrieve?postId=${postId}&communityId=${commId}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
-            if (!response.ok) throw new Error('Error loading comments');
-            const html = await response.text();
-            container.innerHTML = html;
-        } catch (err) {
-            console.error('Error loading comments:', err);
-            container.innerHTML = '<p class="text-danger p-3 mb-0">Failed to load comments.</p>';
-            window.commentsLoaded[postId] = false;
-        }
-    }
-}
-
-// --- Reply Form Toggle ---
-function toggleReplyForm(commentId) {
+window.toggleReplyForm = function(commentId) {
     const el = document.getElementById(`reply-form-${commentId}`);
     if (el) {
         el.classList.toggle('d-none');
@@ -45,143 +27,83 @@ function toggleReplyForm(commentId) {
             if (input) input.focus();
         }
     }
-}
+};
 
-// --- File Name Display ---
-function updateFileName(input) {
-    const fileName = input.files[0] ? input.files[0].name : '';
-    const container = input.closest('form');
-    const nameSpan = container ? container.querySelector('.file-name') : null;
-    if (nameSpan) nameSpan.textContent = fileName;
-}
+// --- Shared State ---
+window.commentsLoaded = {};
+window.commentsOpen = {};
 
-// --- Comment Submission (AJAX) ---
-async function submitCommentAsync(e, form) {
-    e.preventDefault();
-    const formData = new FormData(form);
-    const postId = formData.get('PostId');
-    const container = document.getElementById(`comments-${postId}`);
+// --- Notification Engine ---
+window.Notify = {
+    container: document.getElementById('toast-container'),
     
-    // Show loading state
-    const btn = form.querySelector('button[type="submit"]');
-    const originalContent = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-    try {
-        const response = await fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: { 
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'text/html'
-            }
-        });
-
-        if (response.ok) {
-            const html = await response.text();
-            
-            // Check if it's a full page (redirect fallback)
-            if (html.includes('<!DOCTYPE html>')) {
-                console.warn("Full page received. Reloading...");
-                window.location.reload();
-                return;
-            }
-
-            if (container) {
-                container.innerHTML = html;
-                form.reset();
-                const fileNameSpan = form.querySelector('.file-name');
-                if (fileNameSpan) fileNameSpan.textContent = '';
-            }
-        } else {
-            const errorText = await response.text();
-            if (window.Notify) window.Notify.error("Failed to post comment. " + (errorText || "Please check your status."));
+    show: function(message, type = 'info', icon = 'info', duration = 5000) {
+        if (!this.container) {
+            // Fallback if toast container isn't rendered yet
+            this.container = document.getElementById('toast-container');
+            if (!this.container) return;
         }
-    } catch (err) {
-        console.error("Comment submission error:", err);
-        if (window.Notify) window.Notify.error("An unexpected error occurred.");
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalContent;
-    }
-}
-
-// --- Global Voting Engine ---
-async function votePost(postId, communityId, value) {
-    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
-    
-    // Select elements to update (compatible with both Home and Forum views)
-    const countEls = document.querySelectorAll(`.vote-count-${postId}`);
-    const upIcons = document.querySelectorAll(`.vote-icon-up-${postId}, .vote-btn-up-${postId}`);
-    const downIcons = document.querySelectorAll(`.vote-icon-down-${postId}, .vote-btn-down-${postId}`);
-
-    try {
-        const response = await fetch(`/hubs/communities/v1/interactions/vote?postId=${postId}&communityId=${communityId}&value=${value}`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'RequestVerificationToken': token
-            }
-        });
         
-        const data = await response.json();
+        const toast = document.createElement('div');
+        toast.className = 'glass-card p-3 shadow-lg d-flex align-items-center gap-3 animate-entrance system-toast';
         
-        if (data.success) {
-            // Update counts
-            countEls.forEach(el => {
-                el.textContent = data.voteCount;
-                el.classList.remove('text-accent', 'text-danger', 'text-white');
-                el.classList.add(data.userVote === 1 ? 'text-accent' : data.userVote === -1 ? 'text-danger' : 'text-white');
-            });
-
-            // Update icons/buttons
-            upIcons.forEach(el => {
-                const icon = el.tagName === 'SPAN' ? el : el.querySelector('.material-symbols-outlined');
-                if (icon) icon.style.color = data.userVote === 1 ? 'var(--color-accent)' : '';
-                el.classList.toggle('text-accent', data.userVote === 1);
-                el.classList.toggle('font-weight-bold', data.userVote === 1);
-                el.classList.toggle('text-muted', data.userVote !== 1);
-            });
-
-            downIcons.forEach(el => {
-                const icon = el.tagName === 'SPAN' ? el : el.querySelector('.material-symbols-outlined');
-                if (icon) icon.style.color = data.userVote === -1 ? '#ef4444' : '';
-                el.classList.toggle('text-danger', data.userVote === -1);
-                el.classList.toggle('font-weight-bold', data.userVote === -1);
-                el.classList.toggle('text-muted', data.userVote !== -1);
-            });
+        let color = 'var(--text-muted)';
+        let defaultIcon = icon;
+        
+        switch(type) {
+            case 'success': 
+                color = 'var(--color-mint-bright)'; 
+                defaultIcon = icon || 'check_circle';
+                break;
+            case 'error': 
+                color = '#ff4b5c'; 
+                defaultIcon = icon || 'error';
+                break;
+            case 'warning': 
+                color = '#ffb300'; 
+                defaultIcon = icon || 'warning';
+                break;
+            case 'system': 
+                color = 'var(--color-teal)'; 
+                defaultIcon = icon || 'guardian';
+                break;
         }
-    } catch (err) {
-        console.error("Voting error:", err);
-    }
-}
 
-async function deleteCommentAsync(commentId, postId, communityId) {
-    if (!confirm('Sigur vrei să ștergi acest comentariu?')) return;
+        toast.style.cssText = `
+            width: 340px;
+            pointer-events: auto;
+            background: rgba(10, 24, 18, 0.95);
+            border-left: 4px solid ${color};
+            backdrop-filter: blur(25px);
+            margin-bottom: 12px;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+        `;
+        
+        toast.innerHTML = `
+            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05);">
+                <span class="material-symbols-outlined" style="color: ${color}; font-size: 22px;">${defaultIcon}</span>
+            </div>
+            <div class="flex-grow-1">
+                <p class="text-white fw-bold mb-0" style="font-size: 0.85rem; line-height: 1.3;">${message}</p>
+            </div>
+            <button onclick="this.closest('.system-toast').remove()" class="btn btn-link p-1 text-muted hover-text-white text-decoration-none shadow-none">
+                <span class="material-symbols-outlined fs-6">close</span>
+            </button>
+        `;
 
-    try {
-        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
-        const response = await fetch(`/hubs/communities/v1/comments/delete?id=${commentId}&communityId=${communityId}`, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'RequestVerificationToken': token
-            }
-        });
-
-        if (response.ok) {
-            // Re-fetch comments for this post
-            const container = document.getElementById(`comments-${postId}`);
-            if (container) {
-                const refreshResp = await fetch(`/hubs/communities/v1/comments/retrieve?postId=${postId}&communityId=${communityId}`);
-                if (refreshResp.ok) {
-                    container.innerHTML = await refreshResp.text();
-                }
-            }
+        this.container.appendChild(toast);
+        
+        if (duration > 0) {
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px) scale(0.95)';
+                setTimeout(() => toast.remove(), 600);
+            }, duration);
         }
-    } catch (err) {
-        console.error('deleteCommentAsync error:', err);
-    }
-}
+        return toast;
+    },
+    success: (msg) => window.Notify.show(msg, 'success'),
+    error: (msg) => window.Notify.show(msg, 'error'),
+    warning: (msg) => window.Notify.show(msg, 'warning'),
+    system: (msg) => window.Notify.show(msg, 'system')
+};
