@@ -10,136 +10,127 @@
     var hasMore = posts.Count >= pageSize && posts.Count < totalPostCount;
 }
 
-<div class="d-flex h-100 overflow-hidden">
-    <!-- Discord-like Community Sidebar -->
-    <aside class="sidebar-community border-right border-glass d-none d-lg-flex flex-column" style="width: 400px; background: rgba(0,0,0,0.15);">
-        <div class="p-4 border-bottom border-glass">
-            @if (!string.IsNullOrEmpty(Model.ImageUrl))
-            {
-                <div class="rounded-xl overflow-hidden mb-3 shadow-lg" style="width: 80px; height: 80px; border: 1px solid var(--border-glass);">
-                    <img src="@Model.ImageUrl" class="w-100 h-100 object-cover" alt="@Model.Name" />
-                </div>
-            }
-            <h1 class="h4 fw-bold text-white mb-2">@Model.Name</h1>
-            <p class="text-muted small mb-3">@Model.Description</p>
-            
-            <div class="d-flex flex-column gap-2">
-                <div class="d-flex align-items-center gap-2 text-muted small">
-                    <span class="material-symbols-outlined fs-6">analytics</span>
-                    <span>@totalPostCount Discussions</span>
-                </div>
-                <div class="d-flex align-items-center gap-2 text-muted small">
-                    <span class="material-symbols-outlined fs-6">calendar_month</span>
-                    <span>Created @Model.CreatedAt.ToString("MMM yyyy")</span>
+@section Sidebar {
+    <div class="p-4 border-bottom border-glass">
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <div class="rounded-xl overflow-hidden mb-3 shadow-lg" style="width: 80px; height: 80px; border: 1px solid var(--border-glass);">
+                <img src="@Model.ImageUrl" class="w-100 h-100 object-cover" alt="@Model.Name" />
+            </div>
+        }
+        <h1 class="h4 fw-bold text-white mb-2">@Model.Name</h1>
+        <p class="text-muted small mb-3">@Model.Description</p>
+        
+        <div class="d-flex flex-column gap-2">
+            <div class="d-flex align-items-center gap-2 text-muted small">
+                <span class="material-symbols-outlined fs-6">analytics</span>
+                <span>@totalPostCount Discussions</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 text-muted small">
+                <span class="material-symbols-outlined fs-6">calendar_month</span>
+                <span>Created @Model.CreatedAt.ToString("MMM yyyy")</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-grow-1 p-3 overflow-y-auto custom-scrollbar">
+        <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Moderation</label>
+        @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.CreatorId || User.IsInRole("Admin"))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="nav-link-flat d-flex align-items-center gap-2 mb-2">
+                <span class="material-symbols-outlined fs-6">settings</span>
+                Forum Settings
+            </a>
+        }
+        <button class="nav-link-flat w-100 text-start d-flex align-items-center gap-2 text-danger border-0 bg-transparent" onclick="ForumManager.openReportModal('@Model.Id', 'COMMUNITY')">
+            <span class="material-symbols-outlined fs-6">flag</span>
+            Report Community
+        </button>
+    </div>
+    
+    <a asp-controller="Explore" asp-action="Index" class="d-flex align-items-center justify-content-center gap-2 py-4 mt-auto text-muted hover-text-white transition-all text-decoration-none border-top border-glass">
+        <span class="material-symbols-outlined fs-5">arrow_back</span>
+        <span class="fw-bold text-uppercase tracking-widest fs-xs">Back</span>
+    </a>
+}
+
+<div class="max-w-4xl mx-auto py-5 px-3">
+    
+    <!-- Quick Post Area -->
+    @if (ViewBag.IsEmailVerified == true)
+    {
+        <div id="quick-post-container" class="mb-4">
+            <div class="quick-post-trigger d-flex align-items-center gap-3 px-4 py-3 bg-black-alpha-20 border border-glass-soft rounded-4 cursor-pointer transition-all" onclick="ForumManager.toggleInlinePost(true)">
+                <div class="flex-grow-1 text-muted fw-medium fs-5">Start a new discussion...</div>
+                <div class="d-flex gap-2 text-muted opacity-50">
+                    <span class="material-symbols-outlined">image</span>
+                    <span class="material-symbols-outlined">attach_file</span>
                 </div>
             </div>
         </div>
 
-        <div class="flex-grow-1 p-3 overflow-y-auto custom-scrollbar">
-            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Moderation</label>
-            @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.CreatorId || User.IsInRole("Admin"))
-            {
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="nav-link-flat d-flex align-items-center gap-2 mb-2">
-                    <span class="material-symbols-outlined fs-6">settings</span>
-                    Forum Settings
-                </a>
-            }
-            <button class="nav-link-flat w-100 text-start d-flex align-items-center gap-2 text-danger border-0 bg-transparent" onclick="ForumManager.openReportModal('@Model.Id', 'COMMUNITY')">
-                <span class="material-symbols-outlined fs-6">flag</span>
-                Report Community
+        <!-- Inline Form -->
+        <div id="inline-post-form" class="d-none mb-5 overflow-hidden animate-slide-down">
+            <div class="glass-card p-4 border border-glass-strong shadow-2xl rounded-4">
+                <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="CommunityId" value="@Model.Id" />
+                    <div class="mb-4">
+                        <input type="text" name="Title" class="form-control form-control-glass bg-transparent border-0 border-bottom border-glass-soft rounded-0 py-3 fs-4 fw-black text-white px-0 shadow-none" placeholder="Give your discussion a title..." required>
+                    </div>
+                    <div class="mb-4">
+                        <textarea name="Content" class="form-control form-control-glass bg-transparent border-0 rounded-0 text-white px-0 shadow-none" rows="5" placeholder="Share your thoughts, questions or insights..." required></textarea>
+                    </div>
+                    
+                    <div class="d-flex align-items-center justify-content-between border-top border-glass-soft pt-4 mt-2">
+                        <div class="d-flex gap-3">
+                            <label class="btn btn-glass-accent btn-sm d-flex align-items-center gap-2 rounded-3 cursor-pointer">
+                                <span class="material-symbols-outlined fs-5">image</span>
+                                <span class="small fw-bold text-uppercase tracking-wider">Add Media</span>
+                                <input type="file" name="Attachments" class="d-none" multiple accept="image/*" onchange="updateFileName(this)" />
+                            </label>
+                            <span class="file-name text-muted small italic d-flex align-items-center"></span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" onclick="ForumManager.toggleInlinePost(false)" class="btn btn-ghost btn-sm px-4 fw-bold text-uppercase tracking-widest fs-xs">Discard</button>
+                            <button type="submit" class="btn btn-premium px-5 py-2 fw-black text-uppercase tracking-widest fs-xs shadow-lg">Publish Discussion</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <!-- Feed Header -->
+    <div class="px-3 pb-2 mb-3 border-bottom border-glass-soft d-flex align-items-center justify-content-between">
+        <span class="text-muted small fw-bold text-uppercase tracking-widest">Recent Discussions</span>
+        <div class="dropdown">
+            <button class="btn btn-link text-muted text-decoration-none small p-0 d-flex align-items-center gap-1">
+                Sort by: New <span class="material-symbols-outlined fs-6">expand_more</span>
             </button>
         </div>
-        
-        <a asp-controller="Explore" asp-action="Index" class="d-flex align-items-center justify-content-center gap-2 py-4 mt-auto text-muted hover-text-white transition-all text-decoration-none border-top border-glass">
-            <span class="material-symbols-outlined fs-5">arrow_back</span>
-            <span class="fw-bold text-uppercase tracking-widest fs-xs">Back</span>
-        </a>
-    </aside>
+    </div>
 
-    <!-- Main Content (Reddit-like Feed) -->
-    <main class="flex-grow-1 overflow-y-auto custom-scrollbar bg-black-alpha-10">
-        <div class="max-w-4xl mx-auto py-5 px-3">
-            
-            <!-- Quick Post Area -->
-            @if (ViewBag.IsEmailVerified == true)
-            {
-                <div id="quick-post-container" class="mb-4">
-                    <div class="quick-post-trigger d-flex align-items-center gap-3 px-4 py-3 bg-black-alpha-20 border border-glass-soft rounded-4 cursor-pointer transition-all" onclick="ForumManager.toggleInlinePost(true)">
-                        <div class="avatar-md rounded-circle bg-accent-soft d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <span class="material-symbols-outlined text-accent">add_circle</span>
-                        </div>
-                        <div class="flex-grow-1 text-muted fw-medium fs-5">Start a new discussion...</div>
-                        <div class="d-flex gap-2 text-muted opacity-50">
-                            <span class="material-symbols-outlined">image</span>
-                            <span class="material-symbols-outlined">attach_file</span>
-                        </div>
-                    </div>
-                </div>
+    <!-- Posts Container -->
+    <div id="posts-container" class="d-flex flex-column">
+        @{
+            var partialVd = new ViewDataDictionary(ViewData);
+            partialVd["CommunityId"] = Model.Id;
+            partialVd["HasMorePosts"] = hasMore;
+            partialVd["CurrentPage"] = 1;
+            partialVd["CurrentUserId"] = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            partialVd["CommunityCreatorId"] = Model.CreatorId;
+        }
+        @await Html.PartialAsync("_PostListPartial", posts, partialVd)
+    </div>
 
-                <!-- Inline Form -->
-                <div id="inline-post-form" class="d-none mb-5 overflow-hidden animate-slide-down">
-                    <div class="glass-card p-4 border border-glass-strong shadow-2xl rounded-4">
-                        <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
-                            <input type="hidden" name="CommunityId" value="@Model.Id" />
-                            <div class="mb-4">
-                                <input type="text" name="Title" class="form-control form-control-glass bg-transparent border-0 border-bottom border-glass-soft rounded-0 py-3 fs-4 fw-black text-white px-0 shadow-none" placeholder="Give your discussion a title..." required>
-                            </div>
-                            <div class="mb-4">
-                                <textarea name="Content" class="form-control form-control-glass bg-transparent border-0 rounded-0 text-white px-0 shadow-none" rows="5" placeholder="Share your thoughts, questions or insights..." required></textarea>
-                            </div>
-                            
-                            <div class="d-flex align-items-center justify-content-between border-top border-glass-soft pt-4 mt-2">
-                                <div class="d-flex gap-3">
-                                    <label class="btn btn-glass-accent btn-sm d-flex align-items-center gap-2 rounded-3 cursor-pointer">
-                                        <span class="material-symbols-outlined fs-5">image</span>
-                                        <span class="small fw-bold text-uppercase tracking-wider">Add Media</span>
-                                        <input type="file" name="Attachments" class="d-none" multiple accept="image/*" onchange="updateFileName(this)" />
-                                    </label>
-                                    <span class="file-name text-muted small italic d-flex align-items-center"></span>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <button type="button" onclick="ForumManager.toggleInlinePost(false)" class="btn btn-ghost btn-sm px-4 fw-bold text-uppercase tracking-widest fs-xs">Discard</button>
-                                    <button type="submit" class="btn btn-premium px-5 py-2 fw-black text-uppercase tracking-widest fs-xs shadow-lg">Publish Discussion</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            }
+    <!-- Load More Area -->
+    <div id="load-more-area" class="@(hasMore ? "" : "d-none") text-center mt-4">
+        <button id="load-more-btn" onclick="ForumManager.loadMorePosts()" class="btn btn-glass rounded-pill px-5 py-2">
+            Load More
+        </button>
+    </div>
 
-            <!-- Feed Header -->
-            <div class="px-3 pb-2 mb-3 border-bottom border-glass-soft d-flex align-items-center justify-content-between">
-                <span class="text-muted small fw-bold text-uppercase tracking-widest">Recent Discussions</span>
-                <div class="dropdown">
-                    <button class="btn btn-link text-muted text-decoration-none small p-0 d-flex align-items-center gap-1">
-                        Sort by: New <span class="material-symbols-outlined fs-6">expand_more</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Posts Container -->
-            <div id="posts-container" class="d-flex flex-column">
-                @{
-                    var partialVd = new ViewDataDictionary(ViewData);
-                    partialVd["CommunityId"] = Model.Id;
-                    partialVd["HasMorePosts"] = hasMore;
-                    partialVd["CurrentPage"] = 1;
-                    partialVd["CurrentUserId"] = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                    partialVd["CommunityCreatorId"] = Model.CreatorId;
-                }
-                @await Html.PartialAsync("_PostListPartial", posts, partialVd)
-            </div>
-
-            <!-- Load More Area -->
-            <div id="load-more-area" class="@(hasMore ? "" : "d-none") text-center mt-4">
-                <button id="load-more-btn" onclick="ForumManager.loadMorePosts()" class="btn btn-glass rounded-pill px-5 py-2">
-                    Load More
-                </button>
-            </div>
-
-            <div id="scroll-sentinel" style="height: 1px;"></div>
-        </div>
-    </main>
+    <div id="scroll-sentinel" style="height: 1px;"></div>
 </div>
 
 @section Scripts {

@@ -32,7 +32,7 @@ class LeaderboardManager {
         });
     }
 
-    static loadLeaderboard(page = 1, pageSize = null) {
+    static async loadLeaderboard(page = 1, pageSize = null) {
         const searchTerm = document.querySelector('input[name="searchTerm"]')?.value || '';
         const institution = document.querySelector('input[name="institution"]')?.value || '';
         const sortBy = document.querySelector('select[name="sortBy"]')?.value || 'PointsDesc';
@@ -51,16 +51,13 @@ class LeaderboardManager {
             container.style.pointerEvents = 'none';
         }
 
-        fetch(url, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.text();
-        })
-        .then(html => {
+        try {
+            const resp = await axios.get(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            
             if (container) {
-                container.innerHTML = html;
+                container.innerHTML = resp.data;
                 container.style.opacity = '1';
                 container.style.filter = 'none';
                 container.style.pointerEvents = 'auto';
@@ -70,15 +67,13 @@ class LeaderboardManager {
                 }
             }
             window.history.pushState({ path: url }, '', url);
-        })
-        .catch(err => {
-            console.error('Leaderboard load error:', err);
+        } catch (err) {
             if (container) {
                 container.style.opacity = '1';
                 container.style.filter = 'none';
                 container.style.pointerEvents = 'auto';
             }
-        });
+        }
     }
 }
 

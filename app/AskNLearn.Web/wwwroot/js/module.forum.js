@@ -35,32 +35,41 @@ class ForumManager {
         }
     }
 
-    static async vote(postId, isUpvote) {
+    static async vote(postId, communityId, value) {
         try {
-            const resp = await fetch(`/Forum/VotePost?postId=${postId}&isUpvote=${isUpvote}`, {
-                method: 'POST',
-                headers: { 'RequestVerificationToken': window.getAntiForgeryToken() }
-            });
-            if (resp.ok) {
-                const data = await resp.json();
-                const scoreEl = document.getElementById(`post-score-${postId}`);
-                if (scoreEl) scoreEl.innerText = data.newScore;
-                
-                // Toggle active classes on buttons
-                const upBtn = document.querySelector(`button[onclick*="vote('${postId}', true)"]`);
-                const downBtn = document.querySelector(`button[onclick*="vote('${postId}', false)"]`);
-                
-                if (isUpvote) {
-                    upBtn?.classList.toggle('text-accent');
-                    downBtn?.classList.remove('text-danger');
-                } else {
-                    downBtn?.classList.toggle('text-danger');
-                    upBtn?.classList.remove('text-accent');
+            const resp = await axios.post(`/hubs/communities/v1/interactions/vote?postId=${postId}&communityId=${communityId}&value=${value}`);
+            const data = resp.data;
+            
+            if (data.success) {
+                const scoreEl = document.querySelector(`.vote-count-${postId}`);
+                if (scoreEl) {
+                    scoreEl.innerText = data.voteCount;
+                    
+                    // Update colors based on vote
+                    scoreEl.classList.remove('text-accent', 'text-danger', 'text-white');
+                    if (data.userVote === 1) scoreEl.classList.add('text-accent');
+                    else if (data.userVote === -1) scoreEl.classList.add('text-danger');
+                    else scoreEl.classList.add('text-white');
                 }
+                
+                // Toggle active states on buttons
+                const upIcon = document.querySelector(`.vote-icon-up-${postId}`);
+                const downIcon = document.querySelector(`.vote-icon-down-${postId}`);
+                
+                upIcon?.parentElement.classList.toggle('text-accent', data.userVote === 1);
+                upIcon?.parentElement.classList.toggle('text-muted', data.userVote !== 1);
+                
+                downIcon?.parentElement.classList.toggle('text-danger', data.userVote === -1);
+                downIcon?.parentElement.classList.toggle('text-muted', data.userVote !== -1);
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            // Error handled by global axios interceptor
+        }
     }
 }
+
+// Global bridge for legacy onclick handlers in views
+window.votePost = (postId, communityId, value) => ForumManager.vote(postId, communityId, value);
 
 // Expose to window
 window.ForumManager = ForumManager;

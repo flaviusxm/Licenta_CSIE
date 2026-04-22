@@ -1,44 +1,39 @@
 @{
     ViewData["Title"] = "Verify Your Email";
-    Layout = "_Layout";
+    Layout = "_AuthLayout";
 }
 
-<div class="auth-container d-flex align-items-center justify-content-center min-vh-100 position-relative overflow-hidden">
-    <!-- Ambient background effects -->
-    <div class="position-absolute rounded-circle bg-primary opacity-10" style="top: -10%; left: -10%; width: 500px; height: 500px; filter: blur(120px);"></div>
-    <div class="position-absolute rounded-circle bg-aurora opacity-10" style="bottom: -10%; right: -10%; width: 500px; height: 500px; filter: blur(120px);"></div>
-    <div class="glass-card p-5 text-center animate-entrance position-relative z-1" style="max-width: 500px; border-radius: 2rem; border: 1px solid var(--border-glass-strong) !important;">
-        <div class="mb-5">
-            <div class="rounded-circle bg-gradient-aurora mx-auto mb-4 d-flex align-items-center justify-content-center shadow-lg" style="width: 100px; height: 100px; box-shadow: 0 0 30px rgba(0,245,160,0.3);">
-                <span class="material-symbols-outlined text-universe fs-1 fw-black">mark_email_read</span>
-            </div>
-            <h1 class="h2 fw-black text-white mb-3 tracking-tighter">Check your inbox</h1>
-            <p class="text-muted fw-medium">We've sent a verification link to your email address. Please click the link to activate your account and access all features.</p>
+<div class="text-center animate-entrance">
+    <div class="mb-5">
+        <div class="rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center shadow-lg" style="width: 100px; height: 100px; box-shadow: 0 0 40px rgba(0, 122, 255, 0.2); background: linear-gradient(135deg, #007AFF 0%, #5E5CE6 100%);">
+            <span class="material-symbols-outlined text-white fs-1">mail</span>
         </div>
-        <div class="glass-card mb-5 p-4 border-0" style="background: rgba(255, 255, 255, 0.03); border-radius: 1.25rem;">
-            <div class="d-flex align-items-center gap-3 text-start">
-                <span class="material-symbols-outlined text-aurora">info</span>
-                <p class="text-muted small m-0 fw-medium">Can't find the email? Check your <strong>spam or junk</strong> folder. It usually arrives within a minute.</p>
-            </div>
-        </div>
+        <h1 class="h2 fw-bold text-white mb-2 tracking-tighter">Check your inbox</h1>
+        <p class="text-muted fw-medium px-2">We've sent a verification link to your email address. Please click the link to activate your account.</p>
+    </div>
 
-        <div class="d-flex flex-column gap-3">
-            <a href="@Url.Action("Login", "Auth")" class="btn btn-premium btn-lg py-3 fw-black text-uppercase tracking-widest" style="font-size: 0.8rem;">
-                Back to Sign In
-            </a>
-            <p class="text-muted small mt-2">
-                Need help? <a href="#" class="text-aurora fw-bold text-decoration-none hover-glow">Contact Support</a>
-            </p>
+    <div class="bg-black-alpha-20 mb-5 p-4 border-glass rounded-xl text-start">
+        <div class="d-flex align-items-start gap-3">
+            <span class="material-symbols-outlined text-accent">info</span>
+            <p class="text-muted small m-0 fw-medium">Can't find the email? Check your <strong>spam or junk</strong> folder. It usually arrives within a minute.</p>
         </div>
+    </div>
+
+    <div class="d-flex flex-column gap-3">
+        <a href="@Url.Action("SignIn", "Auth")" class="btn btn-premium btn-lg py-3 fw-bold text-uppercase tracking-widest no-hover-effect">
+            Back to Sign In
+        </a>
+        <p class="text-muted small mt-2">
+            Need help? <a href="#" class="text-accent fw-bold text-decoration-none">Contact Support</a>
+        </p>
     </div>
 </div>
 
 <style>
-    body {
-        background: var(--bg-universe);
-        color: white;
-    }
-    .text-universe {
-        color: var(--bg-universe) !important;
+    .bg-black-alpha-20 { background: rgba(0, 0, 0, 0.2); }
+    .no-hover-effect:hover {
+        transform: none !important;
+        box-shadow: 0 4px 15px rgba(0, 122, 255, 0.15) !important;
+        background: var(--color-accent) !important;
     }
 </style>

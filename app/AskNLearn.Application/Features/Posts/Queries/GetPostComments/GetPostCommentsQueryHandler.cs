@@ -56,7 +56,7 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostComments
                             }).ToList()
                             : new System.Collections.Generic.List<AttachmentDto>()
                     }))
-                .OrderBy(c => c.CreatedAt)
+                .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync(cancellationToken);
 
             return new PostCommentsResult

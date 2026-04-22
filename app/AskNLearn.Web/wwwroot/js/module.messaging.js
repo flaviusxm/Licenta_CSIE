@@ -21,7 +21,23 @@ class MessagingManager {
         }
 
         this.setupSignalR(recentConvIds);
+        this.restoreSectionStates();
         this.setupEventListeners();
+    }
+
+    static restoreSectionStates() {
+        ['messages', 'connections', 'requests'].forEach(id => {
+            const state = localStorage.getItem(`inbox_section_${id}`);
+            if (state) {
+                const content = document.getElementById(`content-${id}`);
+                const header = document.querySelector(`.section-header[onclick*="${id}"]`);
+                if (content && header) {
+                    const shouldOpen = state === 'open';
+                    content.classList.toggle('show', shouldOpen);
+                    header.classList.toggle('collapsed', !shouldOpen);
+                }
+            }
+        });
     }
 
     static setupSignalR(recentConvIds) {
@@ -91,6 +107,7 @@ class MessagingManager {
             const isOpen = content.classList.contains('show');
             content.classList.toggle('show', !isOpen);
             header?.classList.toggle('collapsed', isOpen);
+            localStorage.setItem(`inbox_section_${sectionId}`, !isOpen ? 'open' : 'closed');
         }
     }
 
@@ -106,60 +123,56 @@ class MessagingManager {
         if (this.searchTimeout) clearTimeout(this.searchTimeout);
         this.searchTimeout = setTimeout(async () => {
             try {
-                const resp = await fetch(`/Connections/SearchPeople?term=${encodeURIComponent(term)}`);
-                if (resp.ok) {
-                    const users = await resp.json();
-                    if (overlay) overlay.classList.remove('d-none');
-                    
-                    if (users.length === 0) {
-                        if (content) content.innerHTML = '<div class="p-4 text-center text-muted small">No people found</div>';
-                    } else {
-                        if (content) {
-                            content.innerHTML = users.map(u => `
-                                <form action="/communication/messaging/conversations/initialize" method="post" class="m-0">
-                                    <input type="hidden" name="userId" value="${u.id}" />
-                                    <button type="submit" class="d-flex align-items-center gap-3 p-3 w-100 bg-transparent border-0 text-start hover-bg-glass transition-all rounded-3">
-                                        <div class="avatar-sm rounded-circle overflow-hidden border border-glass" style="width: 32px; height: 32px;">
-                                            <img src="${u.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.userName}`}" class="w-100 h-100 object-cover" />
-                                        </div>
-                                        <div class="flex-grow-1 min-w-0">
-                                            <div class="fw-bold text-white small text-truncate">${u.fullName || u.userName}</div>
-                                            <div class="text-muted" style="font-size: 0.6rem;">@${u.userName}</div>
-                                        </div>
-                                    </button>
-                                </form>
-                            `).join('');
-                        }
+                const resp = await axios.get(`/Connections/SearchPeople?term=${encodeURIComponent(term)}`);
+                const users = resp.data;
+                if (overlay) overlay.classList.remove('d-none');
+                
+                if (users.length === 0) {
+                    if (content) content.innerHTML = '<div class="p-4 text-center text-muted small">No people found</div>';
+                } else {
+                    if (content) {
+                        content.innerHTML = users.map(u => `
+                            <form action="/communication/messaging/conversations/initialize" method="post" class="m-0">
+                                <input type="hidden" name="userId" value="${u.id}" />
+                                <button type="submit" class="d-flex align-items-center gap-3 p-3 w-100 bg-transparent border-0 text-start hover-bg-glass transition-all rounded-3">
+                                    <div class="avatar-sm rounded-circle overflow-hidden border border-glass" style="width: 32px; height: 32px;">
+                                        <img src="${u.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.userName}`}" class="w-100 h-100 object-cover" />
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="fw-bold text-white small text-truncate">${u.fullName || u.userName}</div>
+                                        <div class="text-muted" style="font-size: 0.6rem;">@${u.userName}</div>
+                                    </div>
+                                </button>
+                            </form>
+                        `).join('');
                     }
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                // Error handled globally
+            }
         }, 300);
     }
 
     static async handleFriendRequest(userId, action) {
         try {
             window.Notify.system("Processing...");
-            const resp = await fetch(`/Connections/${action}?userId=${userId}`, { method: 'POST' });
-            if (resp.ok) {
-                window.Notify.success(action === 'AcceptRequest' ? "Connection accepted!" : "Request declined.");
-                const el = document.getElementById(`sidebar-request-${userId}`);
-                if (el) {
-                    el.style.opacity = '0';
-                    el.style.transform = 'translateX(-20px)';
-                    setTimeout(() => {
-                        el.remove();
-                        const container = document.getElementById('content-requests');
-                        if (container && container.querySelectorAll('[id^="sidebar-request-"]').length === 0) {
-                            container.innerHTML = '<div class="p-4 text-center opacity-50"><p class="text-muted small mb-0">No pending requests</p></div>';
-                        }
-                    }, 400);
-                }
-            } else {
-                window.Notify.error("Failed to process request.");
+            await axios.post(`/Connections/${action}?userId=${userId}`);
+            
+            window.Notify.success(action === 'AcceptRequest' ? "Connection accepted!" : "Request declined.");
+            const el = document.getElementById(`sidebar-request-${userId}`);
+            if (el) {
+                el.style.opacity = '0';
+                el.style.transform = 'translateX(-20px)';
+                setTimeout(() => {
+                    el.remove();
+                    const container = document.getElementById('content-requests');
+                    if (container && container.querySelectorAll('[id^="sidebar-request-"]').length === 0) {
+                        container.innerHTML = '<div class="p-4 text-center opacity-50"><p class="text-muted small mb-0">No pending requests</p></div>';
+                    }
+                }, 400);
             }
         } catch (e) { 
-            console.error(e); 
-            window.Notify.error("Network error.");
+            // Error handled globally
         }
     }
 
@@ -199,16 +212,16 @@ class MessagingManager {
     static async deleteDM(msgId) {
         if (!confirm('Ștergi acest mesaj?')) return;
         try {
-            const resp = await fetch(`/communication/messaging/messages/delete?id=${msgId}`, { method: 'POST' });
-            if (resp.ok) {
-                const bubble = document.getElementById(`msg-bubble-${msgId}`)?.closest('.animate-slide-up');
-                if (bubble) {
-                    bubble.style.opacity = '0';
-                    bubble.style.transform = 'scale(0.9)';
-                    setTimeout(() => bubble.remove(), 300);
-                }
+            await axios.post(`/communication/messaging/messages/delete?id=${msgId}`);
+            const bubble = document.getElementById(`msg-bubble-${msgId}`)?.closest('.animate-slide-up');
+            if (bubble) {
+                bubble.style.opacity = '0';
+                bubble.style.transform = 'scale(0.9)';
+                setTimeout(() => bubble.remove(), 300);
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            // Error handled globally
+        }
     }
 
     static toggleEmojiPicker() {

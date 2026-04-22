@@ -118,13 +118,13 @@ namespace AskNLearn.Web.Controllers
 
         [AllowAnonymous]
         [HttpGet("v1/comments/retrieve")]
-        public async Task<IActionResult> GetPostComments(Guid postId, Guid communityId)
+        public async Task<IActionResult> GetPostComments(Guid postId, Guid? communityId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var result = await _mediator.Send(new GetPostCommentsQuery
             {
                 PostId = postId,
-                CommunityId = communityId,
+                CommunityId = communityId ?? Guid.Empty,
                 CurrentUserId = userId
             });
 

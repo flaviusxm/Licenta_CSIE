@@ -153,10 +153,16 @@ namespace AskNLearn.Web.Controllers
                 return NotFound($"Unable to load user with ID '{userId}'.");
             }
 
+            if (user.EmailConfirmed)
+            {
+                ViewBag.Status = "Your email is already confirmed. Thank you!";
+                return View();
+            }
+
             var decodedToken = System.Text.Encoding.UTF8.GetString(Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(token));
             var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
             
-            ViewBag.Status = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            ViewBag.Status = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email. The link might be expired.";
             return View();
         }
 

@@ -14,10 +14,17 @@
 @section Sidebar {
     <div class="d-flex flex-column h-100 animate-entrance">
         <!-- Search -->
-        <div class="px-4 py-3 border-bottom border-glass" style="min-height: 70px;">
+        <div class="px-4 py-3 position-relative" style="min-height: 70px;">
             <div class="position-relative w-100">
                 <span class="material-symbols-outlined position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" style="font-size: 1rem;">search</span>
                 <input type="text" id="global-search-input" placeholder="Search people..." class="form-control form-control-glass ps-5" style="font-size: 0.85rem;" oninput="MessagingManager.handleGlobalSearch(this.value)" />
+            </div>
+
+            <!-- Search Results Overlay -->
+            <div id="search-results-overlay" class="d-none position-absolute start-0 end-0 px-4 mt-1 z-5" style="top: 100%;">
+                <div id="search-results-content" class="glass-card shadow-2xl border-glass overflow-y-auto custom-scrollbar" style="border-radius: 12px; background: rgba(15, 15, 17, 0.98); backdrop-filter: blur(40px); max-height: 400px;">
+                    <!-- Results injected by JS -->
+                </div>
             </div>
         </div>
 

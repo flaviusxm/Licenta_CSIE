@@ -22,32 +22,21 @@ class ProfileManager {
                 btnReset.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
                 
                 try {
-                    const resp = await fetch('/identity/auth/request-password-reset', {
-                        method: 'POST',
-                        headers: { 'RequestVerificationToken': window.getAntiForgeryToken() }
-                    });
+                    await axios.post('/identity/auth/request-password-reset');
                     
-                    if (resp.ok) {
-                        document.getElementById('resetFeedback')?.classList.remove('d-none');
-                        btnReset.innerHTML = 'Link Sent!';
+                    document.getElementById('resetFeedback')?.classList.remove('d-none');
+                    btnReset.innerHTML = 'Link Sent!';
+                    setTimeout(() => {
+                        const modalEl = document.getElementById('resetModal');
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        modal?.hide();
                         setTimeout(() => {
-                            const modalEl = document.getElementById('resetModal');
-                            const modal = bootstrap.Modal.getInstance(modalEl);
-                            modal?.hide();
-                            setTimeout(() => {
-                                btnReset.disabled = false;
-                                btnReset.innerHTML = 'Send Reset Link';
-                                document.getElementById('resetFeedback')?.classList.add('d-none');
-                            }, 500);
-                        }, 2000);
-                    } else {
-                        window.Notify.error("Failed to request reset.");
-                        btnReset.disabled = false;
-                        btnReset.innerHTML = 'Send Reset Link';
-                    }
+                            btnReset.disabled = false;
+                            btnReset.innerHTML = 'Send Reset Link';
+                            document.getElementById('resetFeedback')?.classList.add('d-none');
+                        }, 500);
+                    }, 2000);
                 } catch (e) {
-                    console.error(e);
-                    window.Notify.error("Network error.");
                     btnReset.disabled = false;
                     btnReset.innerHTML = 'Send Reset Link';
                 }
@@ -78,49 +67,39 @@ class ProfileManager {
         }
 
         try {
-            const resp = await fetch('/identity/profiles/update', {
-                method: 'POST',
-                body: formData
-            });
+            await axios.post('/identity/profiles/update', formData);
 
-            if (resp.ok) {
-                // If files were uploaded, we might want to refresh previews
-                const avatarInput = document.getElementById('avatarUpload');
-                if (avatarInput && avatarInput.files.length > 0) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        document.getElementById('avatarPreview').src = e.target.result;
-                        // Also update sidebar avatars if any
-                        document.querySelectorAll('.profile-avatar-img').forEach(img => img.src = e.target.result);
-                    };
-                    reader.readAsDataURL(avatarInput.files[0]);
-                }
-
-                const bannerInput = document.getElementById('bannerUpload');
-                if (bannerInput && bannerInput.files.length > 0) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const banner = document.querySelector('.profile-banner-stage');
-                        if (banner) banner.style.backgroundImage = `url('${e.target.result}')`;
-                    };
-                    reader.readAsDataURL(bannerInput.files[0]);
-                }
-
-                if (status) status.textContent = "Profile Updated";
-                setTimeout(() => {
-                    if (badge) {
-                        badge.style.transform = 'translateY(100%) translateX(-50%)';
-                        badge.style.opacity = '0';
-                    }
-                }, 2000);
-            } else {
-                if (status) status.textContent = "Sync Failed";
-                window.Notify.error("Failed to save changes.");
+            // If files were uploaded, we might want to refresh previews
+            const avatarInput = document.getElementById('avatarUpload');
+            if (avatarInput && avatarInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                    // Also update sidebar avatars if any
+                    document.querySelectorAll('.profile-avatar-img').forEach(img => img.src = e.target.result);
+                };
+                reader.readAsDataURL(avatarInput.files[0]);
             }
+
+            const bannerInput = document.getElementById('bannerUpload');
+            if (bannerInput && bannerInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const banner = document.querySelector('.profile-banner-stage');
+                    if (banner) banner.style.backgroundImage = `url('${e.target.result}')`;
+                };
+                reader.readAsDataURL(bannerInput.files[0]);
+            }
+
+            if (status) status.textContent = "Profile Updated";
+            setTimeout(() => {
+                if (badge) {
+                    badge.style.transform = 'translateY(100%) translateX(-50%)';
+                    badge.style.opacity = '0';
+                }
+            }, 2000);
         } catch (e) {
-            console.error(e);
-            if (status) status.textContent = "Network Error";
-            window.Notify.error("Network error during sync.");
+            if (status) status.textContent = "Sync Failed";
         }
     }
 

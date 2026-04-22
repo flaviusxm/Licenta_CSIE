@@ -5,108 +5,255 @@
     ViewData["Title"] = "Academic Resources";
 }
 
-<div class="d-flex h-100 flex-column overflow-hidden">
-    <!-- Header Area (Discord-like) -->
-    <div class="px-4 py-3 border-bottom border-glass d-flex align-items-center justify-content-between bg-black-alpha-20">
-        <div>
-            <h2 class="h5 fw-bold text-white mb-0 d-flex align-items-center gap-2">
-                <span class="material-symbols-outlined text-accent">folder_open</span>
-                Academic Resources
-            </h2>
-            <p class="text-muted small mb-0">Browse and share learning materials with your colleagues</p>
+@section Sidebar {
+    <div class="p-4 border-bottom border-glass">
+        <h2 class="h5 fw-bold text-white mb-2 d-flex align-items-center gap-2">
+            <span class="material-symbols-outlined text-accent">folder_open</span>
+            Academic Resources
+        </h2>
+        <p class="text-muted small mb-4">Browse and share learning materials with your colleagues</p>
+
+        <button class="btn btn-premium w-100 d-flex align-items-center justify-content-center gap-2 py-3 mb-2 shadow-lg" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            <span class="material-symbols-outlined fs-5">cloud_upload</span>
+            Upload Material
+        </button>
+    </div>
+
+    <div class="flex-grow-1 p-3 overflow-y-auto custom-scrollbar">
+        <div class="mb-4">
+            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Search</label>
+            <div class="position-relative">
+                <span class="material-symbols-outlined position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" style="font-size: 1rem;">search</span>
+                <input type="text" id="resource-search" class="form-control form-control-glass ps-5" placeholder="Search files real-time..." oninput="filterResources(this.value)" />
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-premium btn-sm d-flex align-items-center gap-2 px-3" onclick="document.getElementById('fileUpload').click()">
-                <span class="material-symbols-outlined fs-6">upload</span>
-                Upload Material
-            </button>
-            <form asp-action="Upload" method="post" enctype="multipart/form-data" class="d-none">
-                <input type="file" id="fileUpload" name="file" onchange="this.form.submit()" />
-            </form>
+
+        <div class="mb-4">
+            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Filter by type</label>
+            <div class="d-flex flex-column gap-1">
+                <a href="?type=" class="nav-link-flat @(string.IsNullOrEmpty(Context.Request.Query["type"]) ? "active" : "")">
+                    <span class="material-symbols-outlined fs-6 me-2">all_inclusive</span> All Files
+                </a>
+                <a href="?type=pdf" class="nav-link-flat @(Context.Request.Query["type"] == "pdf" ? "active" : "")">
+                    <span class="material-symbols-outlined fs-6 me-2">picture_as_pdf</span> PDF Documents
+                </a>
+                <a href="?type=image" class="nav-link-flat @(Context.Request.Query["type"] == "image" ? "active" : "")">
+                    <span class="material-symbols-outlined fs-6 me-2">image</span> Images
+                </a>
+                <a href="?type=word" class="nav-link-flat @(Context.Request.Query["type"] == "word" ? "active" : "")">
+                    <span class="material-symbols-outlined fs-6 me-2">description</span> Word Docs
+                </a>
+            </div>
         </div>
     </div>
 
-    <div class="flex-grow-1 d-flex overflow-hidden">
-        <!-- Sidebar Filters (Discord-like) -->
-        <aside class="sidebar-filters border-right border-glass p-3 d-none d-lg-block" style="width: 240px;">
-            <div class="mb-4">
-                <label class="text-muted small fw-bold text-uppercase tracking-widest mb-2 d-block">Filter by type</label>
-                <div class="d-flex flex-column gap-1">
-                    <a href="?type=" class="nav-link-flat @(string.IsNullOrEmpty(Context.Request.Query["type"]) ? "active" : "")">All Files</a>
-                    <a href="?type=pdf" class="nav-link-flat @(Context.Request.Query["type"] == "pdf" ? "active" : "")">PDF Documents</a>
-                    <a href="?type=image" class="nav-link-flat @(Context.Request.Query["type"] == "image" ? "active" : "")">Images</a>
-                    <a href="?type=word" class="nav-link-flat @(Context.Request.Query["type"] == "word" ? "active" : "")">Word Docs</a>
-                </div>
-            </div>
-            
-            <div class="mb-4">
-                <label class="text-muted small fw-bold text-uppercase tracking-widest mb-2 d-block">Search</label>
-                <form action="" method="get">
-                    <input type="hidden" name="type" value="@Context.Request.Query["type"]" />
-                    <input type="text" name="searchTerm" class="form-control form-control-glass sm" placeholder="Search files..." value="@Context.Request.Query["searchTerm"]" />
-                </form>
-            </div>
-        </aside>
+    <a asp-controller="Home" asp-action="Index" class="d-flex align-items-center justify-content-center gap-2 py-4 mt-auto text-muted hover-text-white transition-all text-decoration-none border-top border-glass">
+        <span class="material-symbols-outlined fs-5">arrow_back</span>
+        <span class="fw-bold text-uppercase tracking-widest fs-xs">Back</span>
+    </a>
+}
 
-        <!-- Main Feed (Reddit/Flat style) -->
-        <main class="flex-grow-1 overflow-y-auto custom-scrollbar p-4">
-            <div class="max-w-4xl mx-auto">
-                @if (!Model.Any())
-                {
-                    <div class="text-center py-5 opacity-50">
-                        <span class="material-symbols-outlined display-1 mb-3">draft_orders</span>
-                        <h3 class="h4">No resources found</h3>
-                        <p>Be the first to upload a study material!</p>
+<div class="max-w-4xl mx-auto p-4">
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 opacity-50">
+            <span class="material-symbols-outlined display-1 mb-3">draft_orders</span>
+            <h3 class="h4">No resources found</h3>
+            <p>Be the first to upload a study material!</p>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-1">
+            @foreach (var file in Model)
+            {
+                <div class="resource-item d-flex align-items-center gap-3 p-3 rounded-lg hover-bg-glass transition-all border-bottom border-glass-soft">
+                    <div class="file-icon rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+                        <span class="material-symbols-outlined fs-4 text-accent">
+                            @(file.FileType?.Contains("pdf") == true ? "picture_as_pdf" : 
+                                file.FileType?.Contains("image") == true ? "image" : 
+                                file.FileType?.Contains("word") == true ? "description" : "draft")
+                        </span>
                     </div>
-                }
-                else
-                {
-                    <div class="d-flex flex-column gap-1">
-                        @foreach (var file in Model)
-                        {
-                            <div class="resource-item d-flex align-items-center gap-3 p-3 rounded-lg hover-bg-glass transition-all border-bottom border-glass-soft">
-                                <div class="file-icon rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
-                                    <span class="material-symbols-outlined fs-4 text-accent">
-                                        @(file.FileType?.Contains("pdf") == true ? "picture_as_pdf" : 
-                                          file.FileType?.Contains("image") == true ? "image" : 
-                                          file.FileType?.Contains("word") == true ? "description" : "draft")
-                                    </span>
-                                </div>
-                                
-                                <div class="flex-grow-1 min-w-0">
-                                    <h4 class="h6 fw-bold text-white mb-0 text-truncate">@file.FileName</h4>
-                                    <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.75rem;">
-                                        <span>Uploaded by @(file.Uploader?.FullName ?? "Unknown")</span>
-                                        <span>•</span>
-                                        <span>@((file.FileSize ?? 0) / 1024) KB</span>
-                                        <span>•</span>
-                                        <span>@file.UploadedAt.ToString("MMM dd, yyyy")</span>
-                                    </div>
-                                </div>
+                    
+                    <div class="flex-grow-1 min-w-0">
+                        <h4 class="h6 fw-bold text-white mb-0 text-truncate">@file.FileName</h4>
+                        <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.75rem;">
+                            <span>Uploaded by @(file.Uploader?.FullName ?? "Unknown")</span>
+                            <span>•</span>
+                            <span>@((file.FileSize ?? 0) / 1024) KB</span>
+                            <span>•</span>
+                            <span>@file.UploadedAt.ToString("MMM dd, yyyy")</span>
+                        </div>
+                    </div>
 
-                                <div class="d-flex gap-1">
-                                    <a asp-action="Download" asp-route-id="@file.Id" class="btn btn-glass btn-icon-sm" title="Download">
-                                        <span class="material-symbols-outlined fs-5">download</span>
-                                    </a>
-                                    @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == file.UploaderId || User.IsInRole("Admin"))
-                                    {
-                                        <form asp-action="Delete" asp-route-id="@file.Id" method="post" onsubmit="return confirm('Delete this file?')" class="m-0">
-                                            <button type="submit" class="btn btn-glass btn-icon-sm text-danger" title="Delete">
-                                                <span class="material-symbols-outlined fs-5">delete</span>
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
-                            </div>
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-glass btn-icon-sm" onclick="previewFile('@file.Id', '@file.FileName', '@file.FilePath', '@file.FileType')" title="Preview">
+                            <span class="material-symbols-outlined fs-5">visibility</span>
+                        </button>
+                        <a asp-action="Download" asp-route-id="@file.Id" class="btn btn-glass btn-icon-sm" title="Download">
+                            <span class="material-symbols-outlined fs-5">download</span>
+                        </a>
+                        @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == file.UploaderId || User.IsInRole("Admin"))
+                        {
+                            <form asp-action="Delete" asp-route-id="@file.Id" method="post" onsubmit="return confirm('Delete this file?')" class="m-0">
+                                <button type="submit" class="btn btn-glass btn-icon-sm text-danger" title="Delete">
+                                    <span class="material-symbols-outlined fs-5">delete</span>
+                                </button>
+                            </form>
                         }
                     </div>
-                }
-            </div>
-        </main>
-    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
 </div>
 
+@section Modals {
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card border-glass shadow-2xl" style="background: rgba(15, 15, 17, 0.95); backdrop-filter: blur(40px);">
+                <div class="modal-header border-glass">
+                    <h5 class="modal-title text-white fw-bold">Upload New Material</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                    <div class="modal-body p-4">
+                        <div class="upload-drop-zone border-dashed rounded-xl p-5 text-center transition-all cursor-pointer hover-bg-glass" 
+                             onclick="document.getElementById('modalFileUpload').click()">
+                            <span class="material-symbols-outlined display-4 text-accent mb-3">cloud_upload</span>
+                            <h4 class="h6 text-white fw-bold mb-1">Click to browse or drag and drop</h4>
+                            <p class="text-muted small mb-0">PDF, Images, or Documents (Max 50MB)</p>
+                            <input type="file" id="modalFileUpload" name="file" class="d-none" onchange="updateModalFileName(this)" />
+                        </div>
+                        <div id="modalFileName" class="mt-3 text-accent small fw-bold text-center d-none">
+                            <!-- Selected file name will appear here -->
+                        </div>
+                    </div>
+                    <div class="modal-footer border-glass">
+                        <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-premium px-4">Upload File</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content glass-card border-glass h-80vh shadow-2xl" style="background: rgba(10, 10, 12, 0.98); backdrop-filter: blur(40px);">
+                <div class="modal-header border-glass py-2">
+                    <div class="d-flex align-items-center gap-3">
+                        <span id="previewIcon" class="material-symbols-outlined text-accent fs-4">description</span>
+                        <h5 id="previewTitle" class="modal-title text-white fw-bold small mb-0">File Preview</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0 overflow-hidden bg-black-alpha-40">
+                    <div id="previewContainer" class="h-100 d-flex align-items-center justify-content-center">
+                        <!-- Preview content injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+<script>
+    let previewModalInstance = null;
+
+    function filterResources(term) {
+        const items = document.querySelectorAll('.resource-item');
+        const container = document.querySelector('.max-w-4xl .d-flex.flex-column');
+        let found = 0;
+        
+        term = term.toLowerCase().trim();
+        
+        items.forEach(item => {
+            const fileName = item.querySelector('h4').textContent.toLowerCase();
+            if (fileName.includes(term)) {
+                item.classList.remove('d-none');
+                item.classList.add('d-flex');
+                found++;
+            } else {
+                item.classList.remove('d-flex');
+                item.classList.add('d-none');
+            }
+        });
+
+        // Toggle "No results" message
+        let emptyMsg = document.getElementById('search-empty-msg');
+        if (found === 0) {
+            if (!emptyMsg && container) {
+                container.insertAdjacentHTML('afterend', `
+                    <div id="search-empty-msg" class="text-center py-5 opacity-50">
+                        <span class="material-symbols-outlined display-1 mb-3">search_off</span>
+                        <h3 class="h4">No matching resources</h3>
+                        <p>Try a different search term or filter.</p>
+                    </div>
+                `);
+            }
+        } else {
+            emptyMsg?.remove();
+        }
+    }
+
+    function updateModalFileName(input) {
+        const nameDiv = document.getElementById('modalFileName');
+        if (input.files && input.files[0]) {
+            nameDiv.textContent = `Selected: ${input.files[0].name}`;
+            nameDiv.classList.remove('d-none');
+        } else {
+            nameDiv.classList.add('d-none');
+        }
+    }
+
+    function previewFile(id, name, path, type) {
+        const title = document.getElementById('previewTitle');
+        const container = document.getElementById('previewContainer');
+        const icon = document.getElementById('previewIcon');
+        
+        title.textContent = name;
+        container.innerHTML = '<div class="spinner-border text-accent"></div>';
+        
+        if (!previewModalInstance) {
+            previewModalInstance = new bootstrap.Modal(document.getElementById('previewModal'));
+        }
+        previewModalInstance.show();
+
+        setTimeout(() => {
+            if (type.includes('image')) {
+                icon.textContent = 'image';
+                container.innerHTML = `<img src="${path}" class="img-fluid rounded shadow-lg animate-entrance" style="max-height: 90%; object-fit: contain;" />`;
+            } else if (type.includes('pdf')) {
+                icon.textContent = 'picture_as_pdf';
+                container.innerHTML = `<iframe src="${path}" class="w-100 h-100 border-0" style="min-height: 70vh;"></iframe>`;
+            } else {
+                icon.textContent = 'draft';
+                container.innerHTML = `
+                    <div class="text-center p-5 animate-entrance">
+                        <span class="material-symbols-outlined display-1 text-muted mb-3">quick_reference_all</span>
+                        <h4 class="text-white">Preview not available</h4>
+                        <p class="text-muted small mb-4">This file type (${type}) cannot be previewed directly.</p>
+                        <a href="/resources/download/${id}" class="btn btn-premium px-4">Download to View</a>
+                    </div>
+                `;
+            }
+        }, 300);
+    }
+</script>
+}
+
 <style>
+    .h-80vh { height: 85vh; }
+    .bg-black-alpha-40 { background: rgba(0,0,0,0.4); }
+    .border-dashed { border: 2px dashed rgba(255,255,255,0.1); }
+    .upload-drop-zone:hover { border-color: var(--color-accent); background: rgba(255,255,255,0.05); }
+    
     .nav-link-flat {
         display: block;
         padding: 0.5rem 0.75rem;

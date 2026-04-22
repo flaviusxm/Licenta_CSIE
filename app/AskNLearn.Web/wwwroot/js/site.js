@@ -29,6 +29,78 @@ window.toggleReplyForm = function(commentId) {
     }
 };
 
+window.toggleLazyComments = async function(postId, communityId) {
+    const container = document.getElementById(`comments-${postId}`);
+    if (!container) return;
+
+    const isHidden = container.classList.contains('d-none');
+    container.classList.toggle('d-none', !isHidden);
+    
+    if (isHidden && !window.commentsLoaded[postId]) {
+        try {
+            console.log(`[Comments] Loading for post: ${postId}, community: ${communityId}`);
+            // Using absolute path with params object for reliable binding
+            const resp = await axios.get('/hubs/communities/v1/comments/retrieve', {
+                params: { postId, communityId }
+            });
+            container.innerHTML = resp.data;
+            window.commentsLoaded[postId] = true;
+        } catch (e) {
+            let errorDetail = e.message;
+            if (e.response) {
+                errorDetail = `Status: ${e.response.status}. Data: ${JSON.stringify(e.response.data)}`;
+            }
+            container.innerHTML = `<div class="alert alert-danger p-2 m-3 small border-0 bg-danger bg-opacity-10 text-danger rounded-3">
+                <div class="fw-bold mb-1">Failed to load comments</div>
+                <div style="font-size: 0.75rem; word-break: break-all; opacity: 0.8;">${errorDetail}</div>
+            </div>`;
+            console.error('[Comments Load Error]', e);
+        }
+    }
+};
+
+window.submitCommentAsync = async function(event, form) {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const postId = formData.get('PostId');
+    
+    try {
+        // Match the route in ForumController: [HttpPost("v1/discussions/comments/add")]
+        const resp = await axios.post('/hubs/communities/v1/discussions/comments/add', formData);
+        
+        const container = document.getElementById(`comments-${postId}`);
+        if (container) {
+            container.innerHTML = resp.data;
+            window.commentsLoaded[postId] = true;
+            if (container.classList.contains('d-none')) {
+                container.classList.remove('d-none');
+            }
+        }
+        window.Notify?.success("Comment added successfully");
+    } catch (e) {
+        window.Notify?.error("Failed to post comment");
+        console.error('[Comment Submit Error]', e);
+    }
+};
+
+window.deleteCommentAsync = async function(commentId, postId, communityId) {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+    
+    try {
+        // Match the route in ForumController: [HttpPost("v1/comments/delete")]
+        // Note: Controller expects 'id' and 'communityId'
+        await axios.post(`/hubs/communities/v1/comments/delete?id=${commentId}&communityId=${communityId}`);
+        
+        // Force reload comments for this post
+        window.commentsLoaded[postId] = false;
+        await window.toggleLazyComments(postId, communityId);
+        window.Notify?.success("Comment deleted");
+    } catch (e) {
+        window.Notify?.error("Failed to delete comment");
+        console.error('[Comment Delete Error]', e);
+    }
+};
+
 // --- Shared State ---
 window.commentsLoaded = {};
 window.commentsOpen = {};
@@ -107,3 +179,26 @@ window.Notify = {
     warning: (msg) => window.Notify.show(msg, 'warning'),
     system: (msg) => window.Notify.show(msg, 'system')
 };
+
+// --- Axios Global Configuration ---
+if (window.axios) {
+    // 1. Request Interceptor: Automatically add Anti-Forgery Token
+    axios.interceptors.request.use(config => {
+        const token = window.getAntiForgeryToken();
+        if (token && ['post', 'put', 'delete', 'patch'].includes(config.method?.toLowerCase())) {
+            config.headers['RequestVerificationToken'] = token;
+        }
+        return config;
+    }, error => Promise.reject(error));
+
+    // 2. Response Interceptor: Unified Error Handling
+    axios.interceptors.response.use(
+        response => response,
+        error => {
+            const message = error.response?.data?.message || error.message || "A network error occurred.";
+            window.Notify.error(message);
+            console.error('[Axios Error]', error);
+            return Promise.reject(error);
+        }
+    );
+}

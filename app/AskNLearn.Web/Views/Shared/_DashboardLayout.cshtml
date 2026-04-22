@@ -136,14 +136,14 @@
         @if (IsSectionDefined("Sidebar"))
         {
             <!-- Left Sidebar -->
-            <aside id="leftSidebar" class="d-flex sidebar-transition flex-column h-100 flex-shrink-0 position-relative" style="width: 26rem; border-right: 1px solid var(--border-glass); background: transparent; backdrop-filter: blur(1.25rem); z-index: 2;">
+            <aside id="leftSidebar" class="d-flex sidebar-transition flex-column h-100 flex-shrink-0 position-relative" style="width: 400px; border-right: 1px solid var(--border-glass); background: transparent; backdrop-filter: blur(1.25rem); z-index: 2;">
                 <div class="flex-grow-1 d-flex flex-column min-vh-0 overflow-hidden">
                     @RenderSection("Sidebar")
                 </div>
             </aside>
             <button id="toggleLeftSidebar"
                     class="d-flex sidebar-transition align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 p-0 shadow-lg"
-                    style="left: 26rem; width: 1.75rem; height: 4rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(0.625rem); transition: left 0.6s var(--ease-apple);">
+                    style="left: 400px; width: 1.75rem; height: 4rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(0.625rem); transition: left 0.6s var(--ease-apple);">
                 <span class="material-symbols-outlined text-muted m-0 p-0" style="margin-left: -2px !important;">chevron_left</span>
             </button>
         }
@@ -160,6 +160,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script type="module" src="~/js/module.forum.js" asp-append-version="true"></script>
     
@@ -192,7 +193,7 @@
                 btn.addEventListener("click", () => {
                     const isCol = side.classList.toggle("sidebar-collapsed");
                     btn.querySelector('span').innerText = isCol ? "chevron_right" : "chevron_left";
-                    btn.style.left = isCol ? "0rem" : "26rem";
+                    btn.style.left = isCol ? "0px" : "400px";
                 });
             }
         });

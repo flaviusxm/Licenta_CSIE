@@ -25,12 +25,12 @@ namespace AskNLearn.Web.Controllers
             var currentUserId = userManager.GetUserId(User);
             if (currentUserId == userId) return BadRequest("Cannot chat with yourself.");
 
-            var isConnected = await context.Friendships.AnyAsync(f => 
-                ((f.RequesterId == currentUserId && f.AddresseeId == userId) || 
-                 (f.RequesterId == userId && f.AddresseeId == currentUserId)) && 
-                f.Status == FriendshipStatus.Accepted);
-
-            if (!isConnected) return BadRequest("You must be connected to start a chat.");
+            // var isConnected = await context.Friendships.AnyAsync(f => 
+            //     ((f.RequesterId == currentUserId && f.AddresseeId == userId) || 
+            //      (f.RequesterId == userId && f.AddresseeId == currentUserId)) && 
+            //     f.Status == FriendshipStatus.Accepted);
+            // 
+            // if (!isConnected) return BadRequest("You must be connected to start a chat.");
 
             var conversation = await context.DirectConversations
                 .Include(c => c.Participants)
