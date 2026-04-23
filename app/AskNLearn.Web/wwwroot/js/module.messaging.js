@@ -65,8 +65,20 @@ class MessagingManager {
             const sidebarMsg = document.getElementById(`sidebar-msg-${incomingId}`);
             if (sidebarMsg) {
                 sidebarMsg.innerText = msg.content;
-                sidebarMsg.classList.add('fw-bold', 'text-light');
-                sidebarMsg.classList.remove('text-muted');
+                if (incomingId === activeId) {
+                    sidebarMsg.classList.add('text-muted');
+                    sidebarMsg.classList.remove('fw-bold', 'text-light');
+                } else {
+                    sidebarMsg.classList.add('fw-bold', 'text-light');
+                    sidebarMsg.classList.remove('text-muted');
+                }
+
+                // Update name to white (unread/active)
+                const nameEl = sidebarMsg.previousElementSibling?.querySelector('span.fw-bold');
+                if (nameEl) {
+                    nameEl.classList.add('text-white');
+                    nameEl.classList.remove('text-secondary');
+                }
             }
 
             if (incomingId === activeId) {

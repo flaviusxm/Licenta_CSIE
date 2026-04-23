@@ -55,12 +55,22 @@ class ForumManager {
                 // Toggle active states on buttons
                 const upIcon = document.querySelector(`.vote-icon-up-${postId}`);
                 const downIcon = document.querySelector(`.vote-icon-down-${postId}`);
+                const upBtn = upIcon?.parentElement;
+                const downBtn = downIcon?.parentElement;
                 
-                upIcon?.parentElement.classList.toggle('text-accent', data.userVote === 1);
-                upIcon?.parentElement.classList.toggle('text-muted', data.userVote !== 1);
+                if (upBtn) {
+                    upBtn.classList.toggle('text-accent', data.userVote === 1);
+                    upBtn.classList.toggle('font-weight-bold', data.userVote === 1);
+                    upBtn.classList.toggle('text-muted', data.userVote !== 1);
+                    upBtn.classList.toggle('hover-glow', data.userVote !== 1);
+                }
                 
-                downIcon?.parentElement.classList.toggle('text-danger', data.userVote === -1);
-                downIcon?.parentElement.classList.toggle('text-muted', data.userVote !== -1);
+                if (downBtn) {
+                    downBtn.classList.toggle('text-danger', data.userVote === -1);
+                    downBtn.classList.toggle('font-weight-bold', data.userVote === -1);
+                    downBtn.classList.toggle('text-muted', data.userVote !== -1);
+                    downBtn.classList.toggle('hover-text-danger', data.userVote !== -1);
+                }
             }
         } catch (e) { 
             // Error handled by global axios interceptor

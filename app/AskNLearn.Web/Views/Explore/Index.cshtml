@@ -5,32 +5,39 @@
     ViewData["Title"] = "Explore Communities";
 }
 
-<div class="container py-5 max-w-7xl">
-    
-    <!-- Header -->
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4 mb-5">
-        <div>
-            <h2 class="display-6 fw-bold text-white mb-2">Explore Communities</h2>
-            <p class="text-muted fs-5 m-0" style="max-width: 600px;">Discover communities and forums tailored to your curriculum.</p>
-        </div>
-        <div class="flex-shrink-0">
-            <a asp-controller="Forum" asp-action="Create" class="btn btn-premium shadow-lg">
-                <span class="material-symbols-outlined fs-5">add_circle</span>
-                New Forum
-            </a>
+@section Sidebar {
+    <div class="p-4 border-bottom border-glass">
+        <h2 class="h5 fw-bold text-white mb-2 d-flex align-items-center gap-2">
+            <span class="material-symbols-outlined text-aurora">explore</span>
+            Explore Communities
+        </h2>
+        <p class="text-muted small mb-4">Discover communities and forums tailored to your curriculum.</p>
+
+        <a asp-controller="Forum" asp-action="Create" class="btn btn-premium w-100 d-flex align-items-center justify-content-center gap-2 py-3 mb-2 shadow-lg">
+            <span class="material-symbols-outlined fs-5">add_circle</span>
+            New Forum
+        </a>
+    </div>
+
+    <div class="flex-grow-1 p-3 overflow-y-auto custom-scrollbar">
+        <div class="mb-4">
+            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Search</label>
+            <div class="position-relative">
+                <span class="material-symbols-outlined position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" style="font-size: 1rem;">search</span>
+                <input type="text" id="explore-search" class="form-control form-control-glass ps-5" placeholder="Search for a specific forum..." value="@Context.Request.Query["searchTerm"]" oninput="debounceSearch()" />
+            </div>
         </div>
     </div>
 
-    <!-- Search & Filters -->
-    <div class="mb-5 position-relative">
-        <div class="position-relative">
-            <span class="material-symbols-outlined position-absolute top-50 translate-middle-y text-muted" style="left: 1.5rem;">search</span>
-            <input id="explore-search" class="form-control form-control-glass w-100 shadow-lg" style="padding: 1rem 1.5rem 1rem 3.5rem; border-radius: 1.5rem;" placeholder="Search for a specific forum..." type="text" value="@Context.Request.Query["searchTerm"]" oninput="debounceSearch()"/>
-        </div>
-    </div>
+    <a asp-controller="Home" asp-action="Index" class="d-flex align-items-center justify-content-center gap-2 py-4 mt-auto text-muted hover-text-white transition-all text-decoration-none border-top border-glass">
+        <span class="material-symbols-outlined fs-5">arrow_back</span>
+        <span class="fw-bold text-uppercase tracking-widest fs-xs">Back</span>
+    </a>
+}
 
+<div class="max-w-4xl mx-auto p-4 animate-entrance">
     <!-- Forum List -->
-    <div id="communities-container" class="row g-4">
+    <div id="communities-container" class="d-flex flex-column gap-2">
         @await Html.PartialAsync("_CommunityCards", Model)
     </div>
 
@@ -95,7 +102,7 @@
                     if (!html.trim()) {
                         communitiesAllLoaded = true;
                         if (communitiesSkip === 0) {
-                             container.innerHTML = `<div class="col-12 text-center py-5 opacity-50"><span class="material-symbols-outlined display-4 mb-3">search_off</span><p class="fw-bold">No forums found matching "${currentSearch}"</p></div>`;
+                             container.innerHTML = `<div class="text-center py-5 opacity-50"><span class="material-symbols-outlined display-4 mb-3">search_off</span><p class="fw-bold">No forums found matching "${currentSearch}"</p></div>`;
                         }
                     } else {
                         container.insertAdjacentHTML('beforeend', html);
