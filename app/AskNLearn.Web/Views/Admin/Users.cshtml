@@ -1,0 +1,182 @@
+@using AskNLearn.Domain.Entities.Core
+@model AskNLearn.Web.Models.PaginatedList<ApplicationUser>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "User Management";
+}
+
+@section Sidebar {
+    <div class="p-4 border-bottom border-glass">
+        <h2 class="h5 fw-bold text-white mb-2 d-flex align-items-center gap-2">
+            <span class="material-symbols-outlined text-aurora">group</span>
+            User Management
+        </h2>
+        <p class="text-muted small mb-4">Search, verify, and moderate platform members.</p>
+    </div>
+
+    <div class="flex-grow-1 p-3 overflow-y-auto custom-scrollbar">
+        <div class="mb-4">
+            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Search Users</label>
+            <form method="get" class="position-relative">
+                <span class="material-symbols-outlined position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" style="font-size: 1rem;">search</span>
+                <input type="text" name="searchTerm" class="form-control form-control-glass ps-5" placeholder="Name, Email, or Username..." value="@Context.Request.Query["searchTerm"]" />
+            </form>
+        </div>
+
+        <div class="mb-4">
+            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Quick Filters</label>
+            <div class="d-flex flex-column gap-1">
+                <a href="?role=" class="nav-link-flat @(string.IsNullOrEmpty(Context.Request.Query["role"]) ? "active" : "")">
+                    <span class="material-symbols-outlined fs-6 me-2">all_inclusive</span> All Members
+                </a>
+                <a href="?role=Moderator" class="nav-link-flat @(Context.Request.Query["role"] == "Moderator" ? "active" : "")">
+                    <span class="material-symbols-outlined fs-6 me-2">shield</span> Moderators
+                </a>
+                <a href="?role=Admin" class="nav-link-flat @(Context.Request.Query["role"] == "Admin" ? "active" : "")">
+                    <span class="material-symbols-outlined fs-6 me-2">admin_panel_settings</span> Admins
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <a asp-action="Index" class="d-flex align-items-center justify-content-center gap-2 py-4 mt-auto text-muted hover-text-white transition-all text-decoration-none border-top border-glass">
+        <span class="material-symbols-outlined fs-5">arrow_back</span>
+        <span class="fw-bold text-uppercase tracking-widest fs-xs">Dashboard</span>
+    </a>
+}
+
+<div class="max-w-5xl mx-auto p-4 animate-entrance">
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 opacity-50">
+            <span class="material-symbols-outlined display-1 mb-3">person_off</span>
+            <h3 class="h4">No users found</h3>
+            <p>Try a different search term or filter.</p>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-2">
+            @foreach (var user in Model)
+            {
+                <div class="user-item d-flex align-items-center gap-4 p-3 rounded-xl hover-bg-glass transition-all border-bottom border-glass-soft group">
+                    <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" 
+                         style="width: 52px; height: 52px; background: rgba(52, 211, 153, 0.05); border: 1px solid var(--border-glass-strong);">
+                        @if (!string.IsNullOrEmpty(user.AvatarUrl))
+                        {
+                            <img src="@user.AvatarUrl" class="w-100 h-100 object-cover rounded-circle" />
+                        }
+                        else
+                        {
+                            <span class="material-symbols-outlined fs-3 text-aurora">person</span>
+                        }
+                    </div>
+
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h4 class="h6 fw-bold text-white mb-0 text-truncate">@user.FullName</h4>
+                            @if (user.Role == Role.Admin)
+                            {
+                                <span class="badge glass-badge glass-badge-danger">Admin</span>
+                            }
+                            else if (user.Role == Role.Moderator)
+                            {
+                                <span class="badge glass-badge glass-badge-aurora">Moderator</span>
+                            }
+                        </div>
+                        <div class="d-flex align-items-center gap-3 text-muted" style="font-size: 0.75rem;">
+                            <span>@@@user.UserName</span>
+                            <span>•</span>
+                            <span>@user.Email</span>
+                            <span>•</span>
+                            <span class="d-flex align-items-center gap-1">
+                                <span class="material-symbols-outlined fs-xs @(user.IsVerified ? "text-aurora" : "text-muted")">verified</span>
+                                @(user.IsVerified ? "Verified" : "Unverified")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        @if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+                        {
+                            <button class="btn btn-glass btn-icon-sm text-success" onclick="toggleBlock('@user.Id', false)" title="Unblock User">
+                                <span class="material-symbols-outlined fs-5">lock_open</span>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-glass btn-icon-sm text-danger" onclick="toggleBlock('@user.Id', true)" title="Block User">
+                                <span class="material-symbols-outlined fs-5">block</span>
+                            </button>
+                        }
+                        <button class="btn btn-glass btn-icon-sm" title="Edit Permissions">
+                            <span class="material-symbols-outlined fs-5">settings</span>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="d-flex justify-content-center mt-5 gap-2">
+                @if (Model.HasPreviousPage)
+                {
+                    <a href="?pageNumber=@(Model.PageIndex - 1)&searchTerm=@Context.Request.Query["searchTerm"]" class="btn btn-glass px-4">Previous</a>
+                }
+                @if (Model.HasNextPage)
+                {
+                    <a href="?pageNumber=@(Model.PageIndex + 1)&searchTerm=@Context.Request.Query["searchTerm"]" class="btn btn-glass px-4">Next</a>
+                }
+            </div>
+        }
+    }
+</div>
+
+<script>
+    async function toggleBlock(userId, block) {
+        const url = block ? `/management/administration/users/block/${userId}` : `/management/administration/users/unblock/${userId}`;
+        try {
+            const response = await fetch(url, { method: 'POST' });
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert("Failed to update user status.");
+            }
+        } catch (error) {
+            console.error("Error toggling block status:", error);
+        }
+    }
+</script>
+
+<style>
+    .nav-link-flat {
+        display: block;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    .nav-link-flat:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-pure);
+    }
+    .nav-link-flat.active {
+        background: rgba(0, 122, 255, 0.15);
+        color: var(--text-pure);
+    }
+    .btn-icon-sm {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+    .fs-xs { font-size: 10px; }
+</style>

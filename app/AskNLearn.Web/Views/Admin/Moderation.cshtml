@@ -7,98 +7,74 @@
     int userTotal = (int)ViewBag.PendingReportsCount;
 }
 
-<div class="container-fluid p-0 animate-entrance">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-4">
-        <div>
-            <h2 class="display-6 fw-bold text-white mb-2">Moderation</h2>
-            <div class="d-flex align-items-center gap-2 small text-muted">
-                <div class="rounded-circle bg-danger shadow-glow" style="width: 8px; height: 8px;"></div>
-                Advanced moderation tools. Review AI automated flags and user community reports.
+@section Sidebar {
+    <div class="p-4 border-bottom border-glass">
+        <h2 class="h5 fw-bold text-white mb-2 d-flex align-items-center gap-2">
+            <span class="material-symbols-outlined text-danger">security</span>
+            Moderation Center
+        </h2>
+        <p class="text-muted small mb-4">Review AI automated flags and community reports.</p>
+    </div>
+
+    <div class="flex-grow-1 p-3 overflow-y-auto custom-scrollbar">
+        <div class="mb-4">
+            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Source</label>
+            <div class="nav nav-pills d-flex flex-column gap-1" id="moderationTab" role="tablist">
+                <button class="nav-link-flat active text-start d-flex align-items-center justify-content-between" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai-reports" type="button">
+                    <span><span class="material-symbols-outlined fs-6 me-2">smart_toy</span> AI Flags</span>
+                    <span class="glass-badge glass-badge-danger" id="ai-count-tab-badge">@aiTotal</span>
+                </button>
+                <button class="nav-link-flat text-start d-flex align-items-center justify-content-between" id="user-tab" data-bs-toggle="tab" data-bs-target="#user-reports" type="button">
+                    <span><span class="material-symbols-outlined fs-6 me-2">flag</span> User Reports</span>
+                    <span class="glass-badge glass-badge-warning" id="user-count-tab-badge">@userTotal</span>
+                </button>
             </div>
         </div>
-        <div class="d-flex gap-3">
-             <ul class="nav nav-pills glass-panel p-1 border-glass-strong" id="moderationTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link nav-link-premium active px-4 py-2" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai-reports" type="button" role="tab" aria-controls="ai-reports" aria-selected="true">
-                        AI Flagged <span class="glass-badge glass-badge-danger ms-2" id="ai-count-tab-badge">@aiTotal</span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link nav-link-premium px-4 py-2" id="user-tab" data-bs-toggle="tab" data-bs-target="#user-reports" type="button" role="tab" aria-controls="user-reports" aria-selected="false">
-                        User Reports <span class="glass-badge glass-badge-warning ms-2" id="user-count-tab-badge">@userTotal</span>
-                    </button>
-                </li>
-            </ul>
+
+        <div id="ai-filters" class="mb-4 tab-filters">
+            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">AI Filter</label>
+            <div class="d-flex flex-column gap-1">
+                <button class="nav-link-flat active sub-filter-btn" data-target="ai" data-filter="ALL">Active Flags</button>
+                <button class="nav-link-flat sub-filter-btn" data-target="ai" data-filter="SUSPECT">Suspect Content</button>
+                <button class="nav-link-flat sub-filter-btn" data-target="ai" data-filter="HISTORY">Review History</button>
+            </div>
+        </div>
+
+        <div id="user-filters" class="mb-4 tab-filters d-none">
+            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Report Type</label>
+            <div class="d-flex flex-column gap-1">
+                <button class="nav-link-flat active sub-filter-btn" data-target="user" data-filter="ALL">All Reports</button>
+                <button class="nav-link-flat sub-filter-btn" data-target="user" data-filter="POST">Post Reports</button>
+                <button class="nav-link-flat sub-filter-btn" data-target="user" data-filter="COMMENT">Comment Reports</button>
+            </div>
         </div>
     </div>
 
-    <!-- Tab Content -->
+    <a asp-action="Index" class="d-flex align-items-center justify-content-center gap-2 py-4 mt-auto text-muted hover-text-white transition-all text-decoration-none border-top border-glass">
+        <span class="material-symbols-outlined fs-5">arrow_back</span>
+        <span class="fw-bold text-uppercase tracking-widest fs-xs">Dashboard</span>
+    </a>
+}
+
+<div class="max-w-5xl mx-auto p-4 animate-entrance">
     <div class="tab-content" id="moderationTabContent">
         <!-- AI Reports Tab -->
-        <div class="tab-pane fade show active" id="ai-reports" role="tabpanel" aria-labelledby="ai-tab">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="d-flex gap-2">
-                    <button class="btn btn-pill-glass active sub-filter-btn" data-target="ai" data-filter="ALL">Active Flags</button>
-                    <button class="btn btn-pill-glass sub-filter-btn" data-target="ai" data-filter="SUSPECT">Suspect Content</button>
-                    <button class="btn btn-pill-glass sub-filter-btn" data-target="ai" data-filter="HISTORY">Review History</button>
-                </div>
+        <div class="tab-pane fade show active" id="ai-reports" role="tabpanel">
+            <div id="ai-reports-container" class="d-flex flex-column gap-2">
+                <!-- Content loaded via AJAX into _AIReportsTable -->
             </div>
-
-            <div class="glass-card border-glass-strong overflow-hidden mb-4 shadow-lg">
-                <div class="table-responsive bg-transparent" style="min-height: 450px;">
-                    <table class="table table-borderless table-hover mb-0 align-middle text-white bg-transparent">
-                        <thead style="background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border-glass-strong);">
-                            <tr>
-                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Type</th>
-                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Content Details</th>
-                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">AI Verdict</th>
-                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Status</th>
-                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ai-reports-body">
-                            <!-- Content loaded via AJAX -->
-                        </tbody>
-                    </table>
-                    <!-- Loading Sentinel -->
-                    <div id="ai-sentinel" class="py-4 text-center @(aiTotal > 0 ? "" : "d-none")">
-                        <div class="spinner-border text-aurora spinner-border-sm" role="status"></div>
-                    </div>
-                </div>
+            <div id="ai-sentinel" class="py-5 text-center @(aiTotal > 0 ? "" : "d-none")">
+                <div class="spinner-border text-aurora" role="status"></div>
             </div>
         </div>
 
         <!-- User Reports Tab -->
-        <div class="tab-pane fade" id="user-reports" role="tabpanel" aria-labelledby="user-tab">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="d-flex gap-2">
-                    <button class="btn btn-pill-glass active sub-filter-btn" data-target="user" data-filter="ALL">All Reports</button>
-                    <button class="btn btn-pill-glass sub-filter-btn" data-target="user" data-filter="POST">Post Reports</button>
-                    <button class="btn btn-pill-glass sub-filter-btn" data-target="user" data-filter="COMMENT">Comment Reports</button>
-                </div>
+        <div class="tab-pane fade" id="user-reports" role="tabpanel">
+            <div id="user-reports-container" class="d-flex flex-column gap-2">
+                <!-- Content loaded via AJAX into _UserReportsTable -->
             </div>
-
-             <div class="glass-card border-glass-strong overflow-hidden mb-4 shadow-lg">
-                <div class="table-responsive bg-transparent" style="min-height: 450px;">
-                    <table class="table table-borderless table-hover mb-0 align-middle text-white bg-transparent">
-                        <thead style="background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--border-glass-strong);">
-                            <tr>
-                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Reported By</th>
-                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Target Content</th>
-                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold">Reason</th>
-                                <th class="py-4 px-4 text-muted text-uppercase tracking-widest small fw-bold text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="user-reports-body">
-                            <!-- Content loaded via AJAX -->
-                        </tbody>
-                    </table>
-                    <!-- Loading Sentinel -->
-                    <div id="user-sentinel" class="py-4 text-center @(userTotal > 0 ? "" : "d-none")">
-                        <div class="spinner-border text-warning spinner-border-sm" role="status"></div>
-                    </div>
-                </div>
+            <div id="user-sentinel" class="py-5 text-center @(userTotal > 0 ? "" : "d-none")">
+                <div class="spinner-border text-warning" role="status"></div>
             </div>
         </div>
     </div>
@@ -116,6 +92,14 @@
             let userFinished = false;
             let aiLoading = false;
             let userLoading = false;
+
+            // Handle Tab Switches to show/hide filters
+            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+                const targetId = $(e.target).attr('id');
+                $('.tab-filters').addClass('d-none');
+                if (targetId === 'ai-tab') $('#ai-filters').removeClass('d-none');
+                else $('#user-filters').removeClass('d-none');
+            });
 
             // Observers
             const aiObserver = new IntersectionObserver(entries => {
@@ -154,7 +138,7 @@
             function resetAI() {
                 aiSkip = 0;
                 aiFinished = false;
-                $('#ai-reports-body').empty();
+                $('#ai-reports-container').empty();
                 $('#ai-sentinel').removeClass('d-none');
                 loadAI();
             }
@@ -162,7 +146,7 @@
             function resetUser() {
                 userSkip = 0;
                 userFinished = false;
-                $('#user-reports-body').empty();
+                $('#user-reports-container').empty();
                 $('#user-sentinel').removeClass('d-none');
                 loadUser();
             }
@@ -172,7 +156,7 @@
                 aiLoading = true;
                 
                 $.ajax({
-                    url: `/Admin/LoadAIReports?skip=${aiSkip}&take=${take}&filter=${currentAiFilter}`,
+                    url: `/management/administration/v1/moderation/ai-reports?skip=${aiSkip}&take=${take}&filter=${currentAiFilter}`,
                     type: 'GET',
                     success: function(data, textStatus, request) {
                         aiLoading = false;
@@ -180,7 +164,7 @@
                         $('#ai-count-tab-badge').text(total);
 
                         if (data.trim().length > 0) {
-                            $('#ai-reports-body').append(data);
+                            $('#ai-reports-container').append(data);
                             aiSkip += take;
                             if (aiSkip >= total) {
                                 aiFinished = true;
@@ -190,7 +174,7 @@
                             aiFinished = true;
                             $('#ai-sentinel').addClass('d-none');
                             if (aiSkip === 0) {
-                                $('#ai-reports-body').html('<tr><td colspan="5" class="py-5 text-center text-muted italic small">No flagged items found.</td></tr>');
+                                $('#ai-reports-container').html('<div class="text-center py-5 opacity-50"><span class="material-symbols-outlined display-4 mb-3">check_circle</span><p class="fw-bold">No flags found here.</p></div>');
                             }
                         }
                     }
@@ -202,7 +186,7 @@
                 userLoading = true;
 
                 $.ajax({
-                    url: `/Admin/LoadUserReports?skip=${userSkip}&take=${take}&filter=${currentUserFilter}`,
+                    url: `/management/administration/v1/moderation/user-reports?skip=${userSkip}&take=${take}&filter=${currentUserFilter}`,
                     type: 'GET',
                     success: function(data, textStatus, request) {
                         userLoading = false;
@@ -210,7 +194,7 @@
                         $('#user-count-tab-badge').text(total);
 
                         if (data.trim().length > 0) {
-                            $('#user-reports-body').append(data);
+                            $('#user-reports-container').append(data);
                             userSkip += take;
                             if (userSkip >= total) {
                                 userFinished = true;
@@ -220,7 +204,7 @@
                             userFinished = true;
                             $('#user-sentinel').addClass('d-none');
                             if (userSkip === 0) {
-                                $('#user-reports-body').html('<tr><td colspan="4" class="py-5 text-center text-muted italic small">No community reports found.</td></tr>');
+                                $('#user-reports-container').html('<div class="text-center py-5 opacity-50"><span class="material-symbols-outlined display-4 mb-3">sentiment_satisfied</span><p class="fw-bold">Clean record! No user reports.</p></div>');
                             }
                         }
                     }
@@ -231,17 +215,45 @@
             $(document).on('submit', '.ajax-action', function(e) {
                 e.preventDefault();
                 const form = $(this);
-                const row = form.closest('tr');
+                const item = form.closest('.moderation-item');
                 
                 $.post(form.attr('action'), form.serialize(), function() {
-                    row.fadeOut(300, function() { 
+                    item.fadeOut(300, function() { 
                         $(this).remove();
                     });
                 }).fail(function() {
-                    window.Notify.error("Action failed.");
+                    if (window.Notify) window.Notify.error("Action failed.");
+                    else alert("Action failed.");
                 });
             });
         });
     </script>
 }
+
+<style>
+    .nav-link-flat {
+        display: block;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+        background: transparent;
+        width: 100%;
+    }
+    .nav-link-flat:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-pure);
+    }
+    .nav-link-flat.active {
+        background: rgba(0, 122, 255, 0.15);
+        color: var(--text-pure);
+    }
+    #user-filters .nav-link-flat.active {
+        background: rgba(0, 122, 255, 0.15);
+    }
+</style>
 }

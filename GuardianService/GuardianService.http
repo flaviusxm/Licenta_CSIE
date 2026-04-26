@@ -1,6 +1,28 @@
 @GuardianService_HostAddress = http://localhost:5272
 
-GET {{GuardianService_HostAddress}}/weatherforecast/
-Accept: application/json
+### Test Moderation (Safe Content)
+POST {{GuardianService_HostAddress}}/api/guardian/moderate
+Content-Type: application/json
 
-###
+{
+  "title": "Salutare",
+  "content": "Acesta este un mesaj de test pentru a verifica moderarea automată."
+}
+
+### Test Moderation (Unsafe Content)
+POST {{GuardianService_HostAddress}}/api/guardian/moderate
+Content-Type: application/json
+
+{
+  "title": "Atac",
+  "content": "Vreau să te înjur foarte tare pentru că nu îmi place ce faci."
+}
+
+### Test Identity Verification (Moondream)
+# Note: You need a base64 string of an image here
+POST {{GuardianService_HostAddress}}/api/guardian/verify
+Content-Type: application/json
+
+{
+  "imageBase64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+}

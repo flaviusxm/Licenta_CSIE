@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using GuardianService.DTOs;
+using GuardianService.Models;
 
 namespace GuardianService.Services
 {
@@ -15,12 +16,14 @@ namespace GuardianService.Services
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
         private readonly ILogger<OllamaService> _logger;
+        private readonly IPromptService _promptService;
 
-        public OllamaService(HttpClient httpClient, IConfiguration config, ILogger<OllamaService> logger)
+        public OllamaService(HttpClient httpClient, IConfiguration config, ILogger<OllamaService> logger, IPromptService promptService)
         {
             _httpClient = httpClient;
             _config = config;
             _logger = logger;
+            _promptService = promptService;
         }
 
         public async Task<ModerationResponse> AnalyzeTextAsync(string content, string? title = null)
@@ -28,27 +31,19 @@ namespace GuardianService.Services
             var model = _config["Ollama:TextModel"] ?? "llama3.1";
             var baseUrl = _config["Ollama:BaseUrl"] ?? "http://localhost:11434";
 
-            var prompt = $@"Analizează următorul conținut pentru o platformă socială de studenți. 
-Căutăm: limbaj licențios, hărțuire, spam sau conținut ilegal.
-
-Titlu: {title ?? "N/A"}
-Conținut: {content}
-
-Răspunde DOAR în format JSON:
-{{
-  ""isSafe"": boolean,
-  ""reason"": ""scurtă explicație în Română""
-}}";
+            var prompt = _promptService.GetModerationPrompt(content, title);
 
             try
             {
-                var response = await _httpClient.PostAsJsonAsync($"{baseUrl}/api/generate", new
+                var request = new OllamaGenerateRequest
                 {
-                    model = model,
-                    prompt = prompt,
-                    stream = false,
-                    format = "json"
-                });
+                    Model = model,
+                    Prompt = prompt,
+                    Format = "json",
+                    Stream = false
+                };
+
+                var response = await _httpClient.PostAsJsonAsync($"{baseUrl}/api/generate", request);
 
                 response.EnsureSuccessStatusCode();
                 var result = await response.Content.ReadFromJsonAsync<JsonElement>();
@@ -69,21 +64,20 @@ Răspunde DOAR în format JSON:
             var model = _config["Ollama:VisionModel"] ?? "llava";
             var baseUrl = _config["Ollama:BaseUrl"] ?? "http://localhost:11434";
 
-            // Prompt pentru verificarea legitimației de student
-            var prompt = "Este aceasta o legitimație de student validă? Extrage numele studentului, facultatea și data expirării dacă sunt vizibile. Răspunde în format JSON: {\"isValid\": boolean, \"extractionDetails\": \"string\", \"recommendation\": \"string\"}";
+            var prompt = _promptService.GetVerificationPrompt();
 
             try
             {
-                var requestBody = new
+                var request = new OllamaGenerateRequest
                 {
-                    model = model,
-                    prompt = prompt,
-                    stream = false,
-                    format = "json",
-                    images = base64Image != null ? new[] { base64Image } : null
+                    Model = model,
+                    Prompt = prompt,
+                    Format = "json",
+                    Stream = false,
+                    Images = base64Image != null ? new[] { base64Image } : null
                 };
 
-                var response = await _httpClient.PostAsJsonAsync($"{baseUrl}/api/generate", requestBody);
+                var response = await _httpClient.PostAsJsonAsync($"{baseUrl}/api/generate", request);
                 response.EnsureSuccessStatusCode();
                 
                 var result = await response.Content.ReadFromJsonAsync<JsonElement>();

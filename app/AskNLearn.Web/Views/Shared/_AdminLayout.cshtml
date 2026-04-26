@@ -31,15 +31,32 @@
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
         }
-        .glass-badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
-        .glass-badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
-        .glass-badge-aurora { background: rgba(52, 211, 153, 0.15); color: #34d399; border-color: rgba(52, 211, 153, 0.3); }
+        .glass-badge-aurora { background: rgba(0, 122, 255, 0.15); color: #007AFF; border-color: rgba(0, 122, 255, 0.3); }
 
-        .sidebar-item-active {
-            background: rgba(52, 211, 153, 0.1) !important;
-            color: var(--color-mint-bright) !important;
-            border-right: 3px solid var(--color-mint-bright);
+        .nav-link-premium {
+            padding: 0.65rem 1rem;
+            margin: 0.1rem 0.5rem;
+            border-radius: 12px;
+            border-left: 3px solid transparent;
         }
+
+        .nav-link-premium.active {
+            background: rgba(0, 122, 255, 0.12) !important;
+            color: #fff !important;
+            border-left: 3px solid #007AFF;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.1);
+        }
+
+        .nav-link-premium:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff !important;
+        }
+
+        .text-aurora { color: #007AFF !important; }
+        .bg-aurora { background-color: #007AFF !important; }
+        .bg-aurora-soft { background-color: rgba(0, 122, 255, 0.1) !important; }
+        .shadow-glow { box-shadow: 0 0 15px rgba(0, 122, 255, 0.4); }
+        .text-accent { color: #007AFF !important; }
     </style>
 </head>
 <body class="dark-mesh-bg d-flex flex-column vh-100 overflow-hidden">
@@ -55,7 +72,7 @@
             <a asp-controller="Admin" asp-action="Index" class="d-flex align-items-center text-decoration-none transition-all hover-translate-y">
                 
                 <h1 class="fs-4 fw-bold tracking-tight text-white mb-0">
-                    Ask<span class="text-aurora">N</span>Learn <span class="text-muted fw-normal opacity-50 ms-1 small" style="font-size: 0.8rem;">Admin</span>
+                    Ask<span class="text-accent">N</span>Learn <span class="text-muted fw-normal opacity-50 ms-1 small" style="font-size: 0.8rem;">Admin</span>
                 </h1>
             </a>
         </div>
@@ -71,16 +88,16 @@
     <!-- Main Content Area -->
     <div class="d-flex flex-grow-1 overflow-hidden position-relative z-1">
         <!-- Left Sidebar -->
-        <aside id="leftSidebar" class="d-flex sidebar-transition flex-column h-100 flex-shrink-0 position-relative" style="width: 300px; border-right: 1px solid var(--border-glass); background: rgba(2, 8, 6, 0.7); backdrop-filter: blur(40px); overflow-x: hidden; z-index: 2;">
-            <div class="flex-grow-1 d-flex flex-column min-vh-0 overflow-hidden" style="background: radial-gradient(circle at 0% 0%, rgba(52, 211, 153, 0.05) 0%, transparent 50%);">
+        <aside id="leftSidebar" class="d-flex sidebar-transition flex-column h-100 flex-shrink-0 position-relative" style="width: 300px; border-right: 1px solid var(--border-glass); background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(40px); overflow-x: hidden; z-index: 2;">
+            <div class="flex-grow-1 d-flex flex-column min-vh-0 overflow-hidden" style="background: radial-gradient(circle at 0% 0%, rgba(0, 122, 255, 0.04) 0%, transparent 50%);">
                 @await Component.InvokeAsync("AdminSidebar")
             </div>
         </aside>
 
         <button id="toggleLeftSidebar"
                 class="d-flex sidebar-transition align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 p-0 shadow-lg border-0"
-                style="left: 300px; width: 22px; height: 60px; background: rgba(52, 211, 153, 0.1); backdrop-filter: blur(20px); border: 1px solid var(--border-glass-strong) !important; border-left: none !important;">
-            <span class="material-symbols-outlined m-0 p-0 fs-6" style="color: var(--color-mint-bright); margin-left: -2px !important;">chevron_left</span>
+                style="left: 300px; width: 22px; height: 60px; background: rgba(0, 122, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid var(--border-glass-strong) !important; border-left: none !important;">
+            <span class="material-symbols-outlined m-0 p-0 fs-6" style="color: #007AFF; margin-left: -2px !important;">chevron_left</span>
         </button>
 
         <!-- Main Content -->

@@ -5,7 +5,10 @@
             <span>Dashboard Overview</span>
         </a>
         
-        <a href="/Admin/Verifications" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "Verifications" ? "active" : "")">
+        <div class="my-3 border-top border-glass opacity-10"></div>
+        <label class="text-muted small fw-bold text-uppercase tracking-widest px-4 mb-2" style="font-size: 0.6rem;">Moderation</label>
+
+        <a href="/management/administration/verifications" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "Verifications" ? "active" : "")">
             <span class="material-symbols-outlined fs-5">verified_user</span>
             <div class="d-flex align-items-center justify-content-between flex-grow-1">
                 <span>Verification Queue</span>
@@ -16,7 +19,7 @@
             </div>
         </a>
 
-        <a href="/Admin/Moderation" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "Moderation" ? "active" : "")">
+        <a href="/management/administration/moderation" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "Moderation" ? "active" : "")">
             <span class="material-symbols-outlined fs-5">security</span>
             <div class="d-flex align-items-center justify-content-between flex-grow-1">
                 <span>AI Moderation</span>
@@ -27,7 +30,7 @@
             </div>
         </a>
 
-        <a href="/Admin/Moderation#user-reports" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition">
+        <a href="/management/administration/moderation#user-reports" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition">
             <span class="material-symbols-outlined fs-5">flag</span>
             <div class="d-flex align-items-center justify-content-between flex-grow-1">
                 <span>User Reports</span>
@@ -37,10 +40,21 @@
                 }
             </div>
         </a>
+
+        <div class="my-3 border-top border-glass opacity-10"></div>
+        <label class="text-muted small fw-bold text-uppercase tracking-widest px-4 mb-2" style="font-size: 0.6rem;">Operations</label>
         
-        <div class="my-4 border-top border-glass opacity-10"></div>
+        <a href="/management/administration/users" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "Users" ? "active" : "")">
+            <span class="material-symbols-outlined fs-5">group</span>
+            <span>User Management</span>
+        </a>
+
+        <a href="/management/administration/logs" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition @(ViewContext.RouteData.Values["action"]?.ToString() == "AuditLogs" ? "active" : "")">
+            <span class="material-symbols-outlined fs-5">history</span>
+            <span>Audit Logs</span>
+        </a>
         
-        <a asp-area="" asp-controller="Home" asp-action="Index" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition mb-4 text-aurora-hover">
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="nav-link-premium justify-content-start w-100 gap-3 sidebar-transition mb-4 hover-text-accent">
             <span class="material-symbols-outlined fs-5">arrow_back</span>
             <span>Exit Admin View</span>
         </a>

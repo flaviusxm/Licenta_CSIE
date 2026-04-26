@@ -116,6 +116,59 @@ namespace AskNLearn.Web.Controllers
             return View(paginatedRequests);
         }
 
+        [HttpGet("users")]
+        public async Task<IActionResult> Users(string? searchTerm, int? pageNumber)
+        {
+            if (!await IsAdmin()) return Forbid();
+            ViewData["ActivePage"] = "Users";
+            
+            int pageSize = 15;
+            var query = _context.Users.OrderBy(u => u.UserName).AsNoTracking();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(u => u.UserName.Contains(searchTerm) || u.Email.Contains(searchTerm) || u.FullName.Contains(searchTerm));
+            }
+
+            var paginatedUsers = await AskNLearn.Web.Models.PaginatedList<ApplicationUser>.CreateAsync(query, pageNumber ?? 1, pageSize);
+            return View(paginatedUsers);
+        }
+
+        [HttpPost("users/block/{id}")]
+        public async Task<IActionResult> BlockUser(string id)
+        {
+            if (!await IsAdmin()) return Forbid();
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                user.LockoutEnabled = true;
+                user.LockoutEnd = DateTimeOffset.MaxValue;
+                await _userManager.UpdateAsync(user);
+            }
+            return Ok();
+        }
+
+        [HttpPost("users/unblock/{id}")]
+        public async Task<IActionResult> UnblockUser(string id)
+        {
+            if (!await IsAdmin()) return Forbid();
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                user.LockoutEnd = null;
+                await _userManager.UpdateAsync(user);
+            }
+            return Ok();
+        }
+
+        [HttpGet("logs")]
+        public async Task<IActionResult> AuditLogs()
+        {
+            if (!await IsAdmin()) return Forbid();
+            // Stub for now - can be expanded with real logs later
+            return View();
+        }
+
         [HttpPost("verifications/approve/{id:guid}")]
         public async Task<IActionResult> Approve(Guid id)
         {
