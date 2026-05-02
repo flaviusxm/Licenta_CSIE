@@ -49,11 +49,6 @@
                                     <span class="opacity-20">|</span>
                                 }
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="material-symbols-outlined fs-6 opacity-50">work</span>
-                                    <input type="text" name="Occupation" value="@Model.Occupation" class="inline-edit-input" placeholder="@(Model.IsOwnProfile ? "Add Occupation..." : "")" @(Model.IsOwnProfile ? "" : "readonly") />
-                                </div>
-                                <span class="opacity-20">|</span>
-                                <div class="d-flex align-items-center gap-2">
                                     <span class="material-symbols-outlined fs-6 opacity-50">school</span>
                                     <input type="text" name="Institution" value="@Model.Institution" class="inline-edit-input" placeholder="@(Model.IsOwnProfile ? "Add Institution..." : "")" @(Model.IsOwnProfile ? "" : "readonly") />
                                 </div>
@@ -86,7 +81,7 @@
 
             <!-- MAIN CONTENT GRID -->
             <div class="row g-4">
-                <div class="col-12 col-lg-8">
+                <div class="col-12 col-lg-9">
                     <div class="d-flex flex-column gap-4">
                         <!-- About Section -->
                         <div class="profile-sidebar-card">
@@ -151,28 +146,37 @@
                                                         </label>
                                                     </div>
                                                 </div>
-                                                <button type="submit" formaction="/Profile/SubmitVerification" class="btn btn-premium w-100 mt-3 py-2 fw-black text-uppercase tracking-widest fs-xs">
+                                                <button type="submit" formaction="/identity/profiles/verification/submit" class="btn btn-premium w-100 mt-3 py-2 fw-black text-uppercase tracking-widest fs-xs">
                                                     Sync Validation
                                                 </button>
                                             </div>
-                                        } else if (Model.HasPendingVerification && !Model.IsVerified) {
-                                             <div class="p-3 rounded-4 mt-2 bg-black bg-opacity-20 border border-glass d-flex align-items-center justify-content-between">
-                                                <p class="text-aurora small m-0 fw-bold italic">Verification in progress...</p>
-                                                <div class="spinner-grow text-aurora spinner-grow-sm" role="status"></div>
+                                        } else if (Model.HasPendingVerification || (User.IsInRole("Admin") && !Model.IsVerified)) {
+                                             <div class="mt-4 animate-entrance">
+                                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="spinner-grow text-aurora spinner-grow-sm" role="status" style="width: 10px; height: 10px;"></div>
+                                                        <span class="text-white fw-black text-uppercase tracking-widest fs-xs">Guardian AI Monitor</span>
+                                                    </div>
+                                                    <span class="badge bg-glass-heavy border border-glass text-muted tiny fw-bold">LIVE SESSION</span>
+                                                </div>
+                                                
+                                                <div id="guardian-console" class="glass-card p-3 rounded-4 border-glass shadow-2xl bg-black-alpha-40 font-monospace overflow-hidden" style="min-height: 120px;">
+                                                    <div id="guardian-logs" class="d-flex flex-column gap-1">
+                                                        <div class="text-aurora tiny opacity-50 mb-1">>> Initializing Guardian Shield Protocol...</div>
+                                                        <div class="text-white small fw-medium" id="guardian-current-notes">@Model.AdminNotes</div>
+                                                    </div>
+                                                    <div class="cursor-blink bg-aurora mt-2" style="width: 8px; height: 14px; display: inline-block;"></div>
+                                                </div>
+                                                @if (Model.IsOwnProfile) {
+                                                    <button type="button" onclick="document.getElementById('cancelVerificationForm').submit()" class="btn btn-link text-muted text-hover-danger p-0 tiny fw-black text-uppercase text-decoration-none mt-3">Cancel Request</button>
+                                                }
                                              </div>
                                         }
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- SIDEBAR -->
-                <div class="col-12 col-lg-4 ps-lg-5">
-                    <div class="d-flex flex-column gap-5">
                         
-
                         <!-- Socials -->
                         <div class="profile-sidebar-card">
                             <h3 class="profile-section-title">
@@ -189,15 +193,27 @@
                                 </div>
                             }
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Security -->
+                <!-- SIDEBAR -->
+                <div class="col-12 col-lg-3 ps-lg-5">
+                    <div class="d-flex flex-column gap-5">
+                        <!-- Security & Admin -->
                         @if (Model.IsOwnProfile) {
                             <div class="profile-sidebar-card">
                                  <h3 class="profile-section-title">
                                      <span class="material-symbols-outlined">security</span>
-                                     Security
+                                     Management
                                  </h3>
                                  <div class="d-grid gap-2">
+                                     @if (User.IsInRole("Admin"))
+                                     {
+                                         <a asp-controller="Admin" asp-action="Index" class="btn btn-premium py-2 fw-bold text-uppercase fs-xs mb-1">
+                                             <span class="material-symbols-outlined fs-6 me-2">admin_panel_settings</span>
+                                             Admin Portal
+                                         </a>
+                                     }
                                      <button type="button" onclick="ProfileManager.showResetModal()" class="btn btn-glass py-2 fw-bold text-uppercase fs-xs">
                                          Change Password
                                      </button>
@@ -223,6 +239,7 @@
     </div>
 
     <form asp-controller="Auth" asp-action="SignOut" method="post" id="logoutForm" class="d-none"></form>
+    <form action="/identity/profiles/verification/cancel" method="post" id="cancelVerificationForm" class="d-none"></form>
 
 </div>
 
@@ -232,7 +249,7 @@
     .banner-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 70%, var(--bg-universe)); }
     .profile-info-stage { margin-top: -120px; position: relative; z-index: 10; }
     .profile-avatar-stage { width: 200px; height: 200px; border-radius: 2.5rem; overflow: hidden; border: 8px solid var(--bg-universe); background: var(--bg-universe); position: relative; }
-    .profile-avatar-stage img { width: 100%; height: 100%; object-cover: cover; }
+    .profile-avatar-stage img { width: 100%; height: 100%; object-fit: cover; }
     .avatar-edit-btn { position: absolute; bottom: 15px; right: 15px; background: var(--color-accent); color: white; border: none; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
 
     .inline-edit-input { background: transparent; border: none; color: inherit; width: auto; min-width: 100px; padding: 0; }
@@ -250,6 +267,14 @@
     
     .premium-textarea { background: transparent; border: none; border-radius: 0; color: white; padding: 0 1.5rem; font-size: 1.1rem; line-height: 1.8; transition: all 0.3s ease; }
     .premium-textarea:focus { outline: none; }
+
+    .cursor-blink {
+        animation: blink 1s step-end infinite;
+    }
+    @@keyframes blink {
+        from, to { opacity: 1; }
+        50% { opacity: 0; }
+    }
 </style>
 
 @section Modals {
@@ -293,7 +318,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const initialTags = "@Model.Interests".split(',').filter(x => x.trim() !== '');
         const initialLinks = "@Model.SocialLinks".split(';').filter(x => x.trim() !== '');
-        ProfileManager.init(@Model.IsOwnProfile.ToString().ToLower(), initialTags, initialLinks);
+        ProfileManager.init(@Model.IsOwnProfile.ToString().ToLower(), initialTags, initialLinks, "@Model.Id", @Model.HasPendingVerification.ToString().ToLower());
     });
 </script>
 }

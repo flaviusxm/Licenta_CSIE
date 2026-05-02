@@ -41,10 +41,8 @@
         }
 
         .nav-link-premium.active {
-            background: rgba(0, 122, 255, 0.12) !important;
+            background: rgba(255, 255, 255, 0.08) !important;
             color: #fff !important;
-            border-left: 3px solid #007AFF;
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.1);
         }
 
         .nav-link-premium:hover:not(.active) {
@@ -55,7 +53,7 @@
         .text-aurora { color: #007AFF !important; }
         .bg-aurora { background-color: #007AFF !important; }
         .bg-aurora-soft { background-color: rgba(0, 122, 255, 0.1) !important; }
-        .shadow-glow { box-shadow: 0 0 15px rgba(0, 122, 255, 0.4); }
+        .text-accent { color: #007AFF !important; }
         .text-accent { color: #007AFF !important; }
     </style>
 </head>
@@ -66,38 +64,40 @@
     <div class="aurora-orb aurora-orb-blue position-fixed"></div>
 
     <!-- Top Navigation Bar -->
-    <header class="glass-nav position-relative z-3 w-100 px-4 d-flex align-items-center justify-content-between" style="height: 80px; flex-shrink: 0;">
+    <header class="glass-nav position-relative z-3 w-100 px-4 d-flex align-items-center justify-content-between" style="height: 4rem; flex-shrink: 0;">
         <!-- Logo Area -->
-        <div class="d-flex align-items-center" style="width: 250px;">
+        <div class="d-flex align-items-center" style="width: 15.625rem;">
             <a asp-controller="Admin" asp-action="Index" class="d-flex align-items-center text-decoration-none transition-all hover-translate-y">
-                
                 <h1 class="fs-4 fw-bold tracking-tight text-white mb-0">
                     Ask<span class="text-accent">N</span>Learn <span class="text-muted fw-normal opacity-50 ms-1 small" style="font-size: 0.8rem;">Admin</span>
                 </h1>
             </a>
         </div>
 
-        <!-- Center Navigation (Empty or space for other links) -->
-        <nav class="d-none d-lg-flex align-items-center gap-2">
-            <!-- Space for future top-nav items -->
-        </nav>
+
         
-        
+       
     </header>
 
     <!-- Main Content Area -->
     <div class="d-flex flex-grow-1 overflow-hidden position-relative z-1">
         <!-- Left Sidebar -->
-        <aside id="leftSidebar" class="d-flex sidebar-transition flex-column h-100 flex-shrink-0 position-relative" style="width: 300px; border-right: 1px solid var(--border-glass); background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(40px); overflow-x: hidden; z-index: 2;">
-            <div class="flex-grow-1 d-flex flex-column min-vh-0 overflow-hidden" style="background: radial-gradient(circle at 0% 0%, rgba(0, 122, 255, 0.04) 0%, transparent 50%);">
+        <aside id="leftSidebar" class="d-flex sidebar-transition flex-column h-100 flex-shrink-0 position-relative" style="width: 400px; border-right: 1px solid var(--border-glass); background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(40px); overflow-x: hidden; z-index: 2;">
+            <div class="flex-grow-1 d-flex flex-column min-vh-0 overflow-hidden" style="background: radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);">
                 @await Component.InvokeAsync("AdminSidebar")
+                @if (IsSectionDefined("Sidebar"))
+                {
+                    <div class="mt-2 border-top border-glass pt-4 px-4">
+                        @RenderSection("Sidebar")
+                    </div>
+                }
             </div>
         </aside>
 
         <button id="toggleLeftSidebar"
-                class="d-flex sidebar-transition align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 p-0 shadow-lg border-0"
-                style="left: 300px; width: 22px; height: 60px; background: rgba(0, 122, 255, 0.1); backdrop-filter: blur(20px); border: 1px solid var(--border-glass-strong) !important; border-left: none !important;">
-            <span class="material-symbols-outlined m-0 p-0 fs-6" style="color: #007AFF; margin-left: -2px !important;">chevron_left</span>
+                class="d-flex sidebar-transition align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 p-0 shadow-lg"
+                style="left: 400px; width: 1.75rem; height: 4rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(10px); transition: left 0.6s var(--ease-apple);">
+            <span class="material-symbols-outlined text-muted m-0 p-0" style="margin-left: -2px !important;">chevron_left</span>
         </button>
 
         <!-- Main Content -->
@@ -115,17 +115,17 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     
     <script>
-        const leftSidebar = document.getElementById("leftSidebar");
-        const leftButton = document.getElementById("toggleLeftSidebar");
-        const chevron = leftButton ? leftButton.querySelector('span') : null;
-
-        if (leftSidebar && leftButton) {
-            leftButton.addEventListener("click", () => {
-                const isCollapsed = leftSidebar.classList.toggle("sidebar-collapsed");
-                chevron.innerText = isCollapsed ? "chevron_right" : "chevron_left";
-                leftButton.style.left = isCollapsed ? "0px" : "300px";
-            });
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById("toggleLeftSidebar");
+            const side = document.getElementById("leftSidebar");
+            if (btn && side) {
+                btn.addEventListener("click", () => {
+                    const isCol = side.classList.toggle("sidebar-collapsed");
+                    btn.querySelector('span').innerText = isCol ? "chevron_right" : "chevron_left";
+                    btn.style.left = isCol ? "0px" : "400px";
+                });
+            }
+        });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

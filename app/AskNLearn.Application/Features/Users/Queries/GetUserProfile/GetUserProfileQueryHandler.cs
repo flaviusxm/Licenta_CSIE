@@ -104,7 +104,12 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
                 ConnectionStatus = connectionStatus,
                 IsOwnProfile = request.CurrentUserId == user.Id,
                 EmailConfirmed = user.EmailConfirmed,
-                VerificationStatus = user.VerificationStatus.ToString()
+                VerificationStatus = user.VerificationStatus.ToString(),
+                AdminNotes = await _context.VerificationRequests
+                    .Where(v => v.UserId == user.Id)
+                    .OrderByDescending(v => v.SubmittedAt)
+                    .Select(v => v.AdminNotes)
+                    .FirstOrDefaultAsync(cancellationToken)
             };
         }
     }

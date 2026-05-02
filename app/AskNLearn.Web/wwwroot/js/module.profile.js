@@ -2,7 +2,14 @@
  * ProfileManager - Handles profile management logic
  */
 class ProfileManager {
-    static init(isOwnProfile, initialTags, initialLinks) {
+    static init(isOwnProfile, initialTags, initialLinks, userId, isPending) {
+        this.userId = userId;
+        this.isPending = isPending;
+
+        if (isPending) {
+            this.startVerificationPolling();
+        }
+
         if (!isOwnProfile) return;
 
         // Setup social list
@@ -138,6 +145,49 @@ class ProfileManager {
         hidden.value = links.join(';');
         this.renderSocialLinks(links);
         await this.syncChanges();
+    }
+
+    static startVerificationPolling() {
+        if (this.pollingInterval) clearInterval(this.pollingInterval);
+        
+        this.pollingInterval = setInterval(async () => {
+            try {
+                const response = await axios.get(`/identity/profiles/verification-status/${this.userId}`);
+                const data = response.data;
+
+                if (data) {
+                    this.updateGuardianConsole(data.adminNotes, data.status);
+                    
+                    // If verified or rejected, stop polling and refresh after a delay
+                    if (data.status !== 0) { // Assuming 0 is Pending
+                        clearInterval(this.pollingInterval);
+                        setTimeout(() => window.location.reload(), 5000);
+                    }
+                }
+            } catch (e) {
+                console.error("Verification polling error", e);
+            }
+        }, 3000);
+    }
+
+    static updateGuardianConsole(notes, status) {
+        const notesEl = document.getElementById('guardian-current-notes');
+        if (notesEl && notes && notes !== notesEl.innerText) {
+            // Typing effect simulation
+            notesEl.classList.add('animate-pulse');
+            notesEl.innerText = notes;
+            
+            const logs = document.getElementById('guardian-logs');
+            if (logs) {
+                const log = document.createElement('div');
+                log.className = 'text-aurora tiny opacity-50';
+                log.innerText = `[${new Date().toLocaleTimeString()}] AI Update detected.`;
+                logs.appendChild(log);
+                logs.scrollTop = logs.scrollHeight;
+            }
+            
+            setTimeout(() => notesEl.classList.remove('animate-pulse'), 1000);
+        }
     }
 }
 

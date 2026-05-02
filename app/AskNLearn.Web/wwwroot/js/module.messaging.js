@@ -31,10 +31,12 @@ class MessagingManager {
             if (state) {
                 const content = document.getElementById(`content-${id}`);
                 const header = document.querySelector(`.section-header[onclick*="${id}"]`);
-                if (content && header) {
+                const wrapper = document.getElementById(`section-${id}`);
+                if (content && header && wrapper) {
                     const shouldOpen = state === 'open';
                     content.classList.toggle('show', shouldOpen);
                     header.classList.toggle('collapsed', !shouldOpen);
+                    wrapper.classList.toggle('expanded', shouldOpen);
                 }
             }
         });
@@ -114,11 +116,13 @@ class MessagingManager {
     static toggleSection(sectionId) {
         const content = document.getElementById(`content-${sectionId}`);
         const header = document.querySelector(`.section-header[onclick*="${sectionId}"]`);
+        const wrapper = document.getElementById(`section-${sectionId}`);
         
         if (content) {
             const isOpen = content.classList.contains('show');
             content.classList.toggle('show', !isOpen);
             header?.classList.toggle('collapsed', isOpen);
+            wrapper?.classList.toggle('expanded', !isOpen);
             localStorage.setItem(`inbox_section_${sectionId}`, !isOpen ? 'open' : 'closed');
         }
     }

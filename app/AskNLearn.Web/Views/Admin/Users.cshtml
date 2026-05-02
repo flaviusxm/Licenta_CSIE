@@ -5,130 +5,145 @@
     ViewData["Title"] = "User Management";
 }
 
-@section Sidebar {
-    <div class="p-4 border-bottom border-glass">
-        <h2 class="h5 fw-bold text-white mb-2 d-flex align-items-center gap-2">
-            <span class="material-symbols-outlined text-aurora">group</span>
-            User Management
-        </h2>
-        <p class="text-muted small mb-4">Search, verify, and moderate platform members.</p>
-    </div>
 
-    <div class="flex-grow-1 p-3 overflow-y-auto custom-scrollbar">
-        <div class="mb-4">
-            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Search Users</label>
-            <form method="get" class="position-relative">
-                <span class="material-symbols-outlined position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" style="font-size: 1rem;">search</span>
-                <input type="text" name="searchTerm" class="form-control form-control-glass ps-5" placeholder="Name, Email, or Username..." value="@Context.Request.Query["searchTerm"]" />
-            </form>
-        </div>
-
-        <div class="mb-4">
-            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Quick Filters</label>
-            <div class="d-flex flex-column gap-1">
-                <a href="?role=" class="nav-link-flat @(string.IsNullOrEmpty(Context.Request.Query["role"]) ? "active" : "")">
-                    <span class="material-symbols-outlined fs-6 me-2">all_inclusive</span> All Members
-                </a>
-                <a href="?role=Moderator" class="nav-link-flat @(Context.Request.Query["role"] == "Moderator" ? "active" : "")">
-                    <span class="material-symbols-outlined fs-6 me-2">shield</span> Moderators
-                </a>
-                <a href="?role=Admin" class="nav-link-flat @(Context.Request.Query["role"] == "Admin" ? "active" : "")">
-                    <span class="material-symbols-outlined fs-6 me-2">admin_panel_settings</span> Admins
-                </a>
+<div class="max-w-6xl mx-auto p-4">
+    <!-- Header & Controls -->
+    <div class="mb-5">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-4">
+                <h2 class="h4 fw-black text-white mb-1">User Management</h2>
+                <p class="text-muted small mb-0">Manage roles, permissions and account status.</p>
+            </div>
+            <div class="col-lg-4">
+                <form method="get" class="position-relative">
+                    <span class="material-symbols-outlined position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" style="font-size: 1.1rem;">search</span>
+                    <input type="text" name="searchTerm" class="form-control form-control-glass ps-5 py-2 fw-medium" placeholder="Search name or username..." value="@Context.Request.Query["searchTerm"]" style="border-radius: 0.75rem;" />
+                    <input type="hidden" name="role" value="@Context.Request.Query["role"]" />
+                </form>
+            </div>
+            <div class="col-lg-4">
+                <div class="d-flex align-items-center justify-content-lg-end gap-2">
+                    <a href="?role=&searchTerm=@Context.Request.Query["searchTerm"]" class="nav-link-filter @(string.IsNullOrEmpty(Context.Request.Query["role"]) ? "active" : "")">
+                        All
+                    </a>
+                    <a href="?role=Moderator&searchTerm=@Context.Request.Query["searchTerm"]" class="nav-link-filter @(Context.Request.Query["role"] == "Moderator" ? "active" : "")">
+                        Moderators
+                    </a>
+                    <a href="?role=Admin&searchTerm=@Context.Request.Query["searchTerm"]" class="nav-link-filter @(Context.Request.Query["role"] == "Admin" ? "active" : "")">
+                        Admins
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <a asp-action="Index" class="d-flex align-items-center justify-content-center gap-2 py-4 mt-auto text-muted hover-text-white transition-all text-decoration-none border-top border-glass">
-        <span class="material-symbols-outlined fs-5">arrow_back</span>
-        <span class="fw-bold text-uppercase tracking-widest fs-xs">Dashboard</span>
-    </a>
-}
-
-<div class="max-w-5xl mx-auto p-4 animate-entrance">
     @if (!Model.Any())
     {
-        <div class="text-center py-5 opacity-50">
-            <span class="material-symbols-outlined display-1 mb-3">person_off</span>
-            <h3 class="h4">No users found</h3>
-            <p>Try a different search term or filter.</p>
+        <div class="glass-card p-5 text-center rounded-3xl border-glass shadow-lg">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4" style="width: 80px; height: 80px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass);">
+                <span class="material-symbols-outlined display-5 text-muted">person_off</span>
+            </div>
+            <h3 class="h4 text-white fw-bold">No users found</h3>
+            <p class="text-muted mx-auto" style="max-width: 300px;">We couldn't find any users matching your criteria. Try adjusting your search or filters.</p>
+            <a href="/management/administration/users" class="btn btn-premium mt-3">Clear all filters</a>
         </div>
     }
     else
     {
-        <div class="d-flex flex-column gap-2">
-            @foreach (var user in Model)
-            {
-                <div class="user-item d-flex align-items-center gap-4 p-3 rounded-xl hover-bg-glass transition-all border-bottom border-glass-soft group">
-                    <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" 
-                         style="width: 52px; height: 52px; background: rgba(52, 211, 153, 0.05); border: 1px solid var(--border-glass-strong);">
-                        @if (!string.IsNullOrEmpty(user.AvatarUrl))
-                        {
-                            <img src="@user.AvatarUrl" class="w-100 h-100 object-cover rounded-circle" />
-                        }
-                        else
-                        {
-                            <span class="material-symbols-outlined fs-3 text-aurora">person</span>
-                        }
-                    </div>
-
-                    <div class="flex-grow-1 min-w-0">
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <h4 class="h6 fw-bold text-white mb-0 text-truncate">@user.FullName</h4>
-                            @if (user.Role == Role.Admin)
+        <div class="glass-card overflow-hidden rounded-3xl border-glass shadow-lg">
+            <div class="d-flex flex-column">
+                @foreach (var user in Model)
+                {
+                    <div class="user-item d-flex align-items-center gap-4 p-4 border-bottom border-glass-soft transition-all hover-bg-glass-heavy group">
+                        <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-lg position-relative" 
+                             style="width: 56px; height: 56px; background: rgba(255, 255, 255, 0.05); border: 2px solid var(--border-glass-strong);">
+                            @if (!string.IsNullOrEmpty(user.AvatarUrl))
                             {
-                                <span class="badge glass-badge glass-badge-danger">Admin</span>
+                                <img src="@user.AvatarUrl" class="w-100 h-100 object-cover rounded-circle" />
                             }
-                            else if (user.Role == Role.Moderator)
+                            else
                             {
-                                <span class="badge glass-badge glass-badge-aurora">Moderator</span>
+                                <span class="material-symbols-outlined fs-3 text-muted">person</span>
+                            }
+                            @if (user.IsVerified)
+                            {
+                                <div class="position-absolute bottom-0 end-0 bg-aurora rounded-circle d-flex align-items-center justify-content-center border border-dark" style="width: 18px; height: 18px;">
+                                    <span class="material-symbols-outlined text-white" style="font-size: 10px; font-weight: bold;">check</span>
+                                </div>
                             }
                         </div>
-                        <div class="d-flex align-items-center gap-3 text-muted" style="font-size: 0.75rem;">
-                            <span>@@@user.UserName</span>
-                            <span>•</span>
-                            <span>@user.Email</span>
-                            <span>•</span>
-                            <span class="d-flex align-items-center gap-1">
-                                <span class="material-symbols-outlined fs-xs @(user.IsVerified ? "text-aurora" : "text-muted")">verified</span>
-                                @(user.IsVerified ? "Verified" : "Unverified")
-                            </span>
+
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h4 class="h6 fw-bold text-white mb-0 text-truncate">@user.FullName</h4>
+                                @if (user.Role == Role.Admin)
+                                {
+                                    <span class="badge glass-badge glass-badge-aurora" style="background: rgba(129, 140, 248, 0.15); color: #818cf8; border-color: rgba(129, 140, 248, 0.3);">Admin</span>
+                                }
+                                else if (user.Role == Role.Moderator)
+                                {
+                                    <span class="badge glass-badge glass-badge-aurora">Moderator</span>
+                                }
+                            </div>
+                            <div class="d-flex align-items-center gap-3 text-muted small">
+                                <span class="fw-medium">@@@user.UserName</span>
+                                @if (user.UserName != user.Email)
+                                {
+                                    <span class="opacity-25">•</span>
+                                    <span class="text-truncate" style="max-width: 180px;">@user.Email</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 ms-auto opacity-0 group-hover-opacity-100 transition-all transform-scale-sm">
+                            @if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+                            {
+                                <button class="btn btn-glass btn-icon-premium text-success" onclick="toggleBlock('@user.Id', false)" title="Unblock User">
+                                    <span class="material-symbols-outlined fs-5">lock_open</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-glass btn-icon-premium text-danger" onclick="toggleBlock('@user.Id', true)" title="Block User">
+                                    <span class="material-symbols-outlined fs-5">block</span>
+                                </button>
+                            }
+                            <button class="btn btn-glass btn-icon-premium" title="Edit Permissions">
+                                <span class="material-symbols-outlined fs-5">tune</span>
+                            </button>
                         </div>
                     </div>
-
-                    <div class="d-flex gap-2">
-                        @if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
-                        {
-                            <button class="btn btn-glass btn-icon-sm text-success" onclick="toggleBlock('@user.Id', false)" title="Unblock User">
-                                <span class="material-symbols-outlined fs-5">lock_open</span>
-                            </button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-glass btn-icon-sm text-danger" onclick="toggleBlock('@user.Id', true)" title="Block User">
-                                <span class="material-symbols-outlined fs-5">block</span>
-                            </button>
-                        }
-                        <button class="btn btn-glass btn-icon-sm" title="Edit Permissions">
-                            <span class="material-symbols-outlined fs-5">settings</span>
-                        </button>
-                    </div>
-                </div>
-            }
+                }
+            </div>
         </div>
 
         <!-- Pagination -->
         @if (Model.TotalPages > 1)
         {
-            <div class="d-flex justify-content-center mt-5 gap-2">
-                @if (Model.HasPreviousPage)
-                {
-                    <a href="?pageNumber=@(Model.PageIndex - 1)&searchTerm=@Context.Request.Query["searchTerm"]" class="btn btn-glass px-4">Previous</a>
-                }
-                @if (Model.HasNextPage)
-                {
-                    <a href="?pageNumber=@(Model.PageIndex + 1)&searchTerm=@Context.Request.Query["searchTerm"]" class="btn btn-glass px-4">Next</a>
-                }
+            <div class="d-flex justify-content-center mt-5">
+                <nav class="glass-card p-2 rounded-pill shadow-lg border-glass">
+                    <ul class="pagination pagination-premium mb-0 gap-1 border-0">
+                        @if (Model.HasPreviousPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link rounded-circle border-0" href="?pageNumber=@(Model.PageIndex - 1)&searchTerm=@Context.Request.Query["searchTerm"]&role=@Context.Request.Query["role"]">
+                                    <span class="material-symbols-outlined fs-5">chevron_left</span>
+                                </a>
+                            </li>
+                        }
+                        
+                        <li class="page-item active"><span class="page-link rounded-circle border-0">@Model.PageIndex</span></li>
+
+                        @if (Model.HasNextPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link rounded-circle border-0" href="?pageNumber=@(Model.PageIndex + 1)&searchTerm=@Context.Request.Query["searchTerm"]&role=@Context.Request.Query["role"]">
+                                    <span class="material-symbols-outlined fs-5">chevron_right</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
             </div>
         }
     }
@@ -151,32 +166,50 @@
 </script>
 
 <style>
-    .nav-link-flat {
-        display: block;
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
+    .nav-link-filter {
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
         color: var(--text-muted);
         text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.3s var(--ease-apple);
+        border: 1px solid transparent;
     }
-    .nav-link-flat:hover {
+    .nav-link-filter:hover {
         background: rgba(255, 255, 255, 0.05);
-        color: var(--text-pure);
+        color: white;
     }
-    .nav-link-flat.active {
-        background: rgba(0, 122, 255, 0.15);
-        color: var(--text-pure);
+    .nav-link-filter.active {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
-    .btn-icon-sm {
-        width: 36px;
-        height: 36px;
+    
+    .btn-icon-premium {
+        width: 42px;
+        height: 42px;
         padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 8px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border-glass);
     }
-    .fs-xs { font-size: 10px; }
+    .btn-icon-premium:hover {
+        background: rgba(255,255,255,0.08);
+        transform: translateY(-2px);
+    }
+
+    .hover-bg-glass-heavy:hover {
+        background: rgba(255,255,255,0.04) !important;
+    }
+
+    .transform-scale-sm:hover {
+        transform: scale(1.05);
+    }
 </style>

@@ -6,9 +6,9 @@
 }
 
 @section Sidebar {
-    <div class="p-4 border-bottom border-glass">
+    <div class="p-4 border-bottom border-glass animate-entrance">
         <h2 class="h5 fw-bold text-white mb-2 d-flex align-items-center gap-2">
-            <span class="material-symbols-outlined text-accent">folder_open</span>
+            <span class="material-symbols-outlined text-white">folder_open</span>
             Academic Resources
         </h2>
         <p class="text-muted small mb-4">Browse and share learning materials with your colleagues</p>
@@ -19,7 +19,7 @@
         </button>
     </div>
 
-    <div class="flex-grow-1 p-3 overflow-y-auto custom-scrollbar">
+    <div class="flex-grow-1 p-3 overflow-y-auto custom-scrollbar animate-entrance" style="animation-delay: 0.1s;">
         <div class="mb-4">
             <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Search</label>
             <div class="position-relative">
@@ -69,7 +69,7 @@
             {
                 <div class="resource-item d-flex align-items-center gap-3 p-3 rounded-lg hover-bg-glass transition-all border-bottom border-glass-soft">
                     <div class="file-icon rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
-                        <span class="material-symbols-outlined fs-4 text-accent">
+                        <span class="material-symbols-outlined fs-4 text-white">
                             @(file.FileType?.Contains("pdf") == true ? "picture_as_pdf" : 
                                 file.FileType?.Contains("image") == true ? "image" : 
                                 file.FileType?.Contains("word") == true ? "description" : "draft")
@@ -166,40 +166,44 @@
 <script>
     let previewModalInstance = null;
 
+    let searchTimeout = null;
     function filterResources(term) {
-        const items = document.querySelectorAll('.resource-item');
-        const container = document.querySelector('.max-w-4xl .d-flex.flex-column');
-        let found = 0;
-        
-        term = term.toLowerCase().trim();
-        
-        items.forEach(item => {
-            const fileName = item.querySelector('h4').textContent.toLowerCase();
-            if (fileName.includes(term)) {
-                item.classList.remove('d-none');
-                item.classList.add('d-flex');
-                found++;
-            } else {
-                item.classList.remove('d-flex');
-                item.classList.add('d-none');
-            }
-        });
+        if (searchTimeout) clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const items = document.querySelectorAll('.resource-item');
+            const container = document.querySelector('.max-w-4xl .d-flex.flex-column');
+            let found = 0;
+            
+            term = term.toLowerCase().trim();
+            
+            items.forEach(item => {
+                const fileName = item.querySelector('h4').textContent.toLowerCase();
+                if (fileName.includes(term)) {
+                    item.classList.remove('d-none');
+                    item.classList.add('d-flex');
+                    found++;
+                } else {
+                    item.classList.remove('d-flex');
+                    item.classList.add('d-none');
+                }
+            });
 
-        // Toggle "No results" message
-        let emptyMsg = document.getElementById('search-empty-msg');
-        if (found === 0) {
-            if (!emptyMsg && container) {
-                container.insertAdjacentHTML('afterend', `
-                    <div id="search-empty-msg" class="text-center py-5 opacity-50">
-                        <span class="material-symbols-outlined display-1 mb-3">search_off</span>
-                        <h3 class="h4">No matching resources</h3>
-                        <p>Try a different search term or filter.</p>
-                    </div>
-                `);
+            // Toggle "No results" message
+            let emptyMsg = document.getElementById('search-empty-msg');
+            if (found === 0) {
+                if (!emptyMsg && container) {
+                    container.insertAdjacentHTML('afterend', `
+                        <div id="search-empty-msg" class="text-center py-5 opacity-50 animate-entrance">
+                            <span class="material-symbols-outlined display-1 mb-3">search_off</span>
+                            <h3 class="h4">No matching resources</h3>
+                            <p>Try a different search term .</p>
+                        </div>
+                    `);
+                }
+            } else {
+                emptyMsg?.remove();
             }
-        } else {
-            emptyMsg?.remove();
-        }
+        }, 200);
     }
 
     function updateModalFileName(input) {
@@ -254,24 +258,6 @@
     .border-dashed { border: 2px dashed rgba(255,255,255,0.1); }
     .upload-drop-zone:hover { border-color: var(--color-accent); background: rgba(255,255,255,0.05); }
     
-    .nav-link-flat {
-        display: block;
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
-        color: var(--text-muted);
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-    }
-    .nav-link-flat:hover {
-        background: rgba(255, 255, 255, 0.05);
-        color: var(--text-pure);
-    }
-    .nav-link-flat.active {
-        background: var(--color-accent-soft);
-        color: var(--text-pure);
-    }
     .resource-item:hover {
         background: rgba(255, 255, 255, 0.03);
     }

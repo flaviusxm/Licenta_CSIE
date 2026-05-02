@@ -35,11 +35,6 @@ namespace AskNLearn.Web.Controllers
                 return RedirectToAction("SignIn", "Auth");
             }
 
-            if (id == null && User.IsInRole("Admin"))
-            {
-                return RedirectToAction("Index", "Admin");
-            }
-
             var profile = await _mediator.Send(new GetUserProfileQuery 
             { 
                 UserId = targetUserId,
@@ -167,6 +162,28 @@ namespace AskNLearn.Web.Controllers
             var profile = await _mediator.Send(new GetUserProfileQuery { UserId = id });
             if (profile == null) return NotFound();
             return PartialView("_UserHoverCard", profile);
+        }
+
+        [HttpGet("verification-status/{userId}")]
+        public async Task<IActionResult> GetVerificationStatus(string userId)
+        {
+            var dbContext = HttpContext.RequestServices.GetRequiredService<IApplicationDbContext>();
+            var request = await dbContext.VerificationRequests
+                .Where(v => v.UserId == userId)
+                .OrderByDescending(v => v.SubmittedAt)
+                .Select(v => new 
+                { 
+                    v.Status, 
+                    v.AdminNotes,
+                    v.SubmittedAt,
+                    v.ProcessedAt,
+                    IsVerified = v.Status == Status.Approved
+                })
+                .FirstOrDefaultAsync();
+
+            if (request == null) return NotFound();
+
+            return Ok(request);
         }
     }
 }

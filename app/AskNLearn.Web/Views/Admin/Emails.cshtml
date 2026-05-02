@@ -1,0 +1,167 @@
+@using AskNLearn.Domain.Entities.Core
+@model AskNLearn.Web.Models.PaginatedList<ApplicationUser>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Confirmări Email";
+}
+
+
+<div class="max-w-6xl mx-auto p-4 animate-entrance">
+    <!-- Header -->
+    <div class="glass-card p-4 rounded-2xl border-glass-strong mb-5 shadow-lg">
+        <div class="row g-4 align-items-center">
+            <div class="col-md-8">
+                <h2 class="h4 fw-black text-white mb-1 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined fs-4 text-muted">mail</span>
+                    Confirmări Email
+                </h2>
+                <p class="text-muted small mb-0">Gestionează utilizatorii care nu și-au confirmat încă adresa de email.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="glass-badge glass-badge-aurora d-inline-flex px-3 py-2">
+                    @(Model.Count) utilizatori în așteptare
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="glass-card p-5 text-center rounded-3xl border-glass shadow-lg opacity-50">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4" style="width: 80px; height: 80px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass);">
+                <span class="material-symbols-outlined display-5 text-muted">mark_email_read</span>
+            </div>
+            <h3 class="h4 text-white fw-bold">Toți utilizatorii au emailul confirmat</h3>
+            <p class="text-muted mx-auto" style="max-width: 300px;">Nu există cereri în așteptare momentan.</p>
+        </div>
+    }
+    else
+    {
+        <div class="glass-card overflow-hidden rounded-3xl border-glass shadow-lg">
+            <div class="d-flex flex-column">
+                @foreach (var user in Model)
+                {
+                    <div class="user-item d-flex align-items-center gap-4 p-4 border-bottom border-glass-soft transition-all hover-bg-glass-heavy group">
+                        <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-lg" 
+                             style="width: 56px; height: 56px; background: rgba(255, 255, 255, 0.05); border: 2px solid var(--border-glass-strong);">
+                            @if (!string.IsNullOrEmpty(user.AvatarUrl))
+                            {
+                                <img src="@user.AvatarUrl" class="w-100 h-100 object-cover rounded-circle" />
+                            }
+                            else
+                            {
+                                <span class="material-symbols-outlined fs-3 text-muted">person</span>
+                            }
+                        </div>
+
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h4 class="h6 fw-bold text-white mb-0 text-truncate">@user.FullName</h4>
+                                <span class="badge glass-badge" style="background: rgba(255,255,255,0.05); color: #94a3b8; font-size: 0.6rem;">NEVERIFICAT</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-3 text-muted small">
+                                <span class="fw-medium">@@@user.UserName</span>
+                                <span class="opacity-25">•</span>
+                                <span class="text-truncate" style="max-width: 250px;">@user.Email</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 ms-auto opacity-0 group-hover-opacity-100 transition-all">
+                            <button class="btn btn-glass btn-icon-premium text-success" onclick="confirmEmail('@user.Id')" title="Confirmă Email Manual">
+                                <span class="material-symbols-outlined fs-5">check_circle</span>
+                            </button>
+                            <button class="btn btn-glass btn-icon-premium text-danger" onclick="toggleBlock('@user.Id', true)" title="Blochează Utilizator">
+                                <span class="material-symbols-outlined fs-5">block</span>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="d-flex justify-content-center mt-5">
+                <nav class="glass-card p-2 rounded-pill shadow-lg border-glass">
+                    <ul class="pagination pagination-premium mb-0 gap-1 border-0">
+                        @if (Model.HasPreviousPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link rounded-circle border-0" href="?pageNumber=@(Model.PageIndex - 1)">
+                                    <span class="material-symbols-outlined fs-5">chevron_left</span>
+                                </a>
+                            </li>
+                        }
+                        
+                        <li class="page-item active"><span class="page-link rounded-circle border-0">@Model.PageIndex</span></li>
+
+                        @if (Model.HasNextPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link rounded-circle border-0" href="?pageNumber=@(Model.PageIndex + 1)">
+                                    <span class="material-symbols-outlined fs-5">chevron_right</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        }
+    }
+</div>
+
+<script>
+    async function confirmEmail(userId) {
+        if (!confirm("Sigur vrei să confirmi manual adresa de email pentru acest utilizator?")) return;
+        
+        try {
+            const response = await fetch(`/management/administration/emails/confirm/${userId}`, { 
+                method: 'POST'
+            });
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert("Eroare la confirmarea emailului.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+
+    async function toggleBlock(userId, block) {
+        if (!confirm("Sigur vrei să blochezi acest utilizator?")) return;
+        const url = `/management/administration/users/block/${userId}`;
+        try {
+            const response = await fetch(url, { method: 'POST' });
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert("Eroare la blocarea utilizatorului.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+</script>
+
+<style>
+    .btn-icon-premium {
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border-glass);
+    }
+    .btn-icon-premium:hover {
+        background: rgba(255,255,255,0.08);
+        transform: translateY(-2px);
+    }
+    .hover-bg-glass-heavy:hover {
+        background: rgba(255,255,255,0.04) !important;
+    }
+</style>

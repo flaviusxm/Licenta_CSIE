@@ -90,11 +90,18 @@
                             @if (currentUserId == post.AuthorId || isAdmin)
                             {
                                 <div class="d-flex gap-2">
-                                    <form asp-controller="Forum" asp-action="DeletePost" asp-route-id="@post.Id" asp-route-communityId="@post.CommunityId" method="post" onsubmit="return confirm('Stergi aceasta postare?')" class="m-0 p-0">
-                                        <button type="submit" class="btn btn-link p-1 text-muted hover-text-danger text-decoration-none d-flex align-items-center justify-content-center" title="Sterge postarea">
-                                            <span class="material-symbols-outlined fs-5">delete</span>
-                                        </button>
-                                    </form>
+                                    <button type="button" 
+                                            onclick="AskNLearn.confirm({
+                                                title: 'Delete Post',
+                                                message: 'Stergi aceasta postare? Aceasta actiune este permanenta.',
+                                                confirmText: 'Delete',
+                                                onConfirm: () => document.getElementById('delete-form-@post.Id').submit()
+                                            })"
+                                            class="btn btn-link p-1 text-muted hover-text-danger text-decoration-none d-flex align-items-center justify-content-center" 
+                                            title="Sterge postarea">
+                                        <span class="material-symbols-outlined fs-5">delete</span>
+                                    </button>
+                                    <form id="delete-form-@post.Id" asp-controller="Forum" asp-action="DeletePost" asp-route-id="@post.Id" asp-route-communityId="@post.CommunityId" method="post" class="d-none"></form>
                                 </div>
                             }
                         </div>

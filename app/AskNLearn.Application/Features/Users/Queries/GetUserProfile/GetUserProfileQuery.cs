@@ -38,5 +38,6 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
         public bool IsOwnProfile { get; set; }
         public bool EmailConfirmed { get; set; }
         public string VerificationStatus { get; set; } = "NotVerified";
+        public string? AdminNotes { get; set; }
     }
 }

@@ -2,8 +2,11 @@
  * ForumManager - Handles forum interactions
  */
 class ForumManager {
-    static init() {
-        // Any general forum initialization
+    static init(communityId, hasMore) {
+        this.communityId = communityId;
+        this.hasMore = hasMore;
+        this.currentPage = 1;
+        this.isLoading = false;
     }
 
     static toggleInlinePost(show) {
@@ -32,6 +35,54 @@ class ForumManager {
                     if (container) container.classList.remove('d-none');
                 }, 300);
             }
+        }
+    }
+
+    static initInfiniteScroll(communityId, initialHasMore) {
+        this.communityId = communityId;
+        this.hasMore = initialHasMore;
+        this.currentPage = 1;
+        this.isLoading = false;
+
+        const sentinel = document.getElementById('posts-sentinel');
+        if (!sentinel) return;
+
+        const observer = new IntersectionObserver(async (entries) => {
+            if (entries[0].isIntersecting && this.hasMore && !this.isLoading) {
+                await this.loadMorePosts();
+            }
+        }, { threshold: 0.1 });
+
+        observer.observe(sentinel);
+    }
+
+    static async loadMorePosts() {
+        if (this.isLoading || !this.hasMore) return;
+
+        this.isLoading = true;
+        const spinner = document.getElementById('posts-loading-spinner');
+        if (spinner) spinner.classList.remove('d-none');
+
+        try {
+            this.currentPage++;
+            const response = await axios.get(`/hubs/communities/v1/discussions/batch?communityId=${this.communityId}&page=${this.currentPage}`);
+            
+            if (response.data.trim()) {
+                const container = document.getElementById('posts-container');
+                container.insertAdjacentHTML('beforeend', response.data);
+                
+                // The partial view _PostListPartial might contain its own hasMore indicator logic
+                // But for simplicity, we check if we got content.
+                // In a real app, you'd return JSON with metadata.
+            } else {
+                this.hasMore = false;
+            }
+        } catch (error) {
+            console.error('Error loading more posts:', error);
+            this.currentPage--; // Reset page on error
+        } finally {
+            this.isLoading = false;
+            if (spinner) spinner.classList.add('d-none');
         }
     }
 

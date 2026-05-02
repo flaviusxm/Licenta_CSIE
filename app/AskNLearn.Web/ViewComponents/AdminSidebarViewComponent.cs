@@ -29,10 +29,12 @@ namespace AskNLearn.Web.ViewComponents
                 m.ModerationStatus == ModerationStatus.AwaitingManualReview);
                 
             var pendingReports = await _context.Reports.CountAsync(r => r.Status == ReportStatus.Pending);
+            var unconfirmedEmails = await _context.Users.CountAsync(u => !u.EmailConfirmed);
 
             ViewBag.PendingVerifications = pendingVerifications;
             ViewBag.FlaggedContentCount = flaggedPosts + flaggedMessages;
             ViewBag.PendingReportsCount = pendingReports;
+            ViewBag.UnconfirmedEmailsCount = unconfirmedEmails;
 
             return View();
         }

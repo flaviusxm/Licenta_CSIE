@@ -78,7 +78,7 @@ body {
     background: var(--glass-nav);
     backdrop-filter: blur(var(--blur-heavy));
     -webkit-backdrop-filter: blur(var(--blur-heavy));
-    border-bottom: 1px solid var(--border-glass-strong);
+    border-bottom: none;
     box-shadow: var(--shadow-deep);
 }
 
@@ -138,10 +138,29 @@ body {
     background: rgba(255, 255, 255, 0.05);
 }
 
-.nav-link-premium.active {
-    color: var(--text-pure) !important;
-    background: rgba(255, 255, 255, 0.08);
+.nav-link-flat {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 1rem;
+    border-radius: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
     font-weight: 600;
+    transition: all 0.3s var(--ease-apple);
+    border: 1px solid transparent;
+}
+
+.nav-link-flat:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-pure);
+}
+
+.nav-link-flat.active {
+    background: var(--color-accent-soft);
+    color: var(--text-pure);
+    border-color: rgba(255, 255, 255, 0.05);
 }
 
 .text-accent {
@@ -318,7 +337,11 @@ body {
 
 /* --- SIDEBAR & NAVIGATION --- */
 .sidebar-transition {
-    transition: all 0.6s var(--ease-apple);
+    transition: width 0.4s var(--ease-apple), 
+                transform 0.4s var(--ease-apple), 
+                opacity 0.4s var(--ease-apple),
+                left 0.4s var(--ease-apple);
+    will-change: width, transform, opacity, left;
 }
 
 #leftSidebar.sidebar-collapsed {

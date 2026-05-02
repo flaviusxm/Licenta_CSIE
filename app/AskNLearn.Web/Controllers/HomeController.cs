@@ -24,7 +24,69 @@ namespace app_licenta.Controllers
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var recentPosts = await GetPosts(currentUserId, 0, 10, sortBy);
 
+            // Fetch Top Communities for Sidebar (based on activity/posts)
+            var topCommunities = await _context.Communities
+                .Select(c => new 
+                { 
+                    c.Id, 
+                    c.Name, 
+                    PostCount = _context.Posts.Count(p => p.CommunityId == c.Id), 
+                    c.ImageUrl 
+                })
+                .OrderByDescending(c => c.PostCount)
+                .Take(5)
+                .ToListAsync();
+
+            // Fetch User Stats if logged in
+            if (!string.IsNullOrEmpty(currentUserId))
+            {
+                var user = await _context.Users
+                    .Include(u => u.CurrentRank)
+                    .FirstOrDefaultAsync(u => u.Id == currentUserId);
+                
+                if (user != null)
+                {
+                    // Calculate Global Notification Count
+                    var unreadNotif = await _context.Notifications
+                        .CountAsync(n => n.UserId == currentUserId && !n.IsRead);
+                        
+                    var pendingReq = await _context.Friendships
+                        .CountAsync(f => f.AddresseeId == currentUserId && f.Status == FriendshipStatus.Pending);
+                    
+                    var unreadMsgs = 0;
+                    var participants = await _context.DirectConversationParticipants
+                        .Where(p => p.UserId == currentUserId)
+                        .ToListAsync();
+
+                    foreach(var p in participants)
+                    {
+                        var lastReadAt = DateTime.MinValue;
+                        if (p.LastReadMessageId != null)
+                        {
+                            lastReadAt = await _context.Messages
+                                .Where(m => m.Id == p.LastReadMessageId)
+                                .Select(m => m.CreatedAt)
+                                .FirstOrDefaultAsync();
+                        }
+                        
+                        unreadMsgs += await _context.Messages
+                            .CountAsync(m => m.ConversationId == p.ConversationId && m.AuthorId != currentUserId && m.CreatedAt > lastReadAt);
+                    }
+
+                    ViewBag.UserStats = new 
+                    { 
+                        user.FullName, 
+                        Reputation = user.ReputationPoints, 
+                        user.AvatarUrl, 
+                        RankName = user.CurrentRank?.Name ?? "Student",
+                        NotificationCount = unreadNotif + pendingReq + unreadMsgs
+                    };
+                }
+            }
+
             ViewBag.RecentPosts = recentPosts;
+            ViewBag.TopCommunities = topCommunities;
+            ViewBag.AllCommunities = await _context.Communities.Select(c => new { c.Id, c.Name }).ToListAsync();
             ViewBag.CurrentUserId = currentUserId;
             ViewBag.SortBy = sortBy;
             return View();
@@ -71,11 +133,11 @@ namespace app_licenta.Controllers
                     Content = p.Content,
                     CommentCount = p.Comments.Count,
                     ViewCount = p.ViewCount,
-                    VoteCount = p.Votes.Sum(v => (int)v.VoteValue),
+                    VoteCount = _context.PostVotes.Where(v => v.PostId == p.Id).Select(v => (int)v.VoteValue).Sum(),
                     IsSolved = p.IsSolved,
                     CreatedAt = p.CreatedAt,
                     UserVote = !string.IsNullOrEmpty(currentUserId)
-                        ? p.Votes.Where(v => v.UserId == currentUserId).Select(v => (int)v.VoteValue).FirstOrDefault()
+                        ? _context.PostVotes.Where(v => v.PostId == p.Id && v.UserId == currentUserId).Select(v => (int)v.VoteValue).FirstOrDefault()
                         : 0
                 })
                 .ToListAsync();

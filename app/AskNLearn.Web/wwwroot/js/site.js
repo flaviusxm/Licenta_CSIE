@@ -196,7 +196,7 @@ if (window.axios) {
         response => response,
         error => {
             const message = error.response?.data?.message || error.message || "A network error occurred.";
-            window.Notify.error(message);
+            // window.Notify.error(message); // Removed as per user request for custom handling
             console.error('[Axios Error]', error);
             return Promise.reject(error);
         }

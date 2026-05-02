@@ -42,7 +42,7 @@ class LeaderboardManager {
             pageSize = pageSizeBottom ? pageSizeBottom.value : 12;
         }
 
-        const url = `/Leaderboard?page=${page}&pageSize=${pageSize}&searchTerm=${encodeURIComponent(searchTerm)}&institution=${encodeURIComponent(institution)}&sortBy=${sortBy}`;
+        const url = `/analytics/rankings?page=${page}&pageSize=${pageSize}&searchTerm=${encodeURIComponent(searchTerm)}&institution=${encodeURIComponent(institution)}&sortBy=${sortBy}`;
         
         const container = document.getElementById('leaderboard-data-container');
         if (container) {

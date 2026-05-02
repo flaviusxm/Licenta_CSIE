@@ -37,12 +37,18 @@
         <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Moderation</label>
         @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.CreatorId || User.IsInRole("Admin"))
         {
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="nav-link-flat d-flex align-items-center gap-2 mb-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="nav-link-flat mb-2">
                 <span class="material-symbols-outlined fs-6">settings</span>
                 Forum Settings
             </a>
+            <form action="/hubs/communities/terminate/@Model.Id" method="post" onsubmit="event.preventDefault(); window.AskNLearn.confirm({ title: 'Delete Community', message: 'Are you sure you want to PERMANENTLY delete this community? All discussions and resources will be lost.', confirmText: 'Delete Forum', onConfirm: () => this.submit() });" class="m-0">
+                <button type="submit" class="nav-link-flat w-100 text-start text-danger border-0 bg-transparent mb-2">
+                    <span class="material-symbols-outlined fs-6">delete_forever</span>
+                    Delete Community
+                </button>
+            </form>
         }
-        <button class="nav-link-flat w-100 text-start d-flex align-items-center gap-2 text-danger border-0 bg-transparent" onclick="ForumManager.openReportModal('@Model.Id', 'COMMUNITY')">
+        <button class="nav-link-flat w-100 text-start text-danger border-0 bg-transparent" onclick="ForumManager.openReportModal('@Model.Id', 'COMMUNITY')">
             <span class="material-symbols-outlined fs-6">flag</span>
             Report Community
         </button>
@@ -123,11 +129,11 @@
         @await Html.PartialAsync("_PostListPartial", posts, partialVd)
     </div>
 
-    <!-- Load More Area -->
-    <div id="load-more-area" class="@(hasMore ? "" : "d-none") text-center mt-4">
-        <button id="load-more-btn" onclick="ForumManager.loadMorePosts()" class="btn btn-glass rounded-pill px-5 py-2">
-            Load More
-        </button>
+    <!-- Sentinel for Infinite Scroll -->
+    <div id="posts-sentinel" class="py-4 text-center">
+        <div id="posts-loading-spinner" class="spinner-border text-aurora d-none" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
     </div>
 
     <div id="scroll-sentinel" style="height: 1px;"></div>
@@ -136,6 +142,7 @@
 @section Scripts {
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        ForumManager.initInfiniteScroll('@Model.Id', @hasMore.ToString().ToLower());
         ForumManager.init('@Model.Id', @hasMore.ToString().ToLower());
     });
 </script>
@@ -189,9 +196,5 @@
         border-style: solid !important;
         border-color: var(--color-accent-soft) !important;
         box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-    }
-    .quick-post-trigger:hover .material-symbols-outlined.text-accent {
-        transform: scale(1.1);
-        transition: transform 0.3s var(--ease-apple);
     }
 </style>

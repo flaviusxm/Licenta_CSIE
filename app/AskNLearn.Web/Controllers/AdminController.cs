@@ -59,6 +59,7 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction("Verification", "Profile");
         }
 
+        [HttpGet("")]
         [HttpGet("overview")]
         public async Task<IActionResult> Index()
         {
@@ -161,12 +162,35 @@ namespace AskNLearn.Web.Controllers
             return Ok();
         }
 
-        [HttpGet("logs")]
-        public async Task<IActionResult> AuditLogs()
+
+
+        [HttpGet("emails")]
+        public async Task<IActionResult> Emails(int? pageNumber)
         {
             if (!await IsAdmin()) return Forbid();
-            // Stub for now - can be expanded with real logs later
-            return View();
+            
+            int pageSize = 15;
+            var query = _context.Users
+                .Where(u => !u.EmailConfirmed)
+                .OrderByDescending(u => u.UserName)
+                .AsNoTracking();
+
+            var paginatedUsers = await AskNLearn.Web.Models.PaginatedList<ApplicationUser>.CreateAsync(query, pageNumber ?? 1, pageSize);
+            return View(paginatedUsers);
+        }
+
+        [HttpPost("emails/confirm/{id}")]
+        public async Task<IActionResult> ConfirmEmail(string id)
+        {
+            if (!await IsAdmin()) return Forbid();
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                user.EmailConfirmed = true;
+                await _userManager.UpdateAsync(user);
+                return Ok();
+            }
+            return NotFound();
         }
 
         [HttpPost("verifications/approve/{id:guid}")]

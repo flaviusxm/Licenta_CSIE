@@ -29,9 +29,9 @@
         </div>
 
         <!-- Scrollable Navigation -->
-        <div class="flex-grow-1 overflow-y-auto custom-scrollbar">
+        <div class="flex-grow-1 overflow-hidden d-flex flex-column">
             <!-- MESSAGES SECTION -->
-            <div class="px-2 pt-3">
+            <div id="section-messages" class="px-2 pt-3 d-flex flex-column inbox-sidebar-section expanded">
                 <div class="section-header d-flex align-items-center justify-content-between px-3 py-2 rounded-lg hover-bg-glass cursor-pointer" onclick="MessagingManager.toggleSection('messages')">
                     <div class="d-flex align-items-center gap-2">
                         <span class="material-symbols-outlined text-muted" style="font-size: 1.1rem;">chat_bubble</span>
@@ -47,7 +47,7 @@
                     </div>
                 </div>
                 
-                <div id="content-messages" class="sidebar-section-content show gap-1 mt-1 px-1">
+                <div id="content-messages" class="sidebar-section-content show gap-1 mt-1 px-1 overflow-y-auto custom-scrollbar flex-grow-1">
                     @if (Model.RecentMessages.Any())
                     {
                         foreach (var conv in Model.RecentMessages)
@@ -80,26 +80,34 @@
             </div>
 
             <!-- CONNECTIONS SECTION -->
-            <div class="px-2 pt-2">
+            <div id="section-connections" class="px-2 pt-2 d-flex flex-column inbox-sidebar-section">
                 <div class="section-header d-flex align-items-center justify-content-between px-3 py-2 rounded-lg hover-bg-glass cursor-pointer collapsed" onclick="MessagingManager.toggleSection('connections')">
                     <div class="d-flex align-items-center gap-2">
                         <span class="material-symbols-outlined text-muted" style="font-size: 1.1rem;">group</span>
                         <span class="text-uppercase tracking-widest fw-bold text-muted" style="font-size: 0.65rem;">Connections</span>
                     </div>
                 </div>
-                <div id="content-connections" class="sidebar-section-content gap-1 mt-1 px-1">
+                <div id="content-connections" class="sidebar-section-content gap-1 mt-1 px-1 overflow-y-auto custom-scrollbar flex-grow-1">
                     @if (Model.Connections != null && Model.Connections.Any())
                     {
                         foreach (var friend in Model.Connections)
                         {
-                            <a asp-controller="Profile" asp-action="Index" asp-route-id="@friend.Id" class="d-flex align-items-center gap-3 px-3 py-2 rounded-xl transition-all text-decoration-none hover-bg-glass cursor-pointer">
-                                <div class="avatar-sm rounded-circle overflow-hidden border border-glass flex-shrink-0" style="width: 32px; height: 32px;">
+                            <div class="d-flex align-items-center gap-3 px-3 py-2 rounded-xl transition-all hover-bg-glass cursor-pointer group" onclick="if(!event.target.closest('.profile-link')) document.getElementById('init-chat-@friend.Id').submit();">
+                                <a asp-controller="Profile" asp-action="Index" asp-route-id="@friend.Id" class="avatar-sm rounded-circle overflow-hidden border border-glass flex-shrink-0 profile-link shadow-sm" style="width: 32px; height: 32px; z-index: 5;">
                                     <img src="@(friend.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={friend.UserName}")" class="w-100 h-100 object-cover" />
-                                </div>
+                                </a>
                                 <div class="flex-grow-1 min-w-0">
-                                    <span class="text-secondary small text-truncate d-block">@(friend.FullName ?? friend.UserName)</span>
+                                    <a asp-controller="Profile" asp-action="Index" asp-route-id="@friend.Id" class="text-secondary small text-truncate d-block profile-link text-decoration-none hover-text-white transition-all fw-bold">
+                                        @(friend.FullName ?? friend.UserName)
+                                    </a>
                                 </div>
-                            </a>
+                                <div class="text-muted opacity-0 group-hover-opacity-100 transition-all">
+                                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">chat_bubble</span>
+                                </div>
+                                <form id="init-chat-@friend.Id" action="/communication/messaging/conversations/initialize" method="post" class="d-none">
+                                    <input type="hidden" name="userId" value="@friend.Id" />
+                                </form>
+                            </div>
                         }
                     }
                     else
@@ -112,7 +120,7 @@
             </div>
 
             <!-- REQUESTS SECTION -->
-            <div class="px-2 pt-2 pb-4">
+            <div id="section-requests" class="px-2 pt-2 pb-2 d-flex flex-column inbox-sidebar-section @(Model.PendingRequests.Any() ? "expanded" : "")">
                 <div class="section-header d-flex align-items-center justify-content-between px-3 py-2 rounded-lg hover-bg-glass cursor-pointer @(Model.PendingRequests.Any() ? "" : "collapsed")" onclick="MessagingManager.toggleSection('requests')">
                     <div class="d-flex align-items-center gap-2">
                         <span class="material-symbols-outlined text-muted" style="font-size: 1.1rem;">person_add</span>
@@ -127,15 +135,17 @@
                         }
                     </div>
                 </div>
-                <div id="content-requests" class="sidebar-section-content @(Model.PendingRequests.Any() ? "show" : "") gap-2 px-2 mt-2">
+                <div id="content-requests" class="sidebar-section-content @(Model.PendingRequests.Any() ? "show" : "") gap-2 px-2 mt-2 overflow-y-auto custom-scrollbar flex-grow-1">
                     @foreach (var req in Model.PendingRequests)
                     {
                         <div class="d-flex align-items-center gap-3 px-3 py-2 rounded-xl hover-bg-glass cursor-pointer" id="sidebar-request-@req.RequesterId">
-                            <div class="avatar-sm rounded-circle overflow-hidden border border-glass flex-shrink-0" style="width: 32px; height: 32px;">
+                            <a asp-controller="Profile" asp-action="Index" asp-route-id="@req.RequesterId" class="avatar-sm rounded-circle overflow-hidden border border-glass flex-shrink-0 shadow-sm" style="width: 32px; height: 32px;">
                                 <img src="@(req.Requester.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={req.Requester.UserName}")" class="w-100 h-100 object-cover" />
-                            </div>
+                            </a>
                             <div class="flex-grow-1 min-w-0">
-                                <p class="fw-bold text-white mb-0 text-truncate" style="font-size: 0.85rem; line-height: 1.2;">@(req.Requester.FullName ?? req.Requester.UserName)</p>
+                                <a asp-controller="Profile" asp-action="Index" asp-route-id="@req.RequesterId" class="fw-bold text-white mb-0 text-truncate d-block text-decoration-none hover-text-accent transition-all" style="font-size: 0.85rem; line-height: 1.2;">
+                                    @(req.Requester.FullName ?? req.Requester.UserName)
+                                </a>
                             </div>
                             <div class="d-flex gap-2 flex-shrink-0 align-items-center">
                                 <button onclick="MessagingManager.handleFriendRequest('@req.RequesterId', 'AcceptRequest')" 
@@ -186,27 +196,50 @@
                     @{
                         var messages = Model.SelectedConversation?.Messages ?? new List<AskNLearn.Domain.Entities.Messaging.Message>();
                     }
-                    @foreach (var message in messages)
+                    @if (messages.Any())
                     {
-                        bool isMine = message.AuthorId == currentUserId;
-                        <div class="d-flex w-100 @(isMine ? "justify-content-end" : "justify-content-start") animate-slide-up">
-                            <div class="d-flex @(isMine ? "flex-row-reverse" : "") gap-2 align-items-end" style="max-width: 75%;">
-                                <div class="d-flex flex-column gap-1 @(isMine ? "align-items-end" : "align-items-start") position-relative group">
-                                    <div class="px-3 py-2 shadow-sm message-bubble" id="msg-bubble-@message.Id" 
-                                         style="border-radius: 18px; @(isMine ? "background: var(--color-accent); color: white;" : "background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.05); color: white;")">
-                                        <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">@message.Content</p>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2 px-1">
-                                        <span class="text-muted" style="font-size: 0.55rem;">@message.CreatedAt.ToString("HH:mm")</span>
-                                        @if (isMine)
-                                        {
-                                            <button onclick="MessagingManager.deleteDM('@message.Id')" class="btn btn-link p-0 text-muted hover-text-danger opacity-0 group-hover-opacity-100 transition-all">
-                                                <span class="material-symbols-outlined" style="font-size: 12px;">delete</span>
-                                            </button>
-                                        }
+                        foreach (var message in messages)
+                        {
+                            bool isMine = message.AuthorId == currentUserId;
+                            <div class="d-flex w-100 @(isMine ? "justify-content-end" : "justify-content-start") animate-slide-up">
+                                <div class="d-flex @(isMine ? "flex-row-reverse" : "") gap-2 align-items-end" style="max-width: 75%;">
+                                    <div class="d-flex flex-column gap-1 @(isMine ? "align-items-end" : "align-items-start") position-relative group">
+                                        <div class="px-3 py-2 shadow-sm message-bubble" id="msg-bubble-@message.Id" 
+                                             style="border-radius: 18px; @(isMine ? "background: var(--color-accent); color: white;" : "background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.05); color: white;")">
+                                            <p class="mb-0" style="font-size: 0.9rem; line-height: 1.4;">@message.Content</p>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2 px-1">
+                                            <span class="text-muted" style="font-size: 0.55rem;">@message.CreatedAt.ToString("HH:mm")</span>
+                                            @if (isMine)
+                                            {
+                                                <button onclick="MessagingManager.deleteDM('@message.Id')" class="btn btn-link p-0 text-muted hover-text-danger opacity-0 group-hover-opacity-100 transition-all">
+                                                    <span class="material-symbols-outlined" style="font-size: 12px;">delete</span>
+                                                </button>
+                                            }
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center opacity-40">
+                            <div class="avatar-lg rounded-circle overflow-hidden border border-glass mb-4 shadow-2xl mx-auto" style="width: 80px; height: 80px;">
+                                <img src="@(otherParticipant?.User?.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={otherParticipant?.User?.UserName}")" class="w-100 h-100 object-cover" />
+                            </div>
+                            <h3 class="h5 fw-bold text-white mb-1">Say hello to @(otherParticipant?.User?.FullName ?? otherParticipant?.User?.UserName)!</h3>
+                            <p class="text-muted small">This is the beginning of your conversation.</p>
+                            
+                            @if (!Model.Connections.Any(c => c.Id == otherParticipant?.UserId))
+                            {
+                                <div class="mt-3 p-3 rounded-2xl bg-warning-soft border border-warning-thin max-w-xs mx-auto">
+                                    <p class="text-warning mb-0" style="font-size: 0.7rem;">
+                                        <span class="material-symbols-outlined align-middle fs-6 me-1">warning</span>
+                                        You are not connected with this person yet.
+                                    </p>
+                                </div>
+                            }
                         </div>
                     }
                 </div>
@@ -237,9 +270,12 @@
             else
             {
                 <!-- Empty State -->
-                <div class="flex-grow-1 d-flex flex-column items-center justify-content-center text-center p-5">
-                    <h2 class="h4 fw-bold text-white mb-2">Your Messages</h2>
-                    <p class="text-muted small max-w-xs mx-auto">Select a conversation from the sidebar or start a new one to begin chatting.</p>
+                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center p-5 animate-entrance">
+                    <div class="mb-5 opacity-20">
+                        <span class="material-symbols-outlined text-white" style="font-size: 5rem;">chat_bubble</span>
+                    </div>
+                    <h2 class="h4 fw-bold text-white mb-2">Communication Hub</h2>
+                    <p class="text-muted small max-w-xs mx-auto">Select a conversation from the sidebar or search for someone to begin chatting.</p>
                 </div>
             }
         </div>
@@ -303,5 +339,26 @@
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 100%;
+    }
+
+    .inbox-sidebar-section {
+        min-height: 0;
+        transition: flex 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+    
+    .inbox-sidebar-section.expanded {
+        flex: 1 1 0%;
+    }
+    
+    .inbox-sidebar-section:not(.expanded) {
+        flex: 0 0 auto;
+    }
+
+    .sidebar-section-content {
+        display: none;
+    }
+    .sidebar-section-content.show {
+        display: flex;
     }
 </style>

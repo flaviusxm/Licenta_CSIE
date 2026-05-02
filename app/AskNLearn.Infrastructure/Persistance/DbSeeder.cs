@@ -79,10 +79,10 @@ namespace AskNLearn.Infrastructure.Persistance
             var tables = new[]
             {
                 "AuditLogs", "Reports", "Notifications", "MessageReactions", "MessageAttachments", "Messages",
-                "DirectConversationParticipants", "DirectConversations", "PostTags", "PostVotes", "PostViews",
+                "DirectConversationParticipants", "DirectConversations", "CommunityMemberships", "PostTags", "PostVotes", "PostViews",
                 "PostAttachments", "Posts",
                 "StoredFiles", "VerificationRequests", "UserRoles", "UserClaims", "UserLogins",
-                "UserTokens", "RoleClaims", "Roles", "Users", "UserRanks", "Tags"
+                "UserTokens", "RoleClaims", "Roles", "Users", "UserRanks", "Tags", "Communities"
             };
             foreach (var t in tables)
             {
@@ -298,7 +298,43 @@ namespace AskNLearn.Infrastructure.Persistance
                 });
             }
             await BulkInsertAsync(ctx, communities, "Communities", "Communities");
+            
+            // Add creators as Admin members
+            var memberships = communities.Select(c => new CommunityMembership
+            {
+                CommunityId = c.Id,
+                UserId = c.CreatorId,
+                Role = CommunityRole.Admin,
+                JoinedAt = c.CreatedAt
+            }).ToList();
+            await BulkInsertAsync(ctx, memberships, "CommunityAdmins", "CommunityMemberships");
+
             return communities;
+        }
+
+        private static async Task SeedCommunityMembershipsAsync(ApplicationDbContext ctx, List<Community> communities, List<ApplicationUser> users)
+        {
+            if (await ctx.CommunityMemberships.CountAsync() > communities.Count) return;
+
+            var memberships = new List<CommunityMembership>();
+            foreach (var comm in communities)
+            {
+                // Randomly add 20-50 members to each community
+                int memberCount = Rng.Next(20, 50);
+                var potentialMembers = users.Where(u => u.Id != comm.CreatorId).OrderBy(x => Rng.Next()).Take(memberCount).ToList();
+
+                foreach (var user in potentialMembers)
+                {
+                    memberships.Add(new CommunityMembership
+                    {
+                        CommunityId = comm.Id,
+                        UserId = user.Id,
+                        Role = CommunityRole.Member,
+                        JoinedAt = comm.CreatedAt.AddDays(Rng.Next(1, 30))
+                    });
+                }
+            }
+            await BulkInsertAsync(ctx, memberships, "CommunityMembers", "CommunityMemberships");
         }
 
         private static async Task<List<Post>> SeedPostsAsync(ApplicationDbContext ctx, List<Community> communities, List<ApplicationUser> users)

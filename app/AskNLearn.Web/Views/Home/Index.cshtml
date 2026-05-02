@@ -4,72 +4,231 @@
     ViewData["Title"] = "Home";
 }
 
-<div class="container py-4" style="max-width:900px;">
+
+
+<div class="container py-5">
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger d-flex align-items-center gap-2 rounded-4 mb-4 fw-bold shadow-sm" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444;" role="alert">
+        <div class="alert alert-danger d-flex align-items-center gap-3 rounded-2xl mb-5 fw-bold shadow-lg border-0 animate-entrance" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;" role="alert">
             <span class="material-symbols-outlined">error</span>
             <div>@TempData["ErrorMessage"]</div>
         </div>
     }
 
-    <div id="feed-content" class="d-flex flex-column gap-4 transition-all" style="animation: slide-up-fade 0.5s ease-out;">
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-        }
-        else
-        {
-            <!-- Hero Card (Guest) -->
-             <div class="py-5 text-center text-md-start position-relative overflow-hidden mb-4">
+    <div class="row gy-5 justify-content-between">
+        <!-- Left: Feed -->
+        <div class="col-lg-8">
+            <div id="feed-content" class="d-flex flex-column gap-5 transition-all">
+                @if (User.Identity?.IsAuthenticated == false)
+                {
+                    <!-- Hero Card (Guest) -->
+                     <div class="glass-card p-5 rounded-4 border-glass shadow-2xl position-relative overflow-hidden mb-4">
+                        <div class="position-absolute top-0 end-0 p-5 opacity-10 rotate-12">
+                            <span class="material-symbols-outlined" style="font-size: 160px;">school</span>
+                        </div>
+                        <div class="position-relative z-1">
+                            <h1 class="display-5 fw-black text-white mb-3 tracking-tighter" style="line-height: 1.1;">
+                                Master your studies with Ask<span class="text-accent">N</span>Learn
+                            </h1>
+                            <p class="fs-5 text-muted mb-4 opacity-80 fw-medium" style="max-width: 540px;">
+                                Join thousands of students collaborating in communities, sharing insights, and helping each other succeed.
+                            </p>
+                            <div class="d-flex flex-wrap gap-3">
+                                <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium shadow-glow px-5 py-3">Get Started Free</a>
+                                <a asp-controller="Auth" asp-action="SignIn" class="btn btn-glass px-5 py-3">Log In</a>
+                            </div>
+                        </div>
+                    </div>
+                }
 
-                <div class="position-relative z-1 col-md-8">
-                    <h1 class="display-5 fw-bold text-white mb-3 tracking-tighter" style="line-height: 1.1;">
-                        Master your studies with Ask<span class="text-accent">N</span>Learn
-                    </h1>
-                    <p class="fs-5 text-muted mb-4 opacity-80 fw-medium" style="max-width: 540px;">
-                        Join thousands of students collaborating in communities, sharing insights, and helping each other succeed.
-                    </p>
-                    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-md-start">
-                        <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium shadow-lg px-5">Get Started Free</a>
-                        <a asp-controller="Auth" asp-action="SignIn" class="btn btn-glass px-5">Log In</a>
+                <!-- Create Post Bar -->
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div id="quick-post-container" class="mb-5">
+                        <div class="quick-post-trigger d-flex align-items-center gap-3 px-4 py-3 bg-black-alpha-20 border border-glass-soft rounded-4 cursor-pointer transition-all" onclick="document.getElementById('home-post-form-container').classList.remove('d-none'); this.parentElement.classList.add('d-none')">
+                            <div class="flex-grow-1 text-muted fw-medium fs-5">Start a new discussion...</div>
+                            <div class="d-flex gap-2 text-muted opacity-50">
+                                <span class="material-symbols-outlined">image</span>
+                                <span class="material-symbols-outlined">attach_file</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="home-post-form-container" class="d-none mb-5 animate-slide-down">
+                        <div class="glass-card p-4 border border-glass-strong shadow-2xl rounded-4">
+                            <form asp-controller="Forum" asp-action="CreatePost" method="post" enctype="multipart/form-data">
+                                <div class="mb-4">
+                                    <label class="text-muted tiny text-uppercase tracking-widest fw-bold mb-2 d-block">Target Community</label>
+                                    <select name="CommunityId" class="form-select form-select-glass fw-bold small py-2 px-3" required>
+                                        <option value="" disabled selected>Select a hub...</option>
+                                        @foreach (var community in ViewBag.AllCommunities)
+                                        {
+                                            <option value="@community.Id">@community.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <input type="text" name="Title" class="form-control form-control-glass bg-transparent border-0 border-bottom border-glass-soft rounded-0 py-3 fs-4 fw-black text-white px-0 shadow-none" placeholder="Give your discussion a title..." required>
+                                </div>
+                                <div class="mb-4">
+                                    <textarea name="Content" class="form-control form-control-glass bg-transparent border-0 rounded-0 text-white px-0 shadow-none" rows="5" placeholder="Share your thoughts, questions or insights..." required></textarea>
+                                </div>
+                                
+                                <div class="d-flex align-items-center justify-content-between border-top border-glass-soft pt-4 mt-2">
+                                    <div class="d-flex gap-3">
+                                        <label class="btn btn-glass-accent btn-sm d-flex align-items-center gap-2 rounded-3 cursor-pointer">
+                                            <span class="material-symbols-outlined fs-5">image</span>
+                                            <span class="small fw-bold text-uppercase tracking-wider">Add Media</span>
+                                            <input type="file" name="Attachments" class="d-none" multiple accept="image/*" />
+                                        </label>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" onclick="document.getElementById('home-post-form-container').classList.add('d-none'); document.getElementById('quick-post-container').classList.remove('d-none')" class="btn btn-ghost btn-sm px-4 fw-bold text-uppercase tracking-widest fs-xs">Discard</button>
+                                        <button type="submit" class="btn btn-premium px-5 py-2 fw-black text-uppercase tracking-widest fs-xs shadow-lg">Publish Discussion</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                <!-- Feed Controls -->
+                <div class="d-flex align-items-center justify-content-between pb-3 border-bottom border-glass-soft">
+                    <div class="d-flex align-items-center gap-4">
+                        <!-- Sort Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-glass btn-sm border-0 px-3 py-2 text-muted text-decoration-none d-flex align-items-center gap-2 dropdown-toggle rounded-pill" type="button" data-bs-toggle="dropdown">
+                                <span class="material-symbols-outlined fs-6">sort</span>
+                                <span id="current-sort-label" class="small fw-bold">@(ViewBag.SortBy == "TopRated" ? "Top Rated" : "Latest Activity")</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark glass-card border-glass overflow-hidden shadow-2xl mt-2">
+                                <li><a class="dropdown-item py-2 fw-bold @(ViewBag.SortBy == "Latest" ? "active" : "")" href="javascript:void(0)" onclick="changeFeedSort('Latest', 'Latest Activity')">Latest Activity</a></li>
+                                <li><a class="dropdown-item py-2 fw-bold @(ViewBag.SortBy == "TopRated" ? "active" : "")" href="javascript:void(0)" onclick="changeFeedSort('TopRated', 'Top Rated')">Top Rated</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
+                
+                <!-- Feed Content -->
+                <div id="feed-container" class="d-flex flex-column gap-4">
+                    @await Html.PartialAsync("_PostCards", ViewBag.RecentPosts as List<app_licenta.Controllers.HomeFeedPostDto>)
+                </div>
 
-        <!-- Personalized Filter Indicator -->
-        <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom border-glass" style="border-width: 0.5px !important;">
-            <div class="d-flex align-items-center gap-3">
-                <!-- Sort Dropdown -->
-                <div class="dropdown">
-                    <button class="btn btn-link p-0 text-muted text-decoration-none d-flex align-items-center gap-1 dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <span class="material-symbols-outlined fs-5">sort</span>
-                        <span id="current-sort-label" class="small fw-bold">@(ViewBag.SortBy == "TopRated" ? "Top Rated" : "Latest Activity")</span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-dark glass-card border-glass overflow-hidden shadow-lg">
-                        <li><a class="dropdown-item py-2 fw-bold @(ViewBag.SortBy == "Latest" ? "active" : "")" href="javascript:void(0)" onclick="changeFeedSort('Latest', 'Latest Activity')">Latest Activity</a></li>
-                        <li><a class="dropdown-item py-2 fw-bold @(ViewBag.SortBy == "TopRated" ? "active" : "")" href="javascript:void(0)" onclick="changeFeedSort('TopRated', 'Top Rated')">Top Rated</a></li>
-                    </ul>
+                <!-- Loading Spinner -->
+                <div id="feed-load-spinner" class="d-none text-center py-5">
+                    <div class="spinner-border text-aurora" role="status" style="width: 2.5rem; height: 2.5rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Sentinel -->
+                <div id="feed-sentinel" class="py-2"></div>
+            </div> 
+        </div>
+
+        <!-- Right: Sidebar Widgets -->
+        <div class="col-lg-3">
+            <div class="sticky-top" style="top: 6rem;">
+                <!-- User Profile Widget (If Logged In) -->
+                @if (ViewBag.UserStats != null)
+                {
+                    <div class="mb-5 animate-entrance">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <div class="rounded-circle overflow-hidden shadow-lg border-2 border-glass" style="width: 64px; height: 64px;">
+                                @if (ViewBag.UserStats.AvatarUrl != null)
+                                {
+                                    <img src="@ViewBag.UserStats.AvatarUrl" class="w-100 h-100 object-cover" />
+                                }
+                                else
+                                {
+                                    <div class="w-100 h-100 bg-glass-heavy d-flex align-items-center justify-content-center">
+                                        <span class="material-symbols-outlined text-muted fs-3">person</span>
+                                    </div>
+                                }
+                            </div>
+                            <div>
+                                <h3 class="h5 fw-black text-white mb-0">@ViewBag.UserStats.FullName</h3>
+                                <span class="badge glass-badge glass-badge-aurora mt-1">@ViewBag.UserStats.RankName</span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="bg-glass-soft rounded-2xl p-3 border border-glass-soft">
+                                    <span class="text-muted tiny text-uppercase tracking-widest d-block mb-1">Reputation</span>
+                                    <span class="fw-black text-white h5 m-0">@ViewBag.UserStats.Reputation.ToString("N0")</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-glass-soft rounded-2xl p-3 border border-glass-soft">
+                                    <span class="text-muted tiny text-uppercase tracking-widest d-block mb-1">Status</span>
+                                    <span class="text-aurora fw-bold small">Online</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <a asp-controller="Profile" asp-action="Index" class="btn btn-glass flex-grow-1 py-2 border-glass small fw-bold d-flex align-items-center justify-content-center gap-2">
+                                <span class="material-symbols-outlined fs-5">account_circle</span>
+                                Profile
+                            </a>
+                            <a asp-controller="Inbox" asp-action="Index" class="btn btn-glass px-3 py-2 border-glass position-relative d-flex align-items-center justify-content-center">
+                                <span class="material-symbols-outlined fs-5">all_inbox</span>
+                                @if (ViewBag.UserStats.NotificationCount > 0)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-2 border-universe" style="font-size: 0.6rem; padding: 0.25em 0.5em;">
+                                        @(ViewBag.UserStats.NotificationCount > 99 ? "99+" : ViewBag.UserStats.NotificationCount.ToString())
+                                    </span>
+                                }
+                            </a>
+                        </div>
+                    </div>
+                }
+
+                <!-- Trending Communities Widget -->
+                <div class="glass-card p-4 rounded-3xl border-glass shadow-lg mb-4">
+                    <h4 class="h6 fw-black text-white mb-4 d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-aurora fs-5">hub</span>
+                        Trending Communities
+                    </h4>
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var community in ViewBag.TopCommunities)
+                        {
+                            <a href="/hubs/communities/@community.Id" class="d-flex align-items-center gap-3 text-decoration-none group p-2 rounded-2xl transition-all hover-bg-glass">
+                                <div class="rounded-circle overflow-hidden shadow-sm flex-shrink-0 bg-glass d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border: 1px solid var(--border-glass);">
+                                    @if (!string.IsNullOrEmpty(community.ImageUrl))
+                                    {
+                                        <img src="@community.ImageUrl" class="w-100 h-100 object-cover" />
+                                    }
+                                    else
+                                    {
+                                        <span class="material-symbols-outlined text-muted fs-5">groups</span>
+                                    }
+                                </div>
+                                <div class="flex-grow-1 min-w-0">
+                                    <h5 class="small fw-bold text-white mb-0 text-truncate group-hover-text-aurora transition-all">@community.Name</h5>
+                                    <span class="text-muted tiny">@community.PostCount.ToString("N0") discussions</span>
+                                </div>
+                                <span class="material-symbols-outlined text-muted fs-6 opacity-0 group-hover-opacity-100 transition-all">chevron_right</span>
+                            </a>
+                        }
+                    </div>
+                    <a asp-controller="Explore" asp-action="Index" class="btn btn-link text-muted small w-100 mt-3 text-decoration-none hover-text-white fw-bold">Explore All</a>
+                </div>
+
+                <!-- Footer Links (Mini) -->
+                <div class="px-4 opacity-30 mt-5">
+                    <div class="d-flex flex-wrap gap-x-4 gap-y-1 mb-3">
+                        <a href="#" class="text-muted tiny text-decoration-none hover-underline">About</a>
+                        <a href="#" class="text-muted tiny text-decoration-none hover-underline">Privacy</a>
+                        <a href="#" class="text-muted tiny text-decoration-none hover-underline">Terms</a>
+                        <a href="#" class="text-muted tiny text-decoration-none hover-underline">Contact</a>
+                    </div>
+                    <p class="tiny text-muted mb-0">&copy; 2026 AskNLearn Project</p>
                 </div>
             </div>
-            
         </div>
-        
-        <!-- Feed Content -->
-        <div id="feed-container" class="d-flex flex-column gap-4 pb-0">
-            @await Html.PartialAsync("_PostCards", ViewBag.RecentPosts as List<app_licenta.Controllers.HomeFeedPostDto>)
-        </div>
-
-        <!-- Loading Spinner -->
-        <div id="feed-load-spinner" class="d-none text-center py-5">
-            <div class="spinner-border text-aurora" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-
-        <!-- Sentinel -->
-        <div id="feed-sentinel" class="py-2"></div>
-    </div> 
+    </div>
 </div>
 
 @section Scripts {
@@ -200,6 +359,17 @@
         }
         .animate-slide-down {
             animation: slide-down 0.3s ease-out;
+        }
+
+        .quick-post-trigger {
+            border-style: dashed !important;
+            background: rgba(255, 255, 255, 0.02) !important;
+        }
+        .quick-post-trigger:hover {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-style: solid !important;
+            border-color: var(--color-accent-soft) !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
 
         /* Hover Card Styles */

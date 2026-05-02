@@ -11,6 +11,9 @@
 
 @foreach (var post in Model)
 {
+    if (post.ModerationStatus == AskNLearn.Domain.Entities.Core.ModerationStatus.Removed && !isAdmin) continue;
+    
+    var isRemoved = post.ModerationStatus == AskNLearn.Domain.Entities.Core.ModerationStatus.Removed;
     var canDelete = !string.IsNullOrEmpty(currentUserId)
         && (currentUserId == post.AuthorId || currentUserId == communityCreatorId || isAdmin);
 
@@ -42,10 +45,25 @@
                     </div>
                     <a asp-controller="Profile" asp-action="Index" asp-route-id="@post.AuthorId" class="fw-medium text-muted small text-decoration-none hover-text-white transition-all">u/@post.AuthorName.ToLower().Replace(" ", "_")</a>
                     <span class="text-muted small">• @post.CreatedAt.ToString("dd MMM yyyy")</span>
+                    
+                    @if (post.ModerationStatus == AskNLearn.Domain.Entities.Core.ModerationStatus.Approved)
+                    {
+                        <span class="badge bg-accent-soft text-accent rounded-pill px-2 py-0 tiny fw-black text-uppercase d-flex align-items-center gap-1" title="Verified by Guardian AI">
+                            <span class="material-symbols-outlined" style="font-size: 10px;">verified_user</span>
+                            Guardian Shield
+                        </span>
+                    }
+                    @if (isRemoved)
+                    {
+                        <span class="badge bg-danger-soft text-danger rounded-pill px-2 py-0 tiny fw-black text-uppercase d-flex align-items-center gap-1" title="Removed by Guardian AI">
+                            <span class="material-symbols-outlined" style="font-size: 10px;">gpp_bad</span>
+                            Removed by AI
+                        </span>
+                    }
                 </div>
                 
-                <h3 class="h5 fw-bold text-white mb-2">@post.Title</h3>
-                <p class="text-muted mb-3 fs-6" style="line-height: 1.5; color: rgba(255,255,255,0.7) !important;">@post.Content</p>
+                <h3 class="h5 fw-bold text-white mb-2 @(isRemoved ? "opacity-40" : "")">@post.Title</h3>
+                <p class="text-muted mb-3 fs-6 @(isRemoved ? "opacity-20" : "")" style="line-height: 1.5; color: rgba(255,255,255,0.7) !important;">@post.Content</p>
 
                 @if (post.Attachments.Any())
                 {

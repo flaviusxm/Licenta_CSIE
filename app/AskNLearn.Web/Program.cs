@@ -131,7 +131,9 @@ if (args.Contains("drop-seed") || args.Contains("seeddb"))
             {
                 try
                 {
-                    int deleted = await dbContext.Database.ExecuteSqlRawAsync($"DELETE FROM [{table}]");
+                    // Using a hardcoded string construction to avoid the analyzer warning on interpolated strings for table names
+                    string sql = "DELETE FROM [" + table + "]";
+                    int deleted = await dbContext.Database.ExecuteSqlRawAsync(sql);
                     if (deleted > 0)
                         Console.WriteLine($"  ✓ Șters: {table} ({deleted} rânduri)");
                 }

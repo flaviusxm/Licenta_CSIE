@@ -5,55 +5,53 @@
     ViewData["Title"] = "Verification Requests";
 }
 
-@section Sidebar {
-    <div class="p-4 border-bottom border-glass">
-        <h2 class="h5 fw-bold text-white mb-2 d-flex align-items-center gap-2">
-            <span class="material-symbols-outlined text-aurora">verified_user</span>
-            Verification Queue
-        </h2>
-        <p class="text-muted small mb-4">Validate student credentials for full platform access.</p>
-    </div>
 
-    <div class="flex-grow-1 p-3 overflow-y-auto custom-scrollbar">
-        <div class="mb-4">
-            <label class="text-muted small fw-bold text-uppercase tracking-widest mb-3 d-block">Status Filter</label>
-            <div class="d-flex flex-column gap-1">
-                <button class="nav-link-flat active">Pending Requests</button>
-                <button class="nav-link-flat">Processed History</button>
+<div class="max-w-6xl mx-auto p-4 animate-entrance">
+    <!-- Header & Controls -->
+    <div class="glass-card p-4 rounded-2xl border-glass-strong mb-5 shadow-lg">
+        <div class="row g-4 align-items-center">
+            <div class="col-md-6">
+                <h2 class="h4 fw-black text-white mb-1">Verification Queue</h2>
+                <p class="text-muted small mb-0">Review identity documents and verify user accounts.</p>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex align-items-center justify-content-md-end gap-2">
+                    <button class="nav-link-filter active">Pending Requests</button>
+                    <button class="nav-link-filter">Processed History</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <a asp-action="Index" class="d-flex align-items-center justify-content-center gap-2 py-4 mt-auto text-muted hover-text-white transition-all text-decoration-none border-top border-glass">
-        <span class="material-symbols-outlined fs-5">arrow_back</span>
-        <span class="fw-bold text-uppercase tracking-widest fs-xs">Dashboard</span>
-    </a>
-}
-
-<div class="max-w-5xl mx-auto p-4 animate-entrance">
-    <div id="verification-container" class="d-flex flex-column gap-2">
+    <div id="verification-container" class="d-flex flex-column gap-3">
         <partial name="_VerificationRows" model="Model" />
     </div>
 
     <!-- Loading Sentinel -->
     <div id="loading-sentinel" class="py-5 text-center @(Model.HasNextPage ? "" : "d-none")">
-        <div class="spinner-border text-aurora" role="status"></div>
+        <div class="spinner-border text-aurora" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
     </div>
 </div>
 
 <!-- Reject Modal -->
-<div id="rejectModal" class="d-none position-fixed top-0 start-0 w-100 h-100 z-3 d-flex align-items-center justify-content-center p-4" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);">
-    <div class="glass-card p-4 border-glass-strong w-100 shadow-lg animate-entrance" style="max-width: 450px;">
-        <h4 class="fw-bold text-white mb-4">Reject Verification</h4>
+<div id="rejectModal" class="d-none position-fixed top-0 start-0 w-100 h-100 z-5 d-flex align-items-center justify-content-center p-4" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);">
+    <div class="glass-card p-5 border-glass-strong w-100 shadow-2xl animate-entrance" style="max-width: 500px; border-radius: 2rem;">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="rounded-circle bg-danger bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                <span class="material-symbols-outlined text-danger">warning</span>
+            </div>
+            <h4 class="fw-bold text-white mb-0">Reject Verification</h4>
+        </div>
+        
         <form asp-action="Reject" method="post">
             <input type="hidden" name="id" id="rejectId" />
             <div class="mb-4">
-                <label class="form-label small fw-bold text-muted text-uppercase tracking-widest">Reason for rejection</label>
-                <textarea name="notes" rows="4" class="form-control form-control-glass" placeholder="e.g., Student ID is not clear enough..."></textarea>
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-widest ms-1 mb-2">Reason for rejection</label>
+                <textarea name="notes" rows="4" class="form-control form-control-glass p-3" placeholder="e.g., Student ID is not clear enough or has expired..." style="border-radius: 1rem;"></textarea>
             </div>
             <div class="d-flex gap-3">
-                <button type="button" onclick="closeRejectModal()" class="btn btn-glass flex-grow-1">Cancel</button>
-                <button type="submit" class="btn btn-premium bg-danger border-danger text-white flex-grow-1">Confirm Reject</button>
+                <button type="button" onclick="closeRejectModal()" class="btn btn-glass flex-grow-1 py-2">Cancel</button>
+                <button type="submit" class="btn btn-premium bg-danger border-danger text-white flex-grow-1 py-2">Confirm Reject</button>
             </div>
         </form>
     </div>
@@ -108,26 +106,27 @@
 }
 
 <style>
-    .nav-link-flat {
-        display: block;
-        padding: 0.6rem 1rem;
-        border-radius: 8px;
+    .nav-link-filter {
+        padding: 0.5rem 1.25rem;
+        border-radius: 0.75rem;
         color: var(--text-muted);
         text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        border: none;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.3s var(--ease-apple);
+        border: 1px solid transparent;
         background: transparent;
-        width: 100%;
-        text-align: left;
     }
-    .nav-link-flat:hover {
+    .nav-link-filter:hover {
         background: rgba(255, 255, 255, 0.05);
-        color: var(--text-pure);
+        color: white;
     }
-    .nav-link-flat.active {
-        background: rgba(0, 122, 255, 0.15);
-        color: var(--text-pure);
+    .nav-link-filter.active {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
 </style>

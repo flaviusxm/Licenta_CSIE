@@ -1,7 +1,7 @@
 @using AskNLearn.Application.Features.Communities.Queries.GetCommunities
 @model List<CommunityDto>
 
-@if (Model != null)
+@if (Model != null && Model.Any())
 {
     @foreach (var forum in Model)
     {
@@ -35,25 +35,25 @@
             </div>
         </a>
     }
-}
 
-<style>
-    .community-item:hover {
-        background: rgba(255, 255, 255, 0.04);
-    }
-    .group-hover-scale:hover {
-        transform: scale(1.05);
-    }
-    .group:hover .group-hover-scale {
-        transform: scale(1.05);
-    }
-    .group:hover .group-hover-text-aurora {
-        color: var(--color-aurora) !important;
-    }
-    .transform-translate-x-10 {
-        transform: translateX(-10px);
-    }
-    .group:hover .group-hover-translate-x-0 {
-        transform: translateX(0);
-    }
-</style>
+    <style>
+        .community-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .group-hover-scale:hover {
+            transform: scale(1.05);
+        }
+        .group:hover .group-hover-scale {
+            transform: scale(1.05);
+        }
+        .group:hover .group-hover-text-aurora {
+            color: var(--color-aurora) !important;
+        }
+        .transform-translate-x-10 {
+            transform: translateX(-10px);
+        }
+        .group:hover .group-hover-translate-x-0 {
+            transform: translateX(0);
+        }
+    </style>
+}
