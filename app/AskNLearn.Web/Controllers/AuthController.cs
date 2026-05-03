@@ -61,13 +61,19 @@ namespace AskNLearn.Web.Controllers
                     Log.Information("User {Email} signed in successfully. Role: {Role}", command.Email, user.Role);
                     
                     // We also store the JWT in a cookie so frontend can use it if needed
-                    Response.Cookies.Append("JwtToken", response.Token!, new CookieOptions 
+                    var cookieOptions = new CookieOptions 
                     { 
                         HttpOnly = true, 
                         Secure = true, 
-                        SameSite = SameSiteMode.Strict,
-                        Expires = DateTime.UtcNow.AddDays(7)
-                    });
+                        SameSite = SameSiteMode.Strict
+                    };
+
+                    if (command.RememberMe)
+                    {
+                        cookieOptions.Expires = DateTime.UtcNow.AddDays(14);
+                    }
+
+                    Response.Cookies.Append("JwtToken", response.Token!, cookieOptions);
 
                     if (user.Role == Role.Admin)
                     {

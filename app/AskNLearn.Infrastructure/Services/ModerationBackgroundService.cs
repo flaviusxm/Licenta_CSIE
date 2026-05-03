@@ -31,149 +31,119 @@ namespace AskNLearn.Infrastructure.Services
         {
             _logger.LogInformation("Guardian Shield Service is starting. Monitoring for threats and validation tasks...");
 
+            // Rulăm mentenanța (ex: scanarea fișierelor) într-un task separat pentru a nu bloca coada principală
+            _ = Task.Run(() => RunPeriodicMaintenanceAsync(stoppingToken), stoppingToken);
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    // 1. Process Queue Tasks (Non-blocking check)
+                    // 1. Process Queue Tasks (Așteaptă un task nou)
                     var task = await _queue.DequeueAsync(stoppingToken);
                     if (task != null)
                     {
-                        _logger.LogInformation("[Shield] Processing task for {Target} with Id {Id}.", task.Target, task.Id);
-
-                        using var scope = _scopeFactory.CreateScope();
-                        var guardianClient = scope.ServiceProvider.GetRequiredService<IGuardianClient>();
-                        var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
-
-                        if (task.Target == ModerationTarget.IdentityVerification)
-                        {
-                            var fileService = scope.ServiceProvider.GetRequiredService<IFileService>();
-                            var request = await dbContext.VerificationRequests.FindAsync(new object[] { task.Id }, stoppingToken);
-                            
-                            if (request != null)
-                            {
-                                byte[] studentIdBytes = await fileService.ReadFileAsync(request.StudentIdUrl);
-                                var vResult = await guardianClient.VerifyDocumentAsync(studentIdBytes);
-                                await ProcessIdentityVerification(dbContext, task.Id, vResult, stoppingToken);
-                                
-                                _logger.LogInformation("[Shield] Identity validation completed for Request {Id}. Result: {Status}", 
-                                    task.Id, vResult.IsValid ? "Verified" : "Rejected/Review");
-                            }
-                        }
-                        else
-                        {
-                            string contentToModerate = task.Content;
-                            string? titleToModerate = task.Title;
-
-                            var result = await guardianClient.ModerateTextAsync(contentToModerate, titleToModerate);
-
-                            switch (task.Target)
-                            {
-                                case ModerationTarget.Post:
-                                    await ProcessPostModeration(dbContext, task.Id, result, stoppingToken);
-                                    break;
-
-                                case ModerationTarget.Comment:
-                                case ModerationTarget.Message:
-                                    await ProcessMessageModeration(dbContext, task.Id, result, stoppingToken);
-                                    break;
-
-                                case ModerationTarget.Report:
-                                    await ProcessReportModeration(dbContext, task.Id, result, stoppingToken);
-                                    break;
-
-                                case ModerationTarget.Resource:
-                                    await ProcessResourceModeration(dbContext, task.Id, result, stoppingToken);
-                                    break;
-                            }
-
-                            _logger.LogInformation("[Shield] Moderation completed for {Target} {Id}. Result: {Status}", 
-                                task.Target, task.Id, result.IsSafe ? "Safe/Approved" : "Unsafe/Actioned");
-                        }
-                    }
-
-                    // 2. Periodic Maintenance (Maintenance Cycle)
-                    if (DateTime.UtcNow - _lastCleanupTime > TimeSpan.FromMinutes(15))
-                    {
-                        await PerformMaintenanceTasks(stoppingToken);
-                        await ScanNewResources(stoppingToken);
-                        _lastCleanupTime = DateTime.UtcNow;
+                        // Procesăm taskul curent într-un background task ca să nu blocăm coada
+                        _ = ProcessSingleTaskAsync(task, stoppingToken);
                     }
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Guardian Shield error processing task.");
+                    _logger.LogError(ex, "Guardian Shield error in queue listener.");
                     await Task.Delay(1000, stoppingToken); // Prevent infinite fast loop on error
                 }
             }
         }
 
-        private async Task PerformMaintenanceTasks(CancellationToken ct)
+        private async Task RunPeriodicMaintenanceAsync(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await ScanNewResources(stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during periodic maintenance.");
+                }
+                // Scanăm resursele noi la fiecare 15 minute complet independent
+                await Task.Delay(TimeSpan.FromMinutes(15), stoppingToken);
+            }
+        }
+
+        private async Task ProcessSingleTaskAsync(ModerationTask task, CancellationToken stoppingToken)
         {
             try
             {
+                _logger.LogInformation("[Shield] Processing task for {Target} with Id {Id}.", task.Target, task.Id);
+
                 using var scope = _scopeFactory.CreateScope();
+                var guardianClient = scope.ServiceProvider.GetRequiredService<IGuardianClient>();
                 var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
 
-                _logger.LogInformation("[Shield] Running maintenance tasks (Cleanup)...");
-
-                var cutoff = DateTime.UtcNow.AddDays(-1);
-                var unconfirmedUsers = await dbContext.Users
-                    .Where(u => !u.EmailConfirmed && u.CreatedAt < cutoff)
-                    .ToListAsync(ct);
-
-                if (unconfirmedUsers.Any())
+                if (task.Target == ModerationTarget.IdentityVerification)
                 {
-                    var userIds = unconfirmedUsers.Select(u => u.Id).ToList();
+                    var fileService = scope.ServiceProvider.GetRequiredService<IFileService>();
+                    var request = await dbContext.VerificationRequests.FindAsync(new object[] { task.Id }, stoppingToken);
+                    
+                    if (request != null)
+                    {
+                        // Evităm eroarea 500 a modelului Moondream. AI-urile vizuale (momentan) acceptă doar poze, nu PDF-uri.
+                        if (request.StudentIdUrl.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _logger.LogInformation("[Shield] Document is a PDF. Bypassing AI vision and routing to manual review.");
+                            await ProcessIdentityVerification(dbContext, task.Id, (false, "Documentul este un PDF. Verificarea automată AI suportă momentan doar imagini.", "Necesită verificare umană (Admin)"), stoppingToken);
+                        }
+                        else
+                        {
+                            byte[] studentIdBytes = await fileService.ReadFileAsync(request.StudentIdUrl);
+                            var vResult = await guardianClient.VerifyDocumentAsync(studentIdBytes);
+                            await ProcessIdentityVerification(dbContext, task.Id, vResult, stoppingToken);
+                            
+                            _logger.LogInformation("[Shield] Identity validation completed for Request {Id}. Result: {Status}", 
+                                task.Id, vResult.IsValid ? "Verified" : "Rejected/Review");
+                        }
+                    }
+                }
+                else
+                {
+                    string contentToModerate = task.Content;
+                    string? titleToModerate = task.Title;
 
-                    // Cascade deletes
-                    var friendships = await dbContext.Friendships
-                        .Where(f => userIds.Contains(f.RequesterId) || userIds.Contains(f.AddresseeId))
-                        .ToListAsync(ct);
-                    if (friendships.Any()) dbContext.Friendships.RemoveRange(friendships);
+                    var result = await guardianClient.ModerateTextAsync(contentToModerate, titleToModerate);
 
-                    var participants = await dbContext.DirectConversationParticipants
-                        .Where(p => userIds.Contains(p.UserId))
-                        .ToListAsync(ct);
-                    if (participants.Any()) dbContext.DirectConversationParticipants.RemoveRange(participants);
+                    switch (task.Target)
+                    {
+                        case ModerationTarget.Post:
+                            await ProcessPostModeration(dbContext, task.Id, result, stoppingToken);
+                            break;
 
-                    var communityMembers = await dbContext.CommunityMemberships
-                        .Where(m => userIds.Contains(m.UserId))
-                        .ToListAsync(ct);
-                    if (communityMembers.Any()) dbContext.CommunityMemberships.RemoveRange(communityMembers);
+                        case ModerationTarget.Comment:
+                        case ModerationTarget.Message:
+                            await ProcessMessageModeration(dbContext, task.Id, result, stoppingToken);
+                            break;
 
+                        case ModerationTarget.Report:
+                            await ProcessReportModeration(dbContext, task.Id, result, stoppingToken);
+                            break;
 
-                    var notifications = await dbContext.Notifications
-                        .Where(n => userIds.Contains(n.UserId))
-                        .ToListAsync(ct);
-                    if (notifications.Any()) dbContext.Notifications.RemoveRange(notifications);
+                        case ModerationTarget.Resource:
+                            await ProcessResourceModeration(dbContext, task.Id, result, stoppingToken);
+                            break;
+                    }
 
-                    var verRequests = await dbContext.VerificationRequests
-                        .Where(v => userIds.Contains(v.UserId))
-                        .ToListAsync(ct);
-                    if (verRequests.Any()) dbContext.VerificationRequests.RemoveRange(verRequests);
-
-                    var posts = await dbContext.Posts
-                        .Where(p => userIds.Contains(p.AuthorId))
-                        .ToListAsync(ct);
-                    if (posts.Any()) dbContext.Posts.RemoveRange(posts);
-
-                    var messages = await dbContext.Messages
-                        .Where(m => userIds.Contains(m.AuthorId))
-                        .ToListAsync(ct);
-                    if (messages.Any()) dbContext.Messages.RemoveRange(messages);
-
-                    dbContext.Users.RemoveRange(unconfirmedUsers);
-                    await dbContext.SaveChangesAsync(ct);
-                    _logger.LogInformation("[Shield] Cleaned up {Count} unconfirmed accounts.", unconfirmedUsers.Count);
+                    _logger.LogInformation("[Shield] Moderation completed for {Target} {Id}. Result: {Status}", 
+                        task.Target, task.Id, result.IsSafe ? "Safe/Approved" : "Unsafe/Actioned");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Guardian Shield maintenance error.");
+                _logger.LogError(ex, "Error processing individual task {Id}.", task.Id);
             }
         }
+
+
 
         private async Task ScanNewResources(CancellationToken ct)
         {

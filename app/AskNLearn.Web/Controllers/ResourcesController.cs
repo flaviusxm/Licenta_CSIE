@@ -12,7 +12,7 @@ namespace AskNLearn.Web.Controllers
     public class ResourcesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IWebHostEnvironment environment) : Controller
     {
         [HttpGet("")]
-        public async Task<IActionResult> Index(string? searchTerm, string? type)
+        public async Task<IActionResult> Index(string? searchTerm, string? type, int skip = 0, int take = 15)
         {
             var query = context.StoredFiles
                 .Include(f => f.Uploader)
@@ -30,7 +30,14 @@ namespace AskNLearn.Web.Controllers
 
             var files = await query
                 .OrderByDescending(f => f.UploadedAt)
+                .Skip(skip)
+                .Take(take)
                 .ToListAsync();
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_ResourceList", files);
+            }
 
             return View(files);
         }

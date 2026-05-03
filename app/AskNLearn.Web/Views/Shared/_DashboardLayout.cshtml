@@ -65,8 +65,8 @@
             @if (User.Identity?.IsAuthenticated == false)
             {
                 <div class="d-flex align-items-center gap-2">
-                    <a asp-controller="Auth" asp-action="SignIn" class="btn btn-ghost px-3">Log In</a>
-                    <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium py-2 px-4 shadow-sm" style="font-size: 0.85rem;">Sign Up</a>
+                    <a asp-controller="Auth" asp-action="SignIn" class="btn btn-glass border-0">Log In</a>
+                    <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium shadow-sm">Sign Up</a>
                 </div>
             }
             @* Inbox and Profile moved to Home Sidebar *@
@@ -84,8 +84,8 @@
                 </div>
             </aside>
             <button id="toggleLeftSidebar"
-                    class="d-flex sidebar-transition align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 p-0 shadow-lg"
-                    style="left: 400px; width: 1.75rem; height: 4rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(0.625rem);">
+                    class="d-flex sidebar-transition align-items-center justify-content-center position-absolute top-50 rounded-end cursor-pointer z-3 p-0 shadow-lg"
+                    style="left: 400px; transform: translateY(-50%); width: 1.75rem; height: 4rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(0.625rem);">
                 <span class="material-symbols-outlined text-muted m-0 p-0" style="margin-left: -2px !important;">chevron_left</span>
             </button>
         }
@@ -135,7 +135,7 @@
                 btn.addEventListener("click", () => {
                     const isCol = side.classList.toggle("sidebar-collapsed");
                     btn.querySelector('span').innerText = isCol ? "chevron_right" : "chevron_left";
-                    btn.style.transform = isCol ? "translateY(-50%) translateX(-400px)" : "translateY(-50%) translateX(0)";
+                    btn.style.left = isCol ? "0px" : "400px";
                 });
             }
         });

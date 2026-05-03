@@ -45,7 +45,7 @@ namespace AskNLearn.Infrastructure.Services
 
             // Eliminăm caracterele de tip separator folosite pentru a ascunde cuvinte (ex: s.t.u.p.i.d -> stupid)
             // Dar păstrăm spațiile dintre cuvintele normale
-            var normalized = Regex.Replace(text, @"(?<=[a-zA-Z])[\.\-\_\*](?=[a-zA-Z])", "");
+            var normalized = Regex.Replace(text, @"(?<=[a-zA-Z])[.\-_*](?=[a-zA-Z])", "");
 
             // Leetspeak translation (minimală pentru demonstrație)
             normalized = normalized.Replace("0", "o").Replace("1", "i").Replace("3", "e").Replace("4", "a").Replace("5", "s").Replace("7", "t");
@@ -55,13 +55,38 @@ namespace AskNLearn.Infrastructure.Services
 
         public async Task<(bool IsValid, string Details, string Recommendation)> VerifyDocumentAsync(byte[] imageBytes)
         {
-            // 3. HUMAN-IN-THE-LOOP (HITL) PROMPT for Vision
-            var prompt = @"Identify the document. We need to verify if this is a real student ID or carnet.
-            Extract: Name, Institution, and Expiry Date if visible.
-            Provide a recommendation for the Human Admin: 'Approve', 'Reject', or 'Manual Review Needed'.
-            Reasoning: Explain why (e.g. 'Photo is blurry', 'Name matches user profile', 'Institution not recognized').";
+            // Pasul 1: AI-ul Moondream este folosit STRICT pentru OCR (extragere text)
+            var prompt = "Read all the text visible in this document.";
+            var ocrResult = await _ollama.AnalyzeImageAsync(imageBytes, prompt, "moondream");
+
+            if (string.IsNullOrEmpty(ocrResult.Details) || ocrResult.Details.Contains("Empty vision response"))
+            {
+                return (false, "AI OCR failed to read document.", "Review Required");
+            }
+
+            string extractedText = ocrResult.Details.ToLowerInvariant();
             
-            return await _ollama.AnalyzeImageAsync(imageBytes, prompt, "moondream");
+            // Pasul 2: Algoritm Heuristic de Calculare a Probabilității
+            int score = 0;
+            int maxScore = 100;
+            
+            // Verificăm markeri de identitate (România)
+            if (extractedText.Contains("carte de identitate") || extractedText.Contains("romania") || extractedText.Contains("cnp")) score += 30;
+            if (System.Text.RegularExpressions.Regex.IsMatch(extractedText, @"[0-9]{13}")) score += 20; // Detecție CNP (13 cifre)
+            if (extractedText.Contains("seria") || System.Text.RegularExpressions.Regex.IsMatch(extractedText, @"[a-z]{2}\s?[0-9]{6}")) score += 10;
+            
+            // Verificăm markeri academici
+            if (extractedText.Contains("student") || extractedText.Contains("carnet") || extractedText.Contains("legitimatie")) score += 20;
+            if (extractedText.Contains("universita") || extractedText.Contains("faculta") || extractedText.Contains("academ")) score += 20;
+
+            // Ajustare finală (capped at 100)
+            score = Math.Min(score, maxScore);
+
+            bool isValid = score >= 60; // Threshold de 60% pentru aprobare
+            string recommendation = isValid ? "Approved" : "Manual Review Needed";
+            string formattedDetails = $"[OCR Output]: {ocrResult.Details}\n[Confidence Score]: {score}%\n[System Status]: {(isValid ? "Pass" : "High Risk")}";
+
+            return (isValid, formattedDetails, recommendation);
         }
     }
 }

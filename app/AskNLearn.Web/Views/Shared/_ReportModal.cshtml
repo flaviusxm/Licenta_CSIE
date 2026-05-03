@@ -47,6 +47,13 @@
 
 <script>
     function openReportModal(id, type) {
+        @if (User.Identity?.IsAuthenticated != true)
+        {
+            <text>
+            window.Notify.error("You must be logged in to report content.");
+            return;
+            </text>
+        }
         document.getElementById('reportTargetId').value = id;
         document.getElementById('reportTargetType').value = type;
         document.getElementById('reportForm').reset();

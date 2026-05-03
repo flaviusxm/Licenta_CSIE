@@ -30,7 +30,10 @@ namespace AskNLearn.Application.Features.Users.Commands.UpdateUserProfile
                 return errors;
             }
 
-            user.FullName = request.FullName;
+            if (!string.IsNullOrWhiteSpace(request.FullName))
+            {
+                user.FullName = request.FullName;
+            }
             user.Bio = request.Bio;
             user.Occupation = request.Occupation;
             user.Institution = request.Institution;

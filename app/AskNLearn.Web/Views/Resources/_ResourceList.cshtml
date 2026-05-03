@@ -1,0 +1,43 @@
+@using AskNLearn.Domain.Entities.Core
+@model List<StoredFile>
+
+@foreach (var file in Model)
+{
+    <div class="resource-item d-flex align-items-center gap-3 p-3 rounded-lg hover-bg-glass transition-all border-bottom border-glass-soft">
+        <div class="file-icon rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+            <span class="material-symbols-outlined fs-4 text-white">
+                @(file.FileType?.Contains("pdf") == true ? "picture_as_pdf" : 
+                    file.FileType?.Contains("image") == true ? "image" : 
+                    file.FileType?.Contains("word") == true ? "description" : "draft")
+            </span>
+        </div>
+        
+        <div class="flex-grow-1 min-w-0">
+            <h4 class="h6 fw-bold text-white mb-0 text-truncate">@file.FileName</h4>
+            <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.75rem;">
+                <span>Uploaded by @(file.Uploader?.FullName ?? "Unknown")</span>
+                <span>•</span>
+                <span>@((file.FileSize ?? 0) / 1024) KB</span>
+                <span>•</span>
+                <span>@file.UploadedAt.ToString("MMM dd, yyyy")</span>
+            </div>
+        </div>
+
+        <div class="d-flex gap-1">
+            <button class="btn btn-glass btn-icon-sm" onclick="previewFile('@file.Id', '@file.FileName', '@file.FilePath', '@file.FileType')" title="Preview">
+                <span class="material-symbols-outlined fs-5">visibility</span>
+            </button>
+            <a href="/resources/download/@file.Id" class="btn btn-glass btn-icon-sm" title="Download">
+                <span class="material-symbols-outlined fs-5">download</span>
+            </a>
+            @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == file.UploaderId || User.IsInRole("Admin"))
+            {
+                <form action="/resources/delete/@file.Id" method="post" onsubmit="return confirm('Delete this file?')" class="m-0">
+                    <button type="submit" class="btn btn-glass btn-icon-sm text-danger" title="Delete">
+                        <span class="material-symbols-outlined fs-5">delete</span>
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+}

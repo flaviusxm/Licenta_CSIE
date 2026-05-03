@@ -1,19 +1,19 @@
 :root {
-    --bg-universe: #050505;
-    --bg-nebula: #0a0a0b;
-    --color-accent: #007AFF;
-    --color-accent-soft: rgba(0, 122, 255, 0.1);
-    --color-success: #30D158;
-    --color-danger: #FF453A;
-    --color-warning: #FFD60A;
+    --bg-universe: #0f172a; /* Slate 900 - Professional Dark */
+    --bg-nebula: #1e293b;   /* Slate 800 - Surfaces */
+    --color-accent: #3b82f6; /* More vibrant professional blue */
+    --color-accent-soft: rgba(59, 130, 246, 0.1);
+    --color-success: #10b981;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
 
-    --gradient-premium: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-    --glass-surface: rgba(28, 28, 30, 0.6);
-    --glass-nav: rgba(10, 10, 11, 0.85);
-    --glass-highlight: rgba(255, 255, 255, 0.05);
+    --gradient-premium: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+    --glass-surface: rgba(30, 41, 59, 0.7); /* Slightly more opaque for readability */
+    --glass-nav: rgba(15, 23, 42, 0.9);
+    --glass-highlight: rgba(255, 255, 255, 0.03);
 
-    --blur-heavy: 40px;
-    --blur-medium: 20px;
+    --blur-heavy: 24px; /* Reduced blur for better performance and clarity */
+    --blur-medium: 12px;
 
     --border-glass: rgba(255, 255, 255, 0.08);
     --border-glass-strong: rgba(255, 255, 255, 0.15);
@@ -21,9 +21,9 @@
     --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-family-display: 'Outfit', sans-serif;
 
-    --text-pure: #FFFFFF;
-    --text-muted: #8E8E93;
-    --text-secondary: #AEAEB2;
+    --text-pure: #f8fafc; /* Slate 50 */
+    --text-muted: #94a3b8; /* Slate 400 - Much more readable */
+    --text-secondary: #cbd5e1; /* Slate 300 */
 
     --shadow-deep: 0 20px 40px rgba(0, 0, 0, 0.4);
     --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -55,8 +55,8 @@ body {
 .dark-mesh-bg {
     background-color: var(--bg-universe);
     background-image:
-        radial-gradient(ellipse at 0% 0%, rgba(0, 122, 255, 0.03) 0%, transparent 60%),
-        radial-gradient(ellipse at 100% 0%, rgba(94, 92, 230, 0.03) 0%, transparent 60%);
+        radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
     background-attachment: fixed;
 }
 
@@ -148,8 +148,9 @@ body {
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 600;
-    transition: all 0.3s var(--ease-apple);
+    transition: color 0.3s var(--ease-apple), background 0.3s var(--ease-apple), border-color 0.3s var(--ease-apple), transform 0.3s var(--ease-apple);
     border: 1px solid transparent;
+    backface-visibility: hidden;
 }
 
 .nav-link-flat:hover {
@@ -165,6 +166,14 @@ body {
 
 .text-accent {
     color: var(--color-accent) !important;
+}
+
+.hover-text-accent:hover {
+    color: var(--color-accent) !important;
+}
+
+.hover-text-danger:hover {
+    color: var(--color-danger) !important;
 }
 
 
@@ -195,7 +204,6 @@ body {
 .btn-premium:hover {
     background: #0071E3;
     box-shadow: 0 8px 25px rgba(0, 122, 255, 0.3);
-    transform: translateY(-1px);
 }
 
 .btn-premium:active {
@@ -342,6 +350,8 @@ body {
                 opacity 0.4s var(--ease-apple),
                 left 0.4s var(--ease-apple);
     will-change: width, transform, opacity, left;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 #leftSidebar.sidebar-collapsed {

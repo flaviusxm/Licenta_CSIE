@@ -13,10 +13,10 @@
     <style>
         .table, .table th, .table td, .table tr { 
             --bs-table-bg: transparent !important;
-            --bs-table-color: #e5e7eb !important;
-            --bs-table-hover-bg: rgba(255,255,255,0.05) !important;
+            --bs-table-color: var(--text-pure) !important;
+            --bs-table-hover-bg: rgba(255,255,255,0.03) !important;
             background-color: transparent !important;
-            color: #e5e7eb !important;
+            color: var(--text-pure) !important;
         }
         .table-responsive { background-color: transparent !important; }
 
@@ -82,7 +82,7 @@
     <!-- Main Content Area -->
     <div class="d-flex flex-grow-1 overflow-hidden position-relative z-1">
         <!-- Left Sidebar -->
-        <aside id="leftSidebar" class="d-flex sidebar-transition flex-column h-100 flex-shrink-0 position-relative" style="width: 400px; border-right: 1px solid var(--border-glass); background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(40px); overflow-x: hidden; z-index: 2;">
+        <aside id="leftSidebar" class="d-flex sidebar-transition flex-column h-100 flex-shrink-0 position-relative" style="width: 400px; border-right: 1px solid var(--border-glass); background: transparent; backdrop-filter: blur(1.25rem); z-index: 2;">
             <div class="flex-grow-1 d-flex flex-column min-vh-0 overflow-hidden" style="background: radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);">
                 @await Component.InvokeAsync("AdminSidebar")
                 @if (IsSectionDefined("Sidebar"))
@@ -95,8 +95,8 @@
         </aside>
 
         <button id="toggleLeftSidebar"
-                class="d-flex sidebar-transition align-items-center justify-content-center position-absolute top-50 translate-middle-y rounded-end cursor-pointer z-3 p-0 shadow-lg"
-                style="left: 400px; width: 1.75rem; height: 4rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(10px); transition: left 0.6s var(--ease-apple);">
+                class="d-flex sidebar-transition align-items-center justify-content-center position-absolute top-50 rounded-end cursor-pointer z-3 p-0 shadow-lg"
+                style="left: 400px; transform: translateY(-50%); width: 1.75rem; height: 4rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-left: none; backdrop-filter: blur(10px);">
             <span class="material-symbols-outlined text-muted m-0 p-0" style="margin-left: -2px !important;">chevron_left</span>
         </button>
 

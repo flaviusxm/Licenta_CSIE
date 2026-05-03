@@ -15,10 +15,11 @@
                 <p class="text-muted small mb-0">Manage roles, permissions and account status.</p>
             </div>
             <div class="col-lg-4">
-                <form method="get" class="position-relative">
+                <form method="get" class="position-relative" id="user-search-form">
                     <span class="material-symbols-outlined position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" style="font-size: 1.1rem;">search</span>
-                    <input type="text" name="searchTerm" class="form-control form-control-glass ps-5 py-2 fw-medium" placeholder="Search name or username..." value="@Context.Request.Query["searchTerm"]" style="border-radius: 0.75rem;" />
+                    <input type="text" name="searchTerm" class="form-control form-control-glass ps-5 py-2 fw-medium" placeholder="Search name or username..." value="@Context.Request.Query["searchTerm"]" style="border-radius: 0.75rem;" oninput="debounceSearch()" />
                     <input type="hidden" name="role" value="@Context.Request.Query["role"]" />
+                    <input type="hidden" name="pageSize" value="@(Context.Request.Query["pageSize"].FirstOrDefault() ?? "15")" />
                 </form>
             </div>
             <div class="col-lg-4">
@@ -51,105 +52,179 @@
     else
     {
         <div class="glass-card overflow-hidden rounded-3xl border-glass shadow-lg">
-            <div class="d-flex flex-column">
-                @foreach (var user in Model)
-                {
-                    <div class="user-item d-flex align-items-center gap-4 p-4 border-bottom border-glass-soft transition-all hover-bg-glass-heavy group">
-                        <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-lg position-relative" 
-                             style="width: 56px; height: 56px; background: rgba(255, 255, 255, 0.05); border: 2px solid var(--border-glass-strong);">
-                            @if (!string.IsNullOrEmpty(user.AvatarUrl))
-                            {
-                                <img src="@user.AvatarUrl" class="w-100 h-100 object-cover rounded-circle" />
-                            }
-                            else
-                            {
-                                <span class="material-symbols-outlined fs-3 text-muted">person</span>
-                            }
-                            @if (user.IsVerified)
-                            {
-                                <div class="position-absolute bottom-0 end-0 bg-aurora rounded-circle d-flex align-items-center justify-content-center border border-dark" style="width: 18px; height: 18px;">
-                                    <span class="material-symbols-outlined text-white" style="font-size: 10px; font-weight: bold;">check</span>
-                                </div>
-                            }
-                        </div>
-
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <h4 class="h6 fw-bold text-white mb-0 text-truncate">@user.FullName</h4>
-                                @if (user.Role == Role.Admin)
-                                {
-                                    <span class="badge glass-badge glass-badge-aurora" style="background: rgba(129, 140, 248, 0.15); color: #818cf8; border-color: rgba(129, 140, 248, 0.3);">Admin</span>
-                                }
-                                else if (user.Role == Role.Moderator)
-                                {
-                                    <span class="badge glass-badge glass-badge-aurora">Moderator</span>
-                                }
-                            </div>
-                            <div class="d-flex align-items-center gap-3 text-muted small">
-                                <span class="fw-medium">@@@user.UserName</span>
-                                @if (user.UserName != user.Email)
-                                {
-                                    <span class="opacity-25">•</span>
-                                    <span class="text-truncate" style="max-width: 180px;">@user.Email</span>
-                                }
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-2 ms-auto opacity-0 group-hover-opacity-100 transition-all transform-scale-sm">
-                            @if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
-                            {
-                                <button class="btn btn-glass btn-icon-premium text-success" onclick="toggleBlock('@user.Id', false)" title="Unblock User">
-                                    <span class="material-symbols-outlined fs-5">lock_open</span>
-                                </button>
-                            }
-                            else
-                            {
-                                <button class="btn btn-glass btn-icon-premium text-danger" onclick="toggleBlock('@user.Id', true)" title="Block User">
-                                    <span class="material-symbols-outlined fs-5">block</span>
-                                </button>
-                            }
-                            <button class="btn btn-glass btn-icon-premium" title="Edit Permissions">
-                                <span class="material-symbols-outlined fs-5">tune</span>
-                            </button>
-                        </div>
+            <div class="table-responsive">
+                <table class="table table-borderless table-hover mb-0 align-middle text-white bg-transparent">
+                    <thead style="background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border-glass);">
+                        <tr>
+                            <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0">Student</th>
+                            <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0">Contact Info</th>
+                            <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold border-0">Role</th>
+                            <th class="py-4 px-4 px-md-5 text-muted text-uppercase tracking-widest small fw-bold text-end border-0">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody style="border-top: none;">
+                        @foreach (var user in Model)
+                        {
+                            <tr class="transition-colors hover-bg-glass" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td class="py-4 px-4 px-md-5">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-lg position-relative" 
+                                             style="width: 44px; height: 44px; background: rgba(255, 255, 255, 0.05); border: 2px solid var(--border-glass-strong);">
+                                            @if (!string.IsNullOrEmpty(user.AvatarUrl))
+                                            {
+                                                <img src="@user.AvatarUrl" class="w-100 h-100 object-cover rounded-circle" />
+                                            }
+                                            else
+                                            {
+                                                <span class="material-symbols-outlined fs-5 text-muted">person</span>
+                                            }
+                                            @if (user.IsVerified)
+                                            {
+                                                <div class="position-absolute bottom-0 end-0 bg-aurora rounded-circle d-flex align-items-center justify-content-center border border-dark" style="width: 16px; height: 16px;">
+                                                    <span class="material-symbols-outlined text-white" style="font-size: 8px; font-weight: bold;">check</span>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-white">@user.FullName</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 px-md-5">
+                                    <div class="d-flex flex-column gap-1 text-muted small">
+                                        <span class="fw-medium">@@@user.UserName</span>
+                                        <span class="text-truncate" style="max-width: 180px;">@user.Email</span>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 px-md-5">
+                                    @if (user.Role == Role.Admin)
+                                    {
+                                        <span class="badge glass-badge glass-badge-aurora" style="background: rgba(129, 140, 248, 0.15); color: #818cf8; border-color: rgba(129, 140, 248, 0.3);">Admin</span>
+                                    }
+                                    else if (user.Role == Role.Moderator)
+                                    {
+                                        <span class="badge glass-badge glass-badge-aurora">Moderator</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge glass-badge text-muted" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">Student</span>
+                                    }
+                                </td>
+                                <td class="py-4 px-4 px-md-5 text-end">
+                                    <div class="d-flex gap-2 justify-content-end opacity-75 group-hover-opacity-100 transition-all">
+                                        @if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
+                                        {
+                                            <button class="btn btn-glass btn-icon-premium text-success" onclick="toggleBlock('@user.Id', false)" title="Unblock User">
+                                                <span class="material-symbols-outlined fs-5">lock_open</span>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-glass btn-icon-premium text-danger" onclick="toggleBlock('@user.Id', true)" title="Block User">
+                                                <span class="material-symbols-outlined fs-5">block</span>
+                                            </button>
+                                        }
+                                        <button class="btn btn-glass btn-icon-premium" title="Edit Permissions">
+                                            <span class="material-symbols-outlined fs-5">tune</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Premium Pagination Bar -->
+            <div class="px-5 py-4 d-flex flex-wrap justify-content-between align-items-center gap-4" style="border-top: 1px solid var(--border-glass); background: rgba(0,0,0,0.2);">
+                <div class="d-flex align-items-center gap-3 order-2 order-md-1">
+                    <div class="text-muted small">
+                        Per page
                     </div>
-                }
+                    <select class="form-select form-select-glass py-1 ps-3 pe-5 fw-bold text-white shadow-sm" style="border-radius: 0.5rem; font-size: 0.7rem; width: auto; min-width: 80px;" onchange="changePageSize(this.value)">
+                        <option value="15" selected="@(Model.Count <= 15)">15</option>
+                        <option value="30" selected="@(Model.Count > 15 && Model.Count <= 30)">30</option>
+                        <option value="50" selected="@(Model.Count > 30)">50</option>
+                    </select>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 order-1 order-md-2">
+                    @if (Model.TotalPages > 1)
+                    {
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-premium mb-0 gap-1">
+                                @if (Model.HasPreviousPage)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="?pageNumber=@(Model.PageIndex - 1)&searchTerm=@Context.Request.Query["searchTerm"]&role=@Context.Request.Query["role"]&pageSize=@(Model.Count)" aria-label="Previous">
+                                            <span class="material-symbols-outlined fs-5">chevron_left</span>
+                                        </a>
+                                    </li>
+                                }
+
+                                @{
+                                    int startPage = Math.Max(1, Model.PageIndex - 2);
+                                    int endPage = Math.Min(Model.TotalPages, Model.PageIndex + 2);
+
+                                    if (startPage > 1)
+                                    {
+                                        <li class="page-item"><a class="page-link" href="?pageNumber=1&searchTerm=@Context.Request.Query["searchTerm"]&role=@Context.Request.Query["role"]&pageSize=@(Model.Count)">1</a></li>
+                                        if (startPage > 2)
+                                        {
+                                            <li class="page-item disabled"><span class="page-link border-0 bg-transparent">...</span></li>
+                                        }
+                                    }
+
+                                    for (int i = startPage; i <= endPage; i++)
+                                    {
+                                        <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                                            <a class="page-link" href="?pageNumber=@i&searchTerm=@Context.Request.Query["searchTerm"]&role=@Context.Request.Query["role"]&pageSize=@(Model.Count)">@i</a>
+                                        </li>
+                                    }
+
+                                    if (endPage < Model.TotalPages)
+                                    {
+                                        if (endPage < Model.TotalPages - 1)
+                                        {
+                                            <li class="page-item disabled"><span class="page-link border-0 bg-transparent">...</span></li>
+                                        }
+                                        <li class="page-item"><a class="page-link" href="?pageNumber=@Model.TotalPages&searchTerm=@Context.Request.Query["searchTerm"]&role=@Context.Request.Query["role"]&pageSize=@(Model.Count)">@Model.TotalPages</a></li>
+                                    }
+                                }
+
+                                @if (Model.HasNextPage)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="?pageNumber=@(Model.PageIndex + 1)&searchTerm=@Context.Request.Query["searchTerm"]&role=@Context.Request.Query["role"]&pageSize=@(Model.Count)" aria-label="Next">
+                                            <span class="material-symbols-outlined fs-5">chevron_right</span>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+                </div>
             </div>
         </div>
-
-        <!-- Pagination -->
-        @if (Model.TotalPages > 1)
-        {
-            <div class="d-flex justify-content-center mt-5">
-                <nav class="glass-card p-2 rounded-pill shadow-lg border-glass">
-                    <ul class="pagination pagination-premium mb-0 gap-1 border-0">
-                        @if (Model.HasPreviousPage)
-                        {
-                            <li class="page-item">
-                                <a class="page-link rounded-circle border-0" href="?pageNumber=@(Model.PageIndex - 1)&searchTerm=@Context.Request.Query["searchTerm"]&role=@Context.Request.Query["role"]">
-                                    <span class="material-symbols-outlined fs-5">chevron_left</span>
-                                </a>
-                            </li>
-                        }
-                        
-                        <li class="page-item active"><span class="page-link rounded-circle border-0">@Model.PageIndex</span></li>
-
-                        @if (Model.HasNextPage)
-                        {
-                            <li class="page-item">
-                                <a class="page-link rounded-circle border-0" href="?pageNumber=@(Model.PageIndex + 1)&searchTerm=@Context.Request.Query["searchTerm"]&role=@Context.Request.Query["role"]">
-                                    <span class="material-symbols-outlined fs-5">chevron_right</span>
-                                </a>
-                            </li>
-                        }
-                    </ul>
-                </nav>
-            </div>
-        }
     }
 </div>
 
 <script>
+    let searchTimeout;
+    function debounceSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            document.getElementById('user-search-form').submit();
+        }, 500);
+    }
+
+    function changePageSize(size) {
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('pageSize', size);
+        urlParams.set('pageNumber', 1); // Reset to first page
+        window.location.search = urlParams.toString();
+    }
+
     async function toggleBlock(userId, block) {
         const url = block ? `/management/administration/users/block/${userId}` : `/management/administration/users/unblock/${userId}`;
         try {

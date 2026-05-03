@@ -69,25 +69,32 @@ namespace AskNLearn.Web.Controllers
         }
 
         [HttpPost("verification/submit")]
-        public async Task<IActionResult> SubmitVerification(IFormFile studentId, IFormFile carnet)
+        public async Task<IActionResult> SubmitVerification(IFormFile verificationDoc)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return RedirectToAction("SignIn", "Auth");
 
-            if (studentId == null || carnet == null)
+            if (verificationDoc == null)
             {
-                TempData["Error"] = "Both Student ID and Carnet are required.";
+                TempData["Error"] = "Please select a document (ID or University Card).";
                 return RedirectToAction("Index");
             }
 
-            var studentIdUrl = await _fileService.UploadFileAsync(studentId.OpenReadStream(), studentId.FileName, "verifications");
-            var carnetUrl = await _fileService.UploadFileAsync(carnet.OpenReadStream(), carnet.FileName, "verifications");
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var extension = Path.GetExtension(verificationDoc.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+            {
+                TempData["Error"] = "Invalid file format. Please upload a PNG or JPG image.";
+                return RedirectToAction("Index");
+            }
+
+            var docUrl = await _fileService.UploadFileAsync(verificationDoc.OpenReadStream(), verificationDoc.FileName, "verifications");
 
             var command = new SubmitVerificationRequestCommand
             {
                 UserId = userId,
-                StudentIdUrl = studentIdUrl,
-                CarnetUrl = carnetUrl
+                StudentIdUrl = docUrl,
+                CarnetUrl = docUrl
             };
 
             var errors = await _mediator.Send(command);

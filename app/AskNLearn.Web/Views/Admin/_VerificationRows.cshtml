@@ -3,55 +3,131 @@
 
 @foreach (var request in Model)
 {
-    <div class="verification-item d-flex align-items-center gap-4 p-3 rounded-xl hover-bg-glass transition-all border-bottom border-glass-soft animate-entrance">
-        <div class="rounded-4 d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" 
-             style="width: 52px; height: 52px; background: rgba(52, 211, 153, 0.05); border: 1px solid var(--border-glass-strong);">
-            @if (!string.IsNullOrEmpty(request.User.AvatarUrl))
-            {
-                <img src="@request.User.AvatarUrl" class="w-100 h-100 object-cover rounded-4" />
-            }
-            else
-            {
-                <span class="material-symbols-outlined fs-3 text-aurora">badge</span>
-            }
-        </div>
+    var isPdf = request.StudentIdUrl.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
 
-        <div class="flex-grow-1 min-w-0">
-            <div class="d-flex align-items-center justify-content-between mb-1">
-                <h4 class="h6 fw-bold text-white mb-0 text-truncate">@request.User.FullName</h4>
-                <span class="text-muted" style="font-size: 0.65rem;">@request.SubmittedAt.ToString("MMM dd, HH:mm")</span>
+    <div class="verification-item glass-card mb-3 p-4 rounded-3xl border-glass-soft hover-border-glass transition-all shadow-sm animate-entrance">
+        <div class="row align-items-center g-4">
+            <!-- User Info -->
+            <div class="col-lg-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="flex-shrink-0" style="width: 56px; height: 56px;">
+                        @if (!string.IsNullOrEmpty(request.User.AvatarUrl))
+                        {
+                            <img src="@request.User.AvatarUrl" class="w-100 h-100 object-cover rounded-circle border-glass shadow-sm" />
+                        }
+                        else
+                        {
+                            <div class="w-100 h-100 rounded-circle bg-aurora bg-opacity-10 d-flex align-items-center justify-content-center border-glass">
+                                <span class="material-symbols-outlined text-aurora">person</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="min-w-0">
+                        <h5 class="text-white fw-bold mb-0 text-truncate">@request.User.FullName</h5>
+                        <p class="text-muted small mb-0 text-truncate">@@@request.User.UserName</p>
+                        <span class="badge bg-glass text-muted mt-1" style="font-size: 0.6rem;">@request.SubmittedAt.ToString("g")</span>
+                    </div>
+                </div>
             </div>
-            <div class="text-muted small text-truncate">@@@request.User.UserName • @request.User.Institution</div>
-            
-            <div class="d-flex gap-2 mt-2">
-                <a href="@request.StudentIdUrl" target="_blank" class="rounded-lg border border-glass overflow-hidden hover-border-aurora transition-all" style="width: 40px; height: 40px;">
-                    <img src="@request.StudentIdUrl" class="w-100 h-100 object-cover opacity-75 hover-opacity-100" title="Student ID" />
-                </a>
-                <a href="@request.CarnetUrl" target="_blank" class="rounded-lg border border-glass overflow-hidden hover-border-aurora transition-all" style="width: 40px; height: 40px;">
-                    <img src="@request.CarnetUrl" class="w-100 h-100 object-cover opacity-75 hover-opacity-100" title="Carnet Evidence" />
-                </a>
-            </div>
-        </div>
 
-        <div class="d-flex gap-2">
-            @if (request.Status == Status.Pending)
-            {
-                <form asp-action="Approve" method="post" class="m-0">
-                    <input type="hidden" name="id" value="@request.Id" />
-                    <button class="btn btn-glass btn-icon-sm text-success" title="Approve">
-                        <span class="material-symbols-outlined fs-5">check</span>
-                    </button>
-                </form>
-                <button onclick="openRejectModal('@request.Id')" class="btn btn-glass btn-icon-sm text-danger" title="Reject">
-                    <span class="material-symbols-outlined fs-5">close</span>
-                </button>
-            }
-            else
-            {
-                <span class="badge glass-badge @(request.Status == Status.Approved ? "glass-badge-aurora" : "glass-badge-danger")">
-                    @request.Status
-                </span>
-            }
+            <!-- Uploaded Documents -->
+            <div class="col-lg-3">
+                <div class="d-flex flex-column gap-2">
+                    <label class="text-muted small fw-bold text-uppercase tracking-widest mb-1" style="font-size: 0.65rem;">Uploaded Documents</label>
+                    <div class="d-flex gap-2">
+                        @foreach (var url in new[] { request.StudentIdUrl, request.CarnetUrl }.Where(u => !string.IsNullOrEmpty(u)).Distinct())
+                        {
+                            var urlIsPdf = url.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
+                            <a href="@url" target="_blank" class="document-preview rounded-3 overflow-hidden border-glass shadow-sm position-relative group" 
+                               style="width: 80px; height: 80px; background: rgba(255,255,255,0.02);">
+                                @if (urlIsPdf)
+                                {
+                                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-danger bg-opacity-10 text-danger">
+                                        <span class="material-symbols-outlined fs-2">picture_as_pdf</span>
+                                        <span style="font-size: 0.5rem; font-weight: 800;">PDF</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <img src="@url" class="w-100 h-100 object-cover opacity-75 hover-opacity-100 transition-all" />
+                                }
+                                <div class="overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center opacity-0 group-hover-opacity-100 transition-all" style="background: rgba(0,0,0,0.4);">
+                                    <span class="material-symbols-outlined text-white fs-4">visibility</span>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Guardian Notes -->
+            <div class="col-lg-4">
+                <div class="d-flex flex-column h-100">
+                    <label class="text-muted small fw-bold text-uppercase tracking-widest mb-2" style="font-size: 0.65rem;">Guardian AI Feedback</label>
+                    <div class="ai-feedback-box p-3 rounded-4 border-glass-soft bg-glass-dark" style="min-height: 80px;">
+                        @if (!string.IsNullOrEmpty(request.AdminNotes))
+                        {
+                            <p class="text-white-50 small mb-0 italic" style="line-height: 1.4;">
+                                <span class="material-symbols-outlined fs-6 align-middle me-1 text-aurora">neurology</span>
+                                @request.AdminNotes
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="text-muted small mb-0">No AI notes available yet.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="col-lg-2">
+                <div class="d-flex flex-column gap-2">
+                    @if (request.Status == Status.Pending)
+                    {
+                        <form asp-action="Approve" method="post" class="m-0">
+                            <input type="hidden" name="id" value="@request.Id" />
+                            <button class="btn btn-premium w-100 d-flex align-items-center justify-content-center gap-2 py-2">
+                                <span class="material-symbols-outlined fs-5">verified_user</span>
+                                <span>Approve</span>
+                            </button>
+                        </form>
+                        <button onclick="openRejectModal('@request.Id')" class="btn btn-glass border-danger text-danger w-100 d-flex align-items-center justify-content-center gap-2 py-2">
+                            <span class="material-symbols-outlined fs-5">block</span>
+                            <span>Reject</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="text-center">
+                            <span class="badge w-100 py-3 rounded-4 @(request.Status == Status.Approved ? "bg-success bg-opacity-10 text-success" : "bg-danger bg-opacity-10 text-danger")" style="border: 1px solid currentColor;">
+                                @(request.Status == Status.Approved ? "VERIFIED" : "REJECTED")
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 }
+
+<style>
+    .bg-glass-dark { background: rgba(0,0,0,0.2); }
+    .border-glass-soft { border: 1px solid rgba(255,255,255,0.05); }
+    .hover-border-glass:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+    .group:hover .group-hover-opacity-100 { opacity: 1 !important; }
+    .ai-feedback-box { border-left: 3px solid var(--aurora-blue); }
+    .btn-premium {
+        background: linear-gradient(135deg, var(--aurora-blue) 0%, var(--aurora-purple) 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+    .btn-premium:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        filter: brightness(1.1);
+    }
+</style>

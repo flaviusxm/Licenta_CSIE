@@ -3,296 +3,314 @@
 @{
     Layout = "_DashboardLayout";
     ViewData["Title"] = Model.FullName;
-    ViewData["HideProfileCompletion"] = true;
 }
 
 <div class="h-100 overflow-y-auto custom-scrollbar pt-4">
-    <div class="container pb-5 animate-entrance" style="max-width: 1100px;">
+    <div class="container-fluid max-w-7xl px-4 pb-5 animate-entrance">
         
-        <form asp-action="Update" method="post" id="linkedInForm" enctype="multipart/form-data">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="SocialLinks" id="socialLinksHidden" value="@Model.SocialLinks" />
-            <input type="hidden" name="Interests" id="interestsHidden" value="@Model.Interests" />
-            <!-- NEW UNIFIED HERO STAGE -->
-            <div class="profile-hero-stage mb-5">
-                <div class="profile-banner-stage" style="background-image: url(&quot;@(Model.BannerUrl ?? "https://images.unsplash.com/photo-1557683316-973673baf926")&quot;);">
-                    <div class="banner-overlay"></div>
-                    @if (Model.IsOwnProfile) {
-                        <input type="file" name="BannerFile" id="bannerUpload" class="d-none" onchange="ProfileManager.syncChanges()" />
-                        <button type="button" class="btn btn-glass btn-sm position-absolute top-0 end-0 m-4 rounded-pill shadow-lg" onclick="document.getElementById('bannerUpload').click()">
-                            <span class="material-symbols-outlined fs-6 me-1">landscape</span> Change Cover
-                        </button>
-                    }
+        <!-- Header Section -->
+        <div class="glass-card overflow-hidden mb-5 border-glass shadow-2xl">
+            <div class="position-relative" style="height: 280px;">
+                <div class="w-100 h-100" style="background: url('@(Model.BannerUrl ?? "https://images.unsplash.com/photo-1557683316-973673baf926")') center/cover no-repeat;">
+                    <div class="position-absolute inset-0 bg-gradient-to-t from-universe via-transparent to-transparent opacity-80"></div>
                 </div>
                 
-                <div class="profile-info-stage container px-5">
-                    <div class="d-flex align-items-end gap-5">
-                        <div class="profile-avatar-stage shadow-2xl">
-                            <img src="@(Model.AvatarUrl ?? "https://api.dicebear.com/7.x/avataaars/svg?seed=" + Model.FullName)" id="avatarPreview" />
-                            @if (Model.IsOwnProfile) {
-                                <input type="file" name="AvatarFile" id="avatarUpload" class="d-none" onchange="ProfileManager.syncChanges()" />
-                                <button type="button" class="avatar-edit-btn" onclick="document.getElementById('avatarUpload').click()">
-                                    <span class="material-symbols-outlined">camera_enhance</span>
-                                </button>
+                @if (Model.IsOwnProfile) {
+                    <div class="position-absolute top-0 end-0 p-4">
+                        <button type="button" class="btn btn-glass btn-sm rounded-pill px-3" onclick="document.getElementById('bannerUpload').click()">
+                            <span class="material-symbols-outlined fs-6 me-1">edit</span> Change Cover
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <div class="px-5 pb-5 position-relative">
+                <div class="d-flex align-items-end gap-4" style="margin-top: -80px;">
+                    <div class="position-relative">
+                        <div class="avatar-lg rounded-4 overflow-hidden border border-4 border-universe shadow-2xl" style="width: 160px; height: 160px;">
+                            <img src="@(Model.AvatarUrl ?? "https://api.dicebear.com/7.x/avataaars/svg?seed=" + Model.FullName)" class="w-100 h-100 object-cover" id="avatarPreview" />
+                        </div>
+                        @if (Model.IsOwnProfile) {
+                            <button type="button" class="btn btn-premium p-0 d-flex align-items-center justify-content-center position-absolute bottom-0 end-0 m-2 rounded-3 shadow-lg" style="width: 32px; height: 32px;" onclick="document.getElementById('avatarUpload').click()">
+                                <span class="material-symbols-outlined fs-6">camera_alt</span>
+                            </button>
+                        }
+                    </div>
+                    
+                    <div class="flex-grow-1 pb-2">
+                        <div class="d-flex align-items-center gap-3 mb-1 profile-name-container">
+                            <input type="text" form="profileUpdateForm" name="FullName" 
+                                   class="h2 fw-black text-white m-0 bg-transparent border-0 p-0 w-100 profile-name-input" 
+                                   value="@Model.FullName" placeholder="Enter your name..."
+                                   @(Model.IsOwnProfile ? "" : "readonly") />
+                            <span class="material-symbols-outlined fs-5 text-muted edit-icon-hint">edit</span>
+                            @if (Model.IsVerified) {
+                                <span class="material-symbols-outlined text-accent fill-1" title="Verified Professional">verified</span>
                             }
                         </div>
-                        <div class="flex-grow-1 pb-3">
-                            <div class="d-flex align-items-center gap-3 mb-2">
-                                <h1 class="display-4 fw-black text-white m-0 tracking-tighter">@Model.FullName</h1>
-                            </div>
-                            <div class="d-flex flex-wrap align-items-center gap-x-4 gap-y-2 text-muted fw-bold text-uppercase tracking-widest fs-xs">
-                                @if (Model.IsVerified) {
-                                    <div class="d-flex align-items-center gap-2 text-accent" title="ID Verified">
-                                        <span class="material-symbols-outlined fs-6">how_to_reg</span>
-                                        <span>Verified</span>
-                                    </div>
-                                    <span class="opacity-20">|</span>
-                                }
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="material-symbols-outlined fs-6 opacity-50">school</span>
-                                    <input type="text" name="Institution" value="@Model.Institution" class="inline-edit-input" placeholder="@(Model.IsOwnProfile ? "Add Institution..." : "")" @(Model.IsOwnProfile ? "" : "readonly") />
-                                </div>
-                            </div>
+                        <p class="text-muted mb-0 d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined fs-6">school</span>
+                            Student @@ @(Model.Role == "Admin" ? "Administration" : "Community")
+                        </p>
+                    </div>
+
+                    <div class="d-flex gap-4 pb-2">
+                        <div class="text-center">
+                            <div class="h5 fw-black text-white mb-0">@Model.PostsCount</div>
+                            <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Posts</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="h5 fw-black text-white mb-0">@Model.AnswersCount</div>
+                            <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Answers</div>
+                        </div>
+                        <div class="vr opacity-20 mx-1"></div>
+                        <div class="text-center">
+                            <div class="h5 fw-black text-white mb-0">@Model.ReputationPoints</div>
+                            <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Reputation</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="h5 fw-black text-white mb-0">@Model.Level</div>
+                            <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Level</div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="container px-5 mb-5">
-                <div class="d-flex justify-content-center gap-5 py-4">
-                    <div class="quick-stat-item">
-                        <span class="val">@Model.PostsCount</span>
-                        <span class="lbl">Posts Published</span>
-                    </div>
-                    <div class="quick-stat-item">
-                        <span class="val">@Model.AnswersCount</span>
-                        <span class="lbl">Solutions Provided</span>
-                    </div>
-                    <div class="quick-stat-item">
-                        <span class="val">@Model.Level</span>
-                        <span class="lbl">Community Level</span>
-                    </div>
-                    <div class="quick-stat-item">
-                        <span class="val">@Model.ReputationPoints</span>
-                        <span class="lbl">Reputation</span>
-                    </div>
+        <!-- Notifications / Alerts -->
+        @if (TempData["Success"] != null) {
+            <div class="alert alert-success border-0 bg-success-soft text-success rounded-4 mb-4 animate-slide-in">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span class="fw-bold">@TempData["Success"]</span>
                 </div>
             </div>
+        }
+        @if (TempData["Error"] != null) {
+            <div class="alert alert-danger border-0 bg-danger-soft text-danger rounded-4 mb-4 animate-slide-in">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined">error</span>
+                    <span class="fw-bold">@TempData["Error"]</span>
+                </div>
+            </div>
+        }
 
-            <!-- MAIN CONTENT GRID -->
-            <div class="row g-4">
-                <div class="col-12 col-lg-9">
-                    <div class="d-flex flex-column gap-4">
-                        <!-- About Section -->
-                        <div class="profile-sidebar-card">
-                            <h3 class="profile-section-title">
-                                <span class="material-symbols-outlined">person_search</span>
-                                Professional Summary
-                            </h3>
-                            <textarea name="Bio" rows="5" class="form-control premium-textarea w-100" 
-                                      placeholder="What defines you in the academic world?..." 
-                                      @(Model.IsOwnProfile ? "" : "readonly")>@Model.Bio</textarea>
-                        </div>
-
-                        <!-- Roadmap Section -->
-                        <div class="profile-sidebar-card">
-                            <h3 class="profile-section-title">
-                                <span class="material-symbols-outlined">timeline</span>
-                                Academic Journey
-                            </h3>
-                            
-                            <div class="d-flex flex-column gap-5 mt-4 position-relative">
-                                <div class="position-absolute h-100" style="left: 17px; top: 0; width: 2px; background: rgba(255,255,255,0.05);"></div>
-
-                                <!-- Step 1 -->
-                                <div class="d-flex gap-4 position-relative z-1">
-                                    <div class="step-circle @(Model.EmailConfirmed ? "done" : "current")">
-                                        <span class="material-symbols-outlined fs-6">@(Model.EmailConfirmed ? "check" : "mail")</span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h5 class="text-white fw-black mb-1 fs-6 text-uppercase tracking-wider">Identity Activation</h5>
-                                        <p class="text-muted small m-0 italic">Secure your account by verifying your email address.</p>
-                                    </div>
-                                </div>
-                                
-                                <!-- Step 2 -->
-                                <div class="d-flex gap-4 position-relative z-1">
-                                    <div class="step-circle @(Model.IsVerified ? "done" : (Model.HasPendingVerification ? "current" : "todo"))">
-                                        <span class="material-symbols-outlined fs-6">@(Model.IsVerified ? "verified_user" : "id_card")</span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex align-items-center justify-content-between mb-2">
-                                            <h5 class="text-white fw-black m-0 fs-6 text-uppercase tracking-wider">Institution Validation</h5>
-                                            @if(Model.IsVerified) {
-                                                <span class="badge bg-success-soft text-success rounded-pill px-3 py-1 fw-black text-uppercase" style="font-size: 0.5rem;">Verified</span>
-                                            }
-                                        </div>
-                                        
-                                        @if (!Model.IsVerified && !Model.HasPendingVerification && Model.IsOwnProfile) {
-                                            <div class="p-0 mt-3">
-                                                <div class="row g-2">
-                                                    <div class="col-6">
-                                                        <label class="premium-file-label p-3 py-4">
-                                                            <span class="material-symbols-outlined mb-1">badge</span>
-                                                            ID CARD
-                                                            <input type="file" name="studentId" />
-                                                        </label>
-                                                    </div>
-                                                    <div class="col-6">
-                                                        <label class="premium-file-label p-3 py-4">
-                                                            <span class="material-symbols-outlined mb-1">menu_book</span>
-                                                            BOOKLET
-                                                            <input type="file" name="carnet" />
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <button type="submit" formaction="/identity/profiles/verification/submit" class="btn btn-premium w-100 mt-3 py-2 fw-black text-uppercase tracking-widest fs-xs">
-                                                    Sync Validation
-                                                </button>
-                                            </div>
-                                        } else if (Model.HasPendingVerification || (User.IsInRole("Admin") && !Model.IsVerified)) {
-                                             <div class="mt-4 animate-entrance">
-                                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                                    <div class="d-flex align-items-center gap-2">
-                                                        <div class="spinner-grow text-aurora spinner-grow-sm" role="status" style="width: 10px; height: 10px;"></div>
-                                                        <span class="text-white fw-black text-uppercase tracking-widest fs-xs">Guardian AI Monitor</span>
-                                                    </div>
-                                                    <span class="badge bg-glass-heavy border border-glass text-muted tiny fw-bold">LIVE SESSION</span>
-                                                </div>
-                                                
-                                                <div id="guardian-console" class="glass-card p-3 rounded-4 border-glass shadow-2xl bg-black-alpha-40 font-monospace overflow-hidden" style="min-height: 120px;">
-                                                    <div id="guardian-logs" class="d-flex flex-column gap-1">
-                                                        <div class="text-aurora tiny opacity-50 mb-1">>> Initializing Guardian Shield Protocol...</div>
-                                                        <div class="text-white small fw-medium" id="guardian-current-notes">@Model.AdminNotes</div>
-                                                    </div>
-                                                    <div class="cursor-blink bg-aurora mt-2" style="width: 8px; height: 14px; display: inline-block;"></div>
-                                                </div>
-                                                @if (Model.IsOwnProfile) {
-                                                    <button type="button" onclick="document.getElementById('cancelVerificationForm').submit()" class="btn btn-link text-muted text-hover-danger p-0 tiny fw-black text-uppercase text-decoration-none mt-3">Cancel Request</button>
-                                                }
-                                             </div>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <div class="row g-4">
+            <!-- Sidebar (Left) - Core Info & Management -->
+            <div class="col-xl-4">
+                <div class="d-flex flex-column gap-4">
+                    
+                    <!-- Management Card -->
+                    <div class="glass-card p-4 border-glass shadow-sm">
+                        <h3 class="text-white fw-bold fs-xs text-uppercase tracking-widest mb-4 d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined fs-6 text-accent">settings</span>
+                            Account Management
+                        </h3>
                         
-                        <!-- Socials -->
-                        <div class="profile-sidebar-card">
-                            <h3 class="profile-section-title">
-                                <span class="material-symbols-outlined">share</span>
-                                Connections
-                            </h3>
-                            <div id="socialListArea" class="d-flex flex-column gap-2 mb-3"></div>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="p-3 rounded-4 bg-glass-soft border border-glass">
+                                <div class="text-muted tiny fw-bold text-uppercase mb-1">Account Status</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle @(Model.EmailConfirmed ? "bg-success" : "bg-warning")" style="width: 8px; height: 8px;"></div>
+                                    <span class="text-white small fw-bold">@(Model.EmailConfirmed ? "Active Account" : "Awaiting Activation")</span>
+                                </div>
+                            </div>
+
                             @if (Model.IsOwnProfile) {
-                                <div class="d-flex gap-2">
-                                    <input type="text" id="socialInputBox" class="form-control premium-input-sm flex-grow-1" placeholder="Add link..." />
-                                    <button type="button" onclick="ProfileManager.addSocialLink()" class="btn btn-premium rounded-3 px-3">
-                                        <span class="material-symbols-outlined fs-5">add</span>
+                                <div class="d-grid gap-2 mt-2">
+                                @if (User.IsInRole("Admin")) {
+                                    <a asp-controller="Admin" asp-action="Index" class="btn btn-premium btn-sm py-2 fw-bold text-uppercase fs-xs d-flex align-items-center justify-content-center mb-1">
+                                        <span class="material-symbols-outlined fs-6 me-2">admin_panel_settings</span> Admin Portal
+                                    </a>
+                                }
+                                <button type="button" onclick="ProfileManager.showResetModal()" class="btn btn-glass btn-sm py-2 fw-bold text-uppercase fs-xs">
+                                        <span class="material-symbols-outlined fs-6 me-2">lock</span> Change Password
+                                    </button>
+                                    <button type="button" onclick="document.getElementById('logoutForm').submit()" class="btn btn-link text-danger text-decoration-none fw-black text-uppercase fs-xs">
+                                        Sign Out
                                     </button>
                                 </div>
                             }
                         </div>
                     </div>
-                </div>
 
-                <!-- SIDEBAR -->
-                <div class="col-12 col-lg-3 ps-lg-5">
-                    <div class="d-flex flex-column gap-5">
-                        <!-- Security & Admin -->
-                        @if (Model.IsOwnProfile) {
-                            <div class="profile-sidebar-card">
-                                 <h3 class="profile-section-title">
-                                     <span class="material-symbols-outlined">security</span>
-                                     Management
-                                 </h3>
-                                 <div class="d-grid gap-2">
-                                     @if (User.IsInRole("Admin"))
-                                     {
-                                         <a asp-controller="Admin" asp-action="Index" class="btn btn-premium py-2 fw-bold text-uppercase fs-xs mb-1">
-                                             <span class="material-symbols-outlined fs-6 me-2">admin_panel_settings</span>
-                                             Admin Portal
-                                         </a>
-                                     }
-                                     <button type="button" onclick="ProfileManager.showResetModal()" class="btn btn-glass py-2 fw-bold text-uppercase fs-xs">
-                                         Change Password
-                                     </button>
-                                     <button type="button" onclick="document.getElementById('logoutForm').submit()" class="btn btn-link text-muted text-hover-danger text-uppercase tracking-widest fw-black fs-xs text-decoration-none">
-                                         Sign Out
-                                     </button>
-                                 </div>
-                            </div>
-                        }
-                    </div>
                 </div>
             </div>
 
-        </form>
-    </div>
+            <!-- Content Area (Right) -->
+            <div class="col-xl-8">
+                <div class="d-flex flex-column gap-4">
+                    
+                    <!-- About Me & Profile Data -->
+                    <form asp-action="Update" method="post" id="profileUpdateForm" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="file" name="BannerFile" id="bannerUpload" class="d-none" onchange="this.form.submit()" />
+                        <input type="file" name="AvatarFile" id="avatarUpload" class="d-none" onchange="this.form.submit()" />
+                        <input type="hidden" name="Occupation" value="@Model.Occupation" />
+                        <input type="hidden" name="Institution" value="@Model.Institution" />
+                        <input type="hidden" name="SocialLinks" id="socialLinksHidden" value="@Model.SocialLinks" />
+                        <input type="hidden" name="Interests" id="interestsHidden" value="@Model.Interests" />
 
-    <!-- Background Sync HUD -->
-    <div id="syncBadge" class="position-fixed bottom-0 start-50 translate-middle-x mb-5 z-5 pointer-events-none transition-all" style="transform: translateY(100%) translateX(-50%); opacity: 0;">
-        <div class="glass-card px-4 py-3 d-flex align-items-center gap-3 border shadow-lg" style="border-radius: 2rem; border-color: rgba(0, 122, 255, 0.4);">
-             <div class="spinner-border text-accent" style="width: 1rem; height: 1rem; border-width: 2px;"></div>
-             <span id="syncStatus" class="text-white fw-black text-uppercase fs-xs tracking-widest">Changes saved</span>
-        </div>
-    </div>
+                        <div class="glass-card p-4 border-glass shadow-sm">
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+                                <h3 class="text-white fw-bold fs-xs text-uppercase tracking-widest m-0 d-flex align-items-center gap-2">
+                                    <span class="material-symbols-outlined fs-6 text-accent">person</span>
+                                    Professional Summary
+                                </h3>
+                                @if (Model.IsOwnProfile) {
+                                    <button type="submit" class="btn btn-premium btn-sm px-4 py-1 fw-bold text-uppercase fs-xs">
+                                        Save Changes
+                                    </button>
+                                }
+                            </div>
+                            <textarea name="Bio" class="form-control form-control-glass w-100 border-0 p-0 fs-5 text-white" rows="3" 
+                                      placeholder="Write something about your academic interests..." 
+                                      style="background: transparent; resize: none; line-height: 1.6;"
+                                      @(Model.IsOwnProfile ? "" : "readonly")>@Model.Bio</textarea>
+                        </div>
+                    </form>
 
-    <form asp-controller="Auth" asp-action="SignOut" method="post" id="logoutForm" class="d-none"></form>
-    <form action="/identity/profiles/verification/cancel" method="post" id="cancelVerificationForm" class="d-none"></form>
+                    <!-- Identity Verification Console -->
+                    <div class="glass-card border-glass shadow-2xl overflow-hidden">
+                        <div class="px-4 py-3 border-bottom border-glass d-flex align-items-center justify-content-between bg-glass-soft">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined text-accent">verified_user</span>
+                                <h3 class="text-white fw-bold fs-xs text-uppercase tracking-widest mb-0">Identity & Institution Verification</h3>
+                            </div>
+                            @if (Model.IsVerified) {
+                                <span class="badge bg-success-soft text-success rounded-pill px-3 py-1 fw-black text-uppercase fs-xs">Verified</span>
+                            } else if (Model.HasPendingVerification) {
+                                <span class="badge bg-warning-soft text-warning rounded-pill px-3 py-1 fw-black text-uppercase fs-xs animate-pulse">In Review</span>
+                            }
+                        </div>
 
+                        <div class="p-4">
+                            @if (!Model.IsVerified && !Model.HasPendingVerification && Model.IsOwnProfile) {
+                                <p class="text-muted small mb-4">Validate your account to unlock premium features. Upload your Personal ID, Passport, or University Card.</p>
+                                <form asp-action="SubmitVerification" asp-controller="Profile" method="post" enctype="multipart/form-data">
+                                    <div class="premium-upload-zone rounded-4 p-5 text-center position-relative mb-4">
+                                        <div class="upload-content py-3">
+                                            <span class="material-symbols-outlined fs-display text-accent mb-3 animate-bounce-slow">upload_file</span>
+                                            <h4 class="text-white fw-bold mb-2">Upload Identity Document</h4>
+                                            <p class="text-muted tiny mb-0 file-name-display">Drag & drop or click (Only PNG, JPG images supported)</p>
+                                        </div>
+                                        <input type="file" name="verificationDoc" class="position-absolute inset-0 opacity-0 cursor-pointer w-100 h-100" accept="image/png, image/jpeg, image/jpg" required onchange="ProfileManager.handleFileSelect(this)" />
+                                    </div>
+                                    <button type="submit" class="btn btn-premium w-100 py-3 fw-black text-uppercase tracking-widest fs-xs shadow-lg">
+                                        Start AI Verification
+                                    </button>
+                                </form>
+                            } else if (Model.HasPendingVerification) {
+                                <div class="guardian-console rounded-4 overflow-hidden border border-glass bg-black-alpha-40">
+                                    <div class="console-header px-3 py-2 border-bottom border-glass d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="spinner-grow text-accent" style="width: 8px; height: 8px;"></div>
+                                            <span class="text-white tiny fw-black text-uppercase tracking-widest">Guardian AI Monitoring</span>
+                                        </div>
+                                        <span class="text-muted tiny font-monospace">@Model.Id.Substring(0, 8).ToUpper()</span>
+                                    </div>
+                                    <div class="console-body p-3 font-monospace small" style="min-height: 140px; background: rgba(0,0,0,0.2);">
+                                        <div class="d-flex align-items-start gap-2 mb-3">
+                                            <span class="text-accent">>></span>
+                                            <div id="guardian-current-notes" class="text-white">
+                                                @(string.IsNullOrEmpty(Model.AdminNotes) ? "[Guardian AI]: Inițializare scanare biometrică și OCR..." : Model.AdminNotes)
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="guardian-logs" class="mt-3 pt-3 border-top border-glass-thin overflow-auto" style="max-height: 80px;">
+                                            <div class="text-muted tiny">>> System handshake... OK</div>
+                                            <div class="text-muted tiny">>> Fetching document from secure storage... OK</div>
+                                            <div class="text-muted tiny animate-pulse">>> Waiting for AI model (moondream) inference...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @if (Model.IsOwnProfile) {
+                                    <form asp-action="CancelVerification" method="post" class="mt-3">
+                                        <button type="submit" class="btn btn-link text-danger text-decoration-none tiny fw-black text-uppercase">Cancel Request</button>
+                                    </form>
+                                }
+                            } else if (Model.IsVerified) {
+                                <div class="d-flex align-items-center gap-3 p-4 rounded-4 bg-success-soft border border-success-thin">
+                                    <div class="rounded-circle bg-success text-white p-2">
+                                        <span class="material-symbols-outlined">check</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="h6 fw-bold text-white mb-1">Account fully verified</h4>
+                                        <p class="text-muted small mb-0">Identity and institution verified.</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>    </div>
 </div>
 
 <style>
-    .profile-hero-stage { position: relative; border-radius: 0 0 3rem 3rem; overflow: hidden; background: var(--bg-universe); }
-    .profile-banner-stage { height: 320px; background-size: cover; background-position: center; position: relative; }
-    .banner-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 70%, var(--bg-universe)); }
-    .profile-info-stage { margin-top: -120px; position: relative; z-index: 10; }
-    .profile-avatar-stage { width: 200px; height: 200px; border-radius: 2.5rem; overflow: hidden; border: 8px solid var(--bg-universe); background: var(--bg-universe); position: relative; }
-    .profile-avatar-stage img { width: 100%; height: 100%; object-fit: cover; }
-    .avatar-edit-btn { position: absolute; bottom: 15px; right: 15px; background: var(--color-accent); color: white; border: none; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-
-    .inline-edit-input { background: transparent; border: none; color: inherit; width: auto; min-width: 100px; padding: 0; }
-    .inline-edit-input:focus { outline: none; border-bottom: 1px solid var(--color-accent); }
-
-    .reputation-badge { background: rgba(0, 122, 255, 0.1); border: 1px solid rgba(0, 122, 255, 0.2); padding: 1.5rem 2.5rem; border-radius: 2rem; text-align: center; }
-    .reputation-badge .val { display: block; font-size: 2rem; font-weight: 900; color: var(--color-accent); line-height: 1; }
-    .reputation-badge .lbl { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: var(--color-accent-soft); letter-spacing: 2px; }
-
-    .quick-stat-item { display: flex; flex-direction: column; text-align: center; }
-    .quick-stat-item .val { font-size: 1.5rem; font-weight: 900; color: white; line-height: 1; }
-    .quick-stat-item .lbl { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-top: 5px; }
-
-    .border-glass-soft { border-color: rgba(255,255,255,0.03) !important; }
+    .max-w-7xl { max-width: 1280px; margin: 0 auto; }
+    .bg-universe { background: var(--bg-universe); }
+    .inset-0 { top: 0; left: 0; bottom: 0; right: 0; }
+    .bg-gradient-to-t { background: linear-gradient(to top, var(--bg-universe), transparent); }
+    .avatar-lg { aspect-ratio: 1; }
+    .shadow-accent { box-shadow: 0 0 15px var(--color-accent); }
+    .shadow-success { box-shadow: 0 0 15px var(--color-success); }
     
-    .premium-textarea { background: transparent; border: none; border-radius: 0; color: white; padding: 0 1.5rem; font-size: 1.1rem; line-height: 1.8; transition: all 0.3s ease; }
-    .premium-textarea:focus { outline: none; }
+    .premium-upload-zone {
+        background: rgba(255, 255, 255, 0.02);
+        border: 2px dashed var(--border-glass);
+        transition: all 0.3s var(--ease-apple);
+    }
+    .premium-upload-zone:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--color-accent);
+    }
+    .premium-upload-zone.active {
+        background: var(--color-accent-soft);
+        border-color: var(--color-accent);
+        border-style: solid;
+    }
 
-    .cursor-blink {
-        animation: blink 1s step-end infinite;
+    .guardian-console {
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
     }
-    @@keyframes blink {
-        from, to { opacity: 1; }
-        50% { opacity: 0; }
+    .bg-black-alpha-40 { background: rgba(0, 0, 0, 0.4); }
+    
+    .timeline-unified { border-left: 2px solid var(--border-glass); }
+    .timeline-item { position: relative; }
+    .timeline-dot {
+        position: absolute;
+        left: -25px;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--border-glass);
     }
+    .fs-display { font-size: 4rem; }
+    .profile-name-container { transition: all 0.2s ease; border-radius: 8px; padding: 4px; margin: -4px; cursor: text; }
+    .profile-name-container:hover { background: rgba(255, 255, 255, 0.05); }
+    .edit-icon-hint { opacity: 0; transition: opacity 0.2s ease; }
+    .profile-name-container:hover .edit-icon-hint { opacity: 1; }
+    .profile-name-input:focus { outline: none; background: rgba(255, 255, 255, 0.1) !important; border-radius: 4px; padding-left: 8px !important; }
+
+    .max-w-7xl { max-width: 1280px; margin: 0 auto; }
 </style>
 
+<!-- Standard Forms for Logout & Resets -->
+<form asp-controller="Auth" asp-action="SignOut" method="post" id="logoutForm" class="d-none"></form>
+
 @section Modals {
-    <!-- Password Reset Modal -->
-    <style>
-        #resetModal { z-index: 99999 !important; }
-        #resetModal .modal-content { z-index: 100000 !important; }
-        .modal-backdrop { z-index: 99998 !important; opacity: 0.4 !important; backdrop-filter: blur(4px); }
-    </style>
-    <div class="modal" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
+    <div class="modal fade" id="resetModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow-2xl" style="border-radius: 2rem; background: #0a0a0b; border: 1px solid rgba(255,255,255,0.1); overflow: hidden;">
+            <div class="modal-content glass-card border-glass shadow-2xl overflow-hidden">
                 <div class="modal-body p-5 text-center">
-                    <div class="avatar-lg bg-accent-soft text-accent rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4 bg-accent-soft text-accent" style="width: 80px; height: 80px;">
                         <span class="material-symbols-outlined fs-1">lock_reset</span>
                     </div>
-                    <h3 class="text-white fw-black text-uppercase tracking-tight mb-3">Security Update</h3>
-                    <p class="text-muted small mb-4">For your security, we will send a password reset link to your registered email address.</p>
+                    <h3 class="h4 text-white fw-black text-uppercase tracking-tight mb-3">Security Update</h3>
+                    <p class="text-muted small mb-4">A password reset link will be sent to your registered email address.</p>
                     <div id="resetFeedback" class="mb-4 d-none">
                         <div class="alert alert-success border-0 bg-success-soft text-success small py-2 px-3 rounded-4">
                             Check your email for the reset link!
@@ -319,6 +337,52 @@
         const initialTags = "@Model.Interests".split(',').filter(x => x.trim() !== '');
         const initialLinks = "@Model.SocialLinks".split(';').filter(x => x.trim() !== '');
         ProfileManager.init(@Model.IsOwnProfile.ToString().ToLower(), initialTags, initialLinks, "@Model.Id", @Model.HasPendingVerification.ToString().ToLower());
+
+        // Handle File Input Highlights
+        document.querySelectorAll('.premium-upload-zone input').forEach(input => {
+            input.addEventListener('change', () => {
+                if (input.files.length > 0) {
+                    input.parentElement.classList.add('active');
+                    input.parentElement.querySelector('.text-muted').innerText = input.files[0].name;
+                }
+            });
+        });
+
+        // Request Password Reset Logic
+        const btnReset = document.getElementById('btnRequestReset');
+        if (btnReset) {
+            btnReset.addEventListener('click', async () => {
+                btnReset.disabled = true;
+                btnReset.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending...';
+                try {
+                    const response = await fetch('/identity/auth/request-password-reset', { method: 'POST' });
+                    if (response.ok) {
+                        document.getElementById('resetFeedback').classList.remove('d-none');
+                        setTimeout(() => bootstrap.Modal.getInstance(document.getElementById('resetModal')).hide(), 3000);
+                    }
+                } catch (e) { console.error(e); }
+                finally { 
+                    btnReset.disabled = false; 
+                    btnReset.innerText = 'Send Reset Link';
+                }
+            });
+        }
+        // Profile Manager Extension
+        window.ProfileManager = window.ProfileManager || {};
+        window.ProfileManager.handleFileSelect = function(input) {
+            const display = input.parentElement.querySelector('.file-name-display');
+            if (input.files && input.files[0]) {
+                display.innerText = input.files[0].name;
+                display.classList.add('text-accent');
+                input.parentElement.style.borderColor = 'var(--color-accent)';
+            }
+        };
     });
+
+    window.ProfileManager = window.ProfileManager || {
+        showResetModal: () => {
+            new bootstrap.Modal(document.getElementById('resetModal')).show();
+        }
+    };
 </script>
 }

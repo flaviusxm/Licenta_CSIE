@@ -29,8 +29,9 @@ body {
     background-color: #0f172a; /* Midnight Slate 900 */
     color: #f8fafc;
     font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.6;
-    letter-spacing: -0.011em;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    color: var(--text-pure);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -61,7 +62,9 @@ h1, h2, h3, h4, h5, h6 {
     border: 0.0625rem solid rgba(255, 255, 255, 0.05);
     border-radius: 1.5rem;
     backdrop-filter: blur(0.75rem);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s var(--ease-apple), box-shadow 0.3s var(--ease-apple), border-color 0.3s var(--ease-apple);
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
 }
 
 .glass-panel:hover {
@@ -180,7 +183,9 @@ input::-webkit-credentials-auto-fill-button {
     z-index: 0;
     pointer-events: none;
     position: fixed;
-}
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 
 .aurora-orb-cyan {
     background: #007AFF;

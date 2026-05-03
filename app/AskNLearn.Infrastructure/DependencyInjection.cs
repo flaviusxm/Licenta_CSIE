@@ -22,7 +22,7 @@ namespace AskNLearn.Infrastructure
             }));
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
             
-            services.AddHttpClient<IGuardianClient, GuardianClient>();
+            services.AddScoped<IGuardianClient, GuardianClient>();
             services.AddScoped<IFileService, LocalFileService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IEmailService, EmailService>();

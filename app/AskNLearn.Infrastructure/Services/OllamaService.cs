@@ -4,6 +4,9 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace AskNLearn.Infrastructure.Services
 {
@@ -17,6 +20,37 @@ namespace AskNLearn.Infrastructure.Services
         {
             _httpClient = httpClient;
             _logger = logger;
+            _httpClient.Timeout = TimeSpan.FromMinutes(3); // Vision needs more time
+        }
+
+        private async Task<byte[]> PreprocessImageAsync(byte[] imageBytes)
+        {
+            try
+            {
+                using var image = Image.Load(imageBytes);
+                
+                // 1. Resize if too large (Optimization for Moondream)
+                int maxWidth = 1200;
+                if (image.Width > maxWidth)
+                {
+                    int newHeight = (int)((double)image.Height / image.Width * maxWidth);
+                    image.Mutate(x => x.Resize(maxWidth, newHeight));
+                }
+
+                // 2. Enhance for OCR: Auto Contrast + Sharpen
+                image.Mutate(x => x
+                    .Contrast(1.1f)
+                    .GaussianSharpen(0.4f));
+
+                using var ms = new MemoryStream();
+                await image.SaveAsync(ms, new JpegEncoder { Quality = 85 });
+                return ms.ToArray();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[Ollama] Could not preprocess image, sending raw bytes.");
+                return imageBytes;
+            }
         }
 
         public async Task<(bool IsSafe, string Reason)> AnalyzeTextAsync(string content, string prompt, string model = "qwen2.5:0.5b")
@@ -52,38 +86,68 @@ namespace AskNLearn.Infrastructure.Services
 
         public async Task<(bool IsValid, string Details, string Recommendation)> AnalyzeImageAsync(byte[] imageBytes, string prompt, string model = "moondream")
         {
-            try
+            int maxRetries = 2;
+            int attempt = 0;
+
+            // Pre-procesăm imaginea o singură dată
+            var processedBytes = await PreprocessImageAsync(imageBytes);
+
+            while (attempt < maxRetries)
             {
-                var base64Image = Convert.ToBase64String(imageBytes);
-                var requestBody = new
+                attempt++;
+                try
                 {
-                    model = model,
-                    prompt = prompt,
-                    images = new[] { base64Image },
-                    stream = false
-                };
+                    _logger.LogInformation("[Ollama] Starting vision analysis with model {Model} (Attempt {Attempt}). Processed Size: {Size} bytes", model, attempt, processedBytes.Length);
+                    var base64Image = Convert.ToBase64String(processedBytes);
+                    var requestBody = new
+                    {
+                        model = model,
+                        prompt = prompt,
+                        images = new[] { base64Image },
+                        stream = false
+                    };
 
-                var response = await _httpClient.PostAsJsonAsync(OllamaUrl, requestBody);
-                response.EnsureSuccessStatusCode();
+                    var startTime = DateTime.UtcNow;
+                    var response = await _httpClient.PostAsJsonAsync(OllamaUrl, requestBody);
+                    var duration = DateTime.UtcNow - startTime;
 
-                var jsonResponse = await response.Content.ReadFromJsonAsync<JsonElement>();
-                var responseText = jsonResponse.GetProperty("response").GetString();
+                    _logger.LogInformation("[Ollama] API responded in {Duration}ms with status {Status}", duration.TotalMilliseconds, response.StatusCode);
+                    
+                    response.EnsureSuccessStatusCode();
 
-                if (string.IsNullOrEmpty(responseText))
-                    return (false, "Empty vision response.", "Review Required");
+                    var jsonResponse = await response.Content.ReadFromJsonAsync<JsonElement>();
+                    var responseText = jsonResponse.GetProperty("response").GetString();
 
-                // moondream usually returns text, but we can try to extract patterns
-                bool isValid = responseText.Contains("valid", StringComparison.OrdinalIgnoreCase) || 
-                              responseText.Contains("student", StringComparison.OrdinalIgnoreCase) ||
-                              responseText.Contains("id card", StringComparison.OrdinalIgnoreCase);
+                    if (string.IsNullOrEmpty(responseText))
+                    {
+                        if (attempt < maxRetries)
+                        {
+                            _logger.LogWarning("[Ollama] Received empty response. Retrying...");
+                            await Task.Delay(1000);
+                            continue;
+                        }
+                        return (false, "Empty vision response after retries.", "Review Required");
+                    }
 
-                return (isValid, responseText, isValid ? "Approved" : "Needs Manual Review");
+                    _logger.LogDebug("[Ollama] Raw AI Response: {Response}", responseText);
+
+                    // Logică mai permisivă pentru aprobare
+                    bool isValid = responseText.Contains("valid", StringComparison.OrdinalIgnoreCase) || 
+                                   responseText.Contains("approve", StringComparison.OrdinalIgnoreCase) ||
+                                   responseText.Contains("yes", StringComparison.OrdinalIgnoreCase) ||
+                                   responseText.Contains("student", StringComparison.OrdinalIgnoreCase);
+
+                    return (isValid, responseText, isValid ? "Approved" : "Needs Manual Review");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "[Ollama] Critical error during vision analysis (Attempt {Attempt}).", attempt);
+                    if (attempt >= maxRetries) return (false, "Vision API error: " + ex.Message, "Review Required");
+                    await Task.Delay(2000);
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error calling Ollama for vision analysis.");
-                return (false, "Vision API error.", "Review Required");
-            }
+
+            return (false, "AI failed to respond.", "Needs Manual Review");
         }
 
         private class ModerationResult

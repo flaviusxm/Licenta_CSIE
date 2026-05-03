@@ -34,10 +34,65 @@
     </div>
 
     <!-- Remember Me -->
-    <label class="d-flex align-items-center gap-2 text-muted small fw-bold cursor-pointer mt-2" style="font-size: 0.8rem;">
-        <input asp-for="RememberMe" type="checkbox" class="form-check-input mt-0 bg-transparent border-secondary" />
-        Remember me
-    </label>
+    <div class="d-flex align-items-center gap-3 mt-2">
+        <div class="premium-checkbox-wrapper">
+            <input asp-for="RememberMe" type="checkbox" class="premium-checkbox" id="rememberMeCheck" />
+            <label for="rememberMeCheck" class="premium-checkbox-label"></label>
+        </div>
+        <label for="rememberMeCheck" class="text-muted small fw-bold cursor-pointer" style="font-size: 0.85rem; user-select: none;">
+            Remember me on this device
+        </label>
+    </div>
+
+    <style>
+        .premium-checkbox-wrapper {
+            position: relative;
+            width: 24px;
+            height: 24px;
+        }
+        .premium-checkbox {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        .premium-checkbox-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 24px;
+            width: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border-glass);
+            border-radius: 6px;
+            transition: all 0.2s var(--ease-apple);
+            cursor: pointer;
+        }
+        .premium-checkbox:checked ~ .premium-checkbox-label {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+        }
+        .premium-checkbox-label:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 8px;
+            top: 4px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        .premium-checkbox:checked ~ .premium-checkbox-label:after {
+            display: block;
+        }
+        .premium-checkbox-wrapper:hover .premium-checkbox-label {
+            border-color: var(--color-accent-soft);
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
 
     <!-- Submit Button -->
     <button type="submit" class="btn btn-premium w-100 mt-3">

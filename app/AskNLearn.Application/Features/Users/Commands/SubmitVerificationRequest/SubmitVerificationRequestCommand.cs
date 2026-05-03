@@ -7,6 +7,6 @@ namespace AskNLearn.Application.Features.Users.Commands.SubmitVerificationReques
     {
         public string UserId { get; set; } = string.Empty;
         public string StudentIdUrl { get; set; } = string.Empty;
-        public string CarnetUrl { get; set; } = string.Empty;
+        public string? CarnetUrl { get; set; }
     }
 }

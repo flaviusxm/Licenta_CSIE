@@ -118,17 +118,24 @@ namespace AskNLearn.Web.Controllers
         }
 
         [HttpGet("users")]
-        public async Task<IActionResult> Users(string? searchTerm, int? pageNumber)
+        public async Task<IActionResult> Users(string? searchTerm, string? role, int? pageNumber, int pageSize = 15)
         {
             if (!await IsAdmin()) return Forbid();
             ViewData["ActivePage"] = "Users";
             
-            int pageSize = 15;
             var query = _context.Users.OrderBy(u => u.UserName).AsNoTracking();
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(u => u.UserName.Contains(searchTerm) || u.Email.Contains(searchTerm) || u.FullName.Contains(searchTerm));
+            }
+
+            if (!string.IsNullOrEmpty(role))
+            {
+                if (Enum.TryParse<Role>(role, out var roleEnum))
+                {
+                    query = query.Where(u => u.Role == roleEnum);
+                }
             }
 
             var paginatedUsers = await AskNLearn.Web.Models.PaginatedList<ApplicationUser>.CreateAsync(query, pageNumber ?? 1, pageSize);

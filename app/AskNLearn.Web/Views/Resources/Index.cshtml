@@ -64,51 +64,18 @@
     }
     else
     {
-        <div class="d-flex flex-column gap-1">
-            @foreach (var file in Model)
-            {
-                <div class="resource-item d-flex align-items-center gap-3 p-3 rounded-lg hover-bg-glass transition-all border-bottom border-glass-soft">
-                    <div class="file-icon rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
-                        <span class="material-symbols-outlined fs-4 text-white">
-                            @(file.FileType?.Contains("pdf") == true ? "picture_as_pdf" : 
-                                file.FileType?.Contains("image") == true ? "image" : 
-                                file.FileType?.Contains("word") == true ? "description" : "draft")
-                        </span>
-                    </div>
-                    
-                    <div class="flex-grow-1 min-w-0">
-                        <h4 class="h6 fw-bold text-white mb-0 text-truncate">@file.FileName</h4>
-                        <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.75rem;">
-                            <span>Uploaded by @(file.Uploader?.FullName ?? "Unknown")</span>
-                            <span>•</span>
-                            <span>@((file.FileSize ?? 0) / 1024) KB</span>
-                            <span>•</span>
-                            <span>@file.UploadedAt.ToString("MMM dd, yyyy")</span>
-                        </div>
-                    </div>
+    <div id="resource-container" class="d-flex flex-column gap-1">
+        <partial name="_ResourceList" model="Model" />
+    </div>
+    
+    <div id="load-more-indicator" class="text-center py-4 d-none">
+        <div class="spinner-border text-accent spinner-border-sm"></div>
+    </div>
 
-                    <div class="d-flex gap-1">
-                        <button class="btn btn-glass btn-icon-sm" onclick="previewFile('@file.Id', '@file.FileName', '@file.FilePath', '@file.FileType')" title="Preview">
-                            <span class="material-symbols-outlined fs-5">visibility</span>
-                        </button>
-                        <a asp-action="Download" asp-route-id="@file.Id" class="btn btn-glass btn-icon-sm" title="Download">
-                            <span class="material-symbols-outlined fs-5">download</span>
-                        </a>
-                        @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == file.UploaderId || User.IsInRole("Admin"))
-                        {
-                            <form asp-action="Delete" asp-route-id="@file.Id" method="post" onsubmit="return confirm('Delete this file?')" class="m-0">
-                                <button type="submit" class="btn btn-glass btn-icon-sm text-danger" title="Delete">
-                                    <span class="material-symbols-outlined fs-5">delete</span>
-                                </button>
-                            </form>
-                        }
-                    </div>
-                </div>
-            }
-        </div>
     }
 </div>
-</div>
+
+
 
 @section Modals {
     <!-- Upload Modal -->
@@ -165,45 +132,101 @@
 @section Scripts {
 <script>
     let previewModalInstance = null;
+    let skip = 15;
+    const take = 15;
+    let isLoading = false;
+    let hasMore = true;
 
-    let searchTimeout = null;
-    function filterResources(term) {
-        if (searchTimeout) clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            const items = document.querySelectorAll('.resource-item');
-            const container = document.querySelector('.max-w-4xl .d-flex.flex-column');
-            let found = 0;
-            
-            term = term.toLowerCase().trim();
-            
-            items.forEach(item => {
-                const fileName = item.querySelector('h4').textContent.toLowerCase();
-                if (fileName.includes(term)) {
-                    item.classList.remove('d-none');
-                    item.classList.add('d-flex');
-                    found++;
-                } else {
-                    item.classList.remove('d-flex');
-                    item.classList.add('d-none');
+    document.addEventListener('DOMContentLoaded', () => {
+        const main = document.querySelector('main');
+        if (main) {
+            main.addEventListener('scroll', () => {
+                if (isLoading || !hasMore) return;
+                
+                const scrollPos = main.scrollTop + main.clientHeight;
+                const threshold = main.scrollHeight - 100;
+                
+                if (scrollPos >= threshold) {
+                    loadMoreResources();
                 }
             });
+        }
+    });
 
-            // Toggle "No results" message
-            let emptyMsg = document.getElementById('search-empty-msg');
-            if (found === 0) {
-                if (!emptyMsg && container) {
-                    container.insertAdjacentHTML('afterend', `
-                        <div id="search-empty-msg" class="text-center py-5 opacity-50 animate-entrance">
-                            <span class="material-symbols-outlined display-1 mb-3">search_off</span>
-                            <h3 class="h4">No matching resources</h3>
-                            <p>Try a different search term .</p>
-                        </div>
-                    `);
+    async function loadMoreResources() {
+        if (isLoading || !hasMore) return;
+        
+        isLoading = true;
+        document.getElementById('load-more-indicator').classList.remove('d-none');
+        
+        const type = new URLSearchParams(window.location.search).get('type') || '';
+        const term = document.getElementById('resource-search').value;
+        
+        try {
+            const response = await fetch(`/resources?type=${type}&searchTerm=${term}&skip=${skip}&take=${take}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            
+            if (response.ok) {
+                const html = await response.text();
+                if (html.trim().length === 0) {
+                    hasMore = false;
+                } else {
+                    document.getElementById('resource-container').insertAdjacentHTML('beforeend', html);
+                    skip += take;
                 }
-            } else {
-                emptyMsg?.remove();
             }
-        }, 200);
+        } catch (err) {
+            console.error("Error loading resources:", err);
+        } finally {
+            isLoading = false;
+            document.getElementById('load-more-indicator').classList.add('d-none');
+        }
+    }
+
+    let searchTimeout = null;
+    async function filterResources(term) {
+        if (searchTimeout) clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(async () => {
+            isLoading = true;
+            skip = 0; // Reset pagination for new search
+            hasMore = true;
+            
+            const type = new URLSearchParams(window.location.search).get('type') || '';
+            const container = document.getElementById('resource-container');
+            
+            try {
+                const response = await fetch(`/resources?type=${type}&searchTerm=${term}&skip=0&take=${take}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    container.innerHTML = html;
+                    skip = take;
+                    
+                    // Toggle "No results" message
+                    let emptyMsg = document.getElementById('search-empty-msg');
+                    if (html.trim().length === 0) {
+                        if (!emptyMsg) {
+                            container.insertAdjacentHTML('afterend', `
+                                <div id="search-empty-msg" class="text-center py-5 opacity-50 animate-entrance">
+                                    <span class="material-symbols-outlined display-1 mb-3">search_off</span>
+                                    <h3 class="h4">No matching resources</h3>
+                                    <p>Try a different search term.</p>
+                                </div>
+                            `);
+                        }
+                    } else {
+                        emptyMsg?.remove();
+                    }
+                }
+            } catch (err) {
+                console.error("Error searching resources:", err);
+            } finally {
+                isLoading = false;
+            }
+        }, 300);
     }
 
     function updateModalFileName(input) {
@@ -258,6 +281,11 @@
     .border-dashed { border: 2px dashed rgba(255,255,255,0.1); }
     .upload-drop-zone:hover { border-color: var(--color-accent); background: rgba(255,255,255,0.05); }
     
+    .resource-item {
+        transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+        backface-visibility: hidden;
+        transform: translateZ(0);
+    }
     .resource-item:hover {
         background: rgba(255, 255, 255, 0.03);
     }
@@ -269,6 +297,7 @@
         align-items: center;
         justify-content: center;
         border-radius: 6px;
+        transition: background 0.2s ease, color 0.2s ease;
     }
     .bg-black-alpha-20 { background: rgba(0,0,0,0.2); }
 </style>
