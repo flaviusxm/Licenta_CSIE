@@ -1,3 +1,4 @@
+using AskNLearn.Application.Common.Interfaces;
 using AskNLearn.Domain.Entities.Core;
 using AskNLearn.Infrastructure.Persistance;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +10,11 @@ namespace AskNLearn.Web.Controllers
 {
     [Authorize]
     [Route("resources")]
-    public class ResourcesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IWebHostEnvironment environment) : Controller
+    public class ResourcesController(
+        ApplicationDbContext context, 
+        UserManager<ApplicationUser> userManager, 
+        IWebHostEnvironment environment,
+        IReputationService reputationService) : Controller
     {
         [HttpGet("")]
         public async Task<IActionResult> Index(string? searchTerm, string? type, int skip = 0, int take = 15)
@@ -48,7 +53,11 @@ namespace AskNLearn.Web.Controllers
             if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
 
             var userId = userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null || user.VerificationStatus != UserVerificationStatus.IdentityVerified)
+            {
+                return RedirectToAction(nameof(Index));
+            }
 
             var uploadsPath = Path.Combine(environment.WebRootPath, "uploads", "resources");
             if (!Directory.Exists(uploadsPath)) Directory.CreateDirectory(uploadsPath);
@@ -77,6 +86,9 @@ namespace AskNLearn.Web.Controllers
 
             context.StoredFiles.Add(storedFile);
             await context.SaveChangesAsync();
+
+            // Add Reputation Points (+15 for new resource)
+            await reputationService.AddPointsAsync(userId, 15);
 
             return RedirectToAction(nameof(Index));
         }

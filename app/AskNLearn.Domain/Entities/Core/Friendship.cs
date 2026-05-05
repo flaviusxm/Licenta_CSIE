@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
 namespace AskNLearn.Domain.Entities.Core
 {
@@ -8,24 +7,26 @@ namespace AskNLearn.Domain.Entities.Core
     {
         Pending,
         Accepted,
-        Blocked,
-        Declined
+        Blocked
     }
-    [PrimaryKey(nameof(RequesterId), nameof(AddresseeId))]
+
     [Table("Friendships")]
     public class Friendship
     {
+        [Required]
         public string RequesterId { get; set; } = null!;
+
+        [Required]
+        public string AddresseeId { get; set; } = null!;
 
         [ForeignKey(nameof(RequesterId))]
         public ApplicationUser Requester { get; set; } = null!;
-
-        public string AddresseeId { get; set; } = null!; 
 
         [ForeignKey(nameof(AddresseeId))]
         public ApplicationUser Addressee { get; set; } = null!;
 
         public FriendshipStatus Status { get; set; } = FriendshipStatus.Pending;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

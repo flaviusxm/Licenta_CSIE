@@ -1,10 +1,12 @@
 using AskNLearn.Application.Features.Communities.Queries.GetCommunities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 namespace AskNLearn.Web.Controllers
 {
+    [Authorize]
     [Route("hubs/communities/explore")]
     public class ExploreController : Controller
     {

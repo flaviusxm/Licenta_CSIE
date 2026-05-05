@@ -23,7 +23,6 @@ namespace AskNLearn.Application.Features.Posts.Commands.DeletePost
                 .Include(p => p.Attachments)
                 .Include(p => p.Comments)
                     .ThenInclude(c => c.Attachments)
-                        .ThenInclude(a => a.File)
                 .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
             
             if (post == null) return false;
@@ -40,13 +39,12 @@ namespace AskNLearn.Application.Features.Posts.Commands.DeletePost
             {
                 foreach (var attachment in comment.Attachments)
                 {
-                    if (attachment.File != null)
+                    if (!string.IsNullOrEmpty(attachment.Url))
                     {
-                        _fileService.DeleteFile(attachment.File.FilePath);
-                        _context.StoredFiles.Remove(attachment.File);
+                        _fileService.DeleteFile(attachment.Url);
                     }
                 }
-                _context.Messages.Remove(comment);
+                _context.Comments.Remove(comment);
             }
 
             _context.Posts.Remove(post);

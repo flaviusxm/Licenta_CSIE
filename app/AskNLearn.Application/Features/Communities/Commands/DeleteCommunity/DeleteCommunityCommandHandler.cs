@@ -31,10 +31,6 @@ namespace AskNLearn.Application.Features.Communities.Commands.DeleteCommunity
                 .Include(c => c.Posts)
                     .ThenInclude(p => p.Comments)
                         .ThenInclude(m => m.Attachments)
-                            .ThenInclude(a => a.File)
-                .Include(c => c.Posts)
-                    .ThenInclude(p => p.Comments)
-                        .ThenInclude(m => m.Reactions)
                 .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
             
             if (community == null) return false;
@@ -64,21 +60,19 @@ namespace AskNLearn.Application.Features.Communities.Commands.DeleteCommunity
                     _context.PostAttachments.Remove(attachment);
                 }
 
-                // Delete post comments and their attachments/reactions
+                // Delete post comments and their attachments
                 foreach (var comment in post.Comments)
                 {
                     foreach (var attachment in comment.Attachments)
                     {
-                        if (attachment.File != null)
+                        if (!string.IsNullOrEmpty(attachment.Url))
                         {
-                            _fileService.DeleteFile(attachment.File.FilePath);
-                            _context.StoredFiles.Remove(attachment.File);
+                            _fileService.DeleteFile(attachment.Url);
                         }
-                        _context.MessageAttachments.Remove(attachment);
+                        _context.CommentAttachments.Remove(attachment);
                     }
 
-                    _context.MessageReactions.RemoveRange(comment.Reactions);
-                    _context.Messages.Remove(comment);
+                    _context.Comments.Remove(comment);
                 }
 
                 _context.PostVotes.RemoveRange(post.Votes);

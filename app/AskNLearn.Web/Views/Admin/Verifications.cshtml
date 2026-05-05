@@ -12,12 +12,12 @@
         <div class="row g-4 align-items-center">
             <div class="col-md-6">
                 <h2 class="h4 fw-black text-white mb-1">Verification Queue</h2>
-                <p class="text-muted small mb-0">Review identity documents and verify user accounts.</p>
+                <p class="text-muted small mb-0">@(ViewBag.OnlyPending ? "Review identity documents and verify user accounts." : "View history of processed verification requests.")</p>
             </div>
             <div class="col-md-6">
                 <div class="d-flex align-items-center justify-content-md-end gap-2">
-                    <button class="nav-link-filter active">Pending Requests</button>
-                    <button class="nav-link-filter">Processed History</button>
+                    <a asp-action="Verifications" asp-route-onlyPending="true" class="nav-link-filter @(ViewBag.OnlyPending ? "active" : "")">Pending Requests</a>
+                    <a asp-action="Verifications" asp-route-onlyPending="false" class="nav-link-filter @(!ViewBag.OnlyPending ? "active" : "")">Processed History</a>
                 </div>
             </div>
         </div>
@@ -34,7 +34,7 @@
 </div>
 
 <!-- Reject Modal -->
-<div id="rejectModal" class="d-none position-fixed top-0 start-0 w-100 h-100 z-5 d-flex align-items-center justify-content-center p-4" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);">
+<div id="rejectModal" class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-4" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 2000;">
     <div class="glass-card p-5 border-glass-strong w-100 shadow-2xl animate-entrance" style="max-width: 500px; border-radius: 2rem;">
         <div class="d-flex align-items-center gap-3 mb-4">
             <div class="rounded-circle bg-danger bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
@@ -57,52 +57,46 @@
     </div>
 </div>
 
+<!-- AI Report Modal -->
+<div id="aiReportModal" class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-4" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 2100;">
+    <div class="glass-card border-glass-strong w-100 shadow-2xl animate-entrance overflow-hidden" style="max-width: 700px; border-radius: 2rem;">
+        <div class="p-4 border-bottom border-glass-soft d-flex align-items-center justify-content-between bg-glass-dark">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-aurora bg-opacity-20 p-2 d-flex align-items-center justify-content-center">
+                    <span class="material-symbols-outlined text-aurora fs-4">neurology</span>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-white mb-0">Guardian AI Full Analysis</h5>
+                    <p class="text-muted small mb-0">Detailed document extraction & verification logs</p>
+                </div>
+            </div>
+            <button onclick="closeAiReportModal()" class="btn-close btn-close-white opacity-50 hover-opacity-100 transition-all"></button>
+        </div>
+        
+        <div class="p-5" style="max-height: 70vh; overflow-y: auto; background: rgba(0,0,0,0.3);">
+            <div id="aiReportContent" class="text-white-50 family-mono" style="white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6; letter-spacing: 0.02em;">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+
+        <div class="p-4 border-top border-glass-soft d-flex justify-content-end bg-glass-dark">
+            <button onclick="closeAiReportModal()" class="btn btn-glass px-5 py-2 fw-bold text-uppercase fs-xs">Close Analysis</button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
-<script>
-    let currentPage = @Model.PageIndex;
-    const totalPages = @Model.TotalPages;
-    let isLoading = false;
-
-    const observer = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && !isLoading && currentPage < totalPages) {
-            loadNextPage();
-        }
-    }, { threshold: 0.1 });
-
-    const sentinel = document.getElementById('loading-sentinel');
-    if (sentinel) observer.observe(sentinel);
-
-    function loadNextPage() {
-        isLoading = true;
-        currentPage++;
-
-        fetch(`@Url.Action("Verifications")?pageNumber=${currentPage}`, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('verification-container').insertAdjacentHTML('beforeend', html);
-            isLoading = false;
-            if (currentPage >= totalPages) {
-                sentinel.classList.add('d-none');
-            }
-        })
-        .catch(err => {
-            console.error('Error loading verifications:', err);
-            isLoading = false;
+    <script src="~/js/admin-verifications.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            VerificationManager.init({
+                currentPage: @Model.PageIndex,
+                totalPages: @Model.TotalPages,
+                onlyPending: @(ViewBag.OnlyPending.ToString().ToLower()),
+                verificationUrl: '@Url.Action("Verifications")'
+            });
         });
-    }
-
-    function openRejectModal(id) {
-        document.getElementById('rejectId').value = id;
-        document.getElementById('rejectModal').classList.remove('d-none');
-        document.getElementById('rejectModal').classList.add('d-flex');
-    }
-    function closeRejectModal() {
-        document.getElementById('rejectModal').classList.add('d-none');
-        document.getElementById('rejectModal').classList.remove('d-flex');
-    }
-</script>
+    </script>
 }
 
 <style>

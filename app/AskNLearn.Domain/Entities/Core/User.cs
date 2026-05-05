@@ -5,17 +5,6 @@ using AskNLearn.Domain.Entities.Gamification;
 
 namespace AskNLearn.Domain.Entities.Core
 {
-    public enum Role{
-        Member,
-        Moderator,
-        Admin,
-    }
-    public enum UserStatus{
-        Online,
-        Offline,
-        Away,
-        DoNotDisturb
-    }
     public class ApplicationUser : IdentityUser
     {
         [MaxLength(100)]
@@ -45,9 +34,9 @@ namespace AskNLearn.Domain.Entities.Core
 
         public Role Role { get; set; } = Role.Member; 
 
-        public bool IsFullyVerified => VerificationStatus == UserVerificationStatus.IdentityVerified || Role >= Role.Moderator;
+        public bool IsFullyVerified => VerificationStatus == UserVerificationStatus.IdentityVerified || Role == Role.Admin;
 
-        public string Status { get; set; } = "Offline";
+        public UserStatus Status { get; set; } = UserStatus.Offline;
         public DateTime? LastActive { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

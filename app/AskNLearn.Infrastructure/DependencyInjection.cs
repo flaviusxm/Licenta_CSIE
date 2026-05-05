@@ -27,6 +27,7 @@ namespace AskNLearn.Infrastructure
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddSingleton<IPresenceTracker, PresenceTracker>();
+            services.AddScoped<IReputationService, ReputationService>();
 
             return services;
         }

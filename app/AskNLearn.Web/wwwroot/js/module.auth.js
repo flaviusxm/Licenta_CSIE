@@ -55,8 +55,24 @@ class AuthManager {
         const confirmText = document.querySelector("#confirmMatchText");
 
         if (passwordInput && strengthBar) {
+            const requirementsText = document.querySelector("#passwordRequirements");
+
             passwordInput.addEventListener("input", () => {
                 let value = passwordInput.value;
+                
+                // Toggle requirements message visibility
+                if (requirementsText) {
+                    const hasUpper = /[A-Z]/.test(value);
+                    const hasLower = /[a-z]/.test(value);
+                    const hasNumber = /[0-9]/.test(value);
+                    
+                    if (value.length > 0 && (!hasUpper || !hasLower || !hasNumber)) {
+                        requirementsText.classList.remove("d-none");
+                    } else {
+                        requirementsText.classList.add("d-none");
+                    }
+                }
+
                 let strength = 0;
                 if (value.length >= 8) strength++;
                 if (/[A-Z]/.test(value)) strength++;
@@ -86,7 +102,11 @@ class AuthManager {
                 }
 
                 if (confirmInput && confirmText) {
-                    confirmText.textContent = passwordInput.value === confirmInput.value ? "Passwords match ✅" : "Passwords do not match ❌";
+                    if (confirmInput.value.length > 0) {
+                        confirmText.textContent = passwordInput.value === confirmInput.value ? "Passwords match ✅" : "Passwords do not match ❌";
+                    } else {
+                        confirmText.textContent = "";
+                    }
                 }
             });
 

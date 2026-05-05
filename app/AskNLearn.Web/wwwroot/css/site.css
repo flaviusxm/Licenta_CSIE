@@ -186,6 +186,7 @@ input::-webkit-credentials-auto-fill-button {
     will-change: transform, opacity;
     backface-visibility: hidden;
     transform: translateZ(0);
+}
 
 .aurora-orb-cyan {
     background: #007AFF;

@@ -48,13 +48,24 @@
                                 <span class="material-symbols-outlined text-accent fill-1" title="Verified Professional">verified</span>
                             }
                         </div>
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            @if (!string.IsNullOrEmpty(Model.RankName)) {
+                                <div class="badge bg-premium-soft border border-premium text-accent rounded-pill px-3 py-1 d-flex align-items-center gap-2">
+                                    <span class="tiny fw-black text-uppercase tracking-widest">@Model.RankName</span>
+                                </div>
+                            }
+                            <div class="badge bg-glass border border-glass text-muted rounded-pill px-3 py-1 d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined tiny">military_tech</span>
+                                <span class="tiny fw-bold text-uppercase tracking-widest">@Model.ReputationPoints pts</span>
+                            </div>
+                        </div>
                         <p class="text-muted mb-0 d-flex align-items-center gap-2">
                             <span class="material-symbols-outlined fs-6">school</span>
                             Student @@ @(Model.Role == "Admin" ? "Administration" : "Community")
                         </p>
                     </div>
 
-                    <div class="d-flex gap-4 pb-2">
+                    <div class="d-flex gap-4 pb-2 align-items-center">
                         <div class="text-center">
                             <div class="h5 fw-black text-white mb-0">@Model.PostsCount</div>
                             <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Posts</div>
@@ -63,15 +74,53 @@
                             <div class="h5 fw-black text-white mb-0">@Model.AnswersCount</div>
                             <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Answers</div>
                         </div>
-                        <div class="vr opacity-20 mx-1"></div>
-                        <div class="text-center">
-                            <div class="h5 fw-black text-white mb-0">@Model.ReputationPoints</div>
-                            <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Reputation</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="h5 fw-black text-white mb-0">@Model.Level</div>
-                            <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Level</div>
-                        </div>
+                        
+                        @if (!Model.IsOwnProfile) {
+                            <div class="ms-3">
+                                @switch (Model.ConnectionStatus) {
+                                    case AskNLearn.Application.Common.Models.ConnectionStatus.None:
+                                        <form asp-action="SendConnection" asp-route-userId="@Model.Id" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-premium btn-sm rounded-pill px-4 py-2 d-flex align-items-center gap-2">
+                                                <span class="material-symbols-outlined fs-6">person_add</span> Connect
+                                            </button>
+                                        </form>
+                                        break;
+                                    case AskNLearn.Application.Common.Models.ConnectionStatus.PendingSent:
+                                        <button class="btn btn-glass btn-sm rounded-pill px-4 py-2 d-flex align-items-center gap-2" disabled>
+                                            <span class="material-symbols-outlined fs-6">hourglass_empty</span> Pending
+                                        </button>
+                                        break;
+                                    case AskNLearn.Application.Common.Models.ConnectionStatus.PendingReceived:
+                                        <div class="d-flex gap-2">
+                                            <form asp-action="AcceptConnection" asp-route-userId="@Model.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-1">
+                                                    <span class="material-symbols-outlined fs-6">check</span> Accept
+                                                </button>
+                                            </form>
+                                            <form asp-action="RejectConnection" asp-route-userId="@Model.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-glass btn-sm rounded-pill px-3 py-2">Ignore</button>
+                                            </form>
+                                        </div>
+                                        break;
+                                    case AskNLearn.Application.Common.Models.ConnectionStatus.Accepted:
+                                        <div class="dropdown">
+                                            <button class="btn btn-success-soft btn-sm rounded-pill px-4 py-2 d-flex align-items-center gap-2 dropdown-toggle" data-bs-toggle="dropdown">
+                                                <span class="material-symbols-outlined fs-6">group</span> Connected
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-dark border-glass">
+                                                <li>
+                                                    <form asp-action="RemoveConnection" asp-route-userId="@Model.Id" method="post">
+                                                        <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2">
+                                                            <span class="material-symbols-outlined fs-6">person_remove</span> Remove Connection
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        break;
+                                }
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -108,13 +157,6 @@
                         </h3>
                         
                         <div class="d-flex flex-column gap-3">
-                            <div class="p-3 rounded-4 bg-glass-soft border border-glass">
-                                <div class="text-muted tiny fw-bold text-uppercase mb-1">Account Status</div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="rounded-circle @(Model.EmailConfirmed ? "bg-success" : "bg-warning")" style="width: 8px; height: 8px;"></div>
-                                    <span class="text-white small fw-bold">@(Model.EmailConfirmed ? "Active Account" : "Awaiting Activation")</span>
-                                </div>
-                            </div>
 
                             @if (Model.IsOwnProfile) {
                                 <div class="d-grid gap-2 mt-2">
@@ -146,10 +188,6 @@
                         @Html.AntiForgeryToken()
                         <input type="file" name="BannerFile" id="bannerUpload" class="d-none" onchange="this.form.submit()" />
                         <input type="file" name="AvatarFile" id="avatarUpload" class="d-none" onchange="this.form.submit()" />
-                        <input type="hidden" name="Occupation" value="@Model.Occupation" />
-                        <input type="hidden" name="Institution" value="@Model.Institution" />
-                        <input type="hidden" name="SocialLinks" id="socialLinksHidden" value="@Model.SocialLinks" />
-                        <input type="hidden" name="Interests" id="interestsHidden" value="@Model.Interests" />
 
                         <div class="glass-card p-4 border-glass shadow-sm">
                             <div class="d-flex align-items-center justify-content-between mb-4">
@@ -256,6 +294,9 @@
     .avatar-lg { aspect-ratio: 1; }
     .shadow-accent { box-shadow: 0 0 15px var(--color-accent); }
     .shadow-success { box-shadow: 0 0 15px var(--color-success); }
+    
+    .bg-premium-soft { background: rgba(var(--color-accent-rgb), 0.1); }
+    .border-premium { border-color: rgba(var(--color-accent-rgb), 0.3) !important; }
     
     .premium-upload-zone {
         background: rgba(255, 255, 255, 0.02);

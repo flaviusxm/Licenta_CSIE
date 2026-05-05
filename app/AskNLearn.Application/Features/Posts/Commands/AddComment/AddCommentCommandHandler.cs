@@ -1,9 +1,7 @@
 using AskNLearn.Application.Common.Interfaces;
-using AskNLearn.Domain.Entities.Messaging;
 using AskNLearn.Domain.Entities.Core;
 using MediatR;
 using System;
-using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -16,24 +14,31 @@ namespace AskNLearn.Application.Features.Posts.Commands.AddComment
         private readonly IFileService _fileService;
         private readonly ILogger<AddCommentCommandHandler> _logger;
         private readonly IModerationQueue _moderationQueue;
+        private readonly IReputationService _reputationService;
 
-        public AddCommentCommandHandler(IApplicationDbContext context, IFileService fileService, ILogger<AddCommentCommandHandler> logger, IModerationQueue moderationQueue)
+        public AddCommentCommandHandler(
+            IApplicationDbContext context, 
+            IFileService fileService, 
+            ILogger<AddCommentCommandHandler> logger, 
+            IModerationQueue moderationQueue,
+            IReputationService reputationService)
         {
             _context = context;
             _fileService = fileService;
             _logger = logger;
             _moderationQueue = moderationQueue;
+            _reputationService = reputationService;
         }
 
         public async Task<Guid> Handle(AddCommentCommand request, CancellationToken cancellationToken)
         {
             try
             {
-                var comment = new Message
+                var comment = new AskNLearn.Domain.Entities.SocialFeed.Comment
                 {
                     Id = Guid.NewGuid(),
                     PostId = request.PostId,
-                    ReplyToMessageId = request.ReplyToMessageId,
+                    ReplyToCommentId = request.ReplyToMessageId,
                     AuthorId = request.AuthorId,
                     Content = request.Content,
                     CreatedAt = DateTime.UtcNow
@@ -48,28 +53,16 @@ namespace AskNLearn.Application.Features.Posts.Commands.AddComment
                         "comments"
                     );
 
-                    var storedFile = new StoredFile
+                    comment.Attachments.Add(new AskNLearn.Domain.Entities.SocialFeed.CommentAttachment
                     {
                         Id = Guid.NewGuid(),
-                        FileName = request.Attachment.FileName,
-                        FilePath = fileUrl,
-                        FileType = request.Attachment.ContentType,
-                        UploadedAt = DateTime.UtcNow,
-                        UploaderId = request.AuthorId
-                    };
-
-                    // Add storedFile to context explicitly to be safe
-                    _context.StoredFiles.Add(storedFile);
-
-                    comment.Attachments.Add(new MessageAttachment
-                    {
-                        MessageId = comment.Id,
-                        FileId = storedFile.Id,
-                        File = storedFile
+                        CommentId = comment.Id,
+                        Url = fileUrl,
+                        FileType = request.Attachment.ContentType
                     });
                 }
 
-                await _context.Messages.AddAsync(comment, cancellationToken);
+                await _context.Comments.AddAsync(comment, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
 
                 // Enqueue for AI Moderation
@@ -79,6 +72,12 @@ namespace AskNLearn.Application.Features.Posts.Commands.AddComment
                     Content = comment.Content ?? string.Empty,
                     Target = ModerationTarget.Comment
                 });
+
+                // Add Reputation Points
+                if (!string.IsNullOrEmpty(request.AuthorId))
+                {
+                    await _reputationService.AddPointsAsync(request.AuthorId, 5);
+                }
 
                 return comment.Id;
             }

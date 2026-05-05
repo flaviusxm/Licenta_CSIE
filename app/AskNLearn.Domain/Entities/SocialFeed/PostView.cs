@@ -12,10 +12,13 @@ namespace AskNLearn.Domain.Entities.SocialFeed
         public Guid Id { get; set; } = Guid.NewGuid();
 
         public Guid PostId { get; set; }
+        
         [ForeignKey(nameof(PostId))]
         public Post Post { get; set; } = null!;
 
+        [Required]
         public string UserId { get; set; } = null!;
+
         [ForeignKey(nameof(UserId))]
         public ApplicationUser User { get; set; } = null!;
 

@@ -12,36 +12,38 @@ namespace AskNLearn.Infrastructure.Persistance
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options), IApplicationDbContext
     {
         // Core
-        public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<StoredFile> StoredFiles { get; set; }
         public DbSet<VerificationRequest> VerificationRequests { get; set; }
 
-        // Gamification
-        public DbSet<UserRank> UserRanks { get; set; }
-
         // Messaging
         public DbSet<DirectConversation> DirectConversations { get; set; }
         public DbSet<DirectConversationParticipant> DirectConversationParticipants { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<MessageAttachment> MessageAttachments { get; set; }
-        public DbSet<MessageReaction> MessageReactions { get; set; }
+
 
         // SocialFeed
         public DbSet<Community> Communities { get; set; }
         public DbSet<CommunityMembership> CommunityMemberships { get; set; }
         public DbSet<Post> Posts { get; set; }
-        public DbSet<PostAttachment> PostAttachments { get; set; }
         public DbSet<PostVote> PostVotes { get; set; }
-        public DbSet<PostView> PostViews { get; set; }
+        public DbSet<Event> Events { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<PostAttachment> PostAttachments { get; set; }
+        public DbSet<PostView> PostViews { get; set; }
         public DbSet<PostTag> PostTags { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<CommentAttachment> CommentAttachments { get; set; }
 
+        // Gamification
+        public DbSet<UserRank> UserRanks { get; set; }
 
-        // Explicit interface implementations if needed, but here we just need public DbSets
-        // that match the interface property names.
+        // Resources
+        public DbSet<Resource> Resources { get; set; }
+
         DbSet<ApplicationUser> IApplicationDbContext.Users => Users;
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -49,60 +51,45 @@ namespace AskNLearn.Infrastructure.Persistance
             base.OnModelCreating(builder);
 
             // ================================================================
-            // REDENUMIRE TABELE IDENTITY - elimină prefixul AspNet
+            // IDENTITY CLEANUP - Omit unused fields from SQL
             // ================================================================
-            
-            // Tabela Users -> Users
-            builder.Entity<ApplicationUser>().ToTable("Users");
-            
-            // Tabela Roles -> Roles
+            builder.Entity<ApplicationUser>(entity =>
+            {
+                entity.ToTable("Users");
+                entity.Ignore(u => u.PhoneNumber);
+                entity.Ignore(u => u.PhoneNumberConfirmed);
+                entity.Ignore(u => u.TwoFactorEnabled);
+                entity.Ignore(u => u.LockoutEnd);
+                entity.Ignore(u => u.LockoutEnabled);
+                entity.Ignore(u => u.AccessFailedCount);
+                entity.Property(u => u.Status).HasConversion<string>();
+            });
+
             builder.Entity<IdentityRole>().ToTable("Roles");
-            
-            // Tabela UserRoles -> UserRoles
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
-            
-            // Tabela UserClaims -> UserClaims
             builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims");
-            
-            // Tabela UserLogins -> UserLogins
             builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
-            
-            // Tabela UserTokens -> UserTokens
             builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens");
-            
-            // Tabela RoleClaims -> RoleClaims
             builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
 
-            // Indexes for Moderation performance
-            builder.Entity<Post>()
-                .HasIndex(p => new { p.ModerationStatus, p.CreatedAt });
+            // Indexes for Performance
+            builder.Entity<Post>().HasIndex(p => new { p.ModerationStatus, p.CreatedAt });
+            builder.Entity<Message>().HasIndex(m => new { m.ModerationStatus, m.CreatedAt });
+            builder.Entity<Report>().HasIndex(r => new { r.Status, r.CreatedAt });
+            builder.Entity<VerificationRequest>().HasIndex(v => new { v.Status, v.SubmittedAt });
+            builder.Entity<VerificationRequest>().HasIndex(v => v.UserId);
 
-            builder.Entity<Message>()
-                .HasIndex(m => new { m.ModerationStatus, m.CreatedAt });
+            // Composite Keys
+            builder.Entity<PostTag>().HasKey(pt => new { pt.PostId, pt.TagId });
+            builder.Entity<MessageAttachment>().HasKey(ma => new { ma.MessageId, ma.FileId });
 
-            builder.Entity<Report>()
-                .HasIndex(r => new { r.Status, r.CreatedAt });
+            builder.Entity<Report>(entity =>
+            {
+                entity.ToTable(tb => tb.HasCheckConstraint("CK_Reports_Target", 
+                    "(ReportedPostId IS NOT NULL AND ReportedCommentId IS NULL) OR (ReportedPostId IS NULL AND ReportedCommentId IS NOT NULL)"));
+            });
 
-            // Indexes for Verification performance
-            builder.Entity<VerificationRequest>()
-                .HasIndex(v => new { v.Status, v.SubmittedAt });
-            builder.Entity<Post>()
-                .HasIndex(p => new { p.ModerationStatus, p.CreatedAt });
-
-            builder.Entity<Message>()
-                .HasIndex(m => new { m.ModerationStatus, m.CreatedAt });
-
-            builder.Entity<Report>()
-                .HasIndex(r => new { r.Status, r.CreatedAt });
-
-            // Indexes for Verification performance
-            builder.Entity<VerificationRequest>()
-                .HasIndex(v => new { v.Status, v.SubmittedAt });
-            
-            builder.Entity<VerificationRequest>()
-                .HasIndex(v => v.UserId);
-
-            // Friendship Configuration (Self-referencing relationship)
+            // Friendship Configuration
             builder.Entity<Friendship>(entity =>
             {
                 entity.HasKey(f => new { f.RequesterId, f.AddresseeId });
@@ -118,14 +105,8 @@ namespace AskNLearn.Infrastructure.Persistance
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ================================================================
-            // SQL SERVER CASCADE FIXES
-            // ================================================================
-
-
             builder.Entity<Post>(entity =>
             {
-                
                 entity.HasOne(p => p.Author)
                     .WithMany()
                     .HasForeignKey(p => p.AuthorId)

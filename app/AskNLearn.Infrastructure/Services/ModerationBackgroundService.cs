@@ -120,6 +120,8 @@ namespace AskNLearn.Infrastructure.Services
                             break;
 
                         case ModerationTarget.Comment:
+                            await ProcessCommentModeration(dbContext, task.Id, result, stoppingToken);
+                            break;
                         case ModerationTarget.Message:
                             await ProcessMessageModeration(dbContext, task.Id, result, stoppingToken);
                             break;
@@ -192,7 +194,7 @@ namespace AskNLearn.Infrastructure.Services
             {
                 bool autoApproved = result.IsValid;
                 
-                request.Status = autoApproved ? Status.Approved : Status.Pending;
+                request.Status = autoApproved ? VerificationRequestStatus.Approved : VerificationRequestStatus.Pending;
                 request.AdminNotes = $"[Guardian Shield Moondream AI]: {result.Recommendation} | Details: {result.Details}";
                 
                 if (autoApproved)
@@ -229,7 +231,18 @@ namespace AskNLearn.Infrastructure.Services
             if (message != null)
             {
                 message.ModerationStatus = result.IsSafe ? ModerationStatus.Approved : ModerationStatus.Removed;
-                message.ModerationReason = result.Reason;
+                // message doesn't have ModerationReason anymore
+                await db.SaveChangesAsync(ct);
+            }
+        }
+
+        private async Task ProcessCommentModeration(IApplicationDbContext db, Guid id, (bool IsSafe, string Reason) result, CancellationToken ct)
+        {
+            var comment = await db.Comments.FindAsync(new object[] { id }, ct);
+            if (comment != null)
+            {
+                comment.ModerationStatus = result.IsSafe ? ModerationStatus.Approved : ModerationStatus.Removed;
+                comment.ModerationReason = result.Reason;
                 await db.SaveChangesAsync(ct);
             }
         }
@@ -238,7 +251,7 @@ namespace AskNLearn.Infrastructure.Services
         {
             var report = await db.Reports
                 .Include(r => r.ReportedPost)
-                .Include(r => r.ReportedMessage)
+                .Include(r => r.ReportedComment)
                 .FirstOrDefaultAsync(r => r.Id == id, ct);
 
             if (report != null)
@@ -251,10 +264,10 @@ namespace AskNLearn.Infrastructure.Services
                         report.ReportedPost.ModerationStatus = ModerationStatus.Removed;
                         report.ReportedPost.ModerationReason = $"[Shield AI Confirmed]: {result.Reason}";
                     }
-                    if (report.ReportedMessage != null)
+                    if (report.ReportedComment != null)
                     {
-                        report.ReportedMessage.ModerationStatus = ModerationStatus.Removed;
-                        report.ReportedMessage.ModerationReason = $"[Shield AI Confirmed]: {result.Reason}";
+                        report.ReportedComment.ModerationStatus = ModerationStatus.Removed;
+                        report.ReportedComment.ModerationReason = $"[Shield AI Confirmed]: {result.Reason}";
                     }
                 }
                 else

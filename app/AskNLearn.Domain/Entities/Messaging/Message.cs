@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using AskNLearn.Domain.Entities.Core;
-using AskNLearn.Domain.Entities.SocialFeed;
 
 namespace AskNLearn.Domain.Entities.Messaging
 {
@@ -10,14 +9,10 @@ namespace AskNLearn.Domain.Entities.Messaging
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
-        public Guid? ConversationId { get; set; }
+        
+        public Guid ConversationId { get; set; }
         [ForeignKey(nameof(ConversationId))]
-        public DirectConversation? Conversation { get; set; }
-
-        public Guid? PostId { get; set; }
-        [ForeignKey(nameof(PostId))]
-        public Post? Post { get; set; }
-
+        public DirectConversation Conversation { get; set; } = null!;
 
         public string? AuthorId { get; set; }
         [ForeignKey(nameof(AuthorId))]
@@ -30,15 +25,13 @@ namespace AskNLearn.Domain.Entities.Messaging
         public Message? ReplyToMessage { get; set; }
         public ICollection<Message> Replies { get; set; } = new List<Message>();
 
-        public bool IsPinned { get; set; } = false;
         public bool IsEdited { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
-        public AskNLearn.Domain.Entities.Core.ModerationStatus ModerationStatus { get; set; } = AskNLearn.Domain.Entities.Core.ModerationStatus.Pending;
-        public string? ModerationReason { get; set; }
+        
+        public ModerationStatus ModerationStatus { get; set; } = ModerationStatus.Pending;
 
-        public ICollection<MessageReaction> Reactions { get; set; } = new List<MessageReaction>();
         public ICollection<MessageAttachment> Attachments { get; set; } = new List<MessageAttachment>();
     }
 }

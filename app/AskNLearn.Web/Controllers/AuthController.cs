@@ -8,6 +8,7 @@ using AskNLearn.Domain.Entities.Core;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 namespace AskNLearn.Web.Controllers
 {
@@ -17,13 +18,16 @@ namespace AskNLearn.Web.Controllers
         private readonly IMediator mediator;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService _emailService;
+        private readonly AskNLearn.Infrastructure.Persistance.ApplicationDbContext _context;
 
-        public AuthController(IMediator mediator, UserManager<ApplicationUser> userManager, IEmailService emailService)
+        public AuthController(IMediator mediator, UserManager<ApplicationUser> userManager, IEmailService emailService, AskNLearn.Infrastructure.Persistance.ApplicationDbContext context)
         {
             this.mediator = mediator;
             _userManager = userManager;
             _emailService = emailService;
+            _context = context;
         }
+
 
         [HttpGet("authenticate")]
         public async Task<IActionResult> SignIn(string? returnUrl = null)
@@ -153,11 +157,18 @@ namespace AskNLearn.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            if (userId != null)
+            {
+                userId = userId.Replace(" ", "-");
+            }
+
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{userId}'.");
             }
+
 
             if (user.EmailConfirmed)
             {
@@ -216,8 +227,14 @@ namespace AskNLearn.Web.Controllers
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword(string userId, string token, string newPassword)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            if (userId != null)
+            {
+                userId = userId.Replace(" ", "-");
+            }
+
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null) return NotFound();
+
 
             var decodedToken = System.Text.Encoding.UTF8.GetString(Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(token));
             var result = await _userManager.ResetPasswordAsync(user, decodedToken, newPassword);

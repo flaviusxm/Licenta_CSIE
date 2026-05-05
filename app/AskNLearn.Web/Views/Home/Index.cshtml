@@ -19,27 +19,6 @@
         <!-- Left: Feed -->
         <div class="col-lg-8">
             <div id="feed-content" class="d-flex flex-column gap-5 transition-all">
-                @if (User.Identity?.IsAuthenticated == false)
-                {
-                    <!-- Hero Card (Guest) -->
-                     <div class="glass-card p-5 rounded-4 border-glass shadow-2xl position-relative overflow-hidden mb-4">
-                        <div class="position-absolute top-0 end-0 p-5 opacity-10 rotate-12">
-                            <span class="material-symbols-outlined" style="font-size: 160px;">school</span>
-                        </div>
-                        <div class="position-relative z-1">
-                            <h1 class="display-5 fw-black text-white mb-3 tracking-tighter" style="line-height: 1.1;">
-                                Master your studies with Ask<span class="text-accent">N</span>Learn
-                            </h1>
-                            <p class="fs-5 text-muted mb-4 opacity-80 fw-medium" style="max-width: 540px;">
-                                Join thousands of students collaborating in communities, sharing insights, and helping each other succeed.
-                            </p>
-                            <div class="d-flex flex-wrap gap-3">
-                                <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium shadow-glow px-5 py-3">Get Started Free</a>
-                                <a asp-controller="Auth" asp-action="SignIn" class="btn btn-glass px-5 py-3">Log In</a>
-                            </div>
-                        </div>
-                    </div>
-                }
 
                 <!-- Create Post Bar -->
                 @if (User.Identity?.IsAuthenticated == true)

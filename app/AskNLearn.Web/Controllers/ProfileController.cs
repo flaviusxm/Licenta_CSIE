@@ -8,6 +8,7 @@ using AskNLearn.Application.Common.Interfaces;
 using AskNLearn.Application.Features.Users.Commands.SubmitVerificationRequest;
 using Microsoft.EntityFrameworkCore;
 using AskNLearn.Domain.Entities.Core;
+using Microsoft.AspNetCore.Identity;
 
 namespace AskNLearn.Web.Controllers
 {
@@ -17,11 +18,13 @@ namespace AskNLearn.Web.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IFileService _fileService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProfileController(IMediator mediator, IFileService fileService)
+        public ProfileController(IMediator mediator, IFileService fileService, UserManager<ApplicationUser> userManager)
         {
             _mediator = mediator;
             _fileService = fileService;
+            _userManager = userManager;
         }
 
         [HttpGet("view/{id?}")]
@@ -119,7 +122,7 @@ namespace AskNLearn.Web.Controllers
 
             var dbContext = HttpContext.RequestServices.GetRequiredService<IApplicationDbContext>();
             var request = await dbContext.VerificationRequests
-                .FirstOrDefaultAsync(v => v.UserId == userId && v.Status == Status.Pending);
+                .FirstOrDefaultAsync(v => v.UserId == userId && v.Status == VerificationRequestStatus.Pending);
 
             if (request != null)
             {
@@ -162,6 +165,103 @@ namespace AskNLearn.Web.Controllers
 
             return RedirectToAction("Index");
         }
+
+        [HttpPost("send-connection/{userId}")]
+        public async Task<IActionResult> SendConnection(string userId)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+            if (currentUserId == null || currentUserId == userId) return BadRequest();
+
+            var dbContext = HttpContext.RequestServices.GetRequiredService<IApplicationDbContext>();
+            
+            var existing = await dbContext.Friendships.AnyAsync(f => 
+                (f.RequesterId == currentUserId && f.AddresseeId == userId) || 
+                (f.RequesterId == userId && f.AddresseeId == currentUserId));
+
+            if (!existing)
+            {
+                var friendship = new Friendship
+                {
+                    RequesterId = currentUserId,
+                    AddresseeId = userId,
+                    Status = FriendshipStatus.Pending
+                };
+                dbContext.Friendships.Add(friendship);
+                
+                // Notify user
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    Title = "New Connection Request",
+                    Message = $"{User.Identity?.Name} wants to connect with you.",
+                    CreatedAt = DateTime.UtcNow
+                };
+                dbContext.Notifications.Add(notification);
+                
+                await dbContext.SaveChangesAsync(default);
+                TempData["Success"] = "Connection request sent!";
+            }
+
+            return RedirectToAction("Index", new { id = userId });
+        }
+
+        [HttpPost("accept-connection/{userId}")]
+        public async Task<IActionResult> AcceptConnection(string userId)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+            var dbContext = HttpContext.RequestServices.GetRequiredService<IApplicationDbContext>();
+
+            var friendship = await dbContext.Friendships.FirstOrDefaultAsync(f => 
+                f.RequesterId == userId && f.AddresseeId == currentUserId);
+
+            if (friendship != null)
+            {
+                friendship.Status = FriendshipStatus.Accepted;
+                await dbContext.SaveChangesAsync(default);
+                TempData["Success"] = "Connection accepted!";
+            }
+
+            return RedirectToAction("Index", new { id = userId });
+        }
+
+        [HttpPost("reject-connection/{userId}")]
+        public async Task<IActionResult> RejectConnection(string userId)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+            var dbContext = HttpContext.RequestServices.GetRequiredService<IApplicationDbContext>();
+
+            var friendship = await dbContext.Friendships.FirstOrDefaultAsync(f => 
+                f.RequesterId == userId && f.AddresseeId == currentUserId);
+
+            if (friendship != null)
+            {
+                dbContext.Friendships.Remove(friendship);
+                await dbContext.SaveChangesAsync(default);
+                TempData["Success"] = "Connection request ignored.";
+            }
+
+            return RedirectToAction("Index", new { id = userId });
+        }
+
+        [HttpPost("remove-connection/{userId}")]
+        public async Task<IActionResult> RemoveConnection(string userId)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+            var dbContext = HttpContext.RequestServices.GetRequiredService<IApplicationDbContext>();
+
+            var friendship = await dbContext.Friendships.FirstOrDefaultAsync(f => 
+                (f.RequesterId == currentUserId && f.AddresseeId == userId) || 
+                (f.RequesterId == userId && f.AddresseeId == currentUserId));
+
+            if (friendship != null)
+            {
+                dbContext.Friendships.Remove(friendship);
+                await dbContext.SaveChangesAsync(default);
+                TempData["Success"] = "Connection removed.";
+            }
+
+            return RedirectToAction("Index", new { id = userId });
+        }
         [AllowAnonymous]
         [HttpGet("hover-card/{id}")]
         public async Task<IActionResult> GetHoverCard(string id)
@@ -184,7 +284,7 @@ namespace AskNLearn.Web.Controllers
                     v.AdminNotes,
                     v.SubmittedAt,
                     v.ProcessedAt,
-                    IsVerified = v.Status == Status.Approved
+                    IsVerified = v.Status == VerificationRequestStatus.Approved
                 })
                 .FirstOrDefaultAsync();
 

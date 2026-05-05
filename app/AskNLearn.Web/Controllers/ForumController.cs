@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using AskNLearn.Application.Features.Posts.Commands.AddComment;
-using AskNLearn.Application.Features.Posts.Commands.RecordPostView;
 using AskNLearn.Application.Features.Communities.Commands.JoinCommunity;
 using AskNLearn.Application.Features.Communities.Commands.LeaveCommunity;
 using AskNLearn.Application.Features.Posts.Commands.VotePost;
@@ -45,7 +44,6 @@ namespace AskNLearn.Web.Controllers
             _moderationQueue = moderationQueue;
         }
 
-        [AllowAnonymous]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Details(Guid id)
         {
@@ -79,7 +77,6 @@ namespace AskNLearn.Web.Controllers
             return View(community);
         }
 
-        [AllowAnonymous]
         [HttpGet("v1/discussions/batch")]
         public async Task<IActionResult> LoadMorePosts(Guid communityId, int page = 2)
         {
@@ -116,7 +113,6 @@ namespace AskNLearn.Web.Controllers
             return PartialView("_PostListPartial", posts);
         }
 
-        [AllowAnonymous]
         [HttpGet("v1/comments/retrieve")]
         public async Task<IActionResult> GetPostComments(Guid postId, Guid? communityId)
         {
@@ -188,10 +184,10 @@ namespace AskNLearn.Web.Controllers
                 }
 
                 var user = await _userManager.FindByIdAsync(userId);
-                var isEmailVerified = user != null && user.VerificationStatus >= AskNLearn.Domain.Entities.Core.UserVerificationStatus.EmailVerified;
-                if (!isEmailVerified)
+                var isIdentityVerified = user != null && user.VerificationStatus == AskNLearn.Domain.Entities.Core.UserVerificationStatus.IdentityVerified;
+                if (!isIdentityVerified)
                 {
-                    _logger.LogWarning("Action blocked: User {UserId} attempted to comment or post without verification.", userId);
+                    _logger.LogWarning("Action blocked: User {UserId} attempted to comment or post without identity verification.", userId);
                     return RedirectToAction(nameof(Details), new { id = command.CommunityId });
                 }
 
@@ -235,9 +231,18 @@ namespace AskNLearn.Web.Controllers
         [HttpPost("initiate")]
         public async Task<IActionResult> Create(CreateCommunityCommand command)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null || user.VerificationStatus != AskNLearn.Domain.Entities.Core.UserVerificationStatus.IdentityVerified)
+            {
+                ModelState.AddModelError("", "Only identity verified students can create communities.");
+                return View(command);
+            }
+
             if (!ModelState.IsValid) return View(command);
 
-            command.CreatorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            command.CreatorId = userId;
             await _mediator.Send(command);
 
             return RedirectToAction("Index", "Explore");
@@ -312,9 +317,9 @@ namespace AskNLearn.Web.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _userManager.FindByIdAsync(userId);
-            var isEmailVerified = user != null && user.VerificationStatus >= AskNLearn.Domain.Entities.Core.UserVerificationStatus.EmailVerified;
+            var isIdentityVerified = user != null && user.VerificationStatus == AskNLearn.Domain.Entities.Core.UserVerificationStatus.IdentityVerified;
             
-            if (!isEmailVerified)
+            if (!isIdentityVerified)
             {
                 return RedirectToAction(nameof(Details), new { id = command.CommunityId });
             }
@@ -385,7 +390,6 @@ namespace AskNLearn.Web.Controllers
             await _mediator.Send(new TogglePostSolvedCommand { Id = id, UserId = userId });
             return RedirectToAction(nameof(Details), new { id = communityId });
         }
-        [AllowAnonymous]
         [HttpGet("hover-card/{id:guid}")]
         public async Task<IActionResult> GetHoverCard(Guid id)
         {
@@ -435,13 +439,13 @@ namespace AskNLearn.Web.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-            var message = await _context.Messages.FindAsync(id);
+            var message = await _context.Comments.FindAsync(id);
             if (message == null) return NotFound();
 
             var report = new AskNLearn.Domain.Entities.Core.Report
             {
                 ReporterId = userId,
-                ReportedMessageId = id,
+                ReportedCommentId = id,
                 Reason = reason,
                 Description = description ?? "No description provided",
                 CreatedAt = DateTime.UtcNow,

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AskNLearn.Domain.Entities.Gamification
@@ -15,6 +16,5 @@ namespace AskNLearn.Domain.Entities.Gamification
 
         public int MinPoints { get; set; }
 
-        public string? IconUrl { get; set; }
     }
 }

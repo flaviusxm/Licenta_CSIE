@@ -17,7 +17,7 @@ namespace AskNLearn.Web.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var pendingVerifications = await _context.VerificationRequests.CountAsync(v => v.Status == Status.Pending);
+            var pendingVerifications = await _context.VerificationRequests.CountAsync(v => v.Status == VerificationRequestStatus.Pending);
             
             // Only count items flagged by AI or needing review
             var flaggedPosts = await _context.Posts.CountAsync(p => 

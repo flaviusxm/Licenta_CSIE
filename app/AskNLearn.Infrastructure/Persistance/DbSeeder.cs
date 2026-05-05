@@ -70,6 +70,11 @@ namespace AskNLearn.Infrastructure.Persistance
             // 7. Notifications (diverse)
             await SeedNotificationsAsync(ctx, users);
 
+            // 8. Reports (for moderation testing)
+            await SeedReportsAsync(ctx, users, posts);
+
+            // 9. Verification Requests (for document verification testing)
+            await SeedVerificationRequestsAsync(ctx, users);
 
             Console.WriteLine("[Seeder] Done.");
         }
@@ -94,9 +99,13 @@ namespace AskNLearn.Infrastructure.Persistance
         {
             var ranks = new List<UserRank>
             {
-                new() { Id = Guid.NewGuid(), Name = "Novice", MinPoints = 0, IconUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=novice" },
-                new() { Id = Guid.NewGuid(), Name = "Scholar", MinPoints = 1000, IconUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=scholar" },
-                new() { Id = Guid.NewGuid(), Name = "Expert", MinPoints = 2500, IconUrl = "https://api.dicebear.com/7.x/shapes/svg?seed=expert" }
+                new() { Id = Guid.NewGuid(), Name = "Newcomer", MinPoints = 0 },
+                new() { Id = Guid.NewGuid(), Name = "Apprentice", MinPoints = 250 },
+                new() { Id = Guid.NewGuid(), Name = "Scholar", MinPoints = 750 },
+                new() { Id = Guid.NewGuid(), Name = "Contributor", MinPoints = 1500 },
+                new() { Id = Guid.NewGuid(), Name = "Expert", MinPoints = 3500 },
+                new() { Id = Guid.NewGuid(), Name = "Mentor", MinPoints = 7500 },
+                new() { Id = Guid.NewGuid(), Name = "Legend", MinPoints = 15000 }
             };
             if (!await ctx.UserRanks.AnyAsync())
             {
@@ -113,7 +122,6 @@ namespace AskNLearn.Infrastructure.Persistance
             var roles = new List<IdentityRole>
             {
                 new() { Id = Guid.NewGuid().ToString(), Name = "Admin", NormalizedName = "ADMIN" },
-                new() { Id = Guid.NewGuid().ToString(), Name = "Moderator", NormalizedName = "MODERATOR" },
                 new() { Id = Guid.NewGuid().ToString(), Name = "Member", NormalizedName = "MEMBER" }
             };
             await BulkInsertAsync(ctx, roles, "Roles", "Roles");
@@ -133,7 +141,6 @@ namespace AskNLearn.Infrastructure.Persistance
             var userRoles = new List<IdentityUserRole<string>>();
 
             var adminRole = roles.First(r => r.Name == "Admin");
-            var modRole = roles.First(r => r.Name == "Moderator");
             var memberRole = roles.First(r => r.Name == "Member");
 
             // Admini
@@ -158,32 +165,6 @@ namespace AskNLearn.Infrastructure.Persistance
             };
             users.Add(admin);
             userRoles.Add(new IdentityUserRole<string> { UserId = admin.Id, RoleId = adminRole.Id });
-
-            // Moderatori
-            for (int i = 1; i <= 10; i++)
-            {
-                var mod = new ApplicationUser
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    UserName = $"moderator{i}@asknlearn.com",
-                    Email = $"moderator{i}@asknlearn.com",
-                    NormalizedEmail = $"MODERATOR{i}@ASKNLEARN.COM",
-                    NormalizedUserName = $"MODERATOR{i}@ASKNLEARN.COM",
-                    FullName = $"Community Moderator {i}",
-                    EmailConfirmed = true,
-                    IsVerified = true,
-                    VerificationStatus = UserVerificationStatus.IdentityVerified,
-                    Role = Role.Moderator,
-                    ReputationPoints = 3000,
-                    CreatedAt = DateTime.UtcNow.AddMonths(-10),
-                    PasswordHash = hash,
-                    SecurityStamp = Guid.NewGuid().ToString(),
-                    ConcurrencyStamp = Guid.NewGuid().ToString(),
-                    AvatarUrl = $"https://api.dicebear.com/7.x/avataaars/svg?seed=moderator{i}"
-                };
-                users.Add(mod);
-                userRoles.Add(new IdentityUserRole<string> { UserId = mod.Id, RoleId = modRole.Id });
-            }
 
             // Alți Admini (total 5)
             for (int i = 2; i <= 5; i++)
@@ -374,8 +355,8 @@ namespace AskNLearn.Infrastructure.Persistance
             }
             await BulkInsertAsync(ctx, posts, "Posts", "Posts");
 
-            // SEED COMMENTS (Messages linked to posts)
-            var comments = new List<Message>();
+            // SEED COMMENTS (Comments linked to posts)
+            var comments = new List<Comment>();
             string[] commentTexts = { 
                 "That's a very interesting point. I think the key is to focus on scalability from the start.", 
                 "I've had a similar issue before. Usually, it's related to the CORS configuration in the Startup class.", 
@@ -390,7 +371,7 @@ namespace AskNLearn.Infrastructure.Persistance
                 for (int i = 0; i < commentCount; i++)
                 {
                     var author = users[Rng.Next(users.Count)];
-                    comments.Add(new Message
+                    comments.Add(new Comment
                     {
                         Id = Guid.NewGuid(),
                         PostId = p.Id,
@@ -401,7 +382,7 @@ namespace AskNLearn.Infrastructure.Persistance
                     });
                 }
             }
-            await BulkInsertAsync(ctx, comments, "PostComments", "Messages");
+            await BulkInsertAsync(ctx, comments, "PostComments", "Comments");
             
             return posts;
         }
@@ -508,6 +489,96 @@ namespace AskNLearn.Infrastructure.Persistance
             await BulkInsertAsync(ctx, notifications, "Notifications", "Notifications");
         }
 
+        private static async Task SeedReportsAsync(ApplicationDbContext ctx, List<ApplicationUser> users, List<Post> posts)
+        {
+            if (await ctx.Reports.AnyAsync()) return;
+            var reports = new List<Report>();
+            var reasons = Enum.GetValues<ReportReason>();
+            
+            // Report some posts
+            foreach (var p in posts.Take(20))
+            {
+                var reporter = users[Rng.Next(users.Count)];
+                if (reporter.Id == p.AuthorId) continue;
+
+                reports.Add(new Report
+                {
+                    Id = Guid.NewGuid(),
+                    ReporterId = reporter.Id,
+                    ReportedPostId = p.Id,
+                    Reason = reasons[Rng.Next(reasons.Length)],
+                    Description = "This post contains content that violates our community guidelines. Please review.",
+                    Status = Rng.NextDouble() > 0.3 ? ReportStatus.Pending : ReportStatus.Resolved,
+                    CreatedAt = p.CreatedAt.AddDays(1)
+                });
+            }
+
+            // Report some comments
+            var comments = await ctx.Comments.Take(20).ToListAsync();
+            foreach (var c in comments)
+            {
+                var reporter = users[Rng.Next(users.Count)];
+                if (reporter.Id == c.AuthorId) continue;
+
+                reports.Add(new Report
+                {
+                    Id = Guid.NewGuid(),
+                    ReporterId = reporter.Id,
+                    ReportedCommentId = c.Id,
+                    Reason = reasons[Rng.Next(reasons.Length)],
+                    Description = "Inappropriate language used in this comment.",
+                    Status = ReportStatus.Pending,
+                    CreatedAt = c.CreatedAt.AddHours(5)
+                });
+            }
+
+            await BulkInsertAsync(ctx, reports, "Reports", "Reports");
+        }
+
+        private static async Task SeedVerificationRequestsAsync(ApplicationDbContext ctx, List<ApplicationUser> users)
+        {
+            if (await ctx.VerificationRequests.AnyAsync()) return;
+            var requests = new List<VerificationRequest>();
+            
+            // Get users who are not yet verified but have confirmed email
+            var potentialUsers = users.Where(u => !u.IsVerified && u.EmailConfirmed).Take(30).ToList();
+            
+            foreach (var u in potentialUsers)
+            {
+                requests.Add(new VerificationRequest
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = u.Id,
+                    StudentIdUrl = $"https://api.dicebear.com/7.x/identicon/svg?seed=sid_{u.Id}",
+                    CarnetUrl = $"https://api.dicebear.com/7.x/identicon/svg?seed=carnet_{u.Id}",
+                    Status = VerificationRequestStatus.Pending,
+                    SubmittedAt = DateTime.UtcNow.AddDays(-Rng.Next(1, 5))
+                });
+            }
+
+            // Some already processed requests
+            var admins = users.Where(u => u.Role == Role.Admin).ToList();
+            var processedUsers = users.Where(u => !u.IsVerified && u.EmailConfirmed).Skip(30).Take(10).ToList();
+            foreach (var u in processedUsers)
+            {
+                var adminUser = admins[Rng.Next(admins.Count)];
+                requests.Add(new VerificationRequest
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = u.Id,
+                    StudentIdUrl = $"https://api.dicebear.com/7.x/identicon/svg?seed=sid_{u.Id}",
+                    CarnetUrl = $"https://api.dicebear.com/7.x/identicon/svg?seed=carnet_{u.Id}",
+                    Status = VerificationRequestStatus.Rejected,
+                    AdminNotes = "Document image is too blurry. Please re-upload.",
+                    ProcessedBy = adminUser.Id,
+                    ProcessedAt = DateTime.UtcNow.AddDays(-1),
+                    SubmittedAt = DateTime.UtcNow.AddDays(-3)
+                });
+            }
+
+            await BulkInsertAsync(ctx, requests, "VerificationRequests", "VerificationRequests");
+        }
+
 
         private static async Task BulkInsertAsync<T>(ApplicationDbContext ctx, List<T> data, string label, string tableName) where T : class
         {
@@ -516,8 +587,10 @@ namespace AskNLearn.Infrastructure.Persistance
             var conn = (SqlConnection)ctx.Database.GetDbConnection();
             if (conn.State != ConnectionState.Open) await conn.OpenAsync();
             using var bc = new SqlBulkCopy(conn) { DestinationTableName = tableName, BatchSize = 5000, BulkCopyTimeout = 300 };
+            var ignoredProperties = new[] { "PhoneNumber", "PhoneNumberConfirmed", "TwoFactorEnabled", "LockoutEnd", "LockoutEnabled", "AccessFailedCount" };
             var props = typeof(T).GetProperties().Where(p =>
             {
+                if (typeof(T) == typeof(ApplicationUser) && ignoredProperties.Contains(p.Name)) return false;
                 var t = Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType;
                 return p.CanWrite && (t.IsPrimitive || t == typeof(string) || t == typeof(Guid) || t == typeof(DateTime) || t == typeof(decimal) || t.IsEnum);
             }).ToArray();

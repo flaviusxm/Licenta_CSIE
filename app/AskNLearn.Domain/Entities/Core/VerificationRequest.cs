@@ -4,11 +4,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace AskNLearn.Domain.Entities.Core
 
 {
-   public enum Status{
-    Pending,
-    Approved,
-    Rejected
-   }
     [Table("VerificationRequests")]
     public class VerificationRequest
     {
@@ -27,7 +22,7 @@ namespace AskNLearn.Domain.Entities.Core
         [Required]
         public string CarnetUrl { get; set; }
 
-        public Status Status { get; set; } = Status.Pending; 
+        public VerificationRequestStatus Status { get; set; } = VerificationRequestStatus.Pending; 
 
         public string? AdminNotes { get; set; }
 

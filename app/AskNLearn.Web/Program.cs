@@ -57,6 +57,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// Set token lifespan to 2 hours
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromHours(2);
+});
+
 builder.Services.AddAuthentication(options =>
 {
 })
@@ -267,7 +273,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+ 
 // Middleware pentru email neverificat – blochează accesul în afara paginilor de auth
 app.Use(async (context, next) =>
 {
@@ -287,6 +293,7 @@ app.Use(async (context, next) =>
     }
     await next();
 });
+
 
 app.MapHub<AskNLearn.Web.Hubs.CommunicationHub>("/communicationHub");
 

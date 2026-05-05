@@ -57,34 +57,7 @@ namespace AskNLearn.Web.Controllers
         [HttpPost("messages/report")]
         public async Task<IActionResult> ReportMessage(Guid id, ReportReason reason, string description)
         {
-            var userId = userManager.GetUserId(User);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-            var message = await context.Messages.FindAsync(id);
-            if (message == null) return NotFound();
-
-            var report = new Report
-            {
-                ReporterId = userId!,
-                ReportedMessageId = id,
-                Reason = reason,
-                Description = description ?? "No description provided",
-                CreatedAt = DateTime.UtcNow,
-                Status = ReportStatus.Pending
-            };
-
-            context.Reports.Add(report);
-            await context.SaveChangesAsync();
-
-            moderationQueue.Enqueue(new AskNLearn.Application.Common.Interfaces.ModerationTask
-            {
-                Id = report.Id,
-                Content = message.Content ?? string.Empty,
-                Target = AskNLearn.Application.Common.Interfaces.ModerationTarget.Report,
-                Reason = reason
-            });
-
-            return Ok(new { message = "Message reported successfully. Guardian AI is analyzing." });
+            return BadRequest("Direct messages cannot be reported in this version.");
         }
 
         [HttpPost("messages/delete")]

@@ -17,11 +17,13 @@ namespace AskNLearn.Web.Controllers
     {
         private readonly IApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailService _emailService;
 
-        public AdminController(IApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public AdminController(IApplicationDbContext context, UserManager<ApplicationUser> userManager, IEmailService emailService)
         {
             _context = context;
             _userManager = userManager;
+            _emailService = emailService;
         }
 
         private async Task<bool> IsAdmin()
@@ -31,33 +33,6 @@ namespace AskNLearn.Web.Controllers
             return user.Role == Role.Admin;
         }
 
-        [HttpPost("moderator/apply")]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApplyForModerator()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return RedirectToAction("SignIn", "Auth");
-
-            if (!user.IsVerified || user.ReputationPoints < 500)
-            {
-                TempData["ErrorMessage"] = "You do not meet the requirements for moderation.";
-                return RedirectToAction("Verification", "Profile");
-            }
-
-            if (user.Role == Role.Member)
-            {
-                user.Role = Role.Moderator;
-                await _userManager.UpdateAsync(user);
-                TempData["SuccessMessage"] = "Congratulations! You are now a Moderator.";
-            }
-            else
-            {
-                TempData["InfoMessage"] = "You are already a Moderator or Admin.";
-            }
-
-            return RedirectToAction("Verification", "Profile");
-        }
 
         [HttpGet("")]
         [HttpGet("overview")]
@@ -71,7 +46,7 @@ namespace AskNLearn.Web.Controllers
             
             // Statistics for dashboard
             ViewBag.TotalUsers = await _context.Users.CountAsync();
-            ViewBag.PendingVerifications = await _context.VerificationRequests.CountAsync(v => v.Status == Status.Pending);
+            ViewBag.PendingVerifications = await _context.VerificationRequests.CountAsync(v => v.Status == VerificationRequestStatus.Pending);
             ViewBag.TotalCommunities = await _context.Communities.CountAsync();
             
             // AI Moderation Granular Stats
@@ -91,7 +66,7 @@ namespace AskNLearn.Web.Controllers
         }
 
         [HttpGet("verifications")]
-        public async Task<IActionResult> Verifications(int? pageNumber)
+        public async Task<IActionResult> Verifications(int? pageNumber, bool onlyPending = true)
         {
             if (!await IsAdmin())
             {
@@ -103,11 +78,21 @@ namespace AskNLearn.Web.Controllers
             var query = _context.VerificationRequests
                 .Include(v => v.User)
                 .OrderByDescending(v => v.SubmittedAt)
-                .AsNoTracking();
+                .AsQueryable();
 
-            ViewBag.PendingVerificationsCount = await query.CountAsync(v => v.Status == Status.Pending);
+            if (onlyPending)
+            {
+                query = query.Where(v => v.Status == VerificationRequestStatus.Pending);
+            }
+            else
+            {
+                query = query.Where(v => v.Status != VerificationRequestStatus.Pending);
+            }
 
-            var paginatedRequests = await AskNLearn.Web.Models.PaginatedList<VerificationRequest>.CreateAsync(query, pageNumber ?? 1, pageSize);
+            ViewBag.OnlyPending = onlyPending;
+            ViewBag.PendingVerificationsCount = await _context.VerificationRequests.CountAsync(v => v.Status == VerificationRequestStatus.Pending);
+
+            var paginatedRequests = await AskNLearn.Web.Models.PaginatedList<VerificationRequest>.CreateAsync(query.AsNoTracking(), pageNumber ?? 1, pageSize);
 
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
@@ -208,7 +193,7 @@ namespace AskNLearn.Web.Controllers
             var request = await _context.VerificationRequests.FindAsync(id);
             if (request == null) return NotFound();
 
-            request.Status = Status.Approved;
+            request.Status = VerificationRequestStatus.Approved;
             request.ProcessedAt = DateTime.UtcNow;
             request.ProcessedBy = _userManager.GetUserId(User);
 
@@ -220,6 +205,14 @@ namespace AskNLearn.Web.Controllers
             }
 
             await _context.SaveChangesAsync(default);
+
+            // Notify user via email
+            if (user != null && !string.IsNullOrEmpty(user.Email))
+            {
+                await _emailService.SendEmailAsync(user.Email, "Identity Verified - AskNLearn", 
+                    $"<h1>Congratulations {user.FullName}!</h1><p>Your identity has been successfully verified. You now have full access to premium features and the ability to apply for moderation.</p>");
+            }
+
             return RedirectToAction(nameof(Verifications));
         }
 
@@ -231,7 +224,7 @@ namespace AskNLearn.Web.Controllers
             var request = await _context.VerificationRequests.FindAsync(id);
             if (request == null) return NotFound();
 
-            request.Status = Status.Rejected;
+            request.Status = VerificationRequestStatus.Rejected;
             request.AdminNotes = notes;
             request.ProcessedAt = DateTime.UtcNow;
             request.ProcessedBy = _userManager.GetUserId(User);
@@ -244,6 +237,14 @@ namespace AskNLearn.Web.Controllers
             }
 
             await _context.SaveChangesAsync(default);
+
+            // Notify user via email
+            if (user != null && !string.IsNullOrEmpty(user.Email))
+            {
+                await _emailService.SendEmailAsync(user.Email, "Identity Verification Update - AskNLearn", 
+                    $"<h1>Verification Update</h1><p>Hello {user.FullName},</p><p>Unfortunately, your identity verification request was not approved.</p><p><strong>Reason:</strong> {notes}</p><p>Please review the feedback and submit a new request with a clearer document.</p>");
+            }
+
             return RedirectToAction(nameof(Verifications));
         }
 
@@ -270,7 +271,7 @@ namespace AskNLearn.Web.Controllers
             if (!await IsAdmin()) return Forbid();
 
             var postsQuery = _context.Posts.AsNoTracking();
-            var messagesQuery = _context.Messages.AsNoTracking();
+            var messagesQuery = _context.Comments.AsNoTracking();
 
             // Status filter logic
             // If "ALL", we show Flagged, Pending, and Suspect
@@ -351,13 +352,13 @@ namespace AskNLearn.Web.Controllers
             var query = _context.Reports.AsNoTracking()
                 .Include(r => r.Reporter)
                 .Include(r => r.ReportedPost)
-                .Include(r => r.ReportedMessage)
+                .Include(r => r.ReportedComment)
                 .Where(r => r.Status == ReportStatus.Pending);
 
             if (filter == "POST")
                 query = query.Where(r => r.ReportedPostId != null);
             else if (filter == "COMMENT")
-                query = query.Where(r => r.ReportedMessageId != null);
+                query = query.Where(r => r.ReportedCommentId != null);
 
             var reports = await query
                 .OrderByDescending(r => r.CreatedAt)
@@ -397,7 +398,7 @@ namespace AskNLearn.Web.Controllers
         public async Task<IActionResult> ApproveComment(Guid id)
         {
             if (!await IsAdmin()) return Forbid();
-            var message = await _context.Messages.FindAsync(id);
+            var message = await _context.Comments.FindAsync(id);
             if (message == null) return NotFound();
 
             message.ModerationStatus = ModerationStatus.Approved;
@@ -410,7 +411,7 @@ namespace AskNLearn.Web.Controllers
         public async Task<IActionResult> FlagComment(Guid id)
         {
             if (!await IsAdmin()) return Forbid();
-            var message = await _context.Messages.FindAsync(id);
+            var message = await _context.Comments.FindAsync(id);
             if (message == null) return NotFound();
 
             message.ModerationStatus = ModerationStatus.Flagged;

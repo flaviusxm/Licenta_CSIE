@@ -55,8 +55,8 @@ namespace AskNLearn.Infrastructure.Services
 
         public async Task<(bool IsValid, string Details, string Recommendation)> VerifyDocumentAsync(byte[] imageBytes)
         {
-            // Pasul 1: AI-ul Moondream este folosit STRICT pentru OCR (extragere text)
-            var prompt = "Read all the text visible in this document.";
+            // Pasul 1: Prompt mai specific pentru a forța AI-ul să caute detalii cheie
+            var prompt = "What is this document? Extract Name, CNP, and Institution. Is it a Romanian Identity Card?";
             var ocrResult = await _ollama.AnalyzeImageAsync(imageBytes, prompt, "moondream");
 
             if (string.IsNullOrEmpty(ocrResult.Details) || ocrResult.Details.Contains("Empty vision response"))
@@ -66,25 +66,25 @@ namespace AskNLearn.Infrastructure.Services
 
             string extractedText = ocrResult.Details.ToLowerInvariant();
             
-            // Pasul 2: Algoritm Heuristic de Calculare a Probabilității
+            // Pasul 2: Algoritm Heuristic îmbunătățit (mai flexibil cu descrierile AI)
             int score = 0;
             int maxScore = 100;
             
-            // Verificăm markeri de identitate (România)
-            if (extractedText.Contains("carte de identitate") || extractedText.Contains("romania") || extractedText.Contains("cnp")) score += 30;
-            if (System.Text.RegularExpressions.Regex.IsMatch(extractedText, @"[0-9]{13}")) score += 20; // Detecție CNP (13 cifre)
-            if (extractedText.Contains("seria") || System.Text.RegularExpressions.Regex.IsMatch(extractedText, @"[a-z]{2}\s?[0-9]{6}")) score += 10;
+            // Verificăm markeri de identitate (România + Variante Internaționale)
+            if (extractedText.Contains("romania") || extractedText.Contains("roumanie") || extractedText.Contains("carte de identitate")) score += 40;
+            if (extractedText.Contains("identification card") || extractedText.Contains("identity card") || extractedText.Contains("id card")) score += 20;
             
-            // Verificăm markeri academici
-            if (extractedText.Contains("student") || extractedText.Contains("carnet") || extractedText.Contains("legitimatie")) score += 20;
-            if (extractedText.Contains("universita") || extractedText.Contains("faculta") || extractedText.Contains("academ")) score += 20;
+            // Verificăm prezența datelor personale
+            if (extractedText.Contains("cnp") || System.Text.RegularExpressions.Regex.IsMatch(extractedText, @"[0-9]{13}")) score += 20;
+            if (extractedText.Contains("name") || extractedText.Contains("nume") || extractedText.Contains("prenume")) score += 10;
+            if (extractedText.Contains("valabilitate") || extractedText.Contains("expiry") || extractedText.Contains("validity")) score += 10;
 
-            // Ajustare finală (capped at 100)
+            // Ajustare finală
             score = Math.Min(score, maxScore);
 
-            bool isValid = score >= 60; // Threshold de 60% pentru aprobare
+            bool isValid = score >= 50; // Am scăzut threshold-ul la 50% pentru că Moondream e descriptiv
             string recommendation = isValid ? "Approved" : "Manual Review Needed";
-            string formattedDetails = $"[OCR Output]: {ocrResult.Details}\n[Confidence Score]: {score}%\n[System Status]: {(isValid ? "Pass" : "High Risk")}";
+            string formattedDetails = $"[AI Analysis]: {ocrResult.Details}\n\n[Confidence Score]: {score}%\n[System Status]: {(isValid ? "Pass" : "High Risk")}";
 
             return (isValid, formattedDetails, recommendation);
         }

@@ -1,9 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AskNLearn.Domain.Entities.Core
 {
-
     [Table("Notifications")]
     public class Notification
     {
@@ -16,7 +15,7 @@ namespace AskNLearn.Domain.Entities.Core
         [ForeignKey(nameof(UserId))]
         public ApplicationUser User { get; set; } = null!;
 
-        public Guid? ReferenceId { get; set; }
+        public Guid? ReferenceId { get; set; } // e.g., PostId, ConversationId
 
         [MaxLength(100)]
         public string? Title { get; set; }

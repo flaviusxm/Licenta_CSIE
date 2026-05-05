@@ -52,12 +52,12 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostById
                         CreatedAt = c.CreatedAt,
                         ModerationStatus = c.ModerationStatus,
                         ModerationReason = c.ModerationReason,
-                        ReplyToMessageId = c.ReplyToMessageId,
+                        ReplyToMessageId = c.ReplyToCommentId,
                         Attachments = c.Attachments != null ? c.Attachments.Select(a => new AttachmentDto
                         {
-                            Id = a.FileId,
-                            Url = a.File != null ? a.File.FilePath : "",
-                            FileType = a.File != null ? a.File.FileType : ""
+                            Id = a.Id,
+                            Url = a.Url,
+                            FileType = a.FileType
                         }).ToList() : new List<AttachmentDto>()
                     }).ToList(),
                     Attachments = p.Attachments.Select(a => new AttachmentDto

@@ -26,11 +26,11 @@ namespace AskNLearn.Application.Features.Users.Commands.SubmitVerificationReques
 
             // Check if user already has a pending or approved request
             var existingRequest = await _context.VerificationRequests
-                .FirstOrDefaultAsync(v => v.UserId == request.UserId && (v.Status == Status.Pending || v.Status == Status.Approved), cancellationToken);
+                .FirstOrDefaultAsync(v => v.UserId == request.UserId && (v.Status == VerificationRequestStatus.Pending || v.Status == VerificationRequestStatus.Approved), cancellationToken);
 
             if (existingRequest != null)
             {
-                if (existingRequest.Status == Status.Pending)
+                if (existingRequest.Status == VerificationRequestStatus.Pending)
                     errors.Add("You already have a pending verification request.");
                 else
                     errors.Add("Your account is already verified.");
@@ -43,7 +43,7 @@ namespace AskNLearn.Application.Features.Users.Commands.SubmitVerificationReques
                 UserId = request.UserId,
                 StudentIdUrl = request.StudentIdUrl,
                 CarnetUrl = request.CarnetUrl,
-                Status = Status.Pending,
+                Status = VerificationRequestStatus.Pending,
                 SubmittedAt = DateTime.UtcNow,
                 AdminNotes = "[Guardian AI]: Analiză în curs...",
                 ProcessedAt = null,

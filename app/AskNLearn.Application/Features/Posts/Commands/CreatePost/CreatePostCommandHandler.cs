@@ -12,12 +12,18 @@ namespace AskNLearn.Application.Features.Posts.Commands.CreatePost
         private readonly IApplicationDbContext _context;
         private readonly IFileService _fileService;
         private readonly IModerationQueue _moderationQueue;
+        private readonly IReputationService _reputationService;
 
-        public CreatePostCommandHandler(IApplicationDbContext context, IFileService fileService, IModerationQueue moderationQueue)
+        public CreatePostCommandHandler(
+            IApplicationDbContext context, 
+            IFileService fileService, 
+            IModerationQueue moderationQueue,
+            IReputationService reputationService)
         {
             _context = context;
             _fileService = fileService;
             _moderationQueue = moderationQueue;
+            _reputationService = reputationService;
         }
 
         public async Task<Guid> Handle(CreatePostCommand request, CancellationToken cancellationToken)
@@ -59,6 +65,12 @@ namespace AskNLearn.Application.Features.Posts.Commands.CreatePost
                 Title = post.Title,
                 Target = ModerationTarget.Post
             });
+
+            // Add Reputation Points
+            if (!string.IsNullOrEmpty(request.AuthorId))
+            {
+                await _reputationService.AddPointsAsync(request.AuthorId, 10);
+            }
 
             return post.Id;
         }

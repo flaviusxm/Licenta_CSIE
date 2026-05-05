@@ -22,8 +22,9 @@ namespace AskNLearn.Application.Common.Interfaces
         DbSet<PostAttachment> PostAttachments { get; }
         DbSet<PostView> PostViews { get; }
         DbSet<StoredFile> StoredFiles { get; }
-        DbSet<MessageAttachment> MessageAttachments { get; }
-        DbSet<MessageReaction> MessageReactions { get; }
+        DbSet<CommentAttachment> CommentAttachments { get; }
+        DbSet<Comment> Comments { get; }
+        DbSet<Resource> Resources { get; }
         DbSet<VerificationRequest> VerificationRequests { get; }
         DbSet<Friendship> Friendships { get; }
         DbSet<DirectConversationParticipant> DirectConversationParticipants { get; }

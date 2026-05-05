@@ -28,33 +28,19 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
             }
 
             var postsCount = await _context.Posts.CountAsync(p => p.AuthorId == user.Id, cancellationToken);
-            var answersCount = await _context.Messages.CountAsync(m => m.AuthorId == user.Id && m.PostId != null, cancellationToken);
+            var answersCount = await _context.Comments.CountAsync(c => c.AuthorId == user.Id, cancellationToken);
             
             var communityCount = await _context.CommunityMemberships.CountAsync(cm => cm.UserId == user.Id, cancellationToken);
             var groupsCount = communityCount;
 
-            string? rankName = null;
-            string? rankIconUrl = null;
-
-            if (user.CurrentRankId != null)
-            {
-                var rank = await _context.UserRanks.FindAsync(new object[] { user.CurrentRankId.Value }, cancellationToken);
-                if (rank != null)
-                {
-                    rankName = rank.Name;
-                    rankIconUrl = rank.IconUrl;
-                }
-            }
-
             var hasPendingVerification = await _context.VerificationRequests
-                .AnyAsync(v => v.UserId == user.Id && v.Status == Status.Pending, cancellationToken);
+                .AnyAsync(v => v.UserId == user.Id && v.Status == VerificationRequestStatus.Pending, cancellationToken);
 
             var completion = 0;
-            if (!string.IsNullOrEmpty(user.FullName)) completion += 20;
-            if (!string.IsNullOrEmpty(user.Bio)) completion += 20;
-            if (!string.IsNullOrEmpty(user.AvatarUrl) && !user.AvatarUrl.Contains("dicebear")) completion += 20;
-            if (!string.IsNullOrEmpty(user.Occupation)) completion += 20;
-            if (!string.IsNullOrEmpty(user.Institution) || !string.IsNullOrEmpty(user.Interests)) completion += 20; // Shared slot for 100%
+            if (!string.IsNullOrEmpty(user.FullName)) completion += 25;
+            if (!string.IsNullOrEmpty(user.Bio)) completion += 25;
+            if (!string.IsNullOrEmpty(user.AvatarUrl) && !user.AvatarUrl.Contains("dicebear")) completion += 25;
+            if (user.IsVerified) completion += 25;
 
             // Connection Status Logic
             var connectionStatus = ConnectionStatus.None;
@@ -77,36 +63,38 @@ namespace AskNLearn.Application.Features.Users.Queries.GetUserProfile
                 }
             }
 
+            var userWithRank = await _context.Users
+                .Include(u => u.CurrentRank)
+                .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
+
+            if (userWithRank == null) return null!;
+
             return new UserProfileDto
             {
-                Id = user.Id,
-                FullName = user.FullName ?? "Anonymous",
-                Email = user.Email ?? string.Empty,
-                Bio = user.Bio,
-                AvatarUrl = user.AvatarUrl,
-                Occupation = user.Occupation,
-                Institution = user.Institution,
-                Interests = user.Interests,
-                ReputationPoints = user.ReputationPoints,
+                Id = userWithRank.Id,
+                FullName = userWithRank.FullName ?? "Anonymous",
+                Email = userWithRank.Email ?? string.Empty,
+                Bio = userWithRank.Bio,
+                AvatarUrl = userWithRank.AvatarUrl,
                 ProfileCompletionPercentage = Math.Min(completion, 100),
-                CreatedAt = user.CreatedAt,
-                Level = user.Level,
-                RankName = rankName,
-                RankIconUrl = rankIconUrl,
+                CreatedAt = userWithRank.CreatedAt,
                 PostsCount = postsCount,
                 AnswersCount = answersCount,
-                GroupsCount = groupsCount,
-                IsVerified = user.IsVerified,
-                Role = user.Role.ToString(),
-                BannerUrl = user.BannerUrl,
-                SocialLinks = user.SocialLinks,
+                IsVerified = userWithRank.IsVerified,
+                Role = userWithRank.Role.ToString(),
+                BannerUrl = userWithRank.BannerUrl,
                 HasPendingVerification = hasPendingVerification,
                 ConnectionStatus = connectionStatus,
-                IsOwnProfile = request.CurrentUserId == user.Id,
-                EmailConfirmed = user.EmailConfirmed,
-                VerificationStatus = user.VerificationStatus.ToString(),
+                IsOwnProfile = request.CurrentUserId == userWithRank.Id,
+                EmailConfirmed = userWithRank.EmailConfirmed,
+                VerificationStatus = userWithRank.VerificationStatus.ToString(),
+                ReputationPoints = userWithRank.ReputationPoints,
+                Level = userWithRank.Level,
+                RankName = userWithRank.CurrentRank?.Name,
+                Interests = userWithRank.Interests,
+                SocialLinks = userWithRank.SocialLinks,
                 AdminNotes = await _context.VerificationRequests
-                    .Where(v => v.UserId == user.Id)
+                    .Where(v => v.UserId == userWithRank.Id)
                     .OrderByDescending(v => v.SubmittedAt)
                     .Select(v => v.AdminNotes)
                     .FirstOrDefaultAsync(cancellationToken)

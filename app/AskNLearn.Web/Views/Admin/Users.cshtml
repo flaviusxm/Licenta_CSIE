@@ -27,9 +27,6 @@
                     <a href="?role=&searchTerm=@Context.Request.Query["searchTerm"]" class="nav-link-filter @(string.IsNullOrEmpty(Context.Request.Query["role"]) ? "active" : "")">
                         All
                     </a>
-                    <a href="?role=Moderator&searchTerm=@Context.Request.Query["searchTerm"]" class="nav-link-filter @(Context.Request.Query["role"] == "Moderator" ? "active" : "")">
-                        Moderators
-                    </a>
                     <a href="?role=Admin&searchTerm=@Context.Request.Query["searchTerm"]" class="nav-link-filter @(Context.Request.Query["role"] == "Admin" ? "active" : "")">
                         Admins
                     </a>
@@ -100,10 +97,6 @@
                                     @if (user.Role == Role.Admin)
                                     {
                                         <span class="badge glass-badge glass-badge-aurora" style="background: rgba(129, 140, 248, 0.15); color: #818cf8; border-color: rgba(129, 140, 248, 0.3);">Admin</span>
-                                    }
-                                    else if (user.Role == Role.Moderator)
-                                    {
-                                        <span class="badge glass-badge glass-badge-aurora">Moderator</span>
                                     }
                                     else
                                     {

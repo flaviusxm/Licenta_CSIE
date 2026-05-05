@@ -97,7 +97,7 @@
     </div>
 
     <!-- Apple-style Toast Container -->
-    <div id="toast-container" class="position-fixed bottom-0 end-0 p-4 z-5 d-flex flex-column gap-3" style="pointer-events: none;"></div>
+    <!-- Toast container removed as per user request -->
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -120,11 +120,11 @@
         };
 
         // --- Connectivity & Global Events ---
-        window.addEventListener('online', () => window.Notify?.success("Connection restored."));
-        window.addEventListener('offline', () => window.Notify?.error("Connection lost.", 'error', 'cloud_off', 0));
+        window.addEventListener('online', () => console.log("Connection restored."));
+        window.addEventListener('offline', () => console.log("Connection lost."));
 
-        window.connection.on("ReceiveConnectionRequest", d => window.Notify?.show(d.message, 'success', 'person_add'));
-        window.connection.on("ReceiveConnectionAccepted", d => window.Notify?.show(d.message, 'success', 'check_circle'));
+        window.connection.on("ReceiveConnectionRequest", d => console.log(d.message));
+        window.connection.on("ReceiveConnectionAccepted", d => console.log(d.message));
 
         // Sidebar Toggle
         document.addEventListener('DOMContentLoaded', () => {

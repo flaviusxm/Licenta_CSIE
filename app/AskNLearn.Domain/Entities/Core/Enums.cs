@@ -1,5 +1,24 @@
 namespace AskNLearn.Domain.Entities.Core
 {
+    public enum Role
+    {
+        Member,
+        Admin
+    }
+
+    public enum UserStatus
+    {
+        Online,
+        Offline
+    }
+
+    public enum VerificationRequestStatus
+    {
+        Pending,
+        Approved,
+        Rejected
+    }
+
     public enum ReportReason
     {
         Spam,
