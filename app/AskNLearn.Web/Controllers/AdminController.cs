@@ -185,12 +185,15 @@ namespace AskNLearn.Web.Controllers
             return NotFound();
         }
 
-        [HttpPost("verifications/approve/{id:guid}")]
-        public async Task<IActionResult> Approve(Guid id)
+        [HttpPost("verifications/approve/{id?}")]
+        public async Task<IActionResult> Approve(Guid? id, [FromForm] Guid? formId)
         {
             if (!await IsAdmin()) return Forbid();
 
-            var request = await _context.VerificationRequests.FindAsync(id);
+            var finalId = id ?? formId;
+            if (finalId == null) return BadRequest("Missing ID");
+
+            var request = await _context.VerificationRequests.FindAsync(finalId);
             if (request == null) return NotFound();
 
             request.Status = VerificationRequestStatus.Approved;
@@ -216,12 +219,15 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Verifications));
         }
 
-        [HttpPost("verifications/reject/{id:guid}")]
-        public async Task<IActionResult> Reject(Guid id, string notes)
+        [HttpPost("verifications/reject/{id?}")]
+        public async Task<IActionResult> Reject(Guid? id, [FromForm] Guid? formId, string notes)
         {
             if (!await IsAdmin()) return Forbid();
 
-            var request = await _context.VerificationRequests.FindAsync(id);
+            var finalId = id ?? formId;
+            if (finalId == null) return BadRequest("Missing ID");
+
+            var request = await _context.VerificationRequests.FindAsync(finalId);
             if (request == null) return NotFound();
 
             request.Status = VerificationRequestStatus.Rejected;
@@ -368,11 +374,14 @@ namespace AskNLearn.Web.Controllers
             return PartialView("_UserReportsTable", reports);
         }
 
-        [HttpPost("v1/moderation/posts/approve/{id:guid}")]
-        public async Task<IActionResult> ApprovePost(Guid id)
+        [HttpPost("v1/moderation/posts/approve/{id?}")]
+        public async Task<IActionResult> ApprovePost(Guid? id, [FromForm] Guid? formId)
         {
             if (!await IsAdmin()) return Forbid();
-            var post = await _context.Posts.FindAsync(id);
+            var finalId = id ?? formId;
+            if (finalId == null) return BadRequest();
+
+            var post = await _context.Posts.FindAsync(finalId);
             if (post == null) return NotFound();
 
             post.ModerationStatus = ModerationStatus.Approved;
@@ -381,11 +390,14 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Moderation));
         }
 
-        [HttpPost("v1/moderation/posts/flag/{id:guid}")]
-        public async Task<IActionResult> FlagPost(Guid id)
+        [HttpPost("v1/moderation/posts/flag/{id?}")]
+        public async Task<IActionResult> FlagPost(Guid? id, [FromForm] Guid? formId)
         {
             if (!await IsAdmin()) return Forbid();
-            var post = await _context.Posts.FindAsync(id);
+            var finalId = id ?? formId;
+            if (finalId == null) return BadRequest();
+
+            var post = await _context.Posts.FindAsync(finalId);
             if (post == null) return NotFound();
 
             post.ModerationStatus = ModerationStatus.Flagged;
@@ -394,11 +406,14 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Moderation));
         }
 
-        [HttpPost("v1/moderation/comments/approve/{id:guid}")]
-        public async Task<IActionResult> ApproveComment(Guid id)
+        [HttpPost("v1/moderation/comments/approve/{id?}")]
+        public async Task<IActionResult> ApproveComment(Guid? id, [FromForm] Guid? formId)
         {
             if (!await IsAdmin()) return Forbid();
-            var message = await _context.Comments.FindAsync(id);
+            var finalId = id ?? formId;
+            if (finalId == null) return BadRequest();
+
+            var message = await _context.Comments.FindAsync(finalId);
             if (message == null) return NotFound();
 
             message.ModerationStatus = ModerationStatus.Approved;
@@ -407,11 +422,14 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Moderation));
         }
 
-        [HttpPost("v1/moderation/comments/flag/{id:guid}")]
-        public async Task<IActionResult> FlagComment(Guid id)
+        [HttpPost("v1/moderation/comments/flag/{id?}")]
+        public async Task<IActionResult> FlagComment(Guid? id, [FromForm] Guid? formId)
         {
             if (!await IsAdmin()) return Forbid();
-            var message = await _context.Comments.FindAsync(id);
+            var finalId = id ?? formId;
+            if (finalId == null) return BadRequest();
+
+            var message = await _context.Comments.FindAsync(finalId);
             if (message == null) return NotFound();
 
             message.ModerationStatus = ModerationStatus.Flagged;

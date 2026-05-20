@@ -39,10 +39,9 @@ builder.Services.AddSignalR(options =>
     options.EnableDetailedErrors = true;
 });
 
-// AI & Moderation Services
-builder.Services.AddHttpClient<IOllamaService, OllamaService>();
+// AI & Moderation Services (Queue kept for backward compatibility or simple triggers)
+builder.Services.AddHttpClient<ILocalAiEngine, LocalAiEngine>();
 builder.Services.AddSingleton<IModerationQueue, ModerationQueue>();
-builder.Services.AddHostedService<ModerationBackgroundService>();
 
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -95,9 +94,18 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowTrustLayer", builder =>
+    {
+        builder.WithOrigins("http://localhost:5272")
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
+
 
 // ─── SEEDING LOGIC ─────────────────────────────────────────────────────────────
 if (args.Contains("drop-seed") || args.Contains("seeddb"))
@@ -270,6 +278,8 @@ else
 app.UseHttpsRedirection();
 app.UseWebSockets();
 app.UseRouting();
+
+app.UseCors("AllowTrustLayer");
 
 app.UseAuthentication();
 app.UseAuthorization();

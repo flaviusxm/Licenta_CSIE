@@ -156,12 +156,16 @@ class ProfileManager {
                 const data = response.data;
 
                 if (data) {
-                    this.updateGuardianConsole(data.adminNotes, data.status);
+                    this.updateTrustLayerConsole(data.adminNotes, data.status);
                     
-                    // If verified or rejected, stop polling and refresh after a delay
-                    if (data.status !== 0) { // Assuming 0 is Pending
+                    const notes = data.adminNotes?.toLowerCase() || "";
+                    const isFinished = data.status !== 0 || notes.includes("failed") || notes.includes("review required") || notes.includes("approved");
+
+                    if (isFinished) {
                         clearInterval(this.pollingInterval);
-                        setTimeout(() => window.location.reload(), 5000);
+                        if (data.status !== 0) {
+                            setTimeout(() => window.location.reload(), 3000);
+                        }
                     }
                 }
             } catch (e) {
@@ -170,23 +174,33 @@ class ProfileManager {
         }, 3000);
     }
 
-    static updateGuardianConsole(notes, status) {
-        const notesEl = document.getElementById('guardian-current-notes');
-        if (notesEl && notes && notes !== notesEl.innerText) {
-            // Typing effect simulation
-            notesEl.classList.add('animate-pulse');
-            notesEl.innerText = notes;
+    static updateTrustLayerConsole(notes, status) {
+        const badgeContainer = document.getElementById('verification-status-badge');
+        const iconBox = document.getElementById('verification-icon-box');
+        const title = document.getElementById('verification-title');
+        const desc = document.getElementById('verification-desc');
+
+        if (notes && title && notes !== title.innerText) {
+            const lowerNotes = notes.toLowerCase();
             
-            const logs = document.getElementById('guardian-logs');
-            if (logs) {
-                const log = document.createElement('div');
-                log.className = 'text-aurora tiny opacity-50';
-                log.innerText = `[${new Date().toLocaleTimeString()}] AI Update detected.`;
-                logs.appendChild(log);
-                logs.scrollTop = logs.scrollHeight;
+            // Handle AI Failure / Manual Review requirement
+            if (lowerNotes.includes("failed") || lowerNotes.includes("review required")) {
+                if (badgeContainer) {
+                    badgeContainer.innerHTML = '<span class="badge bg-danger-soft text-danger rounded-pill px-3 py-1 fw-black text-uppercase fs-xs">Manual Review</span>';
+                }
+                if (iconBox) {
+                    iconBox.innerHTML = `
+                        <div class="rounded-circle bg-danger-soft text-danger p-2">
+                            <span class="material-symbols-outlined fs-2">error_outline</span>
+                        </div>`;
+                }
+                if (title) title.innerText = "AI Processing Failed";
+                if (desc) desc.innerText = "TrustLayer couldn't verify your document. An administrator will now review it manually.";
+            } 
+            else if (lowerNotes.includes("verified") || lowerNotes.includes("approved")) {
+                 if (title) title.innerText = "AI Verification Successful";
+                 if (desc) desc.innerText = "The AI has confirmed your identity. Welcome to the community!";
             }
-            
-            setTimeout(() => notesEl.classList.remove('animate-pulse'), 1000);
         }
     }
 }

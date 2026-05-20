@@ -27,6 +27,28 @@ const VerificationManager = (function() {
             }, { threshold: 0.1 });
             observer.observe(sentinel);
         }
+
+        // Live Update Polling (Only for page 1 and pending queue)
+        if (config.onlyPending && config.currentPage === 1) {
+            setInterval(pollUpdates, 5000);
+        }
+    }
+
+    function pollUpdates() {
+        if (isLoading) return;
+        const url = `${config.verificationUrl}?pageNumber=1&onlyPending=${config.onlyPending}`;
+        
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(response => response.text())
+        .then(html => {
+            const container = document.getElementById(config.containerId);
+            if (container && html.trim().length > 0) {
+                // If it's the exact same content, we don't necessarily want to replace it to avoid flickering, 
+                // but since it's simple, we'll just replace innerHTML.
+                container.innerHTML = html;
+            }
+        })
+        .catch(err => console.error('Polling error:', err));
     }
 
     function loadNextPage() {
@@ -77,7 +99,15 @@ const VerificationManager = (function() {
     }
 
     function viewAiReport(encodedContent) {
-        const content = decodeURIComponent(encodedContent);
+        let content = decodeURIComponent(encodedContent);
+        
+        // Formatează Markdown basic pentru o afișare frumoasă
+        // 1. Text îngroșat: **text** -> <strong>text</strong>
+        content = content.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white fw-bold">$1</strong>');
+        
+        // 2. Capete de secțiune: [Secțiune] -> culoare aurora
+        content = content.replace(/^\[(.*?)\]/gm, '<span class="text-aurora fw-bold">[$1]</span>');
+
         const display = document.getElementById('aiReportContent');
         const modal = document.getElementById('aiReportModal');
         if (display && modal) {

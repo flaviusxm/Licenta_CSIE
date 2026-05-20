@@ -12,46 +12,92 @@ namespace AskNLearn.Infrastructure.Services
 {
     public class ModerationBackgroundService : BackgroundService
     {
-        private readonly IModerationQueue _queue;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<ModerationBackgroundService> _logger;
         private DateTime _lastCleanupTime = DateTime.MinValue;
 
         public ModerationBackgroundService(
-            IModerationQueue queue,
             IServiceScopeFactory scopeFactory,
             ILogger<ModerationBackgroundService> logger)
         {
-            _queue = queue;
             _scopeFactory = scopeFactory;
             _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Guardian Shield Service is starting. Monitoring for threats and validation tasks...");
-
-            // Rulăm mentenanța (ex: scanarea fișierelor) într-un task separat pentru a nu bloca coada principală
-            _ = Task.Run(() => RunPeriodicMaintenanceAsync(stoppingToken), stoppingToken);
+            _logger.LogInformation("TrustLayer Service is starting. Monitoring for threats and validation tasks...");
 
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    // 1. Process Queue Tasks (Așteaptă un task nou)
-                    var task = await _queue.DequeueAsync(stoppingToken);
-                    if (task != null)
+                    using var scope = _scopeFactory.CreateScope();
+                    var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+
+                    // 1. Process Identity Verifications (Pending and not yet touched by AI)
+                    var pendingVerifications = await dbContext.VerificationRequests
+                        .Where(v => v.Status == VerificationRequestStatus.Pending && v.AdminNotes.Contains("Analiză în curs"))
+                        .Take(5)
+                        .ToListAsync(stoppingToken);
+
+                    foreach (var request in pendingVerifications)
                     {
-                        // Procesăm taskul curent într-un background task ca să nu blocăm coada
-                        _ = ProcessSingleTaskAsync(task, stoppingToken);
+                        await ProcessSingleTaskAsync(new ModerationTask
+                        {
+                            Id = request.Id,
+                            Target = ModerationTarget.IdentityVerification,
+                            Content = request.StudentIdUrl
+                        }, stoppingToken);
+                    }
+
+                    // 2. Process Post Moderation
+                    var pendingPosts = await dbContext.Posts
+                        .Where(p => p.ModerationStatus == ModerationStatus.Pending)
+                        .Take(5)
+                        .ToListAsync(stoppingToken);
+
+                    foreach (var post in pendingPosts)
+                    {
+                        await ProcessSingleTaskAsync(new ModerationTask
+                        {
+                            Id = post.Id,
+                            Target = ModerationTarget.Post,
+                            Content = post.Content,
+                            Title = post.Title
+                        }, stoppingToken);
+                    }
+
+                    // 3. Process Comment Moderation
+                    var pendingComments = await dbContext.Comments
+                        .Where(c => c.ModerationStatus == ModerationStatus.Pending)
+                        .Take(5)
+                        .ToListAsync(stoppingToken);
+
+                    foreach (var comment in pendingComments)
+                    {
+                        await ProcessSingleTaskAsync(new ModerationTask
+                        {
+                            Id = comment.Id,
+                            Target = ModerationTarget.Comment,
+                            Content = comment.Content
+                        }, stoppingToken);
+                    }
+
+                    // 4. Periodic Maintenance (Scan Resources)
+                    if (DateTime.UtcNow - _lastCleanupTime > TimeSpan.FromMinutes(15))
+                    {
+                        await ScanNewResources(stoppingToken);
+                        _lastCleanupTime = DateTime.UtcNow;
                     }
                 }
-                catch (OperationCanceledException) { }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Guardian Shield error in queue listener.");
-                    await Task.Delay(1000, stoppingToken); // Prevent infinite fast loop on error
+                    _logger.LogError(ex, "TrustLayer error in polling loop.");
                 }
+
+                // Poll every 5 seconds
+                await Task.Delay(5000, stoppingToken);
             }
         }
 
@@ -76,10 +122,10 @@ namespace AskNLearn.Infrastructure.Services
         {
             try
             {
-                _logger.LogInformation("[Shield] Processing task for {Target} with Id {Id}.", task.Target, task.Id);
+                _logger.LogInformation("[TrustLayer] Processing task for {Target} with Id {Id}.", task.Target, task.Id);
 
                 using var scope = _scopeFactory.CreateScope();
-                var guardianClient = scope.ServiceProvider.GetRequiredService<IGuardianClient>();
+                var aiService = scope.ServiceProvider.GetRequiredService<ITrustLayerService>();
                 var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
 
                 if (task.Target == ModerationTarget.IdentityVerification)
@@ -92,17 +138,27 @@ namespace AskNLearn.Infrastructure.Services
                         // Evităm eroarea 500 a modelului Moondream. AI-urile vizuale (momentan) acceptă doar poze, nu PDF-uri.
                         if (request.StudentIdUrl.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
                         {
-                            _logger.LogInformation("[Shield] Document is a PDF. Bypassing AI vision and routing to manual review.");
+                            _logger.LogInformation("[TrustLayer] Document is a PDF. Bypassing AI vision and routing to manual review.");
                             await ProcessIdentityVerification(dbContext, task.Id, (false, "Documentul este un PDF. Verificarea automată AI suportă momentan doar imagini.", "Necesită verificare umană (Admin)"), stoppingToken);
                         }
                         else
                         {
-                            byte[] studentIdBytes = await fileService.ReadFileAsync(request.StudentIdUrl);
-                            var vResult = await guardianClient.VerifyDocumentAsync(studentIdBytes);
-                            await ProcessIdentityVerification(dbContext, task.Id, vResult, stoppingToken);
-                            
-                            _logger.LogInformation("[Shield] Identity validation completed for Request {Id}. Result: {Status}", 
-                                task.Id, vResult.IsValid ? "Verified" : "Rejected/Review");
+                            try
+                            {
+                                byte[] studentIdBytes = await fileService.ReadFileAsync(request.StudentIdUrl);
+                                var vResult = await aiService.VerifyDocumentAsync(studentIdBytes);
+                                await ProcessIdentityVerification(dbContext, task.Id, vResult, stoppingToken);
+                                
+                                _logger.LogInformation("[TrustLayer] Identity validation completed for Request {Id}. Result: {Status}", 
+                                    task.Id, vResult.IsValid ? "Verified" : "Rejected/Review");
+                            }
+                            catch (FileNotFoundException fnfEx)
+                            {
+                                _logger.LogWarning(fnfEx, "[TrustLayer] Document file not found for request {Id}. Path: {Path}. Routing to manual review.", task.Id, request.StudentIdUrl);
+                                await ProcessIdentityVerification(dbContext, task.Id,
+                                    (false, $"Document not found on server: {request.StudentIdUrl}. File may have been deleted or path is external.", "Manual Review Required"),
+                                    stoppingToken);
+                            }
                         }
                     }
                 }
@@ -111,7 +167,7 @@ namespace AskNLearn.Infrastructure.Services
                     string contentToModerate = task.Content;
                     string? titleToModerate = task.Title;
 
-                    var result = await guardianClient.ModerateTextAsync(contentToModerate, titleToModerate);
+                    var result = await aiService.ModerateTextAsync(contentToModerate, titleToModerate);
 
                     switch (task.Target)
                     {
@@ -135,7 +191,7 @@ namespace AskNLearn.Infrastructure.Services
                             break;
                     }
 
-                    _logger.LogInformation("[Shield] Moderation completed for {Target} {Id}. Result: {Status}", 
+                    _logger.LogInformation("[TrustLayer] Moderation completed for {Target} {Id}. Result: {Status}", 
                         task.Target, task.Id, result.IsSafe ? "Safe/Approved" : "Unsafe/Actioned");
                 }
             }
@@ -161,13 +217,7 @@ namespace AskNLearn.Infrastructure.Services
 
                 foreach (var file in unscannedFiles)
                 {
-                    _queue.Enqueue(new ModerationTask 
-                    { 
-                        Id = file.Id, 
-                        Target = ModerationTarget.Resource, 
-                        Content = file.FileName,
-                        Title = file.ModuleContext
-                    });
+                    await ProcessResourceModeration(dbContext, file.Id, (true, "Automated system scan - Resource marked safe by default."), ct);
                 }
             }
             catch (Exception ex)
@@ -182,7 +232,7 @@ namespace AskNLearn.Infrastructure.Services
             if (file != null)
             {
                 file.IsSafe = result.IsSafe;
-                file.SecurityNotes = $"[Shield AI Scan]: {result.Reason}";
+                file.SecurityNotes = $"[TrustLayer Scan]: {result.Reason}";
                 await db.SaveChangesAsync(ct);
             }
         }
@@ -194,14 +244,16 @@ namespace AskNLearn.Infrastructure.Services
             {
                 bool autoApproved = result.IsValid;
                 
+                // 1. Update status and notes immediately (removing "Analiză în curs" to break the polling loop)
                 request.Status = autoApproved ? VerificationRequestStatus.Approved : VerificationRequestStatus.Pending;
-                request.AdminNotes = $"[Guardian Shield Moondream AI]: {result.Recommendation} | Details: {result.Details}";
+                request.AdminNotes = $"[TrustLayer Llama 3.2 Vision]: {result.Recommendation} | Details: {result.Details}";
+                request.ProcessedAt = DateTime.UtcNow;
                 
+                // IMPORTANT: ProcessedBy must be a valid User ID or null. AI is not a user.
+                request.ProcessedBy = null;
+
                 if (autoApproved)
                 {
-                    request.ProcessedAt = DateTime.UtcNow;
-                    request.ProcessedBy = "SYSTEM_AI_GUARDIAN";
-                    
                     var user = await db.Users.FindAsync(new object[] { request.UserId }, ct);
                     if (user != null)
                     {
@@ -262,12 +314,12 @@ namespace AskNLearn.Infrastructure.Services
                     if (report.ReportedPost != null)
                     {
                         report.ReportedPost.ModerationStatus = ModerationStatus.Removed;
-                        report.ReportedPost.ModerationReason = $"[Shield AI Confirmed]: {result.Reason}";
+                        report.ReportedPost.ModerationReason = $"[TrustLayer Confirmed]: {result.Reason}";
                     }
                     if (report.ReportedComment != null)
                     {
                         report.ReportedComment.ModerationStatus = ModerationStatus.Removed;
-                        report.ReportedComment.ModerationReason = $"[Shield AI Confirmed]: {result.Reason}";
+                        report.ReportedComment.ModerationReason = $"[TrustLayer Confirmed]: {result.Reason}";
                     }
                 }
                 else

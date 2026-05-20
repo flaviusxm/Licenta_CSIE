@@ -1,0 +1,86 @@
+<div id="toast-container" aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+@if (TempData["Success"] != null || TempData["Error"] != null)
+{
+        @if (TempData["Success"] != null)
+        {
+            <div id="successToast" class="toast toast-premium success show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+                <div class="toast-header bg-transparent border-0 text-white">
+                    <span class="material-symbols-outlined me-2 text-success">check_circle</span>
+                    <strong class="me-auto">Success</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    @TempData["Success"]
+                </div>
+                <div class="toast-progress">
+                    <div class="toast-progress-fill text-success" id="successProgress"></div>
+                </div>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div id="errorToast" class="toast toast-premium error show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                <div class="toast-header bg-transparent border-0 text-white">
+                    <span class="material-symbols-outlined me-2 text-danger">error</span>
+                    <strong class="me-auto">Error</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    @TempData["Error"]
+                </div>
+                <div class="toast-progress">
+                    <div class="toast-progress-fill text-danger" id="errorProgress"></div>
+                </div>
+            </div>
+        }
+}
+</div>
+
+@if (TempData["Success"] != null || TempData["Error"] != null)
+{
+    <style>
+        .toast-premium {
+            animation: toast-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .toast-premium.hiding {
+            animation: toast-out 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+        }
+        @@keyframes toast-in {
+            from { opacity: 0; transform: translateY(-20px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @@keyframes toast-out {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(-20px) scale(0.9); }
+        }
+        .toast-progress-fill {
+            transition: width linear;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toasts = document.querySelectorAll('.toast-premium');
+            toasts.forEach(toast => {
+                const delay = parseInt(toast.getAttribute('data-bs-delay')) || 4000;
+                const progress = toast.querySelector('.toast-progress-fill');
+                
+                if (progress) {
+                    setTimeout(() => {
+                        progress.style.width = '100%';
+                        progress.style.transitionDuration = delay + 'ms';
+                    }, 10);
+                }
+
+                setTimeout(() => {
+                    toast.classList.add('hiding');
+                    setTimeout(() => {
+                        const bsToast = bootstrap.Toast.getInstance(toast) || new bootstrap.Toast(toast);
+                        bsToast.hide();
+                    }, 400);
+                }, delay);
+            });
+        });
+    </script>
+}

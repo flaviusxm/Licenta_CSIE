@@ -188,6 +188,7 @@ namespace AskNLearn.Web.Controllers
                 if (!isIdentityVerified)
                 {
                     _logger.LogWarning("Action blocked: User {UserId} attempted to comment or post without identity verification.", userId);
+                    TempData["Error"] = "Verify ID: You need a verified student identity to participate in discussions.";
                     return RedirectToAction(nameof(Details), new { id = command.CommunityId });
                 }
 
@@ -321,6 +322,7 @@ namespace AskNLearn.Web.Controllers
             
             if (!isIdentityVerified)
             {
+                TempData["Error"] = "Verify ID: You need a verified student identity to create discussions.";
                 return RedirectToAction(nameof(Details), new { id = command.CommunityId });
             }
 
@@ -430,7 +432,7 @@ namespace AskNLearn.Web.Controllers
                 Reason = reason
             });
 
-            return Ok(new { message = "Post reported successfully. Guardian AI is analyzing." });
+            return Ok(new { message = "Post reported successfully. TrustLayer is analyzing." });
         }
 
         [HttpPost("v1/comments/report")]
@@ -464,7 +466,7 @@ namespace AskNLearn.Web.Controllers
                 Reason = reason
             });
 
-            return Ok(new { message = "Comment reported successfully. Guardian AI is analyzing." });
+            return Ok(new { message = "Comment reported successfully. TrustLayer is analyzing." });
         }
     }
 }

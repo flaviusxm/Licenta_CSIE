@@ -8,18 +8,11 @@
 
 <div class="max-w-6xl mx-auto p-4 animate-entrance">
     <!-- Header & Controls -->
-    <div class="glass-card p-4 rounded-2xl border-glass-strong mb-5 shadow-lg">
-        <div class="row g-4 align-items-center">
-            <div class="col-md-6">
-                <h2 class="h4 fw-black text-white mb-1">Verification Queue</h2>
-                <p class="text-muted small mb-0">@(ViewBag.OnlyPending ? "Review identity documents and verify user accounts." : "View history of processed verification requests.")</p>
-            </div>
-            <div class="col-md-6">
-                <div class="d-flex align-items-center justify-content-md-end gap-2">
-                    <a asp-action="Verifications" asp-route-onlyPending="true" class="nav-link-filter @(ViewBag.OnlyPending ? "active" : "")">Pending Requests</a>
-                    <a asp-action="Verifications" asp-route-onlyPending="false" class="nav-link-filter @(!ViewBag.OnlyPending ? "active" : "")">Processed History</a>
-                </div>
-            </div>
+    <!-- Controls Only -->
+    <div class="mb-5">
+        <div class="d-flex align-items-center justify-content-start gap-2">
+            <a asp-action="Verifications" asp-route-onlyPending="true" class="nav-link-filter @(ViewBag.OnlyPending ? "active" : "")">Pending Requests</a>
+            <a asp-action="Verifications" asp-route-onlyPending="false" class="nav-link-filter @(!ViewBag.OnlyPending ? "active" : "")">Processed History</a>
         </div>
     </div>
 
@@ -66,7 +59,7 @@
                     <span class="material-symbols-outlined text-aurora fs-4">neurology</span>
                 </div>
                 <div>
-                    <h5 class="fw-bold text-white mb-0">Guardian AI Full Analysis</h5>
+                    <h5 class="fw-bold text-white mb-0">TrustLayer Full Analysis</h5>
                     <p class="text-muted small mb-0">Detailed document extraction & verification logs</p>
                 </div>
             </div>

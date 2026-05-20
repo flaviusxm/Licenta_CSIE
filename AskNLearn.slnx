@@ -6,5 +6,4 @@
     <Project Path="app/AskNLearn.Infrastructure/AskNLearn.Infrastructure.csproj" />
     <Project Path="app/AskNLearn.Web/AskNLearn.Web.csproj" />
   </Folder>
-  <Project Path="GuardianService/GuardianService.csproj" />
 </Solution>

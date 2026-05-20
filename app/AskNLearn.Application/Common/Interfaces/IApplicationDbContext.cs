@@ -13,7 +13,6 @@ namespace AskNLearn.Application.Common.Interfaces
         DbSet<Community> Communities { get; }
         DbSet<Post> Posts { get; }
         DbSet<ApplicationUser> Users { get; }
-        
         DbSet<CommunityMembership> CommunityMemberships { get; }
         DbSet<Notification> Notifications { get; }
         DbSet<Message> Messages { get; }
@@ -28,10 +27,8 @@ namespace AskNLearn.Application.Common.Interfaces
         DbSet<VerificationRequest> VerificationRequests { get; }
         DbSet<Friendship> Friendships { get; }
         DbSet<DirectConversationParticipant> DirectConversationParticipants { get; }
-        
         DbSet<PostTag> PostTags { get; }
         DbSet<Report> Reports { get; }
-        
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

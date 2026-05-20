@@ -45,7 +45,7 @@ namespace AskNLearn.Application.Features.Users.Commands.SubmitVerificationReques
                 CarnetUrl = request.CarnetUrl,
                 Status = VerificationRequestStatus.Pending,
                 SubmittedAt = DateTime.UtcNow,
-                AdminNotes = "[Guardian AI]: Analiză în curs...",
+                AdminNotes = "[TrustLayer]: Analiză în curs...",
                 ProcessedAt = null,
                 ProcessedBy = null
             };
@@ -53,7 +53,7 @@ namespace AskNLearn.Application.Features.Users.Commands.SubmitVerificationReques
             _context.VerificationRequests.Add(verificationRequest);
             await _context.SaveChangesAsync(cancellationToken);
 
-            // Enqueue for Guardian Shield (Background AI Processing)
+            // Enqueue for TrustLayer (Background AI Processing)
             _moderationQueue.Enqueue(new ModerationTask
             {
                 Id = verificationRequest.Id,

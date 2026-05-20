@@ -54,8 +54,22 @@ namespace AskNLearn.Infrastructure.Services
 
         public async Task<byte[]> ReadFileAsync(string filePath)
         {
-            var absolutePath = Path.Combine(_webHostEnvironment.WebRootPath, filePath.TrimStart('/'));
-            if (!File.Exists(absolutePath)) return Array.Empty<byte>();
+            if (string.IsNullOrEmpty(filePath)) 
+                throw new FileNotFoundException($"[FileService] Empty file path provided.");
+
+            // Determine root (main web app's wwwroot)
+            var root = _webHostEnvironment?.WebRootPath;
+            
+            if (string.IsNullOrEmpty(root))
+            {
+                var baseDir = Directory.GetCurrentDirectory();
+                root = Path.GetFullPath(Path.Combine(baseDir, "wwwroot"));
+            }
+
+            var absolutePath = Path.Combine(root, filePath.TrimStart('/'));
+            if (!File.Exists(absolutePath)) 
+                throw new FileNotFoundException($"[FileService] File not found at: {absolutePath} (relative: {filePath})");
+            
             return await File.ReadAllBytesAsync(absolutePath);
         }
     }

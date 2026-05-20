@@ -126,23 +126,7 @@
             </div>
         </div>
 
-        <!-- Notifications / Alerts -->
-        @if (TempData["Success"] != null) {
-            <div class="alert alert-success border-0 bg-success-soft text-success rounded-4 mb-4 animate-slide-in">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined">check_circle</span>
-                    <span class="fw-bold">@TempData["Success"]</span>
-                </div>
-            </div>
-        }
-        @if (TempData["Error"] != null) {
-            <div class="alert alert-danger border-0 bg-danger-soft text-danger rounded-4 mb-4 animate-slide-in">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined">error</span>
-                    <span class="fw-bold">@TempData["Error"]</span>
-                </div>
-            </div>
-        }
+        <!-- Notifications / Alerts are now handled globally by _Toasts.cshtml in _Layout.cshtml -->
 
         <div class="row g-4">
             <!-- Sidebar (Left) - Core Info & Management -->
@@ -208,63 +192,79 @@
                         </div>
                     </form>
 
-                    <!-- Identity Verification Console -->
+                    <!-- Simplified Identity Verification -->
                     <div class="glass-card border-glass shadow-2xl overflow-hidden">
                         <div class="px-4 py-3 border-bottom border-glass d-flex align-items-center justify-content-between bg-glass-soft">
                             <div class="d-flex align-items-center gap-2">
                                 <span class="material-symbols-outlined text-accent">verified_user</span>
                                 <h3 class="text-white fw-bold fs-xs text-uppercase tracking-widest mb-0">Identity & Institution Verification</h3>
                             </div>
-                            @if (Model.IsVerified) {
-                                <span class="badge bg-success-soft text-success rounded-pill px-3 py-1 fw-black text-uppercase fs-xs">Verified</span>
-                            } else if (Model.HasPendingVerification) {
-                                <span class="badge bg-warning-soft text-warning rounded-pill px-3 py-1 fw-black text-uppercase fs-xs animate-pulse">In Review</span>
-                            }
+                            <div id="verification-status-badge">
+                                @if (Model.IsVerified) {
+                                    <span class="badge bg-success-soft text-success rounded-pill px-3 py-1 fw-black text-uppercase fs-xs">Verified</span>
+                                } else if (Model.HasPendingVerification) {
+                                    <span class="badge @(Model.AdminNotes?.Contains("failed") == true ? "bg-danger-soft text-danger" : "bg-warning-soft text-warning") rounded-pill px-3 py-1 fw-black text-uppercase fs-xs">
+                                        @(Model.AdminNotes?.Contains("failed") == true ? "Manual Review" : "In Review")
+                                    </span>
+                                }
+                            </div>
                         </div>
 
                         <div class="p-4">
                             @if (!Model.IsVerified && !Model.HasPendingVerification && Model.IsOwnProfile) {
-                                <p class="text-muted small mb-4">Validate your account to unlock premium features. Upload your Personal ID, Passport, or University Card.</p>
+                                <p class="text-muted small mb-4">Validate your account to unlock premium features. Upload your Student ID, Passport, or University Card.</p>
                                 <form asp-action="SubmitVerification" asp-controller="Profile" method="post" enctype="multipart/form-data">
                                     <div class="premium-upload-zone rounded-4 p-5 text-center position-relative mb-4">
                                         <div class="upload-content py-3">
-                                            <span class="material-symbols-outlined fs-display text-accent mb-3 animate-bounce-slow">upload_file</span>
+                                            <span class="material-symbols-outlined fs-display text-accent mb-3">upload_file</span>
                                             <h4 class="text-white fw-bold mb-2">Upload Identity Document</h4>
                                             <p class="text-muted tiny mb-0 file-name-display">Drag & drop or click (Only PNG, JPG images supported)</p>
                                         </div>
                                         <input type="file" name="verificationDoc" class="position-absolute inset-0 opacity-0 cursor-pointer w-100 h-100" accept="image/png, image/jpeg, image/jpg" required onchange="ProfileManager.handleFileSelect(this)" />
                                     </div>
                                     <button type="submit" class="btn btn-premium w-100 py-3 fw-black text-uppercase tracking-widest fs-xs shadow-lg">
-                                        Start AI Verification
+                                        Start Verification
                                     </button>
                                 </form>
                             } else if (Model.HasPendingVerification) {
-                                <div class="guardian-console rounded-4 overflow-hidden border border-glass bg-black-alpha-40">
-                                    <div class="console-header px-3 py-2 border-bottom border-glass d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="spinner-grow text-accent" style="width: 8px; height: 8px;"></div>
-                                            <span class="text-white tiny fw-black text-uppercase tracking-widest">Guardian AI Monitoring</span>
+                                <div class="d-flex flex-column gap-3 p-4 rounded-4 bg-glass-soft border border-glass">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div id="verification-icon-box" class="flex-shrink-0">
+                                            @if (Model.AdminNotes?.Contains("failed") == true) {
+                                                <div class="rounded-circle bg-danger-soft text-danger p-2">
+                                                    <span class="material-symbols-outlined fs-2">error_outline</span>
+                                                </div>
+                                            } else {
+                                                <div id="verification-spinner" class="spinner-border text-accent" role="status" style="width: 2rem; height: 2rem; border-width: 0.15em;">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            }
                                         </div>
-                                        <span class="text-muted tiny font-monospace">@Model.Id.Substring(0, 8).ToUpper()</span>
+                                        <div>
+                                            <h4 class="text-white fw-bold mb-1 fs-5" id="verification-title">
+                                                @(Model.AdminNotes?.Contains("failed") == true ? "AI Processing Failed" : "Analyzing Documents")
+                                            </h4>
+                                            <p class="text-muted small mb-0" id="verification-desc">
+                                                @(Model.AdminNotes?.Contains("failed") == true 
+                                                    ? "TrustLayer couldn't verify your document. An administrator will now review it manually." 
+                                                    : "Our AI is currently scanning your documents. This usually takes less than a minute.")
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div class="console-body p-3 font-monospace small" style="min-height: 140px; background: rgba(0,0,0,0.2);">
-                                        <div class="d-flex align-items-start gap-2 mb-3">
-                                            <span class="text-accent">>></span>
-                                            <div id="guardian-current-notes" class="text-white">
-                                                @(string.IsNullOrEmpty(Model.AdminNotes) ? "[Guardian AI]: Inițializare scanare biometrică și OCR..." : Model.AdminNotes)
+                                    
+                                    @if (Model.AdminNotes?.Contains("failed") == true) {
+                                        <div class="mt-2 p-3 rounded-3 bg-black-alpha-20 border border-glass-thin">
+                                            <div class="d-flex gap-2">
+                                                <span class="material-symbols-outlined text-danger fs-6">info</span>
+                                                <span class="text-muted tiny">Note: @Model.AdminNotes</span>
                                             </div>
                                         </div>
-                                        
-                                        <div id="guardian-logs" class="mt-3 pt-3 border-top border-glass-thin overflow-auto" style="max-height: 80px;">
-                                            <div class="text-muted tiny">>> System handshake... OK</div>
-                                            <div class="text-muted tiny">>> Fetching document from secure storage... OK</div>
-                                            <div class="text-muted tiny animate-pulse">>> Waiting for AI model (moondream) inference...</div>
-                                        </div>
-                                    </div>
+                                    }
                                 </div>
+
                                 @if (Model.IsOwnProfile) {
                                     <form asp-action="CancelVerification" method="post" class="mt-3">
-                                        <button type="submit" class="btn btn-link text-danger text-decoration-none tiny fw-black text-uppercase">Cancel Request</button>
+                                        <button type="submit" class="btn btn-link text-danger text-decoration-none tiny fw-black text-uppercase p-0">Cancel Request</button>
                                     </form>
                                 }
                             } else if (Model.IsVerified) {
@@ -280,10 +280,10 @@
                             }
                         </div>
                     </div>
-
                 </div>
             </div>
-        </div>    </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -313,9 +313,6 @@
         border-style: solid;
     }
 
-    .guardian-console {
-        font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    }
     .bg-black-alpha-40 { background: rgba(0, 0, 0, 0.4); }
     
     .timeline-unified { border-left: 2px solid var(--border-glass); }

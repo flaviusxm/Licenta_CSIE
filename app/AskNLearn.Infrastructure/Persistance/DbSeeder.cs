@@ -73,8 +73,8 @@ namespace AskNLearn.Infrastructure.Persistance
             // 8. Reports (for moderation testing)
             await SeedReportsAsync(ctx, users, posts);
 
-            // 9. Verification Requests (for document verification testing)
-            await SeedVerificationRequestsAsync(ctx, users);
+            // 9. Verification Requests (Disabled per user request for manual testing)
+            // await SeedVerificationRequestsAsync(ctx, users);
 
             Console.WriteLine("[Seeder] Done.");
         }

@@ -43,19 +43,23 @@
                     </div>
                 </div>
 
-                <div class="p-4 rounded-4 bg-black bg-opacity-30 border border-glass d-flex align-items-center justify-content-between">
-                     <div class="d-flex align-items-center gap-4">
-                        <div class="text-center">
-                            <span class="text-muted small d-block mb-1">Awaiting Review</span>
-                            <span class="badge glass-badge glass-badge-warning fs-6 px-3">@ViewBag.AiSuspectCount</span>
+                <div class="row g-4 mt-2">
+                    <div class="col-md-12">
+                        <div class="p-4 rounded-4 bg-black bg-opacity-30 border border-glass d-flex align-items-center justify-content-between h-100">
+                             <div class="d-flex align-items-center gap-4">
+                                <div class="text-center">
+                                    <span class="text-muted small d-block mb-1">Awaiting Review</span>
+                                    <span class="badge glass-badge glass-badge-warning fs-6 px-3">@ViewBag.AiSuspectCount</span>
+                                </div>
+                                <div class="border-start border-glass h-30px mx-2"></div>
+                                <div class="text-center">
+                                    <span class="text-muted small d-block mb-1">Pending ID</span>
+                                    <span class="badge glass-badge glass-badge-aurora fs-6 px-3">@ViewBag.PendingVerifications</span>
+                                </div>
+                             </div>
+                             <a asp-action="Moderation" class="btn btn-premium px-4 shadow-glow">Review Queue</a>
                         </div>
-                        <div class="border-start border-glass h-30px mx-2"></div>
-                        <div class="text-center">
-                            <span class="text-muted small d-block mb-1">Pending ID</span>
-                            <span class="badge glass-badge glass-badge-aurora fs-6 px-3">@ViewBag.PendingVerifications</span>
-                        </div>
-                     </div>
-                     <a asp-action="Moderation" class="btn btn-premium px-4 shadow-glow">Review Queue</a>
+                    </div>
                 </div>
             </div>
 

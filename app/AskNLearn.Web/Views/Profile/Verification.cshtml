@@ -20,20 +20,7 @@
             <p class="text-muted fw-bold">Complete the milestones below to unlock the "Verified Student" status and exclusive community features.</p>
         </div>
 
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger d-flex align-items-center gap-2 p-3 p-md-4 shadow-sm" style="border-radius: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444;" role="alert">
-                <span class="material-symbols-outlined fs-5">error</span>
-                <span class="fw-bold tracking-widest text-uppercase" style="font-size: 0.75rem;">@TempData["Error"]</span>
-            </div>
-        }
-        @if (TempData["Success"] != null)
-        {
-             <div class="alert alert-success d-flex align-items-center gap-2 p-3 p-md-4 shadow-sm" style="border-radius: 1.5rem; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.2); color: var(--color-mint-bright);" role="alert">
-                <span class="material-symbols-outlined fs-5">check_circle</span>
-                <span class="fw-bold tracking-widest text-uppercase" style="font-size: 0.75rem;">@TempData["Success"]</span>
-            </div>
-        }
+        <!-- Notifications are now handled globally by _Toasts.cshtml -->
 
         <!-- The Journey Stepper -->
         <div class="position-relative d-flex flex-column gap-5">
