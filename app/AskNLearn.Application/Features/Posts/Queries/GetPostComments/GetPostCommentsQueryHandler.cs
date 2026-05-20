@@ -22,7 +22,7 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostComments
         {
             var post = await _context.Posts
                 .Where(p => p.Id == request.PostId)
-                .Select(p => new { p.Id, p.AuthorId, p.IsSolved })
+                .Select(p => new { p.Id, p.AuthorId })
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (post == null)
@@ -63,7 +63,6 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostComments
                 PostId = request.PostId,
                 CommunityId = request.CommunityId,
                 AuthorId = post.AuthorId,
-                IsSolved = post.IsSolved,
                 Comments = comments
             };
         }

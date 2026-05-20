@@ -26,8 +26,6 @@ namespace AskNLearn.Domain.Entities.SocialFeed
         [Required]
         public string Content { get; set; } = null!; 
 
-        public bool IsSolved { get; set; } = false;
-        public bool IsLocked { get; set; } = false;
         public bool IsPinned { get; set; } = false;
         public int ViewCount { get; set; } = 0;
 

@@ -23,7 +23,6 @@ namespace AskNLearn.Application.Features.Posts.Commands.UpdatePost
 
             post.Title = request.Title;
             post.Content = request.Content;
-            post.IsSolved = request.IsSolved;
 
             await _context.SaveChangesAsync(cancellationToken);
             return true;

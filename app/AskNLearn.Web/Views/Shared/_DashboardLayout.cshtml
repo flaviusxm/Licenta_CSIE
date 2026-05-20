@@ -21,7 +21,7 @@
     <partial name="_Toasts" />
 
     <!-- Banner de avertizare pentru email neverificat -->
-    @if (User.Identity?.IsAuthenticated == true)
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         var userManager = Context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<AskNLearn.Domain.Entities.Core.ApplicationUser>>();
         var user = await userManager.GetUserAsync(User);
@@ -60,18 +60,35 @@
             <a asp-controller="Leaderboard" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Leaderboard" ? "active" : "")">
                 Leaderboard
             </a>
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="Profile" asp-action="Index" class="nav-link-premium justify-content-center @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Profile" ? "active" : "")">
+                    Profile
+                </a>
+            }
         </nav>
         
-        <!-- Right Actions (Simplified for non-auth or general state) -->
+        <!-- Right Actions -->
         <div class="d-flex align-items-center justify-content-end gap-3" style="width: 15.625rem;">
-            @if (User.Identity?.IsAuthenticated == false)
+            @if (User.Identity == null || !User.Identity.IsAuthenticated)
             {
                 <div class="d-flex align-items-center gap-2">
                     <a asp-controller="Auth" asp-action="SignIn" class="btn btn-glass border-0">Log In</a>
                     <a asp-controller="Auth" asp-action="SignUp" class="btn btn-premium shadow-sm">Sign Up</a>
                 </div>
             }
-            @* Inbox and Profile moved to Home Sidebar *@
+            else
+            {
+                <div class="d-flex align-items-center gap-2">
+                    <a asp-controller="Direct" asp-action="Index" class="btn btn-glass btn-sm rounded-circle p-2 position-relative d-flex align-items-center justify-content-center border-0 text-muted hover-text-white" title="Inbox">
+                        <span class="material-symbols-outlined fs-5">mail</span>
+                        <!-- Status indicator (red dot) would go here -->
+                    </a>
+                    <a asp-controller="Profile" asp-action="Index" class="btn btn-premium btn-sm rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-2 shadow-sm">
+                        <span class="material-symbols-outlined fs-6">person</span> Profile
+                    </a>
+                </div>
+            }
         </div>
     </header>
 

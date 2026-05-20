@@ -134,7 +134,7 @@ namespace app_licenta.Controllers
                     CommentCount = p.Comments.Count,
                     ViewCount = p.ViewCount,
                     VoteCount = _context.PostVotes.Where(v => v.PostId == p.Id).Select(v => (int)v.VoteValue).Sum(),
-                    IsSolved = p.IsSolved,
+                    IsPinned = p.IsPinned,
                     CreatedAt = p.CreatedAt,
                     UserVote = !string.IsNullOrEmpty(currentUserId)
                         ? _context.PostVotes.Where(v => v.PostId == p.Id && v.UserId == currentUserId).Select(v => (int)v.VoteValue).FirstOrDefault()
@@ -168,7 +168,7 @@ namespace app_licenta.Controllers
         public int CommentCount { get; set; }
         public int ViewCount { get; set; }
         public int VoteCount { get; set; }
-        public bool IsSolved { get; set; }
+        public bool IsPinned { get; set; }
         public int UserVote { get; set; } // 1, -1, or 0
         public DateTime CreatedAt { get; set; }
     }

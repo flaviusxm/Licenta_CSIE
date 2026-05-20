@@ -25,19 +25,19 @@
             </div>
 
             <div class="px-5 pb-5 position-relative">
-                <div class="d-flex align-items-end gap-4" style="margin-top: -80px;">
-                    <div class="position-relative">
-                        <div class="avatar-lg rounded-4 overflow-hidden border border-4 border-universe shadow-2xl" style="width: 160px; height: 160px;">
+                <div class="d-flex flex-column flex-md-row align-items-md-end gap-4" style="margin-top: -80px;">
+                    <div class="position-relative" style="z-index: 2;">
+                        <div class="avatar-lg rounded-circle overflow-hidden border border-4 border-universe shadow-2xl" style="width: 150px; height: 150px; background: var(--bg-universe);">
                             <img src="@(Model.AvatarUrl ?? "https://api.dicebear.com/7.x/avataaars/svg?seed=" + Model.FullName)" class="w-100 h-100 object-cover" id="avatarPreview" />
                         </div>
                         @if (Model.IsOwnProfile) {
-                            <button type="button" class="btn btn-premium p-0 d-flex align-items-center justify-content-center position-absolute bottom-0 end-0 m-2 rounded-3 shadow-lg" style="width: 32px; height: 32px;" onclick="document.getElementById('avatarUpload').click()">
+                            <button type="button" class="btn btn-premium p-0 d-flex align-items-center justify-content-center position-absolute bottom-0 end-0 m-1 rounded-circle shadow-lg" style="width: 36px; height: 36px; border: 3px solid var(--bg-universe);" onclick="document.getElementById('avatarUpload').click()">
                                 <span class="material-symbols-outlined fs-6">camera_alt</span>
                             </button>
                         }
                     </div>
                     
-                    <div class="flex-grow-1 pb-2">
+                    <div class="flex-grow-1 pb-2 pt-3 pt-md-0 d-flex flex-column gap-1">
                         <div class="d-flex align-items-center gap-3 mb-1 profile-name-container">
                             <input type="text" form="profileUpdateForm" name="FullName" 
                                    class="h2 fw-black text-white m-0 bg-transparent border-0 p-0 w-100 profile-name-input" 
@@ -59,18 +59,18 @@
                                 <span class="tiny fw-bold text-uppercase tracking-widest">@Model.ReputationPoints pts</span>
                             </div>
                         </div>
-                        <p class="text-muted mb-0 d-flex align-items-center gap-2">
+                        <p class="text-muted mb-0 mt-2 d-flex align-items-center gap-2 small">
                             <span class="material-symbols-outlined fs-6">school</span>
                             Student @@ @(Model.Role == "Admin" ? "Administration" : "Community")
                         </p>
                     </div>
 
-                    <div class="d-flex gap-4 pb-2 align-items-center">
-                        <div class="text-center">
+                    <div class="d-flex flex-wrap gap-3 pb-2 align-items-center justify-content-md-end mt-3 mt-md-0">
+                        <div class="bg-glass border border-glass px-4 py-2 rounded-4 text-center">
                             <div class="h5 fw-black text-white mb-0">@Model.PostsCount</div>
                             <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Posts</div>
                         </div>
-                        <div class="text-center">
+                        <div class="bg-glass border border-glass px-4 py-2 rounded-4 text-center">
                             <div class="h5 fw-black text-white mb-0">@Model.AnswersCount</div>
                             <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Answers</div>
                         </div>

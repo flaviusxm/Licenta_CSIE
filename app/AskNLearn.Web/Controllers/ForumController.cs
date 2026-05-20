@@ -20,7 +20,6 @@ using AskNLearn.Application.Features.Communities.Commands.LeaveCommunity;
 using AskNLearn.Application.Features.Posts.Commands.VotePost;
 using AskNLearn.Application.Features.Posts.Commands.DeleteComment;
 using AskNLearn.Application.Features.Posts.Commands.UpdateComment;
-using AskNLearn.Application.Features.Posts.Commands.TogglePostSolved;
 using Microsoft.AspNetCore.Identity;
 
 namespace AskNLearn.Web.Controllers
@@ -346,8 +345,7 @@ namespace AskNLearn.Web.Controllers
             {
                 Id = post.Id,
                 Title = post.Title,
-                Content = post.Content,
-                IsSolved = post.IsSolved
+                Content = post.Content
             };
 
             return View(command);
@@ -385,13 +383,6 @@ namespace AskNLearn.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = communityId });
         }
 
-        [HttpPost("discussions/v1/solve-toggle/{id:guid}")]
-        public async Task<IActionResult> ToggleSolved(Guid id, Guid communityId)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            await _mediator.Send(new TogglePostSolvedCommand { Id = id, UserId = userId });
-            return RedirectToAction(nameof(Details), new { id = communityId });
-        }
         [HttpGet("hover-card/{id:guid}")]
         public async Task<IActionResult> GetHoverCard(Guid id)
         {

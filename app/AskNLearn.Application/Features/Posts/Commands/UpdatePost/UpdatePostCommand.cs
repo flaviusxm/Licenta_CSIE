@@ -14,7 +14,5 @@ namespace AskNLearn.Application.Features.Posts.Commands.UpdatePost
 
         [Required]
         public string Content { get; set; } = null!;
-
-        public bool IsSolved { get; set; }
     }
 }

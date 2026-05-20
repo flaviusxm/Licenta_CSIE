@@ -28,7 +28,8 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
                 .Where(p => p.CommunityId == request.CommunityId && p.ModerationStatus != ModerationStatus.Flagged && p.ModerationStatus != ModerationStatus.Removed)
                 .Include(p => p.Author)
                 .Include(p => p.Attachments)
-                .OrderByDescending(p => p.CreatedAt)
+                .OrderByDescending(p => p.IsPinned)
+                .ThenByDescending(p => p.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(p => new PostDto
@@ -39,8 +40,7 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
                     AuthorName = p.Author != null ? p.Author.FullName : "Unknown",
                     Title = p.Title,
                     Content = p.Content,
-                    IsSolved = p.IsSolved,
-                    IsLocked = p.IsLocked,
+                    IsPinned = p.IsPinned,
                     ViewCount = p.ViewCount,
                     CommentCount = p.Comments.Where(c => c.ModerationStatus != ModerationStatus.Flagged && c.ModerationStatus != ModerationStatus.Removed).Count(),
                     VoteCount = _context.PostVotes.Where(v => v.PostId == p.Id).Select(v => (int)v.VoteValue).Sum(),

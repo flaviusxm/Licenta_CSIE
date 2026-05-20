@@ -45,8 +45,13 @@
                     </div>
                     <a asp-controller="Profile" asp-action="Index" asp-route-id="@post.AuthorId" class="fw-medium text-muted small text-decoration-none hover-text-white transition-all">u/@post.AuthorName.ToLower().Replace(" ", "_")</a>
                     <span class="text-muted small">• @post.CreatedAt.ToString("dd MMM yyyy")</span>
-                    
-
+                    @if (post.IsPinned)
+                    {
+                        <span class="badge bg-warning-soft text-warning rounded-pill px-2 py-0 tiny fw-black text-uppercase d-flex align-items-center gap-1" title="Pinned Post">
+                            <span class="material-symbols-outlined" style="font-size: 10px;">push_pin</span>
+                            Pinned
+                        </span>
+                    }
                     @if (isRemoved)
                     {
                         <span class="badge bg-danger-soft text-danger rounded-pill px-2 py-0 tiny fw-black text-uppercase d-flex align-items-center gap-1" title="Removed by TrustLayer">

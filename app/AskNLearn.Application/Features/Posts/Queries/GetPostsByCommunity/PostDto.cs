@@ -14,8 +14,7 @@ namespace AskNLearn.Application.Features.Posts.Queries.GetPostsByCommunity
         public ConnectionStatus AuthorConnectionStatus { get; set; } = ConnectionStatus.None;
         public string Title { get; set; } = null!;
         public string Content { get; set; } = null!;
-        public bool IsSolved { get; set; }
-        public bool IsLocked { get; set; }
+        public bool IsPinned { get; set; }
         public int ViewCount { get; set; }
         public int CommentCount { get; set; }
         public int VoteCount { get; set; }

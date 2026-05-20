@@ -151,37 +151,7 @@
                     </div>
                 }
 
-                <!-- Trending Communities Widget -->
-                <div class="glass-card p-4 rounded-3xl border-glass shadow-lg mb-4">
-                    <h4 class="h6 fw-black text-white mb-4 d-flex align-items-center gap-2">
-                        <span class="material-symbols-outlined text-aurora fs-5">hub</span>
-                        Trending Communities
-                    </h4>
-                    <div class="d-flex flex-column gap-3">
-                        @foreach (var community in ViewBag.TopCommunities)
-                        {
-                            <a href="/hubs/communities/@community.Id" class="d-flex align-items-center gap-3 text-decoration-none group p-2 rounded-2xl transition-all hover-bg-glass">
-                                <div class="rounded-circle overflow-hidden shadow-sm flex-shrink-0 bg-glass d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border: 1px solid var(--border-glass);">
-                                    @if (!string.IsNullOrEmpty(community.ImageUrl))
-                                    {
-                                        <img src="@community.ImageUrl" class="w-100 h-100 object-cover" />
-                                    }
-                                    else
-                                    {
-                                        <span class="material-symbols-outlined text-muted fs-5">groups</span>
-                                    }
-                                </div>
-                                <div class="flex-grow-1 min-w-0">
-                                    <h5 class="small fw-bold text-white mb-0 text-truncate group-hover-text-aurora transition-all">@community.Name</h5>
-                                    <span class="text-muted tiny">@community.PostCount.ToString("N0") discussions</span>
-                                </div>
-                                <span class="material-symbols-outlined text-muted fs-6 opacity-0 group-hover-opacity-100 transition-all">chevron_right</span>
-                            </a>
-                        }
-                    </div>
-                    <a asp-controller="Explore" asp-action="Index" class="btn btn-link text-muted small w-100 mt-3 text-decoration-none hover-text-white fw-bold">Explore All</a>
-                </div>
-
+                <!-- Trending Communities Widget Removed as requested -->
                 
             </div>
         </div>
