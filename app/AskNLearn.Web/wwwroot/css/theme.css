@@ -482,3 +482,16 @@ body {
 .rotate-icon.rotate-icon-active {
     transform: rotate(90deg);
 }
+/* Upvote hover effect */
+.vote-btn-up:hover .material-symbols-outlined {
+    color: #3b82f6 !important;
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+}
+
+/* Downvote hover effect (already working, but let's ensure) */
+.vote-btn-down:hover .material-symbols-outlined {
+    color: #ef4444 !important;
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+}

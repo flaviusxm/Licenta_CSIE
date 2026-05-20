@@ -24,18 +24,22 @@
                 
                 <!-- Vote Column -->
                 <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0 rounded-pill py-2" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass); width: 44px;">
-                    <button onclick="votePost('@post.Id', '@post.CommunityId', 1)" 
-                            class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-up-@post.Id transition-colors @(post.UserVote == 1 ? "text-accent font-weight-bold" : "text-muted hover-glow")">
-                        <span class="material-symbols-outlined fs-5 vote-icon-up-@post.Id">keyboard_arrow_up</span>
+                    <!-- Upvote -->
+                    <button onclick="votePost('@post.Id', '@post.CommunityId', 1)"
+                            class="btn btn-link p-0 text-decoration-none d-flex align-items-center justify-content-center vote-btn-up-@post.Id transition-all @(post.UserVote == 1 ? "text-accent" : "text-muted hover-text-accent")"
+                            style="@(post.UserVote != 1 ? "cursor:pointer;" : "")">
+                        <span class="material-symbols-outlined fs-3">keyboard_arrow_up</span>
                     </button>
 
-                    <span class="fw-bold vote-count-@post.Id @(post.UserVote == 1 ? "text-accent" : post.UserVote == -1 ? "text-danger" : "text-white")" style="font-size: 0.9rem;">
+                    <span class="fw-bold vote-count-@post.Id @(post.UserVote == 1 ? "text-accent" : post.UserVote == -1 ? "text-danger" : "text-white")" style="font-size: 0.85rem;">
                         @post.VoteCount
                     </span>
 
-                    <button onclick="votePost('@post.Id', '@post.CommunityId', -1)" 
-                            class="btn btn-link p-1 text-decoration-none d-flex align-items-center justify-content-center vote-btn-down-@post.Id transition-colors @(post.UserVote == -1 ? "text-danger font-weight-bold" : "text-muted hover-text-danger")">
-                        <span class="material-symbols-outlined fs-5 vote-icon-down-@post.Id">keyboard_arrow_down</span>
+                    <!-- Downvote -->
+                    <button onclick="votePost('@post.Id', '@post.CommunityId', -1)"
+                            class="btn btn-link p-0 text-decoration-none d-flex align-items-center justify-content-center vote-btn-down-@post.Id transition-all @(post.UserVote == -1 ? "text-danger" : "text-muted hover-text-danger")"
+                            style="@(post.UserVote != -1 ? "cursor:pointer;" : "")">
+                        <span class="material-symbols-outlined fs-3">keyboard_arrow_down</span>
                     </button>
                 </div>
 
@@ -51,6 +55,13 @@
                             <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId" class="text-aurora fw-bold text-decoration-none hover-glow transition-all" style="font-size: 0.85rem;">@post.CommunityName</a>
                         </div>
                         <span class="text-muted ms-auto" style="font-size: 0.75rem;">• @post.CreatedAt.ToString("dd MMM yyyy")</span>
+                        @if (post.IsPinned)
+                        {
+                            <span class="badge rounded-pill px-2 py-0 tiny fw-black text-uppercase d-flex align-items-center gap-1 ms-2" style="background: rgba(255,193,7,0.15); color: #ffc107; font-size: 0.65rem;" title="Pinned Post">
+                                <span class="material-symbols-outlined" style="font-size: 10px;">push_pin</span>
+                                Pinned
+                            </span>
+                        }
                     </div>
 
                     <a asp-controller="Forum" asp-action="Details" asp-route-id="@post.CommunityId" class="text-decoration-none d-block">

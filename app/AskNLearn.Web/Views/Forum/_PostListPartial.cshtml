@@ -22,17 +22,15 @@
 
             <!-- Vote Column (Reddit style) -->
             <div class="d-flex flex-column align-items-center gap-1 flex-shrink-0" style="width: 40px; margin-top: 4px;">
+                <!-- Upvote -->
                 <button onclick="votePost('@post.Id', '@communityId', 1)"
-                        class="btn btn-link p-0 text-decoration-none d-flex align-items-center justify-content-center vote-btn-up-@post.Id transition-all @(post.UserVote == 1 ? "text-accent scale-125" : "text-muted hover-text-accent")">
+                        class="btn btn-link p-0 text-decoration-none d-flex align-items-center justify-content-center vote-btn-up-@post.Id transition-all @(post.UserVote == 1 ? "text-accent" : "text-muted")">
                     <span class="material-symbols-outlined fs-3">keyboard_arrow_up</span>
                 </button>
 
-                <span class="fw-bold vote-count-@post.Id @(post.UserVote == 1 ? "text-accent" : post.UserVote == -1 ? "text-danger" : "text-white")" style="font-size: 0.85rem;">
-                    @post.VoteCount
-                </span>
-
+                <!-- Downvote -->
                 <button onclick="votePost('@post.Id', '@communityId', -1)"
-                        class="btn btn-link p-0 text-decoration-none d-flex align-items-center justify-content-center vote-btn-down-@post.Id transition-all @(post.UserVote == -1 ? "text-danger scale-125" : "text-muted hover-text-danger")">
+                        class="btn btn-link p-0 text-decoration-none d-flex align-items-center justify-content-center vote-btn-down-@post.Id transition-all @(post.UserVote == -1 ? "text-danger" : "text-muted")">
                     <span class="material-symbols-outlined fs-3">keyboard_arrow_down</span>
                 </button>
             </div>
