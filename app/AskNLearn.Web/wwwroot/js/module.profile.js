@@ -2,9 +2,26 @@
  * ProfileManager - Handles profile management logic
  */
 class ProfileManager {
-    static init(isOwnProfile, initialTags, initialLinks, userId, isPending) {
+    static rankThresholds = [
+        { name: "Newcomer", minPoints: 0 },
+        { name: "Apprentice", minPoints: 200 },
+        { name: "Scholar", minPoints: 500 },
+        { name: "Contributor", minPoints: 1000 },
+        { name: "Expert", minPoints: 2000 },
+        { name: "Mentor", minPoints: 4000 },
+        { name: "Legend", minPoints: 8000 }
+    ];
+
+    static init(isOwnProfile, userId, isPending, currentPoints) {
         this.userId = userId;
+        this.isOwnProfile = isOwnProfile;
         this.isPending = isPending;
+        this.originalBio = null;
+        this.currentPoints = currentPoints;
+
+        // Load rank progress
+        this.loadRankProgress();
+        this.loadRecentActivity();
 
         if (isPending) {
             this.startVerificationPolling();
@@ -12,43 +29,113 @@ class ProfileManager {
 
         if (!isOwnProfile) return;
 
-        // Setup social list
-        this.renderSocialLinks(initialLinks);
+        // Setup name edit
+        const nameInput = document.getElementById('fullNameInput');
+        if (nameInput) {
+            nameInput.addEventListener('input', () => this.onDataChanged());
+        }
 
-        // Setup auto-sync for inline fields
-        const inputs = document.querySelectorAll('.inline-edit-input, .premium-textarea');
-        inputs.forEach(input => {
-            input.addEventListener('change', () => this.syncChanges());
-        });
-
-        // Setup Reset Password button in modal
+        // Setup Reset Password button
         const btnReset = document.getElementById('btnRequestReset');
         if (btnReset) {
             btnReset.addEventListener('click', async () => {
                 btnReset.disabled = true;
                 btnReset.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
-                
                 try {
                     await axios.post('/identity/auth/request-password-reset');
-                    
-                    document.getElementById('resetFeedback')?.classList.remove('d-none');
-                    btnReset.innerHTML = 'Link Sent!';
-                    setTimeout(() => {
-                        const modalEl = document.getElementById('resetModal');
-                        const modal = bootstrap.Modal.getInstance(modalEl);
-                        modal?.hide();
-                        setTimeout(() => {
-                            btnReset.disabled = false;
-                            btnReset.innerHTML = 'Send Reset Link';
-                            document.getElementById('resetFeedback')?.classList.add('d-none');
-                        }, 500);
-                    }, 2000);
+                    window.Notify.success('Reset link sent to your email');
+                    const modalEl = document.getElementById('resetModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
                 } catch (e) {
+                    window.Notify.error('Failed to send reset link');
+                } finally {
                     btnReset.disabled = false;
                     btnReset.innerHTML = 'Send Reset Link';
                 }
             });
         }
+    }
+
+    static onDataChanged() {
+        const banner = document.getElementById('saveChangesBanner');
+        if (banner) banner.classList.remove('d-none');
+    }
+
+    static editBio() {
+        if (!this.isOwnProfile) return;
+
+        const display = document.getElementById('bioDisplay');
+        const edit = document.getElementById('bioEdit');
+        const textarea = document.getElementById('bioTextarea');
+
+        if (display && edit && textarea) {
+            this.originalBio = display.innerText.trim();
+            textarea.value = this.originalBio === 'No bio yet. Click edit to add one.' ? '' : this.originalBio;
+            display.classList.add('d-none');
+            edit.classList.remove('d-none');
+        }
+    }
+
+    static cancelBioEdit() {
+        const display = document.getElementById('bioDisplay');
+        const edit = document.getElementById('bioEdit');
+
+        if (display && edit) {
+            display.classList.remove('d-none');
+            edit.classList.add('d-none');
+        }
+    }
+
+    static async saveBio() {
+        const textarea = document.getElementById('bioTextarea');
+        const newBio = textarea?.value || '';
+
+        const hidden = document.getElementById('bioHidden');
+        if (hidden) hidden.value = newBio;
+
+        await this.saveChanges();
+        this.cancelBioEdit();
+
+        const display = document.getElementById('bioDisplay');
+        if (display) {
+            display.innerText = newBio || 'No bio yet. Click edit to add one.';
+        }
+    }
+
+    static async saveChanges() {
+        const form = document.getElementById('profileUpdateForm');
+        const fullNameInput = document.getElementById('fullNameInput');
+        const fullNameHidden = document.getElementById('fullNameHidden');
+
+        if (fullNameInput && fullNameHidden) {
+            fullNameHidden.value = fullNameInput.value;
+        }
+
+        const formData = new FormData(form);
+
+        try {
+            const response = await axios.post('/identity/profiles/update', formData);
+
+            if (response.data && response.data.length === 0) {
+                window.Notify.success('Profile updated');
+                const banner = document.getElementById('saveChangesBanner');
+                if (banner) banner.classList.add('d-none');
+
+                // Refresh page to show updated data
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                window.Notify.error('Failed to update profile');
+            }
+        } catch (e) {
+            window.Notify.error('Failed to update profile');
+        }
+    }
+
+    static async discardChanges() {
+        const banner = document.getElementById('saveChangesBanner');
+        if (banner) banner.classList.add('d-none');
+        location.reload();
     }
 
     static showResetModal() {
@@ -59,149 +146,137 @@ class ProfileManager {
         }
     }
 
-    static async syncChanges() {
-        const form = document.getElementById('linkedInForm');
-        if (!form) return;
+    static handleFileSelect(input) {
+        const display = input.parentElement.querySelector('.file-name-display');
+        if (input.files && input.files[0]) {
+            display.innerText = input.files[0].name;
+            display.classList.add('text-primary');
+            input.parentElement.style.borderColor = '#3b82f6';
 
-        const formData = new FormData(form);
-        const badge = document.getElementById('syncBadge');
-        const status = document.getElementById('syncStatus');
+            // Auto-submit the form
+            const form = input.closest('form');
+            if (form) form.submit();
+        }
+    }
 
-        if (badge && status) {
-            badge.style.transform = 'translateY(0) translateX(-50%)';
-            badge.style.opacity = '1';
-            status.textContent = "Syncing...";
+    static loadRankProgress() {
+        const currentPoints = this.currentPoints;
+        const thresholds = this.rankThresholds;
+
+        // Find current rank
+        let currentRank = thresholds[0];
+        let nextRank = null;
+
+        for (let i = thresholds.length - 1; i >= 0; i--) {
+            if (currentPoints >= thresholds[i].minPoints) {
+                currentRank = thresholds[i];
+                nextRank = thresholds[i + 1] || null;
+                break;
+            }
         }
 
-        try {
-            await axios.post('/identity/profiles/update', formData);
+        const currentRankNameEl = document.getElementById('currentRankName');
+        const nextRankNameEl = document.getElementById('nextRankName');
+        const progressBar = document.getElementById('rankProgressBar');
+        const nextThresholdEl = document.getElementById('nextRankThreshold');
+        const currentPointsEl = document.getElementById('currentRankPoints');
 
-            // If files were uploaded, we might want to refresh previews
-            const avatarInput = document.getElementById('avatarUpload');
-            if (avatarInput && avatarInput.files.length > 0) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('avatarPreview').src = e.target.result;
-                    // Also update sidebar avatars if any
-                    document.querySelectorAll('.profile-avatar-img').forEach(img => img.src = e.target.result);
-                };
-                reader.readAsDataURL(avatarInput.files[0]);
+        if (currentRankNameEl) {
+            currentRankNameEl.textContent = currentRank.name;
+        }
+
+        if (nextRank) {
+            if (nextRankNameEl) nextRankNameEl.textContent = nextRank.name;
+
+            const pointsToNext = nextRank.minPoints - currentPoints;
+            const totalForRank = nextRank.minPoints - currentRank.minPoints;
+            const progress = Math.floor(((currentPoints - currentRank.minPoints) / totalForRank) * 100);
+
+            if (progressBar) {
+                progressBar.style.width = `${Math.min(progress, 100)}%`;
+                progressBar.setAttribute('aria-valuenow', progress);
             }
 
-            const bannerInput = document.getElementById('bannerUpload');
-            if (bannerInput && bannerInput.files.length > 0) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const banner = document.querySelector('.profile-banner-stage');
-                    if (banner) banner.style.backgroundImage = `url('${e.target.result}')`;
-                };
-                reader.readAsDataURL(bannerInput.files[0]);
+            if (nextThresholdEl) {
+                nextThresholdEl.textContent = `${pointsToNext} pts to ${nextRank.name}`;
             }
+        } else {
+            // Max rank reached
+            if (nextRankNameEl) nextRankNameEl.textContent = "Legend (Max)";
+            if (progressBar) {
+                progressBar.style.width = "100%";
+                progressBar.classList.add('bg-success');
+            }
+            if (nextThresholdEl) nextThresholdEl.textContent = "Maximum rank achieved!";
+        }
 
-            if (status) status.textContent = "Profile Updated";
-            setTimeout(() => {
-                if (badge) {
-                    badge.style.transform = 'translateY(100%) translateX(-50%)';
-                    badge.style.opacity = '0';
-                }
-            }, 2000);
-        } catch (e) {
-            if (status) status.textContent = "Sync Failed";
+        if (currentPointsEl) {
+            currentPointsEl.textContent = `${currentPoints} pts`;
         }
     }
 
-    static renderSocialLinks(links) {
-        const container = document.getElementById('socialListArea');
-        if (!container) return;
-        container.innerHTML = links.map(link => `
-            <div class="d-flex align-items-center justify-content-between p-2 rounded-3 hover-bg-glass transition-all">
-                <a href="${link}" target="_blank" class="text-white text-decoration-none small text-truncate" style="max-width: 80%;">${link}</a>
-                <button type="button" onclick="ProfileManager.removeSocialLink('${link}')" class="btn btn-link p-0 text-muted hover-text-danger">
-                    <span class="material-symbols-outlined fs-6">close</span>
-                </button>
-            </div>
-        `).join('');
-    }
-
-    static async addSocialLink() {
-        const input = document.getElementById('socialInputBox');
-        const link = input?.value.trim();
-        if (!link) return;
-
-        const hidden = document.getElementById('socialLinksHidden');
-        let links = hidden.value ? hidden.value.split(';') : [];
-        if (!links.includes(link)) {
-            links.push(link);
-            hidden.value = links.join(';');
-            this.renderSocialLinks(links);
-            input.value = '';
-            await this.syncChanges();
+    
+   
+static async loadRecentActivity() {
+    try {
+        const response = await axios.get(`/identity/profiles/recent-activity/${this.userId}`);
+        const activities = response.data;
+        
+        const container = document.getElementById('recentActivityList');
+        const totalEarned = document.getElementById('recentPointsEarned');
+        
+        if (container && activities && activities.length > 0) {
+            let totalPoints = 0;
+            container.innerHTML = activities.map(act => {
+                totalPoints += act.points;
+                const sign = act.points > 0 ? '+' : '';
+                return `
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom border-glass">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined text-primary fs-6">
+                                ${act.action === 'Created post' ? 'article' : act.action === 'Added comment' ? 'chat' : 'thumb_up'}
+                            </span>
+                            <span class="text-white small">${act.action}</span>
+                        </div>
+                        <span class="text-primary small fw-semibold">${sign}${act.points} pts</span>
+                    </div>
+                `;
+            }).join('');
+            
+            if (totalEarned) {
+                totalEarned.textContent = `+${totalPoints} pts`;
+            }
+        } else if (container) {
+            container.innerHTML = '<div class="text-center py-3"><span class="text-muted small">No recent activity yet</span></div>';
+        }
+    } catch (e) {
+        console.error('Failed to load recent activity:', e);
+        const container = document.getElementById('recentActivityList');
+        if (container) {
+            container.innerHTML = '<div class="text-center py-3"><span class="text-muted small">Unable to load activity</span></div>';
         }
     }
-
-    static async removeSocialLink(link) {
-        const hidden = document.getElementById('socialLinksHidden');
-        let links = hidden.value.split(';').filter(l => l !== link);
-        hidden.value = links.join(';');
-        this.renderSocialLinks(links);
-        await this.syncChanges();
-    }
-
+}
     static startVerificationPolling() {
         if (this.pollingInterval) clearInterval(this.pollingInterval);
-        
+
         this.pollingInterval = setInterval(async () => {
             try {
                 const response = await axios.get(`/identity/profiles/verification-status/${this.userId}`);
                 const data = response.data;
 
                 if (data) {
-                    this.updateTrustLayerConsole(data.adminNotes, data.status);
-                    
-                    const notes = data.adminNotes?.toLowerCase() || "";
-                    const isFinished = data.status !== 0 || notes.includes("failed") || notes.includes("review required") || notes.includes("approved");
+                    const isFinished = data.status !== 0;
 
                     if (isFinished) {
                         clearInterval(this.pollingInterval);
-                        if (data.status !== 0) {
-                            setTimeout(() => window.location.reload(), 3000);
-                        }
+                        setTimeout(() => window.location.reload(), 2000);
                     }
                 }
             } catch (e) {
                 console.error("Verification polling error", e);
             }
         }, 3000);
-    }
-
-    static updateTrustLayerConsole(notes, status) {
-        const badgeContainer = document.getElementById('verification-status-badge');
-        const iconBox = document.getElementById('verification-icon-box');
-        const title = document.getElementById('verification-title');
-        const desc = document.getElementById('verification-desc');
-
-        if (notes && title && notes !== title.innerText) {
-            const lowerNotes = notes.toLowerCase();
-            
-            // Handle AI Failure / Manual Review requirement
-            if (lowerNotes.includes("failed") || lowerNotes.includes("review required")) {
-                if (badgeContainer) {
-                    badgeContainer.innerHTML = '<span class="badge bg-danger-soft text-danger rounded-pill px-3 py-1 fw-black text-uppercase fs-xs">Manual Review</span>';
-                }
-                if (iconBox) {
-                    iconBox.innerHTML = `
-                        <div class="rounded-circle bg-danger-soft text-danger p-2">
-                            <span class="material-symbols-outlined fs-2">error_outline</span>
-                        </div>`;
-                }
-                if (title) title.innerText = "AI Processing Failed";
-                if (desc) desc.innerText = "TrustLayer couldn't verify your document. An administrator will now review it manually.";
-            } 
-            else if (lowerNotes.includes("verified") || lowerNotes.includes("approved")) {
-                 if (title) title.innerText = "AI Verification Successful";
-                 if (desc) desc.innerText = "The AI has confirmed your identity. Welcome to the community!";
-            }
-        }
     }
 }
 

@@ -482,16 +482,26 @@ body {
 .rotate-icon.rotate-icon-active {
     transform: rotate(90deg);
 }
-/* Upvote hover effect */
-.vote-btn-up:hover .material-symbols-outlined {
+/* Upvote hover effect - prinde toate clasele care încep cu vote-btn-up- */
+[class^="vote-btn-up-"]:hover .material-symbols-outlined {
     color: #3b82f6 !important;
     transform: scale(1.1);
     transition: all 0.2s ease;
 }
 
-/* Downvote hover effect (already working, but let's ensure) */
-.vote-btn-down:hover .material-symbols-outlined {
+/* Downvote hover effect - prinde toate clasele care încep cu vote-btn-down- */
+[class^="vote-btn-down-"]:hover .material-symbols-outlined {
     color: #ef4444 !important;
     transform: scale(1.1);
     transition: all 0.2s ease;
+}
+
+/* Stare activă pentru upvote */
+[class^="vote-btn-up-"].text-accent .material-symbols-outlined {
+    color: #3b82f6 !important;
+}
+
+/* Stare activă pentru downvote */
+[class^="vote-btn-down-"].text-danger .material-symbols-outlined {
+    color: #ef4444 !important;
 }

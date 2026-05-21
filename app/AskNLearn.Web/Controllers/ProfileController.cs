@@ -19,12 +19,14 @@ namespace AskNLearn.Web.Controllers
         private readonly IMediator _mediator;
         private readonly IFileService _fileService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IApplicationDbContext _context;
 
-        public ProfileController(IMediator mediator, IFileService fileService, UserManager<ApplicationUser> userManager)
+        public ProfileController(IMediator mediator, IFileService fileService, UserManager<ApplicationUser> userManager, IApplicationDbContext context)
         {
             _mediator = mediator;
             _fileService = fileService;
             _userManager = userManager;
+            _context = context;
         }
 
         [HttpGet("view/{id?}")]
@@ -291,6 +293,57 @@ namespace AskNLearn.Web.Controllers
             if (request == null) return NotFound();
 
             return Ok(request);
+        }
+        [AllowAnonymous]
+        [HttpGet("recent-activity/{userId}")]
+        public async Task<IActionResult> GetRecentActivity(string userId)
+        {
+            var activities = new List<object>();
+
+            // Ultimele postări
+            var recentPosts = await _context.Posts
+                .Where(p => p.AuthorId == userId)
+                .OrderByDescending(p => p.CreatedAt)
+                .Take(3)
+                .Select(p => new {
+                    action = "Created post",
+                    points = 10,
+                    createdAt = p.CreatedAt
+                })
+                .ToListAsync();
+
+            // Ultimele comentarii
+            var recentComments = await _context.Comments
+                .Where(c => c.AuthorId == userId)
+                .OrderByDescending(c => c.CreatedAt)
+                .Take(3)
+                .Select(c => new {
+                    action = "Added comment",
+                    points = 5,
+                    createdAt = c.CreatedAt
+                })
+                .ToListAsync();
+
+            // Upvote-uri primite
+            var receivedUpvotes = await _context.PostVotes
+                .Where(v => v.Post.AuthorId == userId && v.VoteValue == 1)
+                .OrderByDescending(v => v.Post.CreatedAt)
+                .Take(3)
+                .Select(v => new {
+                    action = "Received upvote",
+                    points = 2,
+                    createdAt = v.Post.CreatedAt
+                })
+                .ToListAsync();
+
+            var allActivities = recentPosts.Cast<object>()
+                .Concat(recentComments)
+                .Concat(receivedUpvotes)
+                .OrderByDescending(a => ((dynamic)a).createdAt)
+                .Take(10)
+                .ToList();
+
+            return Ok(allActivities);
         }
     }
 }

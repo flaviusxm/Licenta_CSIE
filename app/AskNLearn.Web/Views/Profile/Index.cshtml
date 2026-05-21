@@ -5,362 +5,405 @@
     ViewData["Title"] = Model.FullName;
 }
 
-<div class="h-100 overflow-y-auto custom-scrollbar pt-4">
-    <div class="container-fluid max-w-7xl px-4 pb-5 animate-entrance">
-        
-        <!-- Header Section -->
-        <div class="glass-card overflow-hidden mb-5 border-glass shadow-2xl">
-            <div class="position-relative" style="height: 280px;">
-                <div class="w-100 h-100" style="background: url('@(Model.BannerUrl ?? "https://images.unsplash.com/photo-1557683316-973673baf926")') center/cover no-repeat;">
-                    <div class="position-absolute inset-0 bg-gradient-to-t from-universe via-transparent to-transparent opacity-80"></div>
-                </div>
-                
-                @if (Model.IsOwnProfile) {
-                    <div class="position-absolute top-0 end-0 p-4">
-                        <button type="button" class="btn btn-glass btn-sm rounded-pill px-3" onclick="document.getElementById('bannerUpload').click()">
-                            <span class="material-symbols-outlined fs-6 me-1">edit</span> Change Cover
+<div class="profile-container py-4 px-4 px-lg-5">
+    <!-- Header Hero Section -->
+    <div class="profile-hero glass-card border-0 mb-5 overflow-hidden position-relative">
+        <!-- Banner -->
+        <div class="profile-banner" style="height: 160px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+            @if (!string.IsNullOrEmpty(Model.BannerUrl))
+            {
+                <img src="@Model.BannerUrl" class="w-100 h-100 object-cover" />
+            }
+            <div class="position-absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent"></div>
+            @if (Model.IsOwnProfile)
+            {
+                <button class="btn btn-glass btn-sm position-absolute bottom-2 end-3 rounded-pill px-3 py-1" onclick="document.getElementById('bannerUpload').click()">
+                    <span class="material-symbols-outlined fs-6 me-1">edit</span> Change Cover
+                </button>
+            }
+        </div>
+
+        <!-- Avatar & Basic Info -->
+        <div class="profile-avatar-section px-4 pb-3 position-relative" style="margin-top: -50px;">
+            <div class="d-flex flex-column flex-md-row align-items-md-end gap-4">
+                <div class="position-relative">
+                    <div class="avatar-frame rounded-3 overflow-hidden border border-4 border-[#0f172a] shadow-xl" style="width: 100px; height: 100px;">
+                        <img src="@(Model.AvatarUrl ?? $"https://api.dicebear.com/7.x/avataaars/svg?seed={Model.FullName}")"
+                             class="w-100 h-100 object-cover" id="avatarPreview" />
+                    </div>
+                    @if (Model.IsOwnProfile)
+                    {
+                        <button class="btn btn-dark btn-sm p-1 rounded-circle position-absolute bottom-0 end-0 mb-1 me-1 shadow"
+                                style="width: 28px; height: 28px;" onclick="document.getElementById('avatarUpload').click()">
+                            <span class="material-symbols-outlined fs-6">camera_alt</span>
                         </button>
+                    }
+                </div>
+
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        @if (Model.IsOwnProfile)
+                        {
+                            <input type="text" id="fullNameInput" value="@Model.FullName"
+                                   class="profile-name-input fs-2 fw-bold bg-transparent border-0 p-0"
+                                   placeholder="Your name" />
+                            <span class="material-symbols-outlined text-muted fs-5 edit-hint">edit</span>
+                        }
+                        else
+                        {
+                            <h1 class="fs-2 fw-bold text-white mb-0">@Model.FullName</h1>
+                        }
+                        @if (Model.IsVerified)
+                        {
+                            <span class="material-symbols-outlined text-primary fs-4" title="Verified Student">verified</span>
+                        }
+                    </div>
+
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="material-symbols-outlined fs-6 text-muted">school</span>
+                            <span class="text-muted small">@(Model.Role == "Admin" ? "Administrator" : "Student")</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.RankName))
+                        {
+                            <div class="badge bg-primary-soft text-primary rounded-pill px-3 py-1">
+                                <span class="material-symbols-outlined fs-6 me-1">military_tech</span>
+                                @Model.RankName
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Linia de jos cu Posts, Answers, Joined, Points -->
+                    <div class="d-flex flex-wrap align-items-center gap-4 gap-md-5">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined fs-6 text-primary">article</span>
+                            <div>
+                                <div class="fw-bold text-white">@Model.PostsCount</div>
+                                <div class="text-muted small">Posts</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined fs-6 text-primary">chat</span>
+                            <div>
+                                <div class="fw-bold text-white">@Model.AnswersCount</div>
+                                <div class="text-muted small">Answers</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined fs-6 text-primary">calendar_month</span>
+                            <div>
+                                <div class="fw-bold text-white">@Model.CreatedAt.ToString("MMM yyyy")</div>
+                                <div class="text-muted small">Joined</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined fs-6 text-warning">stars</span>
+                            <div>
+                                <div class="fw-bold text-primary" id="userReputationPoints">@Model.ReputationPoints</div>
+                                <div class="text-muted small">Points</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.IsOwnProfile)
+                    {
+                        <div id="saveChangesBanner" class="d-none mt-3">
+                            <div class="alert alert-primary-soft d-flex align-items-center justify-content-between p-2 rounded-3" style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);">
+                                <span class="small">You have unsaved changes</span>
+                                <div class="d-flex gap-2">
+                                    <button onclick="ProfileManager.discardChanges()" class="btn btn-sm btn-glass px-3">Discard</button>
+                                    <button onclick="ProfileManager.saveChanges()" class="btn btn-sm btn-primary px-3">Save Changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (!Model.IsOwnProfile)
+                {
+                    <div class="d-flex gap-2">
+                        @switch (Model.ConnectionStatus)
+                        {
+                            case AskNLearn.Application.Common.Models.ConnectionStatus.None:
+                                <form asp-action="SendConnection" asp-route-userId="@Model.Id" method="post">
+                                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                        <span class="material-symbols-outlined fs-6 me-1">person_add</span> Connect
+                                    </button>
+                                </form>
+                                break;
+                            case AskNLearn.Application.Common.Models.ConnectionStatus.PendingSent:
+                                <button class="btn btn-secondary rounded-pill px-4" disabled>
+                                    <span class="material-symbols-outlined fs-6 me-1">hourglass_empty</span> Pending
+                                </button>
+                                break;
+                            case AskNLearn.Application.Common.Models.ConnectionStatus.PendingReceived:
+                                <div class="d-flex gap-2">
+                                    <form asp-action="AcceptConnection" asp-route-userId="@Model.Id" method="post">
+                                        <button type="submit" class="btn btn-success rounded-pill px-3">Accept</button>
+                                    </form>
+                                    <form asp-action="RejectConnection" asp-route-userId="@Model.Id" method="post">
+                                        <button type="submit" class="btn btn-outline-danger rounded-pill px-3">Decline</button>
+                                    </form>
+                                </div>
+                                break;
+                            case AskNLearn.Application.Common.Models.ConnectionStatus.Accepted:
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary rounded-pill px-4 dropdown-toggle" data-bs-toggle="dropdown">
+                                        Connected
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li>
+                                            <form asp-action="RemoveConnection" asp-route-userId="@Model.Id" method="post">
+                                                <button type="submit" class="dropdown-item text-danger">Remove Connection</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                                break;
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Main Content Row -->
+    <div class="row g-4">
+        <!-- Left Column - Account Settings -->
+        <div class="col-lg-4">
+            <div class="glass-card p-4 border-0">
+                <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-glass">
+                    <span class="material-symbols-outlined text-primary fs-5">settings</span>
+                    <h3 class="fs-6 fw-bold text-white mb-0">Account</h3>
+                </div>
+
+                @if (Model.IsOwnProfile)
+                {
+                    <div class="d-grid gap-2">
+                        <button onclick="ProfileManager.showResetModal()" class="btn btn-glass d-flex align-items-center justify-content-between w-100">
+                            <span><span class="material-symbols-outlined fs-5 me-2">lock</span> Change Password</span>
+                            <span class="material-symbols-outlined fs-5">chevron_right</span>
+                        </button>
+                        <form asp-controller="Auth" asp-action="SignOut" method="post" id="logoutForm">
+                            <button type="submit" class="btn btn-glass text-danger d-flex align-items-center justify-content-between w-100">
+                                <span><span class="material-symbols-outlined fs-5 me-2">logout</span> Sign Out</span>
+                                <span class="material-symbols-outlined fs-5">chevron_right</span>
+                            </button>
+                        </form>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-controller="Admin" asp-action="Index" class="btn btn-premium d-flex align-items-center justify-content-between w-100 mt-2">
+                                <span><span class="material-symbols-outlined fs-5 me-2">admin_panel_settings</span> Admin Portal</span>
+                                <span class="material-symbols-outlined fs-5">chevron_right</span>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small text-center py-3">Account settings are only visible to you</p>
+                }
+            </div>
+        </div>
+
+        <!-- Right Column - Main Content -->
+        <div class="col-lg-8">
+            <!-- About Me -->
+            <div class="glass-card p-4 border-0 mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-primary fs-5">description</span>
+                        <h3 class="fs-6 fw-bold text-white mb-0">About Me</h3>
+                    </div>
+                    @if (Model.IsOwnProfile)
+                    {
+                        <span id="bioEditHint" class="text-muted small" style="cursor: pointer;" onclick="ProfileManager.editBio()">
+                            <span class="material-symbols-outlined fs-6">edit</span> Edit
+                        </span>
+                    }
+                </div>
+
+                <div id="bioDisplay" class="text-muted" style="line-height: 1.6;">
+                    @if (string.IsNullOrEmpty(Model.Bio))
+                    {
+                        <em class="text-muted">No bio yet. Click edit to add one.</em>
+                    }
+                    else
+                    {
+                        @Model.Bio
+                    }
+                </div>
+
+                @if (Model.IsOwnProfile)
+                {
+                    <div id="bioEdit" class="d-none">
+                        <textarea id="bioTextarea" class="form-control form-control-glass mb-3" rows="4" placeholder="Tell us about yourself...">@Model.Bio</textarea>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button onclick="ProfileManager.cancelBioEdit()" class="btn btn-sm btn-glass">Cancel</button>
+                            <button onclick="ProfileManager.saveBio()" class="btn btn-sm btn-primary">Save</button>
+                        </div>
                     </div>
                 }
             </div>
 
-            <div class="px-5 pb-5 position-relative">
-                <div class="d-flex flex-column flex-md-row align-items-md-end gap-4" style="margin-top: -80px;">
-                    <div class="position-relative" style="z-index: 2;">
-                        <div class="avatar-lg rounded-circle overflow-hidden border border-4 border-universe shadow-2xl" style="width: 150px; height: 150px; background: var(--bg-universe);">
-                            <img src="@(Model.AvatarUrl ?? "https://api.dicebear.com/7.x/avataaars/svg?seed=" + Model.FullName)" class="w-100 h-100 object-cover" id="avatarPreview" />
-                        </div>
-                        @if (Model.IsOwnProfile) {
-                            <button type="button" class="btn btn-premium p-0 d-flex align-items-center justify-content-center position-absolute bottom-0 end-0 m-1 rounded-circle shadow-lg" style="width: 36px; height: 36px; border: 3px solid var(--bg-universe);" onclick="document.getElementById('avatarUpload').click()">
-                                <span class="material-symbols-outlined fs-6">camera_alt</span>
-                            </button>
-                        }
-                    </div>
-                    
-                    <div class="flex-grow-1 pb-2 pt-3 pt-md-0 d-flex flex-column gap-1">
-                        <div class="d-flex align-items-center gap-3 mb-1 profile-name-container">
-                            <input type="text" form="profileUpdateForm" name="FullName" 
-                                   class="h2 fw-black text-white m-0 bg-transparent border-0 p-0 w-100 profile-name-input" 
-                                   value="@Model.FullName" placeholder="Enter your name..."
-                                   @(Model.IsOwnProfile ? "" : "readonly") />
-                            <span class="material-symbols-outlined fs-5 text-muted edit-icon-hint">edit</span>
-                            @if (Model.IsVerified) {
-                                <span class="material-symbols-outlined text-accent fill-1" title="Verified Professional">verified</span>
-                            }
-                        </div>
-                        <div class="d-flex align-items-center gap-3 mb-2">
-                            @if (!string.IsNullOrEmpty(Model.RankName)) {
-                                <div class="badge bg-premium-soft border border-premium text-accent rounded-pill px-3 py-1 d-flex align-items-center gap-2">
-                                    <span class="tiny fw-black text-uppercase tracking-widest">@Model.RankName</span>
-                                </div>
-                            }
-                            <div class="badge bg-glass border border-glass text-muted rounded-pill px-3 py-1 d-flex align-items-center gap-2">
-                                <span class="material-symbols-outlined tiny">military_tech</span>
-                                <span class="tiny fw-bold text-uppercase tracking-widest">@Model.ReputationPoints pts</span>
-                            </div>
-                        </div>
-                        <p class="text-muted mb-0 mt-2 d-flex align-items-center gap-2 small">
-                            <span class="material-symbols-outlined fs-6">school</span>
-                            Student @@ @(Model.Role == "Admin" ? "Administration" : "Community")
-                        </p>
-                    </div>
+            <!-- Rank Progress -->
+            <div class="glass-card p-4 border-0 mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="material-symbols-outlined text-primary fs-5">trending_up</span>
+                    <h3 class="fs-6 fw-bold text-white mb-0">Rank Progress</h3>
+                </div>
 
-                    <div class="d-flex flex-wrap gap-3 pb-2 align-items-center justify-content-md-end mt-3 mt-md-0">
-                        <div class="bg-glass border border-glass px-4 py-2 rounded-4 text-center">
-                            <div class="h5 fw-black text-white mb-0">@Model.PostsCount</div>
-                            <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Posts</div>
+                <div class="row align-items-center g-3">
+                    <div class="col-5">
+                        <div class="text-center p-2 rounded-3" style="background: rgba(255,255,255,0.03);">
+                            <span class="text-muted small d-block">Current</span>
+                            <span class="fw-bold text-primary fs-5" id="currentRankName">@(Model.RankName ?? "Newcomer")</span>
                         </div>
-                        <div class="bg-glass border border-glass px-4 py-2 rounded-4 text-center">
-                            <div class="h5 fw-black text-white mb-0">@Model.AnswersCount</div>
-                            <div class="text-muted tiny fw-bold text-uppercase tracking-widest">Answers</div>
+                    </div>
+                    <div class="col-2 text-center">
+                        <span class="material-symbols-outlined text-muted">arrow_forward</span>
+                    </div>
+                    <div class="col-5">
+                        <div class="text-center p-2 rounded-3" style="background: rgba(255,255,255,0.03);">
+                            <span class="text-muted small d-block">Next</span>
+                            <span class="fw-bold text-white fs-5" id="nextRankName">Loading...</span>
                         </div>
-                        
-                        @if (!Model.IsOwnProfile) {
-                            <div class="ms-3">
-                                @switch (Model.ConnectionStatus) {
-                                    case AskNLearn.Application.Common.Models.ConnectionStatus.None:
-                                        <form asp-action="SendConnection" asp-route-userId="@Model.Id" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-premium btn-sm rounded-pill px-4 py-2 d-flex align-items-center gap-2">
-                                                <span class="material-symbols-outlined fs-6">person_add</span> Connect
-                                            </button>
-                                        </form>
-                                        break;
-                                    case AskNLearn.Application.Common.Models.ConnectionStatus.PendingSent:
-                                        <button class="btn btn-glass btn-sm rounded-pill px-4 py-2 d-flex align-items-center gap-2" disabled>
-                                            <span class="material-symbols-outlined fs-6">hourglass_empty</span> Pending
-                                        </button>
-                                        break;
-                                    case AskNLearn.Application.Common.Models.ConnectionStatus.PendingReceived:
-                                        <div class="d-flex gap-2">
-                                            <form asp-action="AcceptConnection" asp-route-userId="@Model.Id" method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 py-2 d-flex align-items-center gap-1">
-                                                    <span class="material-symbols-outlined fs-6">check</span> Accept
-                                                </button>
-                                            </form>
-                                            <form asp-action="RejectConnection" asp-route-userId="@Model.Id" method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-glass btn-sm rounded-pill px-3 py-2">Ignore</button>
-                                            </form>
-                                        </div>
-                                        break;
-                                    case AskNLearn.Application.Common.Models.ConnectionStatus.Accepted:
-                                        <div class="dropdown">
-                                            <button class="btn btn-success-soft btn-sm rounded-pill px-4 py-2 d-flex align-items-center gap-2 dropdown-toggle" data-bs-toggle="dropdown">
-                                                <span class="material-symbols-outlined fs-6">group</span> Connected
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-dark border-glass">
-                                                <li>
-                                                    <form asp-action="RemoveConnection" asp-route-userId="@Model.Id" method="post">
-                                                        <button type="submit" class="dropdown-item text-danger d-flex align-items-center gap-2">
-                                                            <span class="material-symbols-outlined fs-6">person_remove</span> Remove Connection
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        break;
-                                }
-                            </div>
-                        }
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span id="currentRankPoints">@Model.ReputationPoints pts</span>
+                        <span id="nextRankThreshold">-</span>
+                    </div>
+                    <div class="progress" style="height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px;">
+                        <div id="rankProgressBar" class="progress-bar bg-primary" role="progressbar"
+                             style="width: 0%; transition: width 0.5s ease;"></div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Notifications / Alerts are now handled globally by _Toasts.cshtml in _Layout.cshtml -->
+            <!-- Verification -->
+            <div class="glass-card p-4 border-0 mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-primary fs-5">verified_user</span>
+                        <h3 class="fs-6 fw-bold text-white mb-0">Verification</h3>
+                    </div>
+                    <div id="verification-status-badge">
+                        @if (Model.IsVerified)
+                        {
+                            <span class="badge bg-success-soft text-success rounded-pill px-3 py-1">Verified</span>
+                        }
+                        else if (Model.HasPendingVerification)
+                        {
+                            <span class="badge bg-warning-soft text-warning rounded-pill px-3 py-1">Pending</span>
+                        }
+                    </div>
+                </div>
 
-        <div class="row g-4">
-            <!-- Sidebar (Left) - Core Info & Management -->
-            <div class="col-xl-4">
-                <div class="d-flex flex-column gap-4">
-                    
-                    <!-- Management Card -->
-                    <div class="glass-card p-4 border-glass shadow-sm">
-                        <h3 class="text-white fw-bold fs-xs text-uppercase tracking-widest mb-4 d-flex align-items-center gap-2">
-                            <span class="material-symbols-outlined fs-6 text-accent">settings</span>
-                            Account Management
-                        </h3>
-                        
-                        <div class="d-flex flex-column gap-3">
-
-                            @if (Model.IsOwnProfile) {
-                                <div class="d-grid gap-2 mt-2">
-                                @if (User.IsInRole("Admin")) {
-                                    <a asp-controller="Admin" asp-action="Index" class="btn btn-premium btn-sm py-2 fw-bold text-uppercase fs-xs d-flex align-items-center justify-content-center mb-1">
-                                        <span class="material-symbols-outlined fs-6 me-2">admin_panel_settings</span> Admin Portal
-                                    </a>
-                                }
-                                <button type="button" onclick="ProfileManager.showResetModal()" class="btn btn-glass btn-sm py-2 fw-bold text-uppercase fs-xs">
-                                        <span class="material-symbols-outlined fs-6 me-2">lock</span> Change Password
-                                    </button>
-                                    <button type="button" onclick="document.getElementById('logoutForm').submit()" class="btn btn-link text-danger text-decoration-none fw-black text-uppercase fs-xs">
-                                        Sign Out
-                                    </button>
+                <div class="verification-content">
+                    @if (!Model.IsVerified && !Model.HasPendingVerification && Model.IsOwnProfile)
+                    {
+                        <p class="text-muted small mb-3">Get verified to unlock all features and build trust in the community.</p>
+                        <form asp-action="SubmitVerification" method="post" enctype="multipart/form-data">
+                            <div class="upload-zone rounded-3 p-3 text-center position-relative mb-2"
+                                 style="border: 1px dashed rgba(255,255,255,0.2); background: rgba(255,255,255,0.02);">
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">upload_file</span>
+                                    <span class="text-muted small file-name-display">Click to upload ID document</span>
+                                </div>
+                                <input type="file" name="verificationDoc" class="position-absolute inset-0 opacity-0 cursor-pointer w-100 h-100"
+                                       accept="image/png, image/jpeg, image/jpg" required
+                                       onchange="ProfileManager.handleFileSelect(this)" />
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-2">Submit Verification</button>
+                        </form>
+                    }
+                    else if (Model.HasPendingVerification)
+                    {
+                        <div class="text-center py-2">
+                            @if (Model.AdminNotes?.Contains("failed") == true)
+                            {
+                                <div class="text-danger mb-2">
+                                    <span class="material-symbols-outlined fs-3">error_outline</span>
+                                    <p class="small mb-0 mt-1">Manual review required</p>
                                 </div>
                             }
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Content Area (Right) -->
-            <div class="col-xl-8">
-                <div class="d-flex flex-column gap-4">
-                    
-                    <!-- About Me & Profile Data -->
-                    <form asp-action="Update" method="post" id="profileUpdateForm" enctype="multipart/form-data">
-                        @Html.AntiForgeryToken()
-                        <input type="file" name="BannerFile" id="bannerUpload" class="d-none" onchange="this.form.submit()" />
-                        <input type="file" name="AvatarFile" id="avatarUpload" class="d-none" onchange="this.form.submit()" />
-
-                        <div class="glass-card p-4 border-glass shadow-sm">
-                            <div class="d-flex align-items-center justify-content-between mb-4">
-                                <h3 class="text-white fw-bold fs-xs text-uppercase tracking-widest m-0 d-flex align-items-center gap-2">
-                                    <span class="material-symbols-outlined fs-6 text-accent">person</span>
-                                    Professional Summary
-                                </h3>
-                                @if (Model.IsOwnProfile) {
-                                    <button type="submit" class="btn btn-premium btn-sm px-4 py-1 fw-bold text-uppercase fs-xs">
-                                        Save Changes
-                                    </button>
-                                }
-                            </div>
-                            <textarea name="Bio" class="form-control form-control-glass w-100 border-0 p-0 fs-5 text-white" rows="3" 
-                                      placeholder="Write something about your academic interests..." 
-                                      style="background: transparent; resize: none; line-height: 1.6;"
-                                      @(Model.IsOwnProfile ? "" : "readonly")>@Model.Bio</textarea>
-                        </div>
-                    </form>
-
-                    <!-- Simplified Identity Verification -->
-                    <div class="glass-card border-glass shadow-2xl overflow-hidden">
-                        <div class="px-4 py-3 border-bottom border-glass d-flex align-items-center justify-content-between bg-glass-soft">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="material-symbols-outlined text-accent">verified_user</span>
-                                <h3 class="text-white fw-bold fs-xs text-uppercase tracking-widest mb-0">Identity & Institution Verification</h3>
-                            </div>
-                            <div id="verification-status-badge">
-                                @if (Model.IsVerified) {
-                                    <span class="badge bg-success-soft text-success rounded-pill px-3 py-1 fw-black text-uppercase fs-xs">Verified</span>
-                                } else if (Model.HasPendingVerification) {
-                                    <span class="badge @(Model.AdminNotes?.Contains("failed") == true ? "bg-danger-soft text-danger" : "bg-warning-soft text-warning") rounded-pill px-3 py-1 fw-black text-uppercase fs-xs">
-                                        @(Model.AdminNotes?.Contains("failed") == true ? "Manual Review" : "In Review")
-                                    </span>
-                                }
-                            </div>
-                        </div>
-
-                        <div class="p-4">
-                            @if (!Model.IsVerified && !Model.HasPendingVerification && Model.IsOwnProfile) {
-                                <p class="text-muted small mb-4">Validate your account to unlock premium features. Upload your Student ID, Passport, or University Card.</p>
-                                <form asp-action="SubmitVerification" asp-controller="Profile" method="post" enctype="multipart/form-data">
-                                    <div class="premium-upload-zone rounded-4 p-5 text-center position-relative mb-4">
-                                        <div class="upload-content py-3">
-                                            <span class="material-symbols-outlined fs-display text-accent mb-3">upload_file</span>
-                                            <h4 class="text-white fw-bold mb-2">Upload Identity Document</h4>
-                                            <p class="text-muted tiny mb-0 file-name-display">Drag & drop or click (Only PNG, JPG images supported)</p>
-                                        </div>
-                                        <input type="file" name="verificationDoc" class="position-absolute inset-0 opacity-0 cursor-pointer w-100 h-100" accept="image/png, image/jpeg, image/jpg" required onchange="ProfileManager.handleFileSelect(this)" />
-                                    </div>
-                                    <button type="submit" class="btn btn-premium w-100 py-3 fw-black text-uppercase tracking-widest fs-xs shadow-lg">
-                                        Start Verification
-                                    </button>
+                            else
+                            {
+                                <div class="text-primary mb-2">
+                                    <div class="spinner-border spinner-border-sm mb-2" role="status"></div>
+                                    <p class="small mb-0">Analyzing your documents...</p>
+                                </div>
+                            }
+                            @if (Model.IsOwnProfile)
+                            {
+                                <form asp-action="CancelVerification" method="post" class="mt-2">
+                                    <button type="submit" class="btn btn-link text-muted small p-0">Cancel request</button>
                                 </form>
-                            } else if (Model.HasPendingVerification) {
-                                <div class="d-flex flex-column gap-3 p-4 rounded-4 bg-glass-soft border border-glass">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div id="verification-icon-box" class="flex-shrink-0">
-                                            @if (Model.AdminNotes?.Contains("failed") == true) {
-                                                <div class="rounded-circle bg-danger-soft text-danger p-2">
-                                                    <span class="material-symbols-outlined fs-2">error_outline</span>
-                                                </div>
-                                            } else {
-                                                <div id="verification-spinner" class="spinner-border text-accent" role="status" style="width: 2rem; height: 2rem; border-width: 0.15em;">
-                                                    <span class="visually-hidden">Loading...</span>
-                                                </div>
-                                            }
-                                        </div>
-                                        <div>
-                                            <h4 class="text-white fw-bold mb-1 fs-5" id="verification-title">
-                                                @(Model.AdminNotes?.Contains("failed") == true ? "AI Processing Failed" : "Analyzing Documents")
-                                            </h4>
-                                            <p class="text-muted small mb-0" id="verification-desc">
-                                                @(Model.AdminNotes?.Contains("failed") == true 
-                                                    ? "TrustLayer couldn't verify your document. An administrator will now review it manually." 
-                                                    : "Our AI is currently scanning your documents. This usually takes less than a minute.")
-                                            </p>
-                                        </div>
-                                    </div>
-                                    
-                                    @if (Model.AdminNotes?.Contains("failed") == true) {
-                                        <div class="mt-2 p-3 rounded-3 bg-black-alpha-20 border border-glass-thin">
-                                            <div class="d-flex gap-2">
-                                                <span class="material-symbols-outlined text-danger fs-6">info</span>
-                                                <span class="text-muted tiny">Note: @Model.AdminNotes</span>
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
-
-                                @if (Model.IsOwnProfile) {
-                                    <form asp-action="CancelVerification" method="post" class="mt-3">
-                                        <button type="submit" class="btn btn-link text-danger text-decoration-none tiny fw-black text-uppercase p-0">Cancel Request</button>
-                                    </form>
-                                }
-                            } else if (Model.IsVerified) {
-                                <div class="d-flex align-items-center gap-3 p-4 rounded-4 bg-success-soft border border-success-thin">
-                                    <div class="rounded-circle bg-success text-white p-2">
-                                        <span class="material-symbols-outlined">check</span>
-                                    </div>
-                                    <div>
-                                        <h4 class="h6 fw-bold text-white mb-1">Account fully verified</h4>
-                                        <p class="text-muted small mb-0">Identity and institution verified.</p>
-                                    </div>
-                                </div>
                             }
                         </div>
+                    }
+                    else if (Model.IsVerified)
+                    {
+                        <div class="text-center py-2">
+                            <div class="text-success mb-2">
+                                <span class="material-symbols-outlined fs-3">verified</span>
+                                <p class="small mb-0 mt-1">Identity verified ✓</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="glass-card p-4 border-0">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-primary fs-5">history</span>
+                        <h3 class="fs-6 fw-bold text-white mb-0">Recent Activity</h3>
+                    </div>
+                    <span class="text-primary small fw-semibold" id="recentPointsEarned">+0 pts</span>
+                </div>
+
+                <div id="recentActivityList" class="d-flex flex-column gap-2">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        <p class="text-muted small mt-2">Loading activities...</p>
                     </div>
                 </div>
             </div>
+
+            
         </div>
     </div>
 </div>
 
-<style>
-    .max-w-7xl { max-width: 1280px; margin: 0 auto; }
-    .bg-universe { background: var(--bg-universe); }
-    .inset-0 { top: 0; left: 0; bottom: 0; right: 0; }
-    .bg-gradient-to-t { background: linear-gradient(to top, var(--bg-universe), transparent); }
-    .avatar-lg { aspect-ratio: 1; }
-    .shadow-accent { box-shadow: 0 0 15px var(--color-accent); }
-    .shadow-success { box-shadow: 0 0 15px var(--color-success); }
-    
-    .bg-premium-soft { background: rgba(var(--color-accent-rgb), 0.1); }
-    .border-premium { border-color: rgba(var(--color-accent-rgb), 0.3) !important; }
-    
-    .premium-upload-zone {
-        background: rgba(255, 255, 255, 0.02);
-        border: 2px dashed var(--border-glass);
-        transition: all 0.3s var(--ease-apple);
-    }
-    .premium-upload-zone:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: var(--color-accent);
-    }
-    .premium-upload-zone.active {
-        background: var(--color-accent-soft);
-        border-color: var(--color-accent);
-        border-style: solid;
-    }
-
-    .bg-black-alpha-40 { background: rgba(0, 0, 0, 0.4); }
-    
-    .timeline-unified { border-left: 2px solid var(--border-glass); }
-    .timeline-item { position: relative; }
-    .timeline-dot {
-        position: absolute;
-        left: -25px;
-        top: 0;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: var(--border-glass);
-    }
-    .fs-display { font-size: 4rem; }
-    .profile-name-container { transition: all 0.2s ease; border-radius: 8px; padding: 4px; margin: -4px; cursor: text; }
-    .profile-name-container:hover { background: rgba(255, 255, 255, 0.05); }
-    .edit-icon-hint { opacity: 0; transition: opacity 0.2s ease; }
-    .profile-name-container:hover .edit-icon-hint { opacity: 1; }
-    .profile-name-input:focus { outline: none; background: rgba(255, 255, 255, 0.1) !important; border-radius: 4px; padding-left: 8px !important; }
-
-    .max-w-7xl { max-width: 1280px; margin: 0 auto; }
-</style>
-
-<!-- Standard Forms for Logout & Resets -->
-<form asp-controller="Auth" asp-action="SignOut" method="post" id="logoutForm" class="d-none"></form>
+<!-- Hidden Forms -->
+<form asp-action="Update" method="post" id="profileUpdateForm" enctype="multipart/form-data" class="d-none">
+    @Html.AntiForgeryToken()
+    <input type="file" name="BannerFile" id="bannerUpload" onchange="this.form.submit()" />
+    <input type="file" name="AvatarFile" id="avatarUpload" onchange="this.form.submit()" />
+    <input type="hidden" name="FullName" id="fullNameHidden" />
+    <input type="hidden" name="Bio" id="bioHidden" />
+</form>
 
 @section Modals {
     <div class="modal fade" id="resetModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content glass-card border-glass shadow-2xl overflow-hidden">
-                <div class="modal-body p-5 text-center">
-                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4 bg-accent-soft text-accent" style="width: 80px; height: 80px;">
-                        <span class="material-symbols-outlined fs-1">lock_reset</span>
+            <div class="modal-content glass-card border-0">
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3">
+                        <span class="material-symbols-outlined text-primary fs-1">lock_reset</span>
                     </div>
-                    <h3 class="h4 text-white fw-black text-uppercase tracking-tight mb-3">Security Update</h3>
-                    <p class="text-muted small mb-4">A password reset link will be sent to your registered email address.</p>
-                    <div id="resetFeedback" class="mb-4 d-none">
-                        <div class="alert alert-success border-0 bg-success-soft text-success small py-2 px-3 rounded-4">
-                            Check your email for the reset link!
-                        </div>
-                    </div>
+                    <h3 class="h6 text-white fw-bold mb-2">Reset Password</h3>
+                    <p class="text-muted small mb-3">A reset link will be sent to your email.</p>
                     <div class="d-grid gap-2">
-                        <button type="button" id="btnRequestReset" class="btn btn-accent py-3 fw-bold text-uppercase tracking-widest shadow-lg" style="border-radius: 1rem;">
-                            Send Reset Link
-                        </button>
-                        <button type="button" class="btn btn-link text-muted text-decoration-none fw-bold fs-xs text-uppercase tracking-widest" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
+                        <button type="button" id="btnRequestReset" class="btn btn-primary py-2">Send Reset Link</button>
+                        <button type="button" class="btn btn-link text-muted small" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </div>
             </div>
@@ -369,58 +412,94 @@
 }
 
 @section Scripts {
-<script type="module" src="~/js/module.profile.js" asp-append-version="true"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const initialTags = "@Model.Interests".split(',').filter(x => x.trim() !== '');
-        const initialLinks = "@Model.SocialLinks".split(';').filter(x => x.trim() !== '');
-        ProfileManager.init(@Model.IsOwnProfile.ToString().ToLower(), initialTags, initialLinks, "@Model.Id", @Model.HasPendingVerification.ToString().ToLower());
-
-        // Handle File Input Highlights
-        document.querySelectorAll('.premium-upload-zone input').forEach(input => {
-            input.addEventListener('change', () => {
-                if (input.files.length > 0) {
-                    input.parentElement.classList.add('active');
-                    input.parentElement.querySelector('.text-muted').innerText = input.files[0].name;
-                }
-            });
+    <script type="module" src="~/js/module.profile.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        ProfileManager.init(@Model.IsOwnProfile.ToString().ToLower(), "@Model.Id", @Model.HasPendingVerification.ToString().ToLower(), @Model.ReputationPoints);
         });
-
-        // Request Password Reset Logic
-        const btnReset = document.getElementById('btnRequestReset');
-        if (btnReset) {
-            btnReset.addEventListener('click', async () => {
-                btnReset.disabled = true;
-                btnReset.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Sending...';
-                try {
-                    const response = await fetch('/identity/auth/request-password-reset', { method: 'POST' });
-                    if (response.ok) {
-                        document.getElementById('resetFeedback').classList.remove('d-none');
-                        setTimeout(() => bootstrap.Modal.getInstance(document.getElementById('resetModal')).hide(), 3000);
-                    }
-                } catch (e) { console.error(e); }
-                finally { 
-                    btnReset.disabled = false; 
-                    btnReset.innerText = 'Send Reset Link';
-                }
-            });
-        }
-        // Profile Manager Extension
-        window.ProfileManager = window.ProfileManager || {};
-        window.ProfileManager.handleFileSelect = function(input) {
-            const display = input.parentElement.querySelector('.file-name-display');
-            if (input.files && input.files[0]) {
-                display.innerText = input.files[0].name;
-                display.classList.add('text-accent');
-                input.parentElement.style.borderColor = 'var(--color-accent)';
-            }
-        };
-    });
-
-    window.ProfileManager = window.ProfileManager || {
-        showResetModal: () => {
-            new bootstrap.Modal(document.getElementById('resetModal')).show();
-        }
-    };
-</script>
+    </script>
 }
+
+<style>
+    .profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    }
+
+    .profile-hero {
+    background: rgba(30, 41, 59, 0.5);
+    backdrop-filter: blur(12px);
+    }
+
+    .profile-banner {
+    position: relative;
+    overflow: hidden;
+    }
+
+    .bg-gradient-to-t {
+    background: linear-gradient(to top, #0f172a, transparent);
+    }
+
+    .avatar-frame {
+    background: #0f172a;
+    }
+
+    .profile-name-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding-left: 8px;
+    }
+
+    .edit-hint {
+    opacity: 0;
+    transition: opacity 0.2s;
+    cursor: pointer;
+    }
+
+    .profile-name-input:hover + .edit-hint,
+    .profile-name-input:focus + .edit-hint {
+    opacity: 1;
+    }
+
+    .bg-primary-soft {
+    background: rgba(59, 130, 246, 0.1);
+    }
+
+    .bg-success-soft {
+    background: rgba(16, 185, 129, 0.1);
+    }
+
+    .bg-warning-soft {
+    background: rgba(245, 158, 11, 0.1);
+    }
+
+    .upload-zone {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    }
+
+    .upload-zone:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+    }
+
+    .inset-0 {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    }
+
+    .bottom-2 {
+    bottom: 0.5rem;
+    }
+
+    .end-3 {
+    right: 1rem;
+    }
+
+    .progress-bar {
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+</style>
